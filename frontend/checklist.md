@@ -11,9 +11,9 @@
 - [~] **Contribution records 展示 / 输入** — mock 贡献记录已驱动付款计划展示；**缺独立的输入 / 上传 UI**（规划文档要求「贡献记录输入区」，当前未做表单/CSV/JSON 输入）
 - [x] **Payment plan 展示** — `components/payment/payment-plan.tsx`（按 risk 状态拆分 approved / blocked，显示金额、原因、钱包）
 - [x] **Risk check 展示** — `components/risk/risk-gate.tsx`（budget / whitelist / limit / token / duplicate 五类，blocked 醒目标红）
-- [~] **Human approval** — `components/approval/human-approval.tsx` 展示 approved / blocked 队列与策略说明；**缺真正的「Approve & Execute」交互按钮**（mock 下为静态展示，未触发执行）
+- [x] **Human approval** — `components/approval/human-approval.tsx` 展示 approved / blocked 队列与策略说明；含 checkbox 选择 + Approve & Execute 模态框交互（`onApprove` 触发执行）
 - [x] **CAW execution result（mock）** — `components/execution/execution-result.tsx`（Agent Wallet / network / cawRequestId / 状态；标注 Simulated）
-- [~] **tx hash / audit report** — Audit Report 已展示（`components/audit/audit-report.tsx`：approved/blocked 计数、风险摘要、结算）；**tx hash 在 mock 下为 `null`（改显示 cawRequestId），缺真实 tx hash 与点击 / 复制交互**
+- [x] **tx hash / audit report** — Audit Report 已展示（`components/audit/audit-report.tsx`：approved/blocked 计数、风险摘要、结算）；含 `CopyableHash` 组件支持点击复制 tx hash / cawRequestId
 
 ## B. Mode & 后端集成
 
@@ -46,24 +46,31 @@
 > 方向：静态看板 → 分步揭示 Agent 工作流（Run 触发，motion 依次揭示，Bob 标红被拦，真交互按钮，路演讲故事）
 > 资产：HeroUI v3（组件骨架）+ Aceternity（视觉动效）+ GSAP（滚动/分步动效）+ Framer Motion（已装）
 - [x] GSAP 安装配置 — `gsap` + `@gsap/react` + `lib/gsap.ts` 基础配置
-- [ ] 信息架构 + 分步动线方案（用户确认后实现）
-- [ ] `Generate Plan` 交互按钮 + 触发逻辑
-- [ ] Plan → Risk → Approval → Execution → Audit 分步揭示动画
-- [ ] Bob blocked 标红戏剧化处理
-- [ ] `Approve & Execute` 真实交互
-- [ ] 7 步 timeline 与推进状态联动
-- [ ] 视觉统一：黑色高级感，与 `/` Hero 不脱节
-- [ ] mock 痕迹优化（不再像 debug 面板）
-- [ ] 验证：`pnpm typecheck` / `pnpm build` / smoke test
+- [x] 信息架构 + 分步动线方案（用户确认后实现）
+- [x] `Generate Plan` 交互按钮 + 触发逻辑
+- [x] Plan → Risk → Approval → Execution → Audit 分步揭示动画
+- [x] Bob blocked 标红戏剧化处理
+- [x] `Approve & Execute` 真实交互
+- [x] 7 步 timeline 与推进状态联动
+- [x] 视觉统一：黑色高级感，与 `/` Hero 不脱节
+- [x] mock 痕迹优化（不再像 debug 面板）
+- [x] 验证：`pnpm typecheck` / `pnpm build` / smoke test
 
 ### E3. Landing `/` Scroll Sections
 > Hero 下方补 `Problem / Workflow / Risk Guardrails / Wallet Execution / Audit Trail` 锚点板块
-- [ ] Problem 板块
-- [ ] Workflow 板块
-- [ ] Risk Guardrails 板块
-- [ ] Wallet Execution 板块
-- [ ] Audit Trail 板块
-- [ ] Navbar 平滑滚动锚点
+- [x] Problem 板块
+- [x] Workflow 板块
+- [x] Risk Guardrails 板块
+- [x] Wallet Execution 板块
+- [x] Audit Trail 板块
+- [x] Navbar 平滑滚动锚点
+
+## G. 主题切换 + 双语支持
+
+- [x] **亮暗模式切换** — `next-themes` + Tailwind CSS v4 `dark:` 变体；Hero 区域恒暗（不受全局主题影响）
+- [x] **中英文切换** — `next-intl`（`messages/en.json` + `messages/zh.json`）；全站文案 i18n 化
+- [x] **语言切换器** — Navbar 右上角语言按钮（EN / 中）
+- [x] **主题切换器** — Navbar 右上角主题按钮（sun / moon）
 
 ## F. 工具 / 资产安装
 

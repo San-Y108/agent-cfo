@@ -133,7 +133,7 @@ export function StepExecution({ data }: { data: DemoData }) {
                   </span>
                 </div>
                 <CopyableHash
-                  label={p.txHash ? "tx" : "req"}
+                  label={p.txHash ? t("demo.exec.txLabel") : t("demo.exec.reqLabel")}
                   value={p.txHash ?? p.cawRequestId}
                 />
               </div>

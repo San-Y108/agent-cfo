@@ -92,9 +92,9 @@ function ProblemSection() {
             whileInView="show"
             viewport={{ once: true, margin: "-60px" }}
             transition={{ duration: 0.5, delay: i * 0.1, ease: "easeOut" }}
-            className="rounded-2xl border border-border-token bg-surface p-7"
+            className="rounded-2xl border border-white/10 bg-black p-7"
           >
-            <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-surface-2 text-accent">
+            <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-white/5 text-accent">
               {p.icon}
             </div>
             <h3 className="mt-4 text-fg text-lg font-medium" style={{ fontFamily: INTER }}>
@@ -122,7 +122,7 @@ function WorkflowSection() {
   ];
 
   return (
-    <section id="workflow" className="relative px-5 py-28 lg:px-10 bg-surface-2">
+    <section id="workflow" className="relative px-5 py-28 lg:px-10">
       <SectionHeading eyebrow={t("workflow.eyebrow")} title={t("workflow.title")} subtitle={t("workflow.subtitle")} />
       <div className="mx-auto mt-16 max-w-6xl">
         <div className="grid gap-4 md:grid-cols-5">
@@ -134,12 +134,12 @@ function WorkflowSection() {
               whileInView="show"
               viewport={{ once: true, margin: "-60px" }}
               transition={{ duration: 0.5, delay: i * 0.08, ease: "easeOut" }}
-              className="relative rounded-2xl border border-border-token bg-surface p-6"
+              className="relative rounded-2xl border border-white/10 bg-black p-6"
             >
               <span className="absolute right-4 top-3 text-xs text-fg-subtle" style={{ fontFamily: MONO }}>
                 0{i + 1}
               </span>
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-surface-2 text-accent">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-white/5 text-accent">
                 {s.icon}
               </div>
               <h3 className="mt-4 text-base font-medium text-fg" style={{ fontFamily: INTER }}>
@@ -179,9 +179,9 @@ function RiskGuardrailsSection() {
             whileInView="show"
             viewport={{ once: true, margin: "-60px" }}
             transition={{ duration: 0.5, delay: i * 0.08, ease: "easeOut" }}
-            className="rounded-2xl border border-border-token bg-surface p-6 text-center"
+            className="rounded-2xl border border-white/10 bg-black p-6 text-center"
           >
-            <div className="mx-auto flex h-11 w-11 items-center justify-center rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
+            <div className="mx-auto flex h-11 w-11 items-center justify-center rounded-full bg-emerald-500/10 text-success">
               {g.icon}
             </div>
             <h3 className="mt-4 text-base font-medium text-fg" style={{ fontFamily: INTER }}>
@@ -203,7 +203,7 @@ function WalletExecutionSection() {
   const points: DictKey[] = ["wallet.1", "wallet.2", "wallet.3", "wallet.4"];
 
   return (
-    <section id="wallet-execution" className="relative px-5 py-28 lg:px-10 bg-surface-2">
+    <section id="wallet-execution" className="relative px-5 py-28 lg:px-10">
       <div className="mx-auto grid max-w-6xl items-center gap-12 lg:grid-cols-2">
         <motion.div
           variants={reveal}
@@ -224,7 +224,7 @@ function WalletExecutionSection() {
           <ul className="mt-6 flex flex-col gap-3">
             {points.map((p) => (
               <li key={p} className="flex items-start gap-3">
-                <span className="mt-1 flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-surface text-accent">
+                <span className="mt-1 flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-white/5 text-accent">
                   <Wallet className="h-3 w-3" />
                 </span>
                 <span className="text-sm leading-relaxed text-fg-muted" style={{ fontFamily: INTER }}>
@@ -241,30 +241,30 @@ function WalletExecutionSection() {
           whileInView="show"
           viewport={{ once: true, margin: "-80px" }}
           transition={{ duration: 0.6, delay: 0.15, ease: "easeOut" }}
-          className="relative overflow-hidden rounded-2xl border border-border-token bg-surface p-6"
+          className="relative overflow-hidden rounded-2xl border border-white/10 bg-black p-6"
         >
           <div className="flex items-center gap-2 text-fg-muted">
             <Bot className="h-4 w-4" />
             <span className="text-xs" style={{ fontFamily: MONO }}>
-              agent-wallet · policy-gated
+              {t("wallet.mockLabel")}
             </span>
           </div>
           <div className="mt-4 flex flex-col gap-2 text-xs" style={{ fontFamily: MONO }}>
-            <div className="flex items-center justify-between rounded-lg bg-surface-2 px-3 py-2 text-fg-muted">
+            <div className="flex items-center justify-between rounded-lg bg-white/5 px-3 py-2 text-fg-muted">
               <span>alice.eth</span>
-              <span className="text-emerald-600 dark:text-emerald-400">20 USDC ✓</span>
+              <span className="text-success">20 USDC ✓</span>
             </div>
-            <div className="flex items-center justify-between rounded-lg bg-surface-2 px-3 py-2 text-fg-muted">
+            <div className="flex items-center justify-between rounded-lg bg-white/5 px-3 py-2 text-fg-muted">
               <span>bob.eth</span>
-              <span className="text-red-600 dark:text-red-400">{t("wallet.blocked")} ✕</span>
+              <span className="text-danger">{t("wallet.blocked")} ✕</span>
             </div>
-            <div className="flex items-center justify-between rounded-lg bg-surface-2 px-3 py-2 text-fg-muted">
+            <div className="flex items-center justify-between rounded-lg bg-white/5 px-3 py-2 text-fg-muted">
               <span>charlie.eth</span>
-              <span className="text-emerald-600 dark:text-emerald-400">10 USDC ✓</span>
+              <span className="text-success">10 USDC ✓</span>
             </div>
-            <div className="flex items-center justify-between rounded-lg bg-surface-2 px-3 py-2 text-fg-muted">
+            <div className="flex items-center justify-between rounded-lg bg-white/5 px-3 py-2 text-fg-muted">
               <span>data-api</span>
-              <span className="text-emerald-600 dark:text-emerald-400">5 USDC ✓</span>
+              <span className="text-success">5 USDC ✓</span>
             </div>
           </div>
         </motion.div>
@@ -286,7 +286,7 @@ function AuditTrailSection() {
         whileInView="show"
         viewport={{ once: true, margin: "-80px" }}
         transition={{ duration: 0.6, ease: "easeOut" }}
-        className="mx-auto mt-16 flex max-w-2xl flex-col items-center rounded-3xl border border-border-token bg-surface px-6 py-14 text-center"
+        className="mx-auto mt-16 flex max-w-2xl flex-col items-center rounded-3xl border border-white/10 bg-black px-6 py-14 text-center"
       >
         <h3 className="text-fg font-normal" style={{ fontFamily: INTER, fontSize: "clamp(1.5rem, 3.5vw, 2.1rem)" }}>
           {t("audit.cta.title")}
@@ -304,7 +304,7 @@ function AuditTrailSection() {
         </Link>
       </motion.div>
 
-      <footer className="mx-auto mt-20 max-w-6xl border-t border-border-token pt-8 text-center">
+      <footer className="mx-auto mt-20 max-w-6xl border-t border-white/10 pt-8 text-center">
         <p className="text-xs text-fg-subtle" style={{ fontFamily: MONO }}>
           {t("footer.tagline")}
         </p>
@@ -315,7 +315,7 @@ function AuditTrailSection() {
 
 export function LandingSections() {
   return (
-    <div className="relative w-full bg-bg" style={{ fontFamily: INTER }}>
+    <div className="relative w-full bg-black" style={{ fontFamily: INTER }}>
       <ProblemSection />
       <WorkflowSection />
       <RiskGuardrailsSection />

@@ -70,6 +70,7 @@ export const dict = {
     "wallet.3": "Testnet-simulated in demo, production-ready integration path",
     "wallet.4": "Every transfer ties back to an approved payment item",
     "wallet.blocked": "blocked",
+    "wallet.mockLabel": "agent-wallet · policy-gated",
 
     // ---- landing: audit ----
     "audit.eyebrow": "Audit Trail",
@@ -115,8 +116,15 @@ export const dict = {
     "demo.intro.guardrailsDesc": "5-layer risk check before any execution",
     "demo.intro.expectedFlow": "Expected Flow",
     "demo.intro.expectedFlowDesc": "AI generates plan → Risk check → Human approval → CAW execution → Audit report",
+    "demo.intro.guardBudget": "Budget",
+    "demo.intro.guardWhitelist": "Whitelist",
+    "demo.intro.guardLimit": "Limit",
+    "demo.intro.guardToken": "Token",
+    "demo.intro.guardDuplicate": "Duplicate",
 
     "demo.plan.title": "AI Generated Payment Plan",
+    "demo.plan.approved": "Approved",
+    "demo.plan.blocked": "Blocked",
     "demo.plan.totalPlanned": "Total planned",
     "demo.plan.approvedSuffix": "approved",
     "demo.plan.blockedSuffix": "blocked",
@@ -154,6 +162,8 @@ export const dict = {
     "demo.exec.transactions": "Transactions",
     "demo.exec.transactionsDesc": "Each executed payment returns a transaction reference",
     "demo.exec.txNote": "tx hash is null in mock mode — request ID shown instead. Real tx hashes appear after live Cobo Agentic Wallet execution.",
+    "demo.exec.txLabel": "tx",
+    "demo.exec.reqLabel": "req",
 
     "demo.audit.title": "Audit Report",
     "demo.audit.reportId": "Report ID",
@@ -229,6 +239,7 @@ export const dict = {
     "wallet.3": "Demo 中为测试网模拟，具备生产级接入路径",
     "wallet.4": "每笔转账都对应一条已批准的付款项",
     "wallet.blocked": "已拦截",
+    "wallet.mockLabel": "agent-wallet · 策略门控",
 
     // ---- landing: audit ----
     "audit.eyebrow": "审计追溯",
@@ -274,8 +285,15 @@ export const dict = {
     "demo.intro.guardrailsDesc": "执行前进行 5 层风险检查",
     "demo.intro.expectedFlow": "预期流程",
     "demo.intro.expectedFlowDesc": "AI 生成计划 → 风险检查 → 人工批准 → CAW 执行 → 审计报告",
+    "demo.intro.guardBudget": "预算",
+    "demo.intro.guardWhitelist": "白名单",
+    "demo.intro.guardLimit": "限额",
+    "demo.intro.guardToken": "代币",
+    "demo.intro.guardDuplicate": "重复",
 
     "demo.plan.title": "AI 生成的付款计划",
+    "demo.plan.approved": "已批准",
+    "demo.plan.blocked": "已拦截",
     "demo.plan.totalPlanned": "计划总额",
     "demo.plan.approvedSuffix": "已批准",
     "demo.plan.blockedSuffix": "已拦截",
@@ -313,6 +331,8 @@ export const dict = {
     "demo.exec.transactions": "交易明细",
     "demo.exec.transactionsDesc": "每笔已执行付款都会返回一个交易引用",
     "demo.exec.txNote": "模拟模式下 tx hash 为 null，改显示 request ID。真实 tx hash 将在 Cobo Agentic Wallet 实际执行后出现。",
+    "demo.exec.txLabel": "交易",
+    "demo.exec.reqLabel": "请求",
 
     "demo.audit.title": "审计报告",
     "demo.audit.reportId": "报告 ID",

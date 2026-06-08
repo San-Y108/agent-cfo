@@ -38,7 +38,7 @@ export function StepRisk({ data }: { data: DemoData }) {
       {/* Payment-level Risk Items */}
       <motion.div variants={container} initial="hidden" animate="show">
         <BentoGrid>
-          {payments.map((payment, i) => {
+          {payments.map((payment) => {
             const isBlocked = payment.status === "Blocked";
             const hasRisks = payment.risks.length > 0;
             return (

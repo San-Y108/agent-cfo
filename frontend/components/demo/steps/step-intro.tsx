@@ -52,7 +52,7 @@ export function StepIntro({ data, onStart }: { data: DemoData; onStart: () => vo
           <div className="mt-4 flex flex-wrap gap-2">
             {contributors.map((c, i) => (
               <span key={i} className="rounded-full bg-surface-2 px-3 py-1 text-xs text-fg-muted border border-border-token">
-                {c.name} — {c.amount} USDC
+                {c.name} — {c.amount} {data.request.budgetRule.allowedToken}
               </span>
             ))}
           </div>
@@ -67,11 +67,11 @@ export function StepIntro({ data, onStart }: { data: DemoData; onStart: () => vo
           <div className="mt-4 grid grid-cols-2 gap-2">
             <div className="rounded-lg bg-surface-2 p-3 border border-border-token">
               <div className="text-xs text-fg-subtle">{t("demo.intro.monthlyBudget")}</div>
-              <div className="text-lg font-bold text-fg">{budget.monthlyBudget} USDC</div>
+              <div className="text-lg font-bold text-fg">{budget.monthlyBudget} {budget.allowedToken}</div>
             </div>
             <div className="rounded-lg bg-surface-2 p-3 border border-border-token">
               <div className="text-xs text-fg-subtle">{t("demo.intro.singleLimit")}</div>
-              <div className="text-lg font-bold text-fg">{budget.singlePaymentLimit} USDC</div>
+              <div className="text-lg font-bold text-fg">{budget.singlePaymentLimit} {budget.allowedToken}</div>
             </div>
           </div>
         </BentoCard>
@@ -83,7 +83,7 @@ export function StepIntro({ data, onStart }: { data: DemoData; onStart: () => vo
             {t("demo.intro.guardrailsDesc")}
           </BentoCardDescription>
           <div className="mt-4 flex flex-col gap-1">
-            {["Budget", "Whitelist", "Limit", "Token", "Duplicate"].map((r) => (
+            {[t("demo.intro.guardBudget"), t("demo.intro.guardWhitelist"), t("demo.intro.guardLimit"), t("demo.intro.guardToken"), t("demo.intro.guardDuplicate")].map((r) => (
               <div key={r} className="flex items-center gap-2 text-xs text-fg-muted">
                 <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 dark:bg-emerald-400" />
                 {r}
@@ -99,7 +99,13 @@ export function StepIntro({ data, onStart }: { data: DemoData; onStart: () => vo
             {t("demo.intro.expectedFlowDesc")}
           </BentoCardDescription>
           <div className="mt-4 flex items-center gap-2 overflow-x-auto">
-            {["Plan", "Risk", "Approve", "Execute", "Audit"].map((s, i) => (
+            {[
+              t("demo.steps.plan"),
+              t("demo.steps.risk"),
+              t("demo.steps.approval"),
+              t("demo.steps.execution"),
+              t("demo.steps.audit"),
+            ].map((s, i) => (
               <React.Fragment key={s}>
                 <span className="rounded-full bg-surface-2 px-3 py-1.5 text-xs text-fg-muted border border-border-token whitespace-nowrap">
                   {s}

@@ -39,7 +39,7 @@ export function StepPlan({ data }: { data: DemoData }) {
       <motion.div variants={container} initial="hidden" animate="show"
       >
         <BentoGrid>
-          {payments.map((p, i) => {
+          {payments.map((p) => {
             const isBlocked = p.status === "Blocked";
             return (
               <motion.div key={p.id} variants={item}
@@ -69,7 +69,7 @@ export function StepPlan({ data }: { data: DemoData }) {
                     <div className="text-2xl font-bold text-fg"
                     >
                       <AnimatedNumber value={p.amount} /> <span className="text-sm font-normal text-fg-subtle"
-                      >USDC</span>
+                      >{p.token}</span>
                     </div>
                     <div className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${
                       isBlocked
@@ -77,7 +77,7 @@ export function StepPlan({ data }: { data: DemoData }) {
                         : "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20"
                     }`}
                     >
-                      {p.status.toUpperCase()}
+                      {p.status === "Blocked" ? t("demo.plan.blocked") : t("demo.plan.approved")}
                     </div>
                   </div>
 
@@ -103,7 +103,7 @@ export function StepPlan({ data }: { data: DemoData }) {
         >
           <span className="text-fg-muted"
           >{t("demo.plan.totalPlanned")}: <strong className="text-fg"
-          ><AnimatedNumber value={data.paymentPlan.totalAmount} /> USDC</strong></span>
+          ><AnimatedNumber value={data.paymentPlan.totalAmount} /> {payments[0]?.token ?? "USDC"}</strong></span>
           <span className="text-fg-muted"
           >{payments.filter((p) => p.status !== "Blocked").length} {t("demo.plan.approvedSuffix")}, {payments.filter((p) => p.status === "Blocked").length} {t("demo.plan.blockedSuffix")}</span>
         </div>

@@ -20,6 +20,8 @@
   --border-strong: #cbd5e1;
   --accent: #d97706;       /* amber-600 — readable on light bg */
   --accent-fg: #ffffff;
+  --success: #16a34a;      /* emerald-600 */
+  --danger: #dc2626;       /* red-600 */
   --grid-line: rgba(15, 23, 42, 0.5);  /* dark lines on light bg */
 }
 
@@ -35,6 +37,8 @@
   --border-strong: #374151;
   --accent: #f59e0b;       /* amber-500 — readable on dark bg */
   --accent-fg: #0a0a0a;
+  --success: #34d399;      /* emerald-400 */
+  --danger: #f87171;       /* red-400 */
   --grid-line: rgba(255, 255, 255, 0.5);  /* light lines on dark bg */
 }
 
@@ -51,6 +55,8 @@
   --color-border-strong: var(--border-strong);
   --color-accent: var(--accent);
   --color-accent-fg: var(--accent-fg);
+  --color-success: var(--success);
+  --color-danger: var(--danger);
 
   --color-navy-950: #030712;
   --color-navy-900: #0b1120;

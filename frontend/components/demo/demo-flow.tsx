@@ -93,13 +93,13 @@ export function DemoFlow({ data }: DemoFlowProps) {
     {
       label: t("demo.kpi.budget"),
       value: data.request.budgetRule.monthlyBudget,
-      suffix: " USDC",
+      suffix: ` ${data.request.budgetRule.allowedToken}`,
       tone: "neutral" as const,
     },
     {
       label: t("demo.kpi.planned"),
       value: data.paymentPlan.totalAmount,
-      suffix: " USDC",
+      suffix: ` ${data.paymentPlan.payments[0]?.token ?? "USDC"}`,
       tone: "amber" as const,
     },
     {

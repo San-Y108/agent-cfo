@@ -10,7 +10,7 @@ AgentCFO is an AI CFO for Web3 small teams and DAOs. It turns contribution recor
 |---|---|---|
 | **Production** | [https://agentcfo-frontend.vercel.app](https://agentcfo-frontend.vercel.app) | ✅ mock mode，公开可访问 |
 | **Landing Page** | `/` | ✅ Velorix IIC 风格 Hero（纯 CSS 动效）|
-| **Demo Console** | `/demo` | ⚠️ 静态看板，待 redesign |
+| **Demo Console** | `/demo` | ✅ 分步 Agent 工作流演示（6 步 timeline + 交互） |
 
 ## What the demo shows
 
@@ -19,6 +19,7 @@ AgentCFO is an AI CFO for Web3 small teams and DAOs. It turns contribution recor
 3. **Human Approval** — explicit human confirmation required before execution; blocked items (e.g. Bob) are rejected
 4. **Simulated Cobo Agentic Wallet Execution** — mock execution showing Agent Wallet, permission boundary, and transaction hash
 5. **Settlement Receipt / Audit Report** — formal audit summary with approved count, blocked count, risk summary, and execution summary
+6. **Step-by-Step Agent Workflow** — 6-step timeline (Generate Plan / Risk Check / Approval / Execution / Settlement / Audit) with motion reveal, interactive approval modal, and copyable tx hash
 
 **Demo scenario:** Alice 20 / **Bob 15 (blocked, wallet not in whitelist)** / Charlie 10 / Data API 5 USDC. Monthly budget 50, single-payment limit 25.
 
@@ -34,7 +35,7 @@ AgentCFO is an AI CFO for Web3 small teams and DAOs. It turns contribution recor
 | Backend API | ✅ Implemented | FastAPI, 4 endpoints, `pytest` 12 passed |
 | CAW Execution | ⚠️ Simulated | Mock mode; real CAW integration pending |
 | Blockchain Transaction | ❌ None | No real on-chain transaction yet |
-| Demo Redesign | 🔜 In Progress | Static dashboard → step-by-step agent workflow |
+| Demo Redesign | ✅ Done | Static dashboard → step-by-step agent workflow |
 
 ## Tech Stack
 
@@ -45,7 +46,11 @@ AgentCFO is an AI CFO for Web3 small teams and DAOs. It turns contribution recor
 - Framer Motion 12
 - GSAP 3.15 + `@gsap/react`
 - lucide-react
+- next-themes (dark / light toggle)
+- next-intl (i18n: EN / ZH)
 - pnpm
+
+> **Theme & i18n:** Full dark/light mode support across all pages; Hero section stays dark regardless of global theme. Bilingual UI (English / Chinese) with language switcher in navbar.
 
 ## Local Development
 
@@ -82,9 +87,9 @@ pnpm start       # Start production server
 | API Contract Aligned | ✅ Done |
 | Mock Data & Workflow | ✅ Done |
 | Vercel Deployment | ✅ Done |
-| Demo Console Redesign | 🔜 In Progress |
+| Demo Console Redesign | ✅ Done |
 | Real Backend Integration | ⏳ Blocked (waiting for Render URL + CORS) |
-| Landing Scroll Sections | ⏳ Pending |
+| Landing Scroll Sections | ✅ Done |
 
 ## Safety Notes
 

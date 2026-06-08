@@ -61,7 +61,7 @@ export function StepApproval({
                     <div className="text-xs text-fg-subtle">{p.task}</div>
                   </div>
                   <div className="text-sm font-bold text-emerald-600 dark:text-emerald-400">
-                    {p.amount} USDC
+                    {p.amount} {p.token}
                   </div>
                 </div>
               ))}
@@ -93,7 +93,7 @@ export function StepApproval({
                     <div className="text-xs text-fg-subtle">{p.task}</div>
                   </div>
                   <div className="text-sm font-bold text-red-600 dark:text-red-400">
-                    {p.amount} USDC
+                    {p.amount} {p.token}
                   </div>
                 </div>
               ))}
@@ -122,7 +122,7 @@ export function StepApproval({
             <strong className="text-fg">{blocked.length} {t("demo.approval.ackBlocked")}</strong>
             {" · "}
             <strong className="text-emerald-600 dark:text-emerald-400">{approved.length} {t("demo.approval.ackApproved")}</strong>
-            {" "}({approvedTotal} USDC) {t("demo.approval.ackTail")}
+            {" "}({approvedTotal} {approved[0]?.token ?? "USDC"}) {t("demo.approval.ackTail")}
           </span>
         </label>
 
@@ -154,7 +154,7 @@ export function StepApproval({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[200] flex items-center justify-center bg-black/70 backdrop-blur-sm p-4"
+            className="fixed inset-0 z-[200] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
             onClick={() => setShowConfirm(false)}
           >
             <motion.div
@@ -180,7 +180,7 @@ export function StepApproval({
               <p className="mt-2 text-sm text-fg-muted">
                 {t("demo.approval.confirmBody")}{" "}
                 <strong className="text-emerald-600 dark:text-emerald-400">{approved.length}</strong>{" "}
-                {t("demo.approval.confirmTotal")} <strong className="text-fg">{approvedTotal} USDC</strong>.
+                {t("demo.approval.confirmTotal")} <strong className="text-fg">{approvedTotal} {approved[0]?.token ?? "USDC"}</strong>.
                 {" "}{t("demo.approval.confirmNote")}
               </p>
 
