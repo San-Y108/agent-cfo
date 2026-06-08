@@ -2,6 +2,7 @@ from fastapi import APIRouter, HTTPException
 
 from app.models import (
     AuditReport,
+    CawStatus,
     ExecutePaymentRequest,
     PaymentExecutionResult,
     PaymentItem,
@@ -45,13 +46,13 @@ def create_payment_plan(request: PaymentPlanRequest):
         riskLevel=RiskLevel.UNCHECKED,
         payments=payments,
     )
-    store.payment_plans[payment_plan_id] = payment_plan
+    store.save_payment_plan(payment_plan)
     return payment_plan
 
 
 @router.post("/risk-check", response_model=RiskCheckResult)
 def run_risk_check(request: RiskCheckRequest):
-    payment_plan = store.payment_plans.get(request.paymentPlanId)
+    payment_plan = store.get_payment_plan(request.paymentPlanId)
     if payment_plan is None:
         raise HTTPException(status_code=404, detail="Payment plan not found")
 
@@ -68,17 +69,17 @@ def run_risk_check(request: RiskCheckRequest):
         requiresHumanApproval=request.budgetRule.requiresHumanApproval,
         payments=checked_payments,
     )
-    store.risk_checks[request.paymentPlanId] = result
+    store.save_risk_check(result)
     return result
 
 
 @router.post("/execute-payment", response_model=PaymentExecutionResult)
 def execute_payment(request: ExecutePaymentRequest):
-    payment_plan = store.payment_plans.get(request.paymentPlanId)
+    payment_plan = store.get_payment_plan(request.paymentPlanId)
     if payment_plan is None:
         raise HTTPException(status_code=404, detail="Payment plan not found")
 
-    risk_check = store.risk_checks.get(request.paymentPlanId)
+    risk_check = store.get_risk_check(request.paymentPlanId)
     if risk_check is None:
         raise HTTPException(status_code=400, detail="Risk check is required before execution")
 
@@ -117,6 +118,9 @@ def execute_payment(request: ExecutePaymentRequest):
         agentWalletAddress=caw_adapter.agent_wallet_address,
         payments=executed_payments,
     )
+    for payment in executed_payments:
+        store.save_caw_status(CawStatus.from_execution_item(execution_id, payment))
+
     audit_report = AuditReport(
         auditReportId=audit_report_id,
         mode=caw_adapter.mode,
@@ -126,14 +130,22 @@ def execute_payment(request: ExecutePaymentRequest):
         execution=execution,
         remainingBudget=risk_check.remainingBudget,
     )
-    store.executions[execution_id] = execution
-    store.audit_reports[audit_report_id] = audit_report
+    store.save_execution(execution)
+    store.save_audit_report(audit_report)
     return execution
 
 
 @router.get("/audit-report/{auditReportId}", response_model=AuditReport)
 def get_audit_report(auditReportId: str):
-    audit_report = store.audit_reports.get(auditReportId)
+    audit_report = store.get_audit_report(auditReportId)
     if audit_report is None:
         raise HTTPException(status_code=404, detail="Audit report not found")
     return audit_report
+
+
+@router.get("/caw-status/{cawRequestId}", response_model=CawStatus)
+def get_caw_status(cawRequestId: str):
+    caw_status = store.get_caw_status(cawRequestId)
+    if caw_status is None:
+        raise HTTPException(status_code=404, detail="CAW status not found")
+    return caw_status

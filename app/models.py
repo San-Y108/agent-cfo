@@ -1,3 +1,4 @@
+from datetime import UTC, datetime
 from enum import StrEnum
 
 from pydantic import BaseModel, Field
@@ -103,6 +104,37 @@ class PaymentExecutionResult(BaseModel):
     mode: str
     agentWalletAddress: str
     payments: list[PaymentExecutionItem]
+
+
+class CawStatus(BaseModel):
+    cawRequestId: str
+    executionId: str
+    paymentItemId: str
+    providerStatus: str
+    normalizedStatus: PaymentStatus
+    mode: str
+    network: str
+    agentWalletAddress: str
+    txHash: str | None
+    error: str | None = None
+    lastCheckedAt: str
+
+    @classmethod
+    def from_execution_item(cls, execution_id: str, payment: PaymentExecutionItem):
+        provider_status = "executed" if payment.status == PaymentStatus.EXECUTED else "failed"
+        return cls(
+            cawRequestId=payment.cawRequestId,
+            executionId=execution_id,
+            paymentItemId=payment.paymentItemId,
+            providerStatus=provider_status,
+            normalizedStatus=payment.status,
+            mode=payment.mode,
+            network=payment.network,
+            agentWalletAddress=payment.agentWalletAddress,
+            txHash=payment.txHash,
+            error=payment.error,
+            lastCheckedAt=datetime.now(UTC).isoformat(),
+        )
 
 
 class AuditReport(BaseModel):
