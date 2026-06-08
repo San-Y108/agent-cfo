@@ -56,7 +56,9 @@ lib/demo/    demo-data（Demo Console 统一 mock 数据源）
 - ✅ Vercel 生产部署：**https://agentcfo-frontend.vercel.app**（project `agentcfo-frontend`，公开可访问）。
 - ⚠️ **当前线上为 mock mode**（`NEXT_PUBLIC_DEMO_MODE=mock`）。
 - ✅ API **types / adapter / mock shape 已以后端 contract 对齐**（mock 与 real 同构同值，已用真实后端 HTTP 链路验证）。
+- ✅ **`/` 落地页 Hero 已改造为 Velorix IIC 风格**（`components/landing/velorix-hero.tsx`，纯 CSS 动效；commit `9be4ace`）；Hero 下方 scroll 板块（Problem / Workflow / …）待补。
 - ❌ **`/demo` real mode UI 接入尚未完成**：页面仍读静态 `demoData`；`runDemoFlow()` 调用链已就绪但页面未切换（无 loading / error 态）。
+- 🔜 **下一主任务：`/demo` redesign**（静态看板 → 分步揭示的 Agent 工作流演示，用 HeroUI v3 + Aceternity）。换模型/新会话先读 `HANDOFF.md`。
 
 ## 6. API contract 规则（重要）
 
@@ -72,3 +74,18 @@ lib/demo/    demo-data（Demo Console 统一 mock 数据源）
 - 如需修改 `frontend/` 外文件（后端 `app/`、仓库根目录、部署配置等），**先停止并向用户申请**。
 - 不修改后端、根目录配置、部署配置，除非得到明确授权。
 - 默认执行范式：Explore → Plan → Execute → Verify → Summarize。非平凡改动先自检（`pnpm typecheck` / `pnpm build` / smoke），**不伪造验证结果**：没运行就是未验证。
+
+## 8. 关键资产 / Key Assets（项目记忆）
+
+| 项 | 值 |
+|---|---|
+| 仓库 | `github.com/San-Y108/agent-cfo`（owner 队友 San-Y108；你是 write 协作者 `Aafff623`，非 admin；`main` 无保护） |
+| 分支 / PR | `feat/frontend-bootstrap` → **PR #1** OPEN 未合并 → `main` |
+| **Vercel 正式 URL** | **https://agentcfo-frontend.vercel.app**（production，mock mode） |
+| Vercel project / scope | `agentcfo-frontend` / `laiyif68-5443s-projects`；Framework = **Next.js（必须）**；Deployment Protection = OFF；部署 `vercel --prod` |
+| Vercel 生产 env | `NEXT_PUBLIC_DEMO_MODE=mock`、`NEXT_PUBLIC_API_BASE_URL=http://127.0.0.1:8000` |
+| 后端 | `app/` FastAPI，4 接口，`pytest` 12 passed；**Render URL = TODO**；CORS 未配 |
+| 本地 dev | `PORT=3100 pnpm dev`（⚠️ `:3001` 有陈旧 Service Worker 会白屏；`:3000` 被占用） |
+| Demo 数据 | Alice 20 / Bob 15(blocked) / Charlie 10 / Data API 5 USDC；预算 50、单笔限额 25 |
+
+> 换模型 / 新会话交接：**先读 `HANDOFF.md`**（含完整任务时间线、踩坑记录、下一步与 `/demo` redesign 输入）。
