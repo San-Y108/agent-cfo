@@ -131,6 +131,35 @@ Frontend
 
 ## Local Development
 
+## Teammate Handoff
+
+如果你是前端或 CAW 同学，按下面步骤拿到后端 mock API：
+
+```bash
+git clone <repo-url>
+cd <repo-folder>
+```
+
+如果你已经 clone 过仓库：
+
+```bash
+git pull
+```
+
+确认当前后端交付提交：
+
+```bash
+git log --oneline --max-count=3
+```
+
+你应该能看到类似提交：
+
+```text
+3d63bfc Implement FastAPI backend P0 mock APIs
+```
+
+然后继续执行下面的 Local Development 步骤创建虚拟环境、安装依赖、运行测试和启动服务。
+
 创建虚拟环境：
 
 ```bash
