@@ -123,11 +123,11 @@ export function DemoFlow({ data }: DemoFlowProps) {
   ];
 
   return (
-    <div className="relative min-h-screen bg-bg flex flex-col">
+    <div className="relative min-h-screen bg-black flex flex-col">
       <DemoBackdrop />
 
       {/* Header */}
-      <header className="relative border-b border-border-token bg-bg/80 backdrop-blur-xl z-50 flex-shrink-0">
+      <header className="relative border-b border-white/10 bg-black/80 backdrop-blur-xl z-50 flex-shrink-0">
         <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-amber-500/30 to-transparent" />
         <div className="flex h-14 items-center justify-between px-4 sm:px-6">
           <div className="flex items-center gap-3">

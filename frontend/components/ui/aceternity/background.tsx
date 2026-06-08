@@ -105,7 +105,7 @@ export function GradientOrb({
 export function DemoBackdrop() {
   return (
     <>
-      <div className="pointer-events-none fixed inset-0 z-0 bg-bg" />
+      <div className="pointer-events-none fixed inset-0 z-0 bg-black" />
       <GridBackground />
       <NoiseOverlay className="dark:opacity-[0.04] opacity-[0.02]" />
     </>
