@@ -156,7 +156,7 @@ Frontend
 - **Validation**: Pydantic
 - **Testing**: pytest + FastAPI TestClient
 - **Server**: Uvicorn
-- **Storage**: In-memory MVP store
+- **Storage**: SQLite demo store with repository abstraction
 - **CAW**: Mock adapter only, no real credentials
 
 ## Local Development
@@ -234,6 +234,7 @@ POST /api/payment-plan
 POST /api/risk-check
 POST /api/execute-payment
 GET  /api/audit-report/{auditReportId}
+GET  /api/caw-status/{cawRequestId}
 GET  /health
 ```
 
@@ -271,6 +272,26 @@ curl.exe https://<render-service>.onrender.com/health
 
 This deployment is still mock backend mode: no real OpenAI planner, no real Cobo Agentic Wallet execution, no `.env`, and no secrets in the repository.
 
+## Persistence
+
+The backend now uses a repository abstraction with SQLite as the default local demo store. The database path is configured with:
+
+```text
+AGENTCFO_DB_PATH=agentcfo_demo.sqlite3
+```
+
+If `AGENTCFO_DB_PATH` is not set, the backend writes to `agentcfo_demo.sqlite3` in the current working directory. Tests use an in-memory SQLite database and reset state before each test.
+
+For temporary local demos, you can force the old in-memory store:
+
+```text
+AGENTCFO_STORE_BACKEND=memory
+```
+
+On Render, SQLite is only suitable for a single-instance demo. To keep SQLite data across deploys or restarts, attach a Render persistent disk and set `AGENTCFO_DB_PATH` to a path on that disk. If SQLite is stored on Render's normal ephemeral filesystem, deploys or restarts can lose the database file. For long-running audit storage, multi-instance services, or production-like usage, use Postgres in a later phase instead.
+
+Audit Reports are saved as execution-time snapshots. Later CAW status refreshes must not rewrite historical Audit Report content.
+
 ## Curl Verification
 
 PowerShell 中建议使用 `curl.exe`，避免 `curl` alias 干扰。
@@ -299,6 +320,12 @@ curl.exe -X POST http://127.0.0.1:8000/api/execute-payment -H 'Content-Type: app
 curl.exe http://127.0.0.1:8000/api/audit-report/audit_demo_001
 ```
 
+查看 mock CAW status：
+
+```bash
+curl.exe http://127.0.0.1:8000/api/caw-status/mock_caw_exec_demo_001_pay_001
+```
+
 所有执行结果当前都是 `mode="mock"`，`txHash=null`。
 
 ## Environment Variables
@@ -312,6 +339,8 @@ curl.exe http://127.0.0.1:8000/api/audit-report/audit_demo_001
 | CAW wallet id | 选择 Agent Wallet | 待 CAW 同学提供 |
 | CAW base URL | CAW API endpoint | 待 CAW 同学提供 |
 | Testnet config | 测试网链和 token 配置 | 待 CAW 同学提供 |
+| AGENTCFO_DB_PATH | SQLite demo database path | 可选，本地默认 `agentcfo_demo.sqlite3` |
+| AGENTCFO_STORE_BACKEND | 可选切回 in-memory store | 仅本地临时 demo 使用 |
 
 不要提交 `.env`、API key、private key、token 或生产钱包凭证。
 

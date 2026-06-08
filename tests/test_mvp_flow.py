@@ -1,4 +1,8 @@
+import os
+
 from fastapi.testclient import TestClient
+
+os.environ["AGENTCFO_DB_PATH"] = ":memory:"
 
 from app.main import app
 from app.routers import payments as payments_router
@@ -131,11 +135,12 @@ def test_payment_plan_schema_validation_rejects_invalid_amount():
     assert response.status_code == 422
 
 
-def test_registered_business_routes_are_only_p0():
+def test_registered_business_routes_include_p0_and_caw_status():
     routes = sorted(route.path for route in app.routes if getattr(route, "include_in_schema", False))
 
     assert routes == [
         "/api/audit-report/{auditReportId}",
+        "/api/caw-status/{cawRequestId}",
         "/api/execute-payment",
         "/api/payment-plan",
         "/api/risk-check",
@@ -167,6 +172,18 @@ def test_full_mock_flow_returns_audit_report():
     assert execution["agentWalletAddress"] == "mock-agent-wallet"
     assert execution["payments"][0]["network"] == "mock-testnet"
     assert all(payment["txHash"] is None for payment in execution["payments"])
+
+    status_response = client.get(f"/api/caw-status/{execution['payments'][0]['cawRequestId']}")
+
+    assert status_response.status_code == 200
+    caw_status = status_response.json()
+    assert caw_status["cawRequestId"] == execution["payments"][0]["cawRequestId"]
+    assert caw_status["paymentItemId"] == execution["payments"][0]["paymentItemId"]
+    assert caw_status["normalizedStatus"] == "Executed"
+    assert caw_status["mode"] == "mock"
+    assert caw_status["txHash"] is None
+    assert caw_status["error"] is None
+    assert caw_status["lastCheckedAt"]
 
     report_response = client.get(f"/api/audit-report/{execution['auditReportId']}")
 
@@ -287,6 +304,13 @@ def test_execute_requires_human_approval():
     assert response.json()["detail"] == "Human approval is required before execution"
 
 
+def test_caw_status_not_found_returns_404():
+    response = client.get("/api/caw-status/missing_caw_request")
+
+    assert response.status_code == 404
+    assert response.json()["detail"] == "CAW status not found"
+
+
 def test_blocked_payment_is_not_sent_to_mock_caw(monkeypatch):
     adapter_calls = {"count": 0}
 
@@ -344,6 +368,15 @@ def test_caw_adapter_failure_appears_in_audit_report(monkeypatch):
     assert execution["payments"][0]["mode"] == "mock"
     assert execution["payments"][0]["txHash"] is None
     assert execution["payments"][0]["error"] == "mock CAW unavailable"
+
+    status_response = client.get(f"/api/caw-status/{execution['payments'][0]['cawRequestId']}")
+
+    assert status_response.status_code == 200
+    caw_status = status_response.json()
+    assert caw_status["normalizedStatus"] == "Failed"
+    assert caw_status["mode"] == "mock"
+    assert caw_status["txHash"] is None
+    assert caw_status["error"] == "mock CAW unavailable"
 
     report_response = client.get(f"/api/audit-report/{execution['auditReportId']}")
 
