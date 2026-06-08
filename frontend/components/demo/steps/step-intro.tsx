@@ -4,6 +4,7 @@ import React from "react";
 import { motion } from "framer-motion";
 import { Play, Wallet, Users, Shield, FileText } from "lucide-react";
 import { BentoGrid, BentoCard, BentoCardTitle, BentoCardDescription } from "@/components/demo/bento-grid";
+import { GradientOrb } from "@/components/ui/aceternity/background";
 import type { DemoData } from "@/lib/demo/demo-data";
 
 export function StepIntro({ data, onStart }: { data: DemoData; onStart: () => void }) {
@@ -18,13 +19,14 @@ export function StepIntro({ data, onStart }: { data: DemoData; onStart: () => vo
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8 }}
-        className="flex flex-col items-center justify-center py-16 text-center"
+        className="relative flex flex-col items-center justify-center py-16 text-center"
       >
-        <h2 className="text-3xl font-bold text-white md:text-5xl"
+        <GradientOrb color="amber" className="left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 opacity-60" />
+        <h2 className="relative z-10 text-3xl font-bold text-white md:text-5xl"
         >
           AI Treasury Agent
         </h2>
-        <p className="mt-4 max-w-xl text-neutral-400"
+        <p className="relative z-10 mt-4 max-w-xl text-neutral-400"
         >
           Watch AgentCFO analyze contribution records, generate a payment plan,
           check risks, and execute payouts — all under human approval.
@@ -34,7 +36,7 @@ export function StepIntro({ data, onStart }: { data: DemoData; onStart: () => vo
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
           onClick={onStart}
-          className="mt-10 flex items-center gap-3 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 px-8 py-4 text-lg font-semibold text-white shadow-lg shadow-amber-500/20 transition-shadow hover:shadow-amber-500/40"
+          className="relative z-10 mt-10 flex items-center gap-3 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 px-8 py-4 text-lg font-semibold text-white shadow-lg shadow-amber-500/20 transition-shadow hover:shadow-amber-500/40"
         >
           <Play className="h-5 w-5" />
           Generate Plan

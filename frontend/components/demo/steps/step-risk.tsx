@@ -42,6 +42,7 @@ export function StepRisk({ data }: { data: DemoData }) {
             return (
               <motion.div key={payment.id} variants={item}>
                 <BentoCard
+                  tone={isBlocked ? "red" : hasRisks ? "amber" : "emerald"}
                   className={
                     isBlocked
                       ? "border-red-500/40 bg-red-500/5"

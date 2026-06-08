@@ -3,6 +3,7 @@
 import React from "react";
 import { motion } from "framer-motion";
 import { BentoGrid, BentoCard, BentoCardTitle, BentoCardDescription } from "@/components/demo/bento-grid";
+import { AnimatedNumber } from "@/components/ui/aceternity/animated-number";
 import type { DemoData } from "@/lib/demo/demo-data";
 import { CheckCircle, AlertTriangle } from "lucide-react";
 
@@ -41,7 +42,7 @@ export function StepPlan({ data }: { data: DemoData }) {
             return (
               <motion.div key={p.id} variants={item}
               >
-                <BentoCard className={isBlocked ? "border-red-500/30" : "border-emerald-500/20"}
+                <BentoCard tone={isBlocked ? "red" : "emerald"} className={isBlocked ? "border-red-500/30" : "border-emerald-500/20"}
                 >
                   <div className="flex items-start justify-between"
                   >
@@ -65,7 +66,7 @@ export function StepPlan({ data }: { data: DemoData }) {
                   >
                     <div className="text-2xl font-bold text-white"
                     >
-                      {p.amount} <span className="text-sm font-normal text-neutral-500"
+                      <AnimatedNumber value={p.amount} /> <span className="text-sm font-normal text-neutral-500"
                       >USDC</span>
                     </div>
                     <div className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${
@@ -100,7 +101,7 @@ export function StepPlan({ data }: { data: DemoData }) {
         >
           <span className="text-neutral-400"
           >Total planned: <strong className="text-white"
-          >{data.paymentPlan.totalAmount} USDC</strong></span>
+          ><AnimatedNumber value={data.paymentPlan.totalAmount} /> USDC</strong></span>
           <span className="text-neutral-400"
           >{payments.filter((p) => p.status !== "Blocked").length} approved, {payments.filter((p) => p.status === "Blocked").length} blocked</span>
         </div>

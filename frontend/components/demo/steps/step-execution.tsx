@@ -3,6 +3,8 @@
 import React from "react";
 import { motion } from "framer-motion";
 import { BentoCard, BentoCardTitle, BentoCardDescription } from "@/components/demo/bento-grid";
+import { GradientOrb } from "@/components/ui/aceternity/background";
+import { Sparkles } from "@/components/ui/aceternity/sparkles";
 import type { DemoData } from "@/lib/demo/demo-data";
 import { Zap, Wallet, Network, FileCheck } from "lucide-react";
 
@@ -23,25 +25,28 @@ export function StepExecution({ data }: { data: DemoData }) {
 
       {/* Execution Animation */}
       <div className="relative overflow-hidden rounded-2xl border border-blue-500/20 bg-blue-500/5 p-8">
+        <GradientOrb color="blue" className="left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 opacity-50" />
         {/* Beam effects */}
         <div className="absolute inset-0 overflow-hidden">
-          {[...Array(5)].map((_, i) => (
+          {[...Array(7)].map((_, i) => (
             <motion.div
               key={i}
               className="absolute h-px w-full bg-gradient-to-r from-transparent via-blue-400 to-transparent"
-              style={{ top: `${20 + i * 15}%` }}
+              style={{ top: `${12 + i * 12}%` }}
               animate={{
                 x: ["-100%", "100%"],
               }}
               transition={{
-                duration: 2 + i * 0.5,
+                duration: 2 + i * 0.4,
                 repeat: Infinity,
                 ease: "linear",
-                delay: i * 0.3,
+                delay: i * 0.25,
               }}
             />
           ))}
         </div>
+        {/* Sparkle particles */}
+        <Sparkles count={20} color="bg-blue-300" />
 
         <div className="relative z-10 flex flex-col items-center gap-4 py-8">
           <motion.div

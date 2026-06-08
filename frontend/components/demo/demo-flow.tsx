@@ -10,7 +10,7 @@ import { StepRisk } from "./steps/step-risk";
 import { StepApproval } from "./steps/step-approval";
 import { StepExecution } from "./steps/step-execution";
 import { StepAudit } from "./steps/step-audit";
-import { GridBackground } from "@/components/ui/aceternity/background";
+import { DemoBackdrop } from "@/components/ui/aceternity/background";
 import type { DemoData } from "@/lib/demo/demo-data";
 
 export type DemoStep = 0 | 1 | 2 | 3 | 4 | 5;
@@ -119,8 +119,8 @@ export function DemoFlow({ data }: DemoFlowProps) {
   ];
 
   return (
-    <div className="min-h-screen bg-[#030712] flex flex-col">
-      <GridBackground />
+    <div className="relative min-h-screen bg-[#030712] flex flex-col">
+      <DemoBackdrop />
 
       {/* Header */}
       <header className="relative border-b border-white/[0.06] bg-[#030712]/80 backdrop-blur-xl z-50 flex-shrink-0">
@@ -150,7 +150,7 @@ export function DemoFlow({ data }: DemoFlowProps) {
       </header>
 
       {/* Main Layout: Sidebar + Content */}
-      <div className="flex flex-1 min-h-0">
+      <div className="relative z-10 flex flex-1 min-h-0">
         <DemoSidebar activeIndex={step} onNavigate={(idx) => goToStep(idx as DemoStep)} />
 
         <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
