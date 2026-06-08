@@ -77,7 +77,7 @@ P0 APIs:
 | `POST /api/payment-plan` | 输入贡献记录和预算规则，输出 Payment Plan |
 | `POST /api/risk-check` | 对 Payment Plan 执行确定性风险检查 |
 | `POST /api/execute-payment` | 人工确认后，通过 CAW 执行可付款项 |
-| `GET /api/audit-report/:id` | 返回最终 Audit Report |
+| `GET /api/audit-report/{auditReportId}` | 返回最终 Audit Report |
 
 详细接口和示例见 `spec.md`。
 
@@ -161,10 +161,14 @@ python -m venv .venv
 http://127.0.0.1:8000
 ```
 
-交互式 API 文档：
+FastAPI 自动 docs / OpenAPI 当前已关闭，以保证运行时只暴露四个 P0 API。后续进入联调或需要文档展示时，可以在 `app/main.py` 重新开启。
 
 ```text
-http://127.0.0.1:8000/docs
+P0 routes only:
+POST /api/payment-plan
+POST /api/risk-check
+POST /api/execute-payment
+GET  /api/audit-report/{auditReportId}
 ```
 
 ## Curl Verification

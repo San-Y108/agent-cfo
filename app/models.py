@@ -39,6 +39,7 @@ class BudgetRule(BaseModel):
 class PaymentItem(BaseModel):
     id: str
     recipient: str
+    task: str
     wallet: str
     amount: float
     token: str
@@ -89,6 +90,7 @@ class PaymentExecutionItem(BaseModel):
     paymentItemId: str
     status: PaymentStatus
     mode: str
+    network: str
     agentWalletAddress: str
     txHash: str | None
     cawRequestId: str
@@ -111,4 +113,3 @@ class AuditReport(BaseModel):
     humanApproval: HumanApproval
     execution: PaymentExecutionResult
     remainingBudget: float
-

@@ -1,5 +1,3 @@
-from collections import Counter
-
 from fastapi import APIRouter, HTTPException
 
 from app.models import (
@@ -15,6 +13,7 @@ from app.models import (
     RiskLevel,
 )
 from app.services.caw_adapter import MockCawAdapter
+from app.services.risk_engine import check_payment_risks
 from app.store import store
 
 router = APIRouter(prefix="/api", tags=["payments"])
@@ -28,6 +27,7 @@ def create_payment_plan(request: PaymentPlanRequest):
         PaymentItem(
             id=f"pay_{index:03d}",
             recipient=contribution.name,
+            task=contribution.task,
             wallet=contribution.wallet,
             amount=contribution.amount,
             token=contribution.token,
@@ -55,27 +55,10 @@ def run_risk_check(request: RiskCheckRequest):
     if payment_plan is None:
         raise HTTPException(status_code=404, detail="Payment plan not found")
 
-    wallet_counts = Counter(payment.wallet for payment in payment_plan.payments)
-    task_counts = Counter(payment.reason for payment in payment_plan.payments)
-    total_amount = sum(payment.amount for payment in payment_plan.payments)
-    over_budget = total_amount > request.budgetRule.monthlyBudget
-
-    checked_payments = [
-        _check_payment(payment, request, wallet_counts, task_counts, over_budget)
-        for payment in payment_plan.payments
-    ]
-    any_blocked = any(payment.status == PaymentStatus.BLOCKED for payment in checked_payments)
-    remaining_budget = request.budgetRule.monthlyBudget - total_amount
-
-    if any_blocked:
-        overall_status = PaymentStatus.BLOCKED
-        risk_level = RiskLevel.BLOCKED
-    elif request.budgetRule.requiresHumanApproval:
-        overall_status = PaymentStatus.NEEDS_APPROVAL
-        risk_level = RiskLevel.LOW
-    else:
-        overall_status = PaymentStatus.READY
-        risk_level = RiskLevel.LOW
+    overall_status, risk_level, remaining_budget, checked_payments = check_payment_risks(
+        payment_plan.payments,
+        request.budgetRule,
+    )
 
     result = RiskCheckResult(
         paymentPlanId=request.paymentPlanId,
@@ -118,9 +101,14 @@ def execute_payment(request: ExecutePaymentRequest):
         raise HTTPException(status_code=400, detail="Payment item is not executable")
 
     execution_id = store.next_execution_id()
-    executed_payments = [
-        caw_adapter.create_transfer(execution_id, payment) for payment in selected_payments
-    ]
+    executed_payments = []
+    for payment in selected_payments:
+        try:
+            executed_payments.append(caw_adapter.create_transfer(execution_id, payment))
+        except Exception as exc:
+            executed_payments.append(
+                caw_adapter.failed_transfer(execution_id, payment, str(exc))
+            )
     audit_report_id = store.next_audit_report_id()
     execution = PaymentExecutionResult(
         executionId=execution_id,
@@ -143,41 +131,9 @@ def execute_payment(request: ExecutePaymentRequest):
     return execution
 
 
-@router.get("/audit-report/{audit_report_id}", response_model=AuditReport)
-def get_audit_report(audit_report_id: str):
-    audit_report = store.audit_reports.get(audit_report_id)
+@router.get("/audit-report/{auditReportId}", response_model=AuditReport)
+def get_audit_report(auditReportId: str):
+    audit_report = store.audit_reports.get(auditReportId)
     if audit_report is None:
         raise HTTPException(status_code=404, detail="Audit report not found")
     return audit_report
-
-
-def _check_payment(
-    payment: PaymentItem,
-    request: RiskCheckRequest,
-    wallet_counts: Counter,
-    task_counts: Counter,
-    over_budget: bool,
-) -> PaymentItem:
-    risks = []
-    if over_budget:
-        risks.append("Total payment amount exceeds monthly budget")
-    if payment.amount > request.budgetRule.singlePaymentLimit:
-        risks.append("Payment amount exceeds single payment limit")
-    if payment.token != request.budgetRule.allowedToken:
-        risks.append("Token is not allowed")
-    if payment.wallet not in request.budgetRule.whitelist:
-        risks.append("Recipient wallet is not in whitelist")
-    if wallet_counts[payment.wallet] > 1:
-        risks.append("Duplicate recipient wallet")
-    if task_counts[payment.reason] > 1:
-        risks.append("Duplicate task")
-
-    if risks:
-        status = PaymentStatus.BLOCKED
-    elif request.budgetRule.requiresHumanApproval:
-        status = PaymentStatus.NEEDS_APPROVAL
-    else:
-        status = PaymentStatus.READY
-
-    return payment.model_copy(update={"status": status, "risks": risks})
-

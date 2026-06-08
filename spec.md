@@ -114,11 +114,12 @@ Response example:
   "paymentPlanId": "plan_demo_001",
   "summary": "AgentCFO generated a payment plan for 1 contributor.",
   "totalAmount": 20,
-  "riskLevel": "Low",
+  "riskLevel": "Unchecked",
   "payments": [
     {
       "id": "pay_001",
       "recipient": "Alice",
+      "task": "Wrote event recap article",
       "wallet": "0xAlice...",
       "amount": 20,
       "token": "USDC",
@@ -194,14 +195,16 @@ Response example:
 ```json
 {
   "executionId": "exec_demo_001",
-  "mode": "real",
-  "agentWalletAddress": "0xAgentWallet...",
+  "mode": "mock",
+  "agentWalletAddress": "mock-agent-wallet",
   "payments": [
     {
       "paymentItemId": "pay_001",
       "status": "Executed",
-      "txHash": "0xRealTestnetTxHash...",
-      "cawRequestId": "caw_req_001"
+      "mode": "mock",
+      "network": "mock-testnet",
+      "txHash": null,
+      "cawRequestId": "mock_caw_exec_demo_001_pay_001"
     }
   ]
 }
@@ -214,7 +217,7 @@ Rules:
 - Never execute items that have not passed risk check.
 - Never execute through a non-CAW real wallet path.
 
-### GET /api/audit-report/:id
+### GET /api/audit-report/{auditReportId}
 
 Purpose:
 
@@ -271,6 +274,7 @@ Fields:
 
 - `id`
 - `recipient`
+- `task`
 - `wallet`
 - `amount`
 - `token`
@@ -286,6 +290,7 @@ Fields:
 - `paymentItemId`
 - `status`
 - `mode`
+- `network`
 - `agentWalletAddress`
 - `txHash`
 - `cawRequestId`

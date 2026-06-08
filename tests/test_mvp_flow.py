@@ -1,6 +1,7 @@
 from fastapi.testclient import TestClient
 
 from app.main import app
+from app.routers import payments as payments_router
 from app.store import store
 
 
@@ -76,6 +77,38 @@ def test_payment_plan_starts_unchecked():
     assert [payment["status"] for payment in plan["payments"]] == ["Ready", "Ready"]
 
 
+def test_payment_plan_schema_validation_rejects_invalid_amount():
+    response = client.post(
+        "/api/payment-plan",
+        json={
+            "contributions": [
+                {
+                    "name": "Alice",
+                    "role": "Content Contributor",
+                    "task": "Wrote event recap article",
+                    "wallet": "0xAlice",
+                    "amount": -1,
+                    "token": "USDC",
+                }
+            ],
+            "budgetRule": sample_budget(),
+        },
+    )
+
+    assert response.status_code == 422
+
+
+def test_registered_business_routes_are_only_p0():
+    routes = sorted(route.path for route in app.routes if getattr(route, "include_in_schema", False))
+
+    assert routes == [
+        "/api/audit-report/{auditReportId}",
+        "/api/execute-payment",
+        "/api/payment-plan",
+        "/api/risk-check",
+    ]
+
+
 def test_full_mock_flow_returns_audit_report():
     plan = create_plan()
     risk = run_risk_check(plan["paymentPlanId"])
@@ -99,6 +132,7 @@ def test_full_mock_flow_returns_audit_report():
     execution = execution_response.json()
     assert execution["mode"] == "mock"
     assert execution["agentWalletAddress"] == "mock-agent-wallet"
+    assert execution["payments"][0]["network"] == "mock-testnet"
     assert all(payment["txHash"] is None for payment in execution["payments"])
 
     report_response = client.get(f"/api/audit-report/{execution['auditReportId']}")
@@ -148,6 +182,34 @@ def test_single_payment_limit_is_blocked():
     assert "Payment amount exceeds single payment limit" in risk["payments"][0]["risks"]
 
 
+def test_monthly_budget_limit_is_blocked():
+    plan = create_plan(budget_rule=sample_budget(monthlyBudget=25))
+    risk = run_risk_check(plan["paymentPlanId"], budget_rule=sample_budget(monthlyBudget=25))
+
+    assert risk["overallStatus"] == "Blocked"
+    assert all(payment["status"] == "Blocked" for payment in risk["payments"])
+    assert "Total payment amount exceeds monthly budget" in risk["payments"][0]["risks"]
+
+
+def test_disallowed_token_is_blocked():
+    contributions = [
+        {
+            "name": "Alice",
+            "role": "Content Contributor",
+            "task": "Wrote event recap article",
+            "wallet": "0xAlice",
+            "amount": 20,
+            "token": "DAI",
+        }
+    ]
+    plan = create_plan(contributions=contributions)
+    risk = run_risk_check(plan["paymentPlanId"])
+
+    assert risk["overallStatus"] == "Blocked"
+    assert risk["payments"][0]["status"] == "Blocked"
+    assert "Token is not allowed" in risk["payments"][0]["risks"]
+
+
 def test_duplicate_task_or_wallet_is_detected():
     contributions = [
         {
@@ -192,7 +254,14 @@ def test_execute_requires_human_approval():
     assert response.json()["detail"] == "Human approval is required before execution"
 
 
-def test_blocked_payment_is_not_sent_to_mock_caw():
+def test_blocked_payment_is_not_sent_to_mock_caw(monkeypatch):
+    adapter_calls = {"count": 0}
+
+    def count_transfer(execution_id, payment):
+        adapter_calls["count"] += 1
+        raise AssertionError("blocked payment reached CAW adapter")
+
+    monkeypatch.setattr(payments_router.caw_adapter, "create_transfer", count_transfer)
     contributions = [
         {
             "name": "Bob",
@@ -217,4 +286,35 @@ def test_blocked_payment_is_not_sent_to_mock_caw():
 
     assert response.status_code == 400
     assert response.json()["detail"] == "Blocked payments cannot be executed"
+    assert adapter_calls["count"] == 0
 
+
+def test_caw_adapter_failure_appears_in_audit_report(monkeypatch):
+    def fail_transfer(execution_id, payment):
+        raise RuntimeError("mock CAW unavailable")
+
+    monkeypatch.setattr(payments_router.caw_adapter, "create_transfer", fail_transfer)
+    plan = create_plan()
+    run_risk_check(plan["paymentPlanId"])
+
+    execution_response = client.post(
+        "/api/execute-payment",
+        json={
+            "paymentPlanId": plan["paymentPlanId"],
+            "approvedPaymentIds": [plan["payments"][0]["id"]],
+            "humanApproval": {"approved": True, "approvedBy": "demo-operator"},
+        },
+    )
+    assert execution_response.status_code == 200
+    execution = execution_response.json()
+    assert execution["payments"][0]["status"] == "Failed"
+    assert execution["payments"][0]["mode"] == "mock"
+    assert execution["payments"][0]["txHash"] is None
+    assert execution["payments"][0]["error"] == "mock CAW unavailable"
+
+    report_response = client.get(f"/api/audit-report/{execution['auditReportId']}")
+
+    assert report_response.status_code == 200
+    report = report_response.json()
+    assert report["execution"]["payments"][0]["status"] == "Failed"
+    assert report["execution"]["payments"][0]["error"] == "mock CAW unavailable"
