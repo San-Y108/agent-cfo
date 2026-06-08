@@ -1,6 +1,6 @@
 # AgentCFO 任务看板
 
-> 最后更新：2026年6月8日 21:30
+> 最后更新：2026年6月8日 22:00
 > 规则：12 号之后不新增大功能，只修复、打磨、录视频、补材料
 
 ---
@@ -23,7 +23,7 @@
 |------|--------|------|----------|
 | 交付/总控 | San-Y108 (严硕) | ✅ repo + 文档已完成 | 无 |
 | 后端/Agent | W5W8L9jlu | ✅ SQLite + CAW查询 + Render部署 | 等 gitgdut 提供 CAW 配置（13项） |
-| 前端 | Aafff623 | ✅ Landing + Demo + Vercel + i18n/主题 | 分支 feat/frontend-bootstrap 待 merge 进 main |
+| 前端 | Aafff623 | ✅ Landing + Demo + Vercel + i18n + 纯黑风格 | 分支 feat/frontend-bootstrap 待 merge 进 main |
 | 合约/CAW | gitgdut | 🔵 已开始 | Cobo 文档分析完成，待申请 API Key；后端已列出 13 项 CAW 配置需求 |
 | 物料/设计 | Eloise-qiu | 🟡 已确认 | GitHub 已加入 repo，待启动 PPT/视频/视觉 |
 
@@ -69,7 +69,7 @@
 | ID | 任务 | 交付物 | 截止 | 状态 |
 |----|------|--------|------|------|
 | T-030 | Cobo 文档 Quickstart 通读 | 权限模型分析文档 | 6月8日 18:00 | ✅ DONE |
-| T-031 | 申请开发者 API Key | Sandbox Key 或正式环境 Key | 6月8日 22:00 | ✅ DONE |
+| T-031 | 申请开发者 API Key | Sandbox Key 或正式环境 Key | 6月8日 22:00 | 🔵 IN_PROGRESS |
 | T-032 | 搞懂 Cobo 权限模型 | 三层权限 + 双层风控方案 | 6月9日 | ✅ DONE |
 | T-033 | 创建 Agent Wallet | Wallet 地址 | 6月9日 | 🟡 TODO |
 | T-034 | 准备测试网资金 | ETH 或 USDC 余额截图 | 6月9日 | 🟡 TODO |
@@ -93,7 +93,7 @@
 | ID | 任务 | 交付物 | 截止 | 状态 |
 |----|------|--------|------|------|
 | T-050 | 接入真实 CAW（替换 mock） | caw_adapter.py 调用 Cobo API | 6月10日 | 🔵 IN_PROGRESS |
-| T-051 | 加入 LLM 生成付款计划 | 调用 LLM 替代硬编码 | 6月9日 | 🟡 TODO |
+| T-051 | 加入 LLM 生成付款计划 | payment_planner.py (OpenAI) | 6月9日 | 🔵 IN_PROGRESS |
 | T-052 | 和前端联调 | 前端能调通 4 个接口 | 6月9日 | 🔵 IN_PROGRESS |
 | T-053 | 和 CAW 联调 | execute-payment 返回真实 tx hash | 6月10日 | 🟡 TODO |
 | T-054 | 部署后端到公网 | https://agentcfo-backend.onrender.com | 6月10日 | ✅ DONE |
@@ -185,6 +185,6 @@ CAW 验证（🟡 文档分析完成，待申请 API Key + 创建钱包）
 |------|------|
 | 🔴 BLOCKED | 0 |
 | 🟡 TODO | 30 |
-| 🔵 IN_PROGRESS | 4 |
-| ✅ DONE | 29 |
+| 🔵 IN_PROGRESS | 5 |
+| ✅ DONE | 28 |
 | ❌ CANCELLED | 0 |
