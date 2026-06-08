@@ -10,6 +10,7 @@ interface StatItem {
   prefix?: string;
   suffix?: string;
   decimals?: number;
+  tone?: "neutral" | "amber" | "emerald" | "red" | "blue";
 }
 
 export function StatsStrip({
@@ -22,7 +23,7 @@ export function StatsStrip({
   return (
     <div
       className={cn(
-        "grid w-full grid-cols-2 gap-4 md:grid-cols-4 border-y border-neutral-800 bg-neutral-950/50 py-6 px-4",
+        "flex flex-wrap items-center gap-3",
         className
       )}
     >
@@ -45,21 +46,32 @@ function StatCard({ stat, index }: { stat: StatItem; index: number }) {
     spring.set(stat.value);
   }, [spring, stat.value]);
 
+  const toneStyles = {
+    neutral: "bg-neutral-800/50 text-neutral-300 border-neutral-700",
+    amber: "bg-amber-500/10 text-amber-400 border-amber-500/20",
+    emerald: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20",
+    red: "bg-red-500/10 text-red-400 border-red-500/20",
+    blue: "bg-blue-500/10 text-blue-400 border-blue-500/20",
+  };
+
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
+      initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: index * 0.1, duration: 0.5 }}
-      className="flex flex-col items-center justify-center text-center"
+      transition={{ delay: index * 0.08, duration: 0.4 }}
+      className={cn(
+        "flex items-center gap-2 rounded-lg border px-3 py-1.5",
+        toneStyles[stat.tone ?? "neutral"]
+      )}
     >
-      <div className="text-2xl font-bold text-white md:text-3xl">
+      <span className="text-sm font-bold tabular-nums">
         {stat.prefix}
         <motion.span>{display}</motion.span>
         {stat.suffix}
-      </div>
-      <div className="mt-1 text-xs uppercase tracking-wider text-neutral-500">
+      </span>
+      <span className="text-[10px] uppercase tracking-wider opacity-60">
         {stat.label}
-      </div>
+      </span>
     </motion.div>
   );
 }

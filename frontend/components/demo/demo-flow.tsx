@@ -71,84 +71,101 @@ export function DemoFlow({ data }: DemoFlowProps) {
 
     if (delays[step]) {
       const timer = setTimeout(() => {
-        if (step === 4) {
-          // Execution to Audit needs manual trigger? No, auto after delay
-          advance();
-        } else {
-          advance();
-        }
+        advance();
       }, delays[step]);
       return () => clearTimeout(timer);
     }
   }, [step, isRunning, advance]);
 
+  // KPI stats — compact inline badges
+  const approvedCount = data.paymentPlan.payments.filter(
+    (p) => p.status !== "Blocked"
+  ).length;
+  const blockedCount = data.paymentPlan.payments.filter(
+    (p) => p.status === "Blocked"
+  ).length;
+
   const stats = [
-    { label: "Monthly Budget", value: 50, prefix: "", suffix: " USDC" },
-    { label: "Single Limit", value: 25, prefix: "", suffix: " USDC" },
-    { label: "Planned", value: data.paymentPlan.totalAmount, prefix: "", suffix: " USDC" },
+    {
+      label: "Budget",
+      value: data.request.budgetRule.monthlyBudget,
+      suffix: " USDC",
+      tone: "neutral" as const,
+    },
+    {
+      label: "Planned",
+      value: data.paymentPlan.totalAmount,
+      suffix: " USDC",
+      tone: "amber" as const,
+    },
     {
       label: "Approved",
-      value: data.paymentPlan.payments.filter((p) => p.status !== "Blocked").length,
-      prefix: "",
+      value: approvedCount,
       suffix: " items",
+      tone: "emerald" as const,
+    },
+    {
+      label: "Blocked",
+      value: blockedCount,
+      suffix: " items",
+      tone: "red" as const,
+    },
+    {
+      label: "Mode",
+      value: 0,
+      prefix: "Mock",
+      tone: "blue" as const,
     },
   ];
 
   return (
-    <div className="min-h-screen bg-[#030712] relative flex flex-col">
+    <div className="min-h-screen bg-[#030712] flex flex-col">
       <GridBackground />
 
       {/* Header */}
-      <header className="relative border-b border-white/[0.06] bg-[#030712]/80 backdrop-blur-xl sticky top-0 z-50">
+      <header className="relative border-b border-white/[0.06] bg-[#030712]/80 backdrop-blur-xl z-50 flex-shrink-0">
         <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-amber-500/30 to-transparent" />
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="flex h-16 items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-amber-500 to-amber-700 shadow-lg shadow-amber-500/20">
-                <svg className="h-5 w-5 text-white" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-              </div>
-              <div>
-                <div className="flex items-baseline gap-2">
-                  <h1 className="text-lg font-bold text-white tracking-tight">AgentCFO</h1>
-                  <span className="text-[10px] font-semibold uppercase tracking-wider text-amber-400 border border-amber-500/20 bg-amber-500/10 px-1.5 py-0.5 rounded">
-                    Command Center
-                  </span>
-                </div>
-              </div>
+        <div className="flex h-14 items-center justify-between px-4 sm:px-6">
+          <div className="flex items-center gap-3">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-amber-500 to-amber-700 shadow-lg shadow-amber-500/20">
+              <svg className="h-4 w-4 text-white" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
             </div>
-            <div className="flex items-center gap-3">
-              <span className="text-xs text-neutral-500 border border-neutral-800 bg-neutral-900/50 px-2 py-1 rounded-full">
-                Step {step + 1} / 6: {stepLabels[step]}
+            <div className="flex items-baseline gap-2">
+              <h1 className="text-base font-bold text-white tracking-tight">AgentCFO</h1>
+              <span className="text-[10px] font-semibold uppercase tracking-wider text-amber-400 border border-amber-500/20 bg-amber-500/10 px-1.5 py-0.5 rounded">
+                Command Center
               </span>
-              <a href="/" className="text-xs text-neutral-500 hover:text-neutral-300 transition-colors hidden sm:inline">
-                ← Back
-              </a>
             </div>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <StatsStrip stats={stats} />
+            <a href="/" className="text-xs text-neutral-500 hover:text-neutral-300 transition-colors hidden sm:inline">
+              ← Back
+            </a>
           </div>
         </div>
       </header>
 
-      {/* KPI Strip */}
-      <StatsStrip stats={stats} className="relative z-10" />
+      {/* Main Layout: Sidebar + Content */}
+      <div className="flex flex-1 min-h-0">
+        <DemoSidebar activeIndex={step} onNavigate={(idx) => goToStep(idx as DemoStep)} />
 
-      {/* Main */}
-      <main className="flex-1 mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8 py-8 relative z-10">
-        <DemoSidebar>
-          <div className="flex flex-1 flex-col gap-6">
-            {/* Step Progress */}
-            <StepProgress current={step} revealed={revealedSteps} onStepClick={goToStep} />
+        <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
+          {/* Step Progress */}
+          <StepProgress current={step} revealed={revealedSteps} onStepClick={goToStep} />
 
-            {/* Content */}
+          {/* Content */}
+          <div className="mt-6">
             <AnimatePresence mode="wait">
               <motion.div
                 key={step}
-                initial={{ opacity: 0, y: 20 }}
+                initial={{ opacity: 0, y: 16 }}
                 animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-                transition={{ duration: 0.5, ease: "easeOut" }}
-                className="flex-1"
+                exit={{ opacity: 0, y: -16 }}
+                transition={{ duration: 0.4, ease: "easeOut" }}
               >
                 {step === 0 && <StepIntro data={data} onStart={startDemo} />}
                 {step === 1 && <StepPlan data={data} />}
@@ -159,17 +176,8 @@ export function DemoFlow({ data }: DemoFlowProps) {
               </motion.div>
             </AnimatePresence>
           </div>
-        </DemoSidebar>
-      </main>
-
-      {/* Footer */}
-      <footer className="border-t border-white/[0.06] bg-[#030712]/50 relative z-10">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-4">
-          <p className="text-center text-[11px] text-neutral-700">
-            AgentCFO · Mock-only demo for hackathon · No real blockchain transactions
-          </p>
-        </div>
-      </footer>
+        </main>
+      </div>
     </div>
   );
 }
