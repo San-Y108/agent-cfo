@@ -22,8 +22,8 @@
 | 岗位 | 负责人 | 进度 | 最大卡点 |
 |------|--------|------|----------|
 | 交付/总控 | San-Y108 (严硕) | ✅ repo + 文档已完成 | 无 |
-| 后端/Agent | W5W8L9jlu | 🔵 SQLite 持久化 + CAW 查询已提交 | 等 gitgdut 提供真实 CAW 配置 |
-| 前端 | Aafff623 | 🔵 进展超预期 | 技术栈 Next.js 已确认，脚手架已跑通，分支 feat/frontend-bootstrap 待 merge |
+| 后端/Agent | W5W8L9jlu | ✅ SQLite + CAW查询 + Render部署 | 等 gitgdut 提供真实 CAW 配置 |
+| 前端 | Aafff623 | ✅ Landing + Demo + Vercel 已部署 | 分支 feat/frontend-bootstrap 待 merge 进 main |
 | 合约/CAW | gitgdut | 🔵 已开始 | Cobo 文档已通读，权限模型分析完成，待申请 API Key |
 | 物料/设计 | 待确认 | 🟡 未确认 | GitHub 用户名未提供 |
 
@@ -39,9 +39,9 @@
 | T-002 | README 初始框架 push | README.md | 6月8日 12:00 | ✅ DONE |
 | T-003 | 管理文档 push | docs/pm/ 下 7 个文档 | 6月8日 12:00 | ✅ DONE |
 | T-004 | 交付总控报告 | DELIVERY_MASTER_REPORT | 6月8日 12:00 | ✅ DONE |
-| T-005 | 发开工消息 | 群消息 | 6月8日 12:00 | 🟡 TODO |
-| T-006 | 确认全员已 clone | 4 人确认 | 6月8日 14:00 | 🟡 TODO |
-| T-007 | 催 CAW 同学开始验证 | CAW 进度回复 | 6月8日 14:00 | 🟡 TODO |
+| T-005 | 发开工消息 | 群消息 | 6月8日 12:00 | ✅ DONE |
+| T-006 | 确认全员已 clone | 4 人确认 | 6月8日 14:00 | 🔵 IN_PROGRESS |
+| T-007 | 催 CAW 同学开始验证 | CAW 进度回复 | 6月8日 14:00 | ✅ DONE |
 
 ### 后端/Agent（W5W8L9jlu）
 
@@ -97,6 +97,8 @@
 | T-052 | 和前端联调 | 前端能调通 4 个接口 | 6月9日 | 🔵 IN_PROGRESS |
 | T-053 | 和 CAW 联调 | execute-payment 返回真实 tx hash | 6月10日 | 🟡 TODO |
 | T-054 | 部署后端到公网 | https://agentcfo-backend.onrender.com | 6月10日 | ✅ DONE |
+| T-055 | SQLite 持久化 | store.py SQLiteStore + 测试 | 6月10日 | ✅ DONE |
+| T-056 | CAW 状态查询接口 | GET /api/caw-status/{id} | 6月10日 | ✅ DONE |
 
 ### 前端
 
@@ -105,10 +107,10 @@
 | T-060 | 主流程页面 4 步 | demo/page.tsx + 4 个组件 | 6月9日 | ✅ DONE |
 | T-061 | Bob 标红展示 | risk-gate.tsx Blocked 状态 | 6月9日 | ✅ DONE |
 | T-062 | 人工确认按钮 | human-approval.tsx | 6月9日 | ✅ DONE |
-| T-063 | tx hash 展示 | 可复制/可点击 | 6月10日 | 🟡 TODO |
+| T-063 | tx hash 展示 | copyable-hash.tsx 组件 | 6月10日 | ✅ DONE |
 | T-064 | 审计报告页 | audit-report.tsx | 6月10日 | ✅ DONE |
 | T-065 | Mock 模式兜底 | lib/mock/ 完整 mock 层 | 6月10日 | ✅ DONE |
-| T-066 | 部署前端到公网 | Vercel 链接 | 6月10日 | 🔵 IN_PROGRESS |
+| T-066 | 部署前端到公网 | https://agentcfo-frontend.vercel.app | 6月10日 | ✅ DONE |
 
 ### 合约/CAW
 
@@ -160,17 +162,19 @@
 ## 关键依赖关系
 
 ```
-后端 mock API（✅ 已完成）
-    → 前端可以开始对接（不需要等 CAW）
+后端 mock API（✅ 已完成 + 已部署 Render）
+    → 前端已对接（✅ lib/api/ 层已对齐 5 个接口）
 
-CAW 验证（🔴 未开始）
+前端主流程（✅ 已完成 + 已部署 Vercel）
+    → Landing + Demo 完整可用
+    → 待 merge feat/frontend-bootstrap 进 main
+
+CAW 验证（🟡 文档分析完成，待申请 API Key + 创建钱包）
     → 后端接真实 CAW（等 CAW 完成后替换 mock）
     → tx hash 展示（等 CAW 完成后才有真实数据）
 
-前端主流程（🟡 可以开始）
-    → 全链路测试（等前端完成后）
-    → Demo 视频录制（等全链路跑通后）
-    → 路演彩排（等 Demo 视频完成后）
+设计/物料（🔴 人未确认）
+    → PPT、视频、海报全靠这个人
 ```
 
 ---
@@ -180,7 +184,7 @@ CAW 验证（🔴 未开始）
 | 状态 | 数量 |
 |------|------|
 | 🔴 BLOCKED | 0 |
-| 🟡 TODO | 18 |
+| 🟡 TODO | 30 |
 | 🔵 IN_PROGRESS | 5 |
-| ✅ DONE | 22 |
+| ✅ DONE | 28 |
 | ❌ CANCELLED | 0 |

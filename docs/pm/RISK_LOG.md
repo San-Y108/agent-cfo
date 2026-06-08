@@ -56,15 +56,16 @@
 | 缓解措施 | 后端 mock API 已就绪，前端已开始对接 |
 | 截止 | 6月8日 22:00 前确认技术栈 + 脚手架跑通 |
 
-### R-04 🟠 后端 mock 模式的局限
+### R-04 🟡 后端 mock 模式 + SQLite 持久化
 
 | 字段 | 内容 |
 |------|------|
-| 等级 | 🟠 P1 |
+| 等级 | 🟠→🟡 P2（降级） |
 | 负责人 | W5W8L9jlu（后端） |
 | 发现日期 | 6月8日 |
-| 影响 | 当前 txHash=null，execute-payment 不会真正花钱；重启清空数据 |
-| 缓解措施 | 等 CAW 真实接口就绪后替换 mock；暂不影响前端对接 |
+| 影响 | 当前 txHash=null，execute-payment 不会真正花钱；但 SQLite 持久化已解决重启丢数据问题 |
+| 当前状态 | ✅ SQLiteStore 已实现，/api/caw-status/{id} 已就绪，等 CAW 真实配置替换 mock |
+| 缓解措施 | SQLite 持久化 + CAW 状态查询接口已就绪，接真实 CAW 只需替换 caw_adapter.py |
 | 截止 | 6月10日 替换为真实 CAW |
 
 ### R-05 🟡 测试网资金获取
