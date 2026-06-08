@@ -25,7 +25,7 @@
 | 后端/Agent | W5W8L9jlu | ✅ SQLite + CAW查询 + Render部署 | 等 gitgdut 提供真实 CAW 配置 |
 | 前端 | Aafff623 | ✅ Landing + Demo + Vercel 已部署 | 分支 feat/frontend-bootstrap 待 merge 进 main |
 | 合约/CAW | gitgdut | 🔵 已开始 | Cobo 文档已通读，权限模型分析完成，待申请 API Key |
-| 物料/设计 | 待确认 | 🟡 未确认 | GitHub 用户名未提供 |
+| 物料/设计 | Eloise-qiu | 🟡 已确认 | GitHub 已加入 repo，待启动 PPT/视频/视觉 |
 
 ---
 
@@ -75,7 +75,7 @@
 | T-034 | 准备测试网资金 | ETH 或 USDC 余额截图 | 6月9日 | 🟡 TODO |
 | T-035 | 第一笔测试网付款 | tx hash + 区块浏览器链接 | 6月10日 | 🟡 TODO |
 
-### 物料/设计（待确认）
+### 物料/设计（Eloise-qiu）
 
 | ID | 任务 | 交付物 | 截止 | 状态 |
 |----|------|--------|------|------|
