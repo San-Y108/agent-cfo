@@ -8,7 +8,13 @@ import Link from "next/link";
 const BG_VIDEO =
   "https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260508_155101_f2540600-6fe9-433e-8e48-b3f4b72f0727.mp4";
 
-const NAV_ITEMS = ["Problem", "Workflow", "Risk Guardrails", "Wallet Execution", "Audit Trail"];
+const NAV_ITEMS: { label: string; href: string }[] = [
+  { label: "Problem", href: "#problem" },
+  { label: "Workflow", href: "#workflow" },
+  { label: "Risk Guardrails", href: "#risk-guardrails" },
+  { label: "Wallet Execution", href: "#wallet-execution" },
+  { label: "Audit Trail", href: "#audit-trail" },
+];
 
 function HamburgerButton({ open, onClick }: { open: boolean; onClick: () => void }) {
   return (
@@ -61,8 +67,8 @@ function MobileMenu({ open, onClose }: { open: boolean; onClose: () => void }) {
           <div className="flex flex-col gap-1">
             {NAV_ITEMS.map((item, i) => (
               <a
-                key={item}
-                href="#"
+                key={item.label}
+                href={item.href}
                 onClick={onClose}
                 className="text-white/70 hover:text-white text-base py-3 px-3 rounded-xl hover:bg-white/5 transition-all duration-200 flex items-center justify-between group"
                 style={{
@@ -73,7 +79,7 @@ function MobileMenu({ open, onClose }: { open: boolean; onClose: () => void }) {
                   transition: `opacity 0.4s cubic-bezier(0.23,1,0.32,1) ${i * 50 + 80}ms, transform 0.4s cubic-bezier(0.23,1,0.32,1) ${i * 50 + 80}ms, color 0.2s, background 0.2s`,
                 }}
               >
-                {item}
+                {item.label}
                 <ArrowRight size={14} className="opacity-0 group-hover:opacity-40 -translate-x-1 group-hover:translate-x-0 transition-all duration-200" />
               </a>
             ))}
@@ -122,12 +128,12 @@ function Navbar() {
         <div className="hidden lg:flex items-center gap-1 rounded-full px-2 py-1.5" style={{ backgroundColor: "#0C0C0C" }}>
           {NAV_ITEMS.map((item) => (
             <a
-              key={item}
-              href="#"
+              key={item.label}
+              href={item.href}
               className="text-white/80 hover:text-white text-sm px-4 py-1.5 rounded-full hover:bg-white/10 transition-all duration-200"
               style={{ fontFamily: "Inter, sans-serif" }}
             >
-              {item}
+              {item.label}
             </a>
           ))}
         </div>

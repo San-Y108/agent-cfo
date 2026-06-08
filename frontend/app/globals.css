@@ -16,6 +16,12 @@
 
 html {
   background-color: #030712;
+  scroll-behavior: smooth;
+}
+
+/* Anchor offset so smooth-scrolled sections aren't flush to the top */
+section[id] {
+  scroll-margin-top: 24px;
 }
 
 body {
