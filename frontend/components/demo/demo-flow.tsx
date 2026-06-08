@@ -191,26 +191,62 @@ function StepProgress({
   revealed: Set<number>;
   onStepClick: (step: DemoStep) => void;
 }) {
+  const maxRevealed = Math.max(...revealed);
+
   return (
-    <div className="flex items-center gap-2 overflow-x-auto pb-2">
+    <div className="flex items-center gap-1 overflow-x-auto pb-2 sm:gap-0">
       {stepLabels.map((label, idx) => {
         const isRevealed = revealed.has(idx);
         const isActive = current === idx;
+        const isDone = idx < maxRevealed && !isActive;
+        const isLast = idx === stepLabels.length - 1;
+
         return (
-          <button
-            key={idx}
-            onClick={() => isRevealed && onStepClick(idx as DemoStep)}
-            disabled={!isRevealed}
-            className={`flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-200 ${
-              isActive
-                ? "bg-amber-500/20 text-amber-400 border border-amber-500/30"
-                : isRevealed
-                ? "bg-neutral-800 text-neutral-400 border border-neutral-700 hover:bg-neutral-700"
-                : "bg-neutral-900 text-neutral-600 border border-neutral-800 cursor-not-allowed"
-            }`}
-          >
-            {idx + 1}. {label}
-          </button>
+          <React.Fragment key={idx}>
+            <button
+              onClick={() => isRevealed && onStepClick(idx as DemoStep)}
+              disabled={!isRevealed}
+              className="group flex flex-shrink-0 items-center gap-2 px-1"
+            >
+              {/* Circle */}
+              <span
+                className={`flex h-7 w-7 items-center justify-center rounded-full border text-xs font-semibold transition-all duration-300 ${
+                  isActive
+                    ? "border-amber-500 bg-amber-500/20 text-amber-400 shadow-[0_0_12px_-2px_rgba(245,158,11,0.5)]"
+                    : isDone
+                    ? "border-emerald-500/40 bg-emerald-500/10 text-emerald-400"
+                    : isRevealed
+                    ? "border-neutral-600 bg-neutral-800 text-neutral-400"
+                    : "border-neutral-800 bg-neutral-900 text-neutral-600"
+                }`}
+              >
+                {isDone ? "✓" : idx + 1}
+              </span>
+              {/* Label */}
+              <span
+                className={`whitespace-nowrap text-xs font-medium transition-colors duration-200 ${
+                  isActive
+                    ? "text-amber-400"
+                    : isDone
+                    ? "text-neutral-300"
+                    : isRevealed
+                    ? "text-neutral-400 group-hover:text-neutral-200"
+                    : "text-neutral-600"
+                }`}
+              >
+                {label}
+              </span>
+            </button>
+
+            {/* Connector */}
+            {!isLast && (
+              <span
+                className={`mx-1 hidden h-px w-6 flex-shrink-0 sm:block ${
+                  idx < maxRevealed ? "bg-emerald-500/30" : "bg-neutral-800"
+                }`}
+              />
+            )}
+          </React.Fragment>
         );
       })}
     </div>

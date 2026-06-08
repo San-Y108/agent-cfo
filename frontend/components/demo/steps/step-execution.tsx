@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { BentoCard, BentoCardTitle, BentoCardDescription } from "@/components/demo/bento-grid";
 import { GradientOrb } from "@/components/ui/aceternity/background";
 import { Sparkles } from "@/components/ui/aceternity/sparkles";
+import { CopyableHash } from "@/components/ui/copyable-hash";
 import type { DemoData } from "@/lib/demo/demo-data";
 import { Zap, Wallet, Network, FileCheck } from "lucide-react";
 
@@ -97,10 +98,51 @@ export function StepExecution({ data }: { data: DemoData }) {
 
         <BentoCard>
           <Zap className="h-5 w-5 text-amber-400 mb-2" />
-          <BentoCardTitle>Request ID</BentoCardTitle>
-          <BentoCardDescription className="font-mono text-xs">
-            {firstPayment?.cawRequestId ?? "mock-req-id"}
+          <BentoCardTitle>Mode</BentoCardTitle>
+          <BentoCardDescription>
+            {exec.mode} · simulated execution
           </BentoCardDescription>
+        </BentoCard>
+      </motion.div>
+
+      {/* Transaction list */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 1.8 }}
+      >
+        <BentoCard colSpan={2}>
+          <BentoCardTitle>Transactions</BentoCardTitle>
+          <BentoCardDescription>
+            Each executed payment returns a transaction reference
+          </BentoCardDescription>
+          <div className="mt-4 flex flex-col divide-y divide-neutral-800">
+            {exec.payments.map((p) => (
+              <div
+                key={p.paymentItemId}
+                className="flex items-center justify-between gap-3 py-2.5"
+              >
+                <div className="flex items-center gap-2 min-w-0">
+                  <span className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-emerald-500/10 text-emerald-400">
+                    <FileCheck className="h-3.5 w-3.5" />
+                  </span>
+                  <span className="truncate text-sm text-neutral-300">
+                    {p.paymentItemId}
+                  </span>
+                </div>
+                <CopyableHash
+                  label={p.txHash ? "tx" : "req"}
+                  value={p.txHash ?? p.cawRequestId}
+                />
+              </div>
+            ))}
+          </div>
+          {!firstPayment?.txHash && (
+            <p className="mt-3 text-xs text-neutral-600">
+              tx hash is null in mock mode — request ID shown instead. Real tx
+              hashes appear after live Cobo Agentic Wallet execution.
+            </p>
+          )}
         </BentoCard>
       </motion.div>
     </div>
