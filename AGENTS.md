@@ -1,36 +1,53 @@
 # AGENTS.md
 
-Project-level instructions for agents working in this backend workspace.
+Project-level instructions for AI coding agents working in this backend workspace.
 
 Default explanation language: Chinese.
 
-## Read First
+## Start Here
 
 - Read `spec.md` before implementing backend behavior.
-- Treat `spec.md` as the source of truth for API shape, data models, risk rules, CAW integration, audit reports, and demo fallback behavior.
+- Treat `spec.md` as the source of truth for APIs, data models, risk rules, CAW integration, audit reports, and demo fallback.
+- Read `README.md` for project context and current repository status.
 - Keep changes small and reviewable.
-- Do not add a concrete backend framework unless the user asks or approves it.
+- Do not invent APIs, configs, CAW settings, wallet addresses, tx hashes, or file paths.
 
 ## Project Mission
 
 AgentCFO is a hackathon MVP for the Cobo Agentic Commerce track.
 
-The backend must prove this loop:
+The backend must prove this controlled finance loop:
 
 ```text
 Contribution records
--> Agent payment plan
--> Risk check
--> Human approval
--> Cobo Agentic Wallet execution
--> Tx hash and audit report
+-> AI Payment Plan
+-> Risk Check
+-> Human Approval
+-> Cobo Agentic Wallet Execution
+-> Tx Hash and Audit Report
 ```
 
-This is not a generic finance backend. The core value is controlled AI-assisted treasury execution.
+This is not a generic finance backend. The core value is controlled AI-assisted DAO treasury execution.
+
+## Working Order
+
+Before editing:
+
+- Identify whether the task is P0, P1, or P2 using `spec.md`.
+- State the files to change and the plan in 3-6 bullets.
+- Search existing docs or code before assuming names, paths, or contracts.
+- Prefer the smallest change that advances the demo loop.
+
+When uncertain:
+
+- Ask before choosing a backend framework.
+- Ask before changing API names or response shapes.
+- Ask before adding P2 features.
+- Ask before touching production funds, real CAW credentials, or live transaction evidence.
 
 ## Backend P0 Scope
 
-Implement only the smallest reliable backend needed for the demo:
+P0 is the only default implementation scope:
 
 - `POST /api/payment-plan`
 - `POST /api/risk-check`
@@ -42,7 +59,7 @@ Implement only the smallest reliable backend needed for the demo:
 - Audit report output.
 - Frontend-ready response shapes.
 
-Do not implement P2 ideas such as Request Network, Sablier, Safe modules, multi-agent treasury, or multi-chain support until P0 works.
+Do not implement Request Network, Sablier, Safe modules, multi-agent treasury, or multi-chain support unless explicitly requested.
 
 ## Architecture Rules
 
@@ -50,26 +67,15 @@ Do not implement P2 ideas such as Request Network, Sablier, Safe modules, multi-
 - Keep CAW access behind a small adapter.
 - Keep LLM usage behind a planner or agent service.
 - Keep deterministic risk checks separate from LLM output.
-- Prefer explicit types, schemas, and validation.
+- Prefer explicit schemas, types, and errors.
+- Prefer explicit error handling over silent fallback behavior.
 - Add comments only when intent is not obvious.
 
 ## LLM Rules
 
-The LLM may:
+The LLM may summarize contribution records, generate payment reasons, produce a structured payment plan, and explain suspicious items.
 
-- Summarize contribution records.
-- Generate payment reasons.
-- Produce a structured payment plan.
-- Explain suspicious items.
-
-The LLM must not:
-
-- Authorize payments.
-- Bypass risk checks.
-- Invent wallet addresses.
-- Invent transaction hashes.
-- Invent CAW configuration.
-- Execute payments directly.
+The LLM must not authorize payments, bypass risk checks, invent wallet addresses, invent tx hashes, invent CAW configuration, or execute payments directly.
 
 Validate LLM output with a strict schema before use.
 
@@ -88,50 +94,20 @@ Before execution, verify:
 
 Never execute blocked payments or payments that have not passed risk check.
 
-## CAW Rules
+## CAW And Secrets
 
 - All real payment execution must go through Cobo Agentic Wallet.
 - Use environment variables for CAW credentials and wallet configuration.
 - Never commit secrets, tokens, private keys, `.env` values, or wallet credentials.
+- Never paste secrets into code, logs, README, examples, or test fixtures.
 - If CAW credentials are missing, return a clear configuration error.
 - Mock execution is allowed only when clearly labeled as mock.
 - Do not present mock tx hashes as real transactions.
 
-## Audit Rules
-
-Audit output is part of the product.
-
-Record enough information to explain:
-
-- Input received.
-- Payment plan generated.
-- Risk checks passed or failed.
-- Human approval status.
-- CAW execution result.
-- Tx hash for each executed payment.
-- Blocked or failed payment reasons.
-- Remaining budget.
-
-## Build And Validation
+## Validation And Output
 
 - If tests exist, add or update tests for behavior changes.
 - Run the fastest relevant check first.
 - For API changes, run route-specific tests before a full suite.
-- If no test framework exists, provide curl examples or a small manual validation path.
-- Do not run formatters or generators that rewrite unrelated files.
-
-## Output Expectations
-
-For code or document changes, final responses must include:
-
-- Short summary.
-- Files changed.
-- Commands run.
-- Remaining risk.
-
-For debugging, include:
-
-- Hypotheses.
-- Experiments run.
-- Minimal fix.
-
+- If no test framework exists, provide curl examples or a manual validation path.
+- Final responses for changes must include: summary, files changed, commands run, and remaining risk.

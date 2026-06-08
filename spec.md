@@ -1,8 +1,8 @@
 # AgentCFO Backend Spec
 
-This document defines the backend behavior for the AgentCFO hackathon MVP.
+This document is the backend source of truth for AgentCFO. It defines what the backend must provide. `AGENTS.md` defines how agents should work in this repository.
 
-`AGENTS.md` defines how agents should work in this repository. This file defines what the backend must provide.
+The repository is not scaffolded yet. Do not assume Node.js, Python, FastAPI, Express, or any other framework until the user approves a stack.
 
 ## 1. Product Goal
 
@@ -11,24 +11,24 @@ AgentCFO is an AI financial officer for Web3 small teams and DAOs.
 The MVP proves that an AI agent can:
 
 - Read contribution records and budget rules.
-- Generate a structured payment plan.
-- Run risk checks before execution.
-- Require human approval.
+- Generate a structured Payment Plan with reasons.
+- Run deterministic Risk Check before execution.
+- Require Human Approval.
 - Execute approved testnet payments through Cobo Agentic Wallet.
-- Produce an auditable settlement report.
+- Produce an auditable settlement report with tx hash evidence.
 
-The required demo loop is:
+Required demo loop:
 
 ```text
-Contribution records
--> Agent payment plan
--> Risk check
--> Human approval
--> CAW execution
--> Tx hash and audit report
+Contribution Records
+-> AI Payment Plan
+-> Risk Check
+-> Human Approval
+-> CAW Execution
+-> Audit Report
 ```
 
-## 2. Priorities
+## 2. Scope
 
 P0:
 
@@ -46,7 +46,7 @@ P1:
 - Deployment configuration.
 - Persistent storage if needed.
 - CAW status polling.
-- Backend README section.
+- Backend README update after scaffold.
 
 P2:
 
@@ -58,7 +58,21 @@ P2:
 
 Do not implement P2 before P0 is demonstrably working.
 
-## 3. Required APIs
+## 3. Core Status Model
+
+Payment items should use these statuses:
+
+- `Ready`: risk checks passed, not yet approved or executed.
+- `Blocked`: must not execute; includes concrete reasons.
+- `NeedsApproval`: risk checks passed but human approval is still required.
+- `Approved`: human approval recorded.
+- `Executing`: CAW request submitted or in progress.
+- `Executed`: execution completed and tx hash is available when CAW provides it.
+- `Failed`: execution failed after approval or CAW submission.
+
+Mock execution must be distinguishable from real CAW execution with an explicit `mode` field or equivalent marker.
+
+## 4. Required APIs
 
 Use these API names unless the project owner approves a change.
 
@@ -69,21 +83,52 @@ Purpose:
 - Receive contribution records and budget rules.
 - Generate a structured payment plan with payment reasons.
 
-Input:
+Request example:
 
-- `contributions`: array of contribution records.
-- `budgetRule`: budget and risk rule object.
-- Optional demo or organization metadata.
+```json
+{
+  "contributions": [
+    {
+      "name": "Alice",
+      "role": "Content Contributor",
+      "task": "Wrote event recap article",
+      "wallet": "0xAlice...",
+      "amount": 20,
+      "token": "USDC"
+    }
+  ],
+  "budgetRule": {
+    "monthlyBudget": 50,
+    "singlePaymentLimit": 25,
+    "allowedToken": "USDC",
+    "whitelist": ["0xAlice..."],
+    "requiresHumanApproval": true
+  }
+}
+```
 
-Output:
+Response example:
 
-- `paymentPlanId`
-- `summary`
-- `totalAmount`
-- `riskLevel`
-- `payments`
-
-The output must be structured JSON suitable for frontend rendering.
+```json
+{
+  "paymentPlanId": "plan_demo_001",
+  "summary": "AgentCFO generated a payment plan for 1 contributor.",
+  "totalAmount": 20,
+  "riskLevel": "Low",
+  "payments": [
+    {
+      "id": "pay_001",
+      "recipient": "Alice",
+      "wallet": "0xAlice...",
+      "amount": 20,
+      "token": "USDC",
+      "reason": "Completed event recap article",
+      "status": "Ready",
+      "risks": []
+    }
+  ]
+}
+```
 
 ### POST /api/risk-check
 
@@ -92,19 +137,38 @@ Purpose:
 - Apply deterministic rules to a payment plan.
 - Mark each payment as ready, blocked, or needing approval.
 
-Input:
+Request example:
 
-- `paymentPlanId` or full payment plan.
-- `budgetRule`
-- Optional prior payment references for duplicate detection.
+```json
+{
+  "paymentPlanId": "plan_demo_001",
+  "budgetRule": {
+    "monthlyBudget": 50,
+    "singlePaymentLimit": 25,
+    "allowedToken": "USDC",
+    "whitelist": ["0xAlice..."],
+    "requiresHumanApproval": true
+  }
+}
+```
 
-Output:
+Response example:
 
-- Overall risk status.
-- Per-payment risk status.
-- Blocking reasons.
-- Remaining budget.
-- Whether human approval is required.
+```json
+{
+  "paymentPlanId": "plan_demo_001",
+  "overallStatus": "NeedsApproval",
+  "remainingBudget": 30,
+  "requiresHumanApproval": true,
+  "payments": [
+    {
+      "id": "pay_001",
+      "status": "NeedsApproval",
+      "risks": []
+    }
+  ]
+}
+```
 
 ### POST /api/execute-payment
 
@@ -112,19 +176,36 @@ Purpose:
 
 - Execute approved and risk-checked payments through CAW.
 
-Input:
+Request example:
 
-- `paymentPlanId`
-- Approved payment item ids.
-- Human approval flag or approval metadata.
+```json
+{
+  "paymentPlanId": "plan_demo_001",
+  "approvedPaymentIds": ["pay_001"],
+  "humanApproval": {
+    "approved": true,
+    "approvedBy": "demo-operator"
+  }
+}
+```
 
-Output:
+Response example:
 
-- `executionId`
-- `agentWalletAddress`
-- Per-payment execution status.
-- `txHash` when available.
-- `cawRequestId` when available.
+```json
+{
+  "executionId": "exec_demo_001",
+  "mode": "real",
+  "agentWalletAddress": "0xAgentWallet...",
+  "payments": [
+    {
+      "paymentItemId": "pay_001",
+      "status": "Executed",
+      "txHash": "0xRealTestnetTxHash...",
+      "cawRequestId": "caw_req_001"
+    }
+  ]
+}
+```
 
 Rules:
 
@@ -139,7 +220,7 @@ Purpose:
 
 - Return the complete settlement audit report.
 
-Output:
+Response must include:
 
 - Original input summary.
 - Final payment plan.
@@ -149,8 +230,9 @@ Output:
 - Transaction hashes.
 - Remaining budget.
 - Blocked or failed payment explanations.
+- Execution `mode`: `real` or `mock`.
 
-## 4. Data Models
+## 5. Data Models
 
 Recommended model names:
 
@@ -173,19 +255,6 @@ Fields:
 - `amount`
 - `token`
 
-Example:
-
-```json
-{
-  "name": "Alice",
-  "role": "Content Contributor",
-  "task": "Wrote event recap article",
-  "wallet": "0xAlice...",
-  "amount": 20,
-  "token": "USDC"
-}
-```
-
 ### BudgetRule
 
 Fields:
@@ -195,18 +264,6 @@ Fields:
 - `allowedToken`
 - `whitelist`
 - `requiresHumanApproval`
-
-Example:
-
-```json
-{
-  "monthlyBudget": 50,
-  "singlePaymentLimit": 25,
-  "allowedToken": "USDC",
-  "whitelist": ["0xAlice...", "0xCharlie...", "0xDataAPI..."],
-  "requiresHumanApproval": true
-}
-```
 
 ### PaymentItem
 
@@ -221,16 +278,6 @@ Fields:
 - `status`
 - `risks`
 
-Recommended statuses:
-
-- `Ready`
-- `Blocked`
-- `NeedsApproval`
-- `Approved`
-- `Executing`
-- `Executed`
-- `Failed`
-
 ### PaymentExecutionResult
 
 Fields:
@@ -238,34 +285,23 @@ Fields:
 - `id`
 - `paymentItemId`
 - `status`
+- `mode`
 - `agentWalletAddress`
 - `txHash`
 - `cawRequestId`
 - `error`
 
-## 5. Agent And LLM Behavior
+## 6. Agent And LLM Behavior
 
-The LLM may:
+The LLM may normalize contribution records, generate payment reasons, generate a structured payment plan, and explain suspicious payment items.
 
-- Normalize contribution records.
-- Generate payment reasons.
-- Generate a structured payment plan.
-- Explain suspicious payment items.
-
-The LLM must not:
-
-- Decide final authorization.
-- Bypass risk checks.
-- Invent wallet addresses.
-- Invent transaction hashes.
-- Invent CAW configuration.
-- Execute payments directly.
+The LLM must not decide final authorization, bypass risk checks, invent wallet addresses, invent transaction hashes, invent CAW configuration, or execute payments directly.
 
 LLM output must be validated with a strict schema before downstream use.
 
 If LLM output is malformed, return an explicit validation error or retry with a bounded retry policy. Do not silently coerce unsafe payment data.
 
-## 6. Risk Engine
+## 7. Risk Engine
 
 Risk checks must be deterministic.
 
@@ -278,11 +314,9 @@ MVP rules:
 - Duplicate recipient or duplicate task must be detected.
 - Human approval must exist before execution.
 
-Every blocked item must include a concrete reason.
+Every blocked item must include a concrete frontend-readable reason.
 
-The risk engine should return frontend-readable explanations, not only booleans.
-
-## 7. CAW Integration
+## 8. CAW Integration
 
 All real payment execution must go through Cobo Agentic Wallet.
 
@@ -299,6 +333,7 @@ Required CAW-related output:
 - Transaction hash when available.
 - CAW request id or execution reference when available.
 - Per-payment execution status.
+- Execution `mode`.
 
 Configuration must come from environment variables.
 
@@ -309,7 +344,7 @@ Required safety behavior:
 - Mock tx hashes must not be presented as real transactions.
 - Production and testnet configuration must be clearly separated.
 
-## 8. Audit Report
+## 9. Audit Report
 
 The audit report must explain:
 
@@ -320,13 +355,14 @@ The audit report must explain:
 - Which payments were executed.
 - Which payments were blocked.
 - Which transaction hash belongs to which payment.
+- Whether the execution was real or mock.
 - How much budget remains.
 
 MVP storage can be in-memory or local JSON if no backend framework or database exists yet.
 
 If the project later gets a persistence layer, use the existing project pattern instead of inventing a parallel storage system.
 
-## 9. Frontend Contract
+## 10. Frontend Contract
 
 Frontend needs:
 
@@ -339,7 +375,7 @@ Frontend needs:
 
 The backend should expose mock data early so frontend can build the workflow before CAW is fully ready.
 
-## 10. Demo Fallback
+## 11. Demo Fallback
 
 Allowed fallback:
 
@@ -355,7 +391,17 @@ Not allowed:
 - Executing blocked payments.
 - Claiming CAW integration is complete without CAW evidence.
 
-## 11. Testing And Acceptance Criteria
+## 12. Acceptance Evidence
+
+Before claiming the backend demo is complete, collect:
+
+- API responses for the full P0 flow.
+- Risk check output showing at least one blocked example.
+- Human approval evidence in request or audit output.
+- CAW evidence: Agent Wallet address, testnet name, and tx hash, or a clearly labeled mock execution.
+- Audit report output linking payment reasons, statuses, risks, budget, and transaction results.
+
+## 13. Testing
 
 Minimum useful backend tests:
 
@@ -367,6 +413,7 @@ Minimum useful backend tests:
 - Missing human approval blocks execution.
 - Blocked payment is not sent to CAW adapter.
 - CAW adapter failure appears in audit report.
+- Mock execution is labeled as mock.
 
 Acceptance criteria:
 
