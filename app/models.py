@@ -20,6 +20,11 @@ class RiskLevel(StrEnum):
     BLOCKED = "Blocked"
 
 
+class PlannerMode(StrEnum):
+    MOCK = "mock"
+    OPENAI = "openai"
+
+
 class ContributionRecord(BaseModel):
     name: str
     role: str
@@ -60,6 +65,8 @@ class PaymentPlan(BaseModel):
     totalAmount: float
     riskLevel: RiskLevel
     payments: list[PaymentItem]
+    plannerMode: PlannerMode = PlannerMode.MOCK
+    plannerWarnings: list[str] = Field(default_factory=list)
 
 
 class RiskCheckRequest(BaseModel):

@@ -111,6 +111,8 @@ def test_payment_plan_starts_unchecked():
 
     assert plan["riskLevel"] == "Unchecked"
     assert plan["totalAmount"] == 30
+    assert plan["plannerMode"] == "mock"
+    assert plan["plannerWarnings"] == []
     assert [payment["status"] for payment in plan["payments"]] == ["Ready", "Ready"]
 
 

@@ -5,47 +5,26 @@ from app.models import (
     CawStatus,
     ExecutePaymentRequest,
     PaymentExecutionResult,
-    PaymentItem,
     PaymentPlan,
     PaymentPlanRequest,
     PaymentStatus,
     RiskCheckRequest,
     RiskCheckResult,
-    RiskLevel,
 )
 from app.services.caw_adapter import MockCawAdapter
+from app.services.payment_planner import create_payment_planner
 from app.services.risk_engine import check_payment_risks
 from app.store import store
 
 router = APIRouter(prefix="/api", tags=["payments"])
 caw_adapter = MockCawAdapter()
+payment_planner = create_payment_planner()
 
 
 @router.post("/payment-plan", response_model=PaymentPlan)
 def create_payment_plan(request: PaymentPlanRequest):
     payment_plan_id = store.next_plan_id()
-    payments = [
-        PaymentItem(
-            id=f"pay_{index:03d}",
-            recipient=contribution.name,
-            task=contribution.task,
-            wallet=contribution.wallet,
-            amount=contribution.amount,
-            token=contribution.token,
-            reason=f"Completed task: {contribution.task}",
-            status=PaymentStatus.READY,
-            risks=[],
-        )
-        for index, contribution in enumerate(request.contributions, start=1)
-    ]
-    total_amount = sum(payment.amount for payment in payments)
-    payment_plan = PaymentPlan(
-        paymentPlanId=payment_plan_id,
-        summary=f"AgentCFO generated a payment plan for {len(payments)} payment item(s).",
-        totalAmount=total_amount,
-        riskLevel=RiskLevel.UNCHECKED,
-        payments=payments,
-    )
+    payment_plan = payment_planner.generate(request, payment_plan_id)
     store.save_payment_plan(payment_plan)
     return payment_plan
 

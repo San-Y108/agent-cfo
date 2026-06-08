@@ -67,7 +67,7 @@ AgentCFO 需要展示：哪些付款可以执行、哪些付款被 blocked、为
 
 ## Repository Status
 
-当前仓库已经 scaffold 了 FastAPI 后端 MVP。它实现了 mock 版 Payment Plan、Risk Check、Execute Payment 和 Audit Report API，并预留了 Cobo Agentic Wallet adapter。
+当前仓库已经 scaffold 了 FastAPI 后端 MVP。它实现了默认 mock、可显式启用 OpenAI Structured Outputs 的 Payment Plan，Risk Check、Execute Payment 和 Audit Report API，并预留了 Cobo Agentic Wallet adapter。
 
 当前已有文件：
 
@@ -272,6 +272,26 @@ curl.exe https://<render-service>.onrender.com/health
 
 This deployment is still mock backend mode: no real OpenAI planner, no real Cobo Agentic Wallet execution, no `.env`, and no secrets in the repository.
 
+## Payment Planner Mode
+
+The backend defaults to the deterministic mock planner:
+
+```text
+PAYMENT_PLANNER_MODE=mock
+```
+
+OpenAI Structured Outputs can be enabled explicitly:
+
+```text
+PAYMENT_PLANNER_MODE=openai
+OPENAI_API_KEY=<set in Render or local environment>
+OPENAI_MODEL=gpt-4.1-mini
+```
+
+The default is always `mock`. The backend only calls OpenAI when `PAYMENT_PLANNER_MODE=openai` and `OPENAI_API_KEY` exists. Missing keys, API errors, timeouts, schema validation failures, or draft payments that change recipient, wallet, task, token, or amount fall back to the mock planner.
+
+The LLM can only draft the Payment Plan summary and payment reasons. The backend still assigns `paymentPlanId`, payment ids, `status="Ready"`, `risks=[]`, `riskLevel="Unchecked"`, and `totalAmount`. Risk Check remains the only place that can decide `Ready`, `NeedsApproval`, or `Blocked`, and Execute Payment still requires `humanApproval.approved=true`.
+
 ## Persistence
 
 The backend now uses a repository abstraction with SQLite as the default local demo store. The database path is configured with:
@@ -334,7 +354,9 @@ curl.exe http://127.0.0.1:8000/api/caw-status/mock_caw_exec_demo_001_pay_001
 
 | 变量类别 | 用途 | 状态 |
 | --- | --- | --- |
-| LLM API key | 调用 Agent / LLM 生成 Payment Plan | 暂未接入 |
+| PAYMENT_PLANNER_MODE | `mock` 或 `openai`，默认 `mock` | 可选 |
+| OPENAI_API_KEY | 显式启用 OpenAI planner 时使用 | 不提交，必须走环境变量 |
+| OPENAI_MODEL | OpenAI planner 模型，默认 `gpt-4.1-mini` | 可选 |
 | CAW API key | 调用 Cobo Agentic Wallet | 待 CAW 同学提供 |
 | CAW wallet id | 选择 Agent Wallet | 待 CAW 同学提供 |
 | CAW base URL | CAW API endpoint | 待 CAW 同学提供 |
@@ -391,7 +413,7 @@ P0:
 
 - Scaffold backend。已完成 mock MVP。
 - 实现四个 P0 API。已完成 mock MVP。
-- 接入 LLM planner。
+- 接入 LLM planner。已完成默认 mock、显式 `openai` 模式的 structured planner。
 - 实现 deterministic Risk Engine。
 - 接入 CAW Adapter。当前为 MockCawAdapter。
 - 输出 Audit Report。已完成 mock MVP。
