@@ -23,7 +23,7 @@
 |------|--------|------|----------|
 | 交付/总控 | San-Y108 (严硕) | ✅ repo + 文档已完成 | 无 |
 | 后端/Agent | W5W8L9jlu | ✅ mock API 已完成 | 等 CAW 接真实付款 |
-| 前端 | Aafff623 | 🟡 未开始 | mock API 已可用，等开工 |
+| 前端 | Aafff623 | 🔵 已开工 | 正在搭建 frontend，计划部署 Vercel，技术栈待确认 |
 | 合约/CAW | gitgdut | 🟡 未确认 | 最高风险，必须优先验证 |
 | 物料/设计 | 待确认 | 🟡 未确认 | GitHub 用户名未提供 |
 
@@ -60,8 +60,8 @@
 
 | ID | 任务 | 交付物 | 截止 | 状态 |
 |----|------|--------|------|------|
-| T-020 | 确认技术栈 | React/Next/Vue | 6月8日 18:00 | 🟡 TODO |
-| T-021 | 脚手架跑通 | npm run dev 不报错 | 6月8日 22:00 | 🟡 TODO |
+| T-020 | 确认技术栈 | React/Next/Vue | 6月8日 18:00 | 🔵 IN_PROGRESS |
+| T-021 | 脚手架跑通 | npm run dev 不报错 | 6月8日 22:00 | 🔵 IN_PROGRESS |
 | T-022 | 对接后端 mock API | 能调用 4 个接口 | 6月9日 | 🟡 TODO |
 
 ### 合约/CAW（gitgdut）
@@ -180,7 +180,7 @@ CAW 验证（🔴 未开始）
 | 状态 | 数量 |
 |------|------|
 | 🔴 BLOCKED | 0 |
-| 🟡 TODO | 32 |
-| 🔵 IN_PROGRESS | 0 |
+| 🟡 TODO | 30 |
+| 🔵 IN_PROGRESS | 2 |
 | ✅ DONE | 13 |
 | ❌ CANCELLED | 0 |
