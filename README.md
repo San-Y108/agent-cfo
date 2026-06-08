@@ -73,13 +73,11 @@ AgentCFO 需要展示：哪些付款可以执行、哪些付款被 blocked、为
 
 | 文件 | 用途 |
 | --- | --- |
-| `AGENTS.md` | 给 AI coding agent 的项目级工作规则 |
-| `spec.md` | 后端 source of truth，包含 API、数据模型、风控、CAW 和验收标准 |
+| `README.md` | 项目入口、运行方式、联调方式和当前限制 |
 | `app/` | FastAPI MVP 服务代码 |
 | `tests/` | pytest API 流程测试 |
 | `requirements.txt` | Python 依赖锁定版本 |
 | `docs/pm/` | 项目管理、站会、风险、提交和彩排清单 |
-| `AgentCFO DAO AI财务官项目规划文档.md` | 黑客松项目规划原文 |
 
 当前可运行 mock API 服务。真实 CAW 交易尚未接入；不要在 README 中补不存在的部署链接、Agent Wallet 地址或真实 tx hash。
 
@@ -88,10 +86,9 @@ AgentCFO 需要展示：哪些付款可以执行、哪些付款被 blocked、为
 新队友或 AI agent 开始前按这个顺序读：
 
 1. `README.md`：理解项目、Demo 和当前仓库状态。
-2. `AGENTS.md`：理解在这个仓库里怎么工作、不能做什么。
-3. `spec.md`：理解后端要实现的 API、模型、风险规则和验收标准。
+2. `app/`：查看 FastAPI 路由、模型、风控服务和 CAW adapter。
+3. `tests/`：查看 P0 mock API 的可执行验收用例。
 4. `docs/pm/`：查看任务看板、站会、风险、提交和彩排清单。
-5. `AgentCFO DAO AI财务官项目规划文档.md`：理解完整黑客松背景和团队分工。
 
 后端开发原则：
 
@@ -112,7 +109,7 @@ P0 APIs:
 | `POST /api/execute-payment` | 人工确认后，通过 CAW 执行可付款项 |
 | `GET /api/audit-report/{auditReportId}` | 返回最终 Audit Report |
 
-详细接口和示例见 `spec.md`。
+详细接口以 `app/routers/payments.py`、`app/models.py` 和 README 的 curl.exe 示例为准。
 
 ## Architecture
 
@@ -296,7 +293,7 @@ curl.exe http://127.0.0.1:8000/api/audit-report/audit_demo_001
 - 四个 P0 API 支持完整 Demo flow。
 - 前端可以展示 Payment Plan、Risk Check、Execution Result 和 Audit Report。
 - 至少一笔 CAW testnet transaction 有真实证据，或明确标注当前使用 mock mode。
-- README、`spec.md` 和实际实现保持一致。
+- README 和实际实现保持一致。
 
 ## Project Management
 
@@ -346,11 +343,9 @@ P2:
 
 ## Documentation Rules
 
-- `AGENTS.md`：Agent 怎么工作。
-- `spec.md`：后端应该做成什么样。
-- `README.md`：人类如何理解项目、当前状态和下一步。
-
-需求变化时，先更新 `spec.md`，再改代码。
+- `README.md` 是项目入口，记录运行、测试、联调方式和当前限制。
+- 代码里的 `app/models.py`、`app/routers/payments.py`、`app/services/` 是当前 P0 API 和业务规则的准确信息来源。
+- 需求变化时，先更新 README 的联调说明和对应测试，再改实现。
 
 ## Demo Video
 
@@ -359,4 +354,3 @@ P2:
 ## License
 
 MIT
-
