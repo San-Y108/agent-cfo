@@ -36,7 +36,7 @@ AgentCFO 需要展示：哪些付款可以执行、哪些付款被 blocked、为
 
 ## Repository Status
 
-当前仓库是 AgentCFO 后端规划仓库，尚未 scaffold 具体后端工程。
+当前仓库已经 scaffold 了 FastAPI 后端 MVP。它实现了 mock 版 Payment Plan、Risk Check、Execute Payment 和 Audit Report API，并预留了 Cobo Agentic Wallet adapter。
 
 当前已有文件：
 
@@ -44,11 +44,12 @@ AgentCFO 需要展示：哪些付款可以执行、哪些付款被 blocked、为
 | --- | --- |
 | `AGENTS.md` | 给 AI coding agent 的项目级工作规则 |
 | `spec.md` | 后端 source of truth，包含 API、数据模型、风控、CAW 和验收标准 |
+| `app/` | FastAPI MVP 服务代码 |
+| `tests/` | pytest API 流程测试 |
+| `requirements.txt` | Python 依赖锁定版本 |
 | `AgentCFO DAO AI财务官项目规划文档.md` | 黑客松项目规划原文 |
 
-当前暂无可运行服务。
-
-不要在 README 中补不存在的启动命令、部署链接、Agent Wallet 地址或 tx hash。等后端工程创建和 CAW 联调完成后再补充。
+当前可运行 mock API 服务。真实 CAW 交易尚未接入；不要在 README 中补不存在的部署链接、Agent Wallet 地址或真实 tx hash。
 
 ## How To Work In This Repo
 
@@ -63,7 +64,7 @@ AgentCFO 需要展示：哪些付款可以执行、哪些付款被 blocked、为
 
 - 先跑通 P0 demo loop，再考虑 P1/P2。
 - 不提前实现 Request Network、Sablier、Safe、多链、多 Agent。
-- 不选择技术栈，除非团队明确确认。
+- 当前技术栈是 Python + FastAPI + Pydantic + pytest。
 - 不把 LLM 当作最终授权层。
 - 不把 mock transaction 当作真实 CAW 交易。
 
@@ -82,7 +83,7 @@ P0 APIs:
 
 ## Architecture
 
-目标后端应拆成这些边界：
+当前后端按这些边界拆分：
 
 ```text
 Frontend
@@ -118,34 +119,91 @@ Frontend
 
 真实付款必须通过 Cobo Agentic Wallet。Mock mode 只能用于演示兜底，必须明确标注。
 
+## Tech Stack
+
+- **Language**: Python 3.14 当前本机可用；如依赖安装失败，改用 Python 3.12/3.13。
+- **Framework**: FastAPI
+- **Validation**: Pydantic
+- **Testing**: pytest + FastAPI TestClient
+- **Server**: Uvicorn
+- **Storage**: In-memory MVP store
+- **CAW**: Mock adapter only, no real credentials
+
 ## Local Development
 
-当前暂无可运行服务，因为后端工程尚未创建。
-
-下一步创建后端工程时，需要先确定：
-
-- 技术栈：例如 Node.js / TypeScript 或 Python / FastAPI。
-- 包管理器和启动命令。
-- 测试框架。
-- 环境变量命名。
-- CAW adapter 的 SDK 或 HTTP 接入方式。
-
-确定技术栈后，再在本节补充：
+创建虚拟环境：
 
 ```bash
-# 示例占位：不要在未 scaffold 前使用
-# install command
-# dev server command
-# test command
+python -m venv .venv
 ```
+
+安装依赖：
+
+```bash
+.\.venv\Scripts\python -m pip install -r requirements.txt
+```
+
+运行测试：
+
+```bash
+.\.venv\Scripts\python -m pytest -q
+```
+
+启动开发服务：
+
+```bash
+.\.venv\Scripts\python -m uvicorn app.main:app --reload
+```
+
+默认服务地址：
+
+```text
+http://127.0.0.1:8000
+```
+
+交互式 API 文档：
+
+```text
+http://127.0.0.1:8000/docs
+```
+
+## Curl Verification
+
+PowerShell 中建议使用 `curl.exe`，避免 `curl` alias 干扰。
+
+创建 Payment Plan：
+
+```bash
+curl.exe -X POST http://127.0.0.1:8000/api/payment-plan -H 'Content-Type: application/json' -d '{"contributions":[{"name":"Alice","role":"Content Contributor","task":"Wrote event recap article","wallet":"0xAlice","amount":20,"token":"USDC"}],"budgetRule":{"monthlyBudget":50,"singlePaymentLimit":25,"allowedToken":"USDC","whitelist":["0xAlice"],"requiresHumanApproval":true}}'
+```
+
+执行 Risk Check：
+
+```bash
+curl.exe -X POST http://127.0.0.1:8000/api/risk-check -H 'Content-Type: application/json' -d '{"paymentPlanId":"plan_demo_001","budgetRule":{"monthlyBudget":50,"singlePaymentLimit":25,"allowedToken":"USDC","whitelist":["0xAlice"],"requiresHumanApproval":true}}'
+```
+
+执行 mock payment：
+
+```bash
+curl.exe -X POST http://127.0.0.1:8000/api/execute-payment -H 'Content-Type: application/json' -d '{"paymentPlanId":"plan_demo_001","approvedPaymentIds":["pay_001"],"humanApproval":{"approved":true,"approvedBy":"demo-operator"}}'
+```
+
+查看 Audit Report：
+
+```bash
+curl.exe http://127.0.0.1:8000/api/audit-report/audit_demo_001
+```
+
+所有执行结果当前都是 `mode="mock"`，`txHash=null`。
 
 ## Environment Variables
 
-当前尚未确定最终环境变量名。创建后端工程时，至少需要覆盖：
+当前 MVP 不读取任何 CAW secrets。真实 CAW 接入时至少需要覆盖：
 
 | 变量类别 | 用途 | 状态 |
 | --- | --- | --- |
-| LLM API key | 调用 Agent / LLM 生成 Payment Plan | 待技术栈确认 |
+| LLM API key | 调用 Agent / LLM 生成 Payment Plan | 暂未接入 |
 | CAW API key | 调用 Cobo Agentic Wallet | 待 CAW 同学提供 |
 | CAW wallet id | 选择 Agent Wallet | 待 CAW 同学提供 |
 | CAW base URL | CAW API endpoint | 待 CAW 同学提供 |
@@ -178,12 +236,12 @@ Frontend
 
 P0:
 
-- Scaffold backend。
-- 实现四个 P0 API。
+- Scaffold backend。已完成 mock MVP。
+- 实现四个 P0 API。已完成 mock MVP。
 - 接入 LLM planner。
 - 实现 deterministic Risk Engine。
-- 接入 CAW Adapter。
-- 输出 Audit Report。
+- 接入 CAW Adapter。当前为 MockCawAdapter。
+- 输出 Audit Report。已完成 mock MVP。
 
 P1:
 
@@ -207,4 +265,3 @@ P2:
 - `README.md`：人类如何理解项目、当前状态和下一步。
 
 需求变化时，先更新 `spec.md`，再改代码。
-

@@ -2,7 +2,7 @@
 
 This document is the backend source of truth for AgentCFO. It defines what the backend must provide. `AGENTS.md` defines how agents should work in this repository.
 
-The repository is not scaffolded yet. Do not assume Node.js, Python, FastAPI, Express, or any other framework until the user approves a stack.
+The current MVP scaffold uses Python, FastAPI, Pydantic, and pytest. The business contract in this document remains the source of truth even if the implementation framework changes later.
 
 ## 1. Product Goal
 
@@ -421,4 +421,3 @@ Acceptance criteria:
 - Frontend can render payment plan, risk check, execution result, and audit report.
 - At least one real testnet transaction can be shown through CAW or documented as CAW evidence.
 - Mock mode remains clearly distinguishable from real CAW execution.
-
