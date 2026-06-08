@@ -25,5 +25,9 @@ export function AnimatedNumber({
     spring.set(value);
   }, [spring, value]);
 
-  return <motion.span className={className}>{display}</motion.span>;
+  return (
+    <motion.span className={className} style={{ fontVariantNumeric: "tabular-nums" }}>
+      {display}
+    </motion.span>
+  );
 }
