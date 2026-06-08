@@ -1,6 +1,6 @@
 # AgentCFO 任务看板
 
-> 最后更新：2026年6月8日 20:25
+> 最后更新：2026年6月8日 21:15
 > 规则：12 号之后不新增大功能，只修复、打磨、录视频、补材料
 
 ---
@@ -23,7 +23,7 @@
 |------|--------|------|----------|
 | 交付/总控 | San-Y108 (严硕) | ✅ repo + 文档已完成 | 无 |
 | 后端/Agent | W5W8L9jlu | ✅ SQLite + CAW查询 + Render部署 | 等 gitgdut 提供真实 CAW 配置 |
-| 前端 | Aafff623 | ✅ Landing + Demo + Vercel 已部署 | 分支 feat/frontend-bootstrap 待 merge 进 main |
+| 前端 | Aafff623 | ✅ Landing + Demo + Vercel + i18n/主题 | 分支 feat/frontend-bootstrap 待 merge 进 main |
 | 合约/CAW | gitgdut | 🔵 已开始 | Cobo 文档已通读，权限模型分析完成，待申请 API Key |
 | 物料/设计 | Eloise-qiu | 🟡 已确认 | GitHub 已加入 repo，待启动 PPT/视频/视觉 |
 
@@ -173,8 +173,8 @@ CAW 验证（🟡 文档分析完成，待申请 API Key + 创建钱包）
     → 后端接真实 CAW（等 CAW 完成后替换 mock）
     → tx hash 展示（等 CAW 完成后才有真实数据）
 
-设计/物料（🔴 人未确认）
-    → PPT、视频、海报全靠这个人
+设计/物料（🟡 Eloise-qiu 已确认）
+    → 待启动 PPT、视频、视觉
 ```
 
 ---
