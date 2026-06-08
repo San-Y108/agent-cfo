@@ -32,7 +32,17 @@
 
 ## E. UI 重设计
 
-- [ ] **UI redesign / Velorix Hero Section adaptation** — 当前 UI 功能完整但偏基础；视觉深度优化（含 Velorix hero 风格适配）待做。属下一阶段，本轮文档化阶段不动代码。
+- [~] **UI redesign / Velorix Hero Section adaptation** — Landing `/` Hero 改造为 Velorix IIC 风格（见 E1）；更广的视觉优化（Demo Console 等）仍待做。
+
+### E1. 当前阶段：Landing `/` Hero → Velorix IIC 风格（只改文案与跳转，保留视觉/动效）
+> 边界：只动 `frontend/`，不改 `/demo` / API / mock / backend，不新增依赖，不删除旧资源。
+- [x] 分析 Velorix 提示词原文 + 解压 demo（结构 / 动效值 / 资源 / 字体）
+- [x] 移植 Velorix Hero → `components/landing/velorix-hero.tsx`（client，纯 CSS 动效，无新增 Framer Motion；复用已有 lucide-react）
+- [x] `app/page.tsx` 切换为 Velorix Hero（旧 landing-hero / bento / mini-command-preview 保留在磁盘，不删除）
+- [x] 文案替换：velorix→AgentCFO；nav→Problem / Workflow / Risk Guardrails / Wallet Execution / Audit Trail；CTA→Open Demo / Run the payout flow；hero title / subtitle 按指定文案
+- [x] CTA 跳转：Open Demo & Run the payout flow → `/demo`
+- [x] 保留：背景视频(robot+hand) / 黑色电影感 / Inter+Courier / pill navbar / mobile menu 动效 / CTA 样式
+- [x] 验证：`pnpm typecheck` / `pnpm build` / `/` 正常 / `/demo` 未破坏
 
 ---
 
