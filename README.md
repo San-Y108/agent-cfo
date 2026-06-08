@@ -1,8 +1,10 @@
 # AgentCFO | DAO AI 财务官
 
+> Give every DAO an AI CFO with a controlled wallet.
+
 AgentCFO 是面向 Web3 小团队 / DAO 的 AI 财务官。它读取贡献记录、预算规则和付款需求，生成 Payment Plan，执行 Risk Check，在 Human Approval 之后通过 Cobo Agentic Wallet 完成受控测试网付款，并输出 Audit Report。
 
-一句话：Give every DAO an AI CFO with a controlled wallet.
+赛道：Cobo Agentic Commerce
 
 ## Key Features
 
@@ -13,7 +15,24 @@ AgentCFO 是面向 Web3 小团队 / DAO 的 AI 财务官。它读取贡献记录
 - Audit Report：输出付款原因、风险结果、执行状态、剩余预算和 tx hash。
 - Mock Mode：CAW 不稳定时可演示完整流程，但必须清楚标注为 mock。
 
-## Demo Flow
+## Problem
+
+DAO 小团队经常遇到：
+
+- 贡献者结算靠人工表格，容易漏发、错发、重复发。
+- DAO 支出不透明，事后很难追踪。
+- 普通多签虽然安全，但每笔小额付款都要多人确认，效率低。
+- 完全自动化又有风险，容易失控。
+
+## Solution
+
+AgentCFO 的核心边界：
+
+- Agent 负责整理贡献记录、生成付款计划和解释付款原因。
+- Risk Engine 负责确定性风控。
+- Human Approval 保留关键确认权。
+- Cobo Agentic Wallet 负责受控资金执行。
+- Audit Report 把计划、风险、审批和执行结果串成可审计记录。
 
 ```text
 Contribution Records
@@ -25,12 +44,24 @@ Contribution Records
 -> Audit Report
 ```
 
+## Why Cobo Agentic Commerce
+
+| 方向 | AgentCFO 如何匹配 |
+| --- | --- |
+| Agent-Native Payments | Agent 根据贡献记录和预算规则，自动生成付款计划并发起付款 |
+| Agent Resource Procurement | Agent 可判断 DAO 需要支付哪些工具订阅、服务费用，在预算范围内完成结算 |
+| A2A Economy / Treasury Management | 后续可扩展多个 Agent 各自管理不同部门预算，统一向 DAO Treasury 汇报 |
+
+## Demo Scenario
+
 MVP Demo 场景：
 
-- Alice：内容贡献，20 USDC
-- Bob：设计海报，15 USDC，示例中可用于展示白名单风险
-- Charlie：社群运营，10 USDC
-- Data API：工具订阅，5 USDC
+| 对象 | 类型 | 说明 | 金额 |
+| --- | --- | --- | --- |
+| Alice | 贡献者 | 写了一篇活动复盘 | 20 USDC |
+| Bob | 贡献者 | 设计了活动海报，可用于展示白名单风险 | 15 USDC |
+| Charlie | 贡献者 | 维护社群并整理数据 | 10 USDC |
+| Data API | 工具订阅 | 本月数据服务订阅费 | 5 USDC |
 
 AgentCFO 需要展示：哪些付款可以执行、哪些付款被 blocked、为什么 blocked、最终 CAW 返回了什么交易结果。
 
@@ -47,6 +78,7 @@ AgentCFO 需要展示：哪些付款可以执行、哪些付款被 blocked、为
 | `app/` | FastAPI MVP 服务代码 |
 | `tests/` | pytest API 流程测试 |
 | `requirements.txt` | Python 依赖锁定版本 |
+| `docs/pm/` | 项目管理、站会、风险、提交和彩排清单 |
 | `AgentCFO DAO AI财务官项目规划文档.md` | 黑客松项目规划原文 |
 
 当前可运行 mock API 服务。真实 CAW 交易尚未接入；不要在 README 中补不存在的部署链接、Agent Wallet 地址或真实 tx hash。
@@ -58,7 +90,8 @@ AgentCFO 需要展示：哪些付款可以执行、哪些付款被 blocked、为
 1. `README.md`：理解项目、Demo 和当前仓库状态。
 2. `AGENTS.md`：理解在这个仓库里怎么工作、不能做什么。
 3. `spec.md`：理解后端要实现的 API、模型、风险规则和验收标准。
-4. `AgentCFO DAO AI财务官项目规划文档.md`：理解完整黑客松背景和团队分工。
+4. `docs/pm/`：查看任务看板、站会、风险、提交和彩排清单。
+5. `AgentCFO DAO AI财务官项目规划文档.md`：理解完整黑客松背景和团队分工。
 
 后端开发原则：
 
@@ -136,8 +169,8 @@ Frontend
 如果你是前端或 CAW 同学，按下面步骤拿到后端 mock API：
 
 ```bash
-git clone <repo-url>
-cd <repo-folder>
+git clone https://github.com/San-Y108/agent-cfo.git
+cd agent-cfo
 ```
 
 如果你已经 clone 过仓库：
@@ -265,6 +298,26 @@ curl.exe http://127.0.0.1:8000/api/audit-report/audit_demo_001
 - 至少一笔 CAW testnet transaction 有真实证据，或明确标注当前使用 mock mode。
 - README、`spec.md` 和实际实现保持一致。
 
+## Project Management
+
+- [任务看板](docs/pm/TASK_BOARD.md)
+- [每日站会模板](docs/pm/DAILY_STANDUP.md)
+- [风险日志](docs/pm/RISK_LOG.md)
+- [提交材料清单](docs/pm/SUBMISSION_CHECKLIST.md)
+- [Demo 彩排检查清单](docs/pm/DEMO_REHEARSAL_CHECKLIST.md)
+- [群消息模板库](docs/pm/TEAM_SYNC_MESSAGES.md)
+- [交付总控报告](docs/pm/DELIVERY_MASTER_REPORT_2026-06-08.md)
+
+## Team
+
+| 角色 | 职责 |
+| --- | --- |
+| 交付 / 路演 / 总控 | 项目统筹、路演、GitHub、最终交付 |
+| 物料 / 设计 / 内容 | PPT、海报、视频、文案 |
+| 前端 | 产品界面 + Mock 模式 |
+| 后端 / Agent | FastAPI + Agent 付款计划 + 风险检查 |
+| 合约 / CAW | Cobo Agentic Wallet 集成 + 测试网付款 |
+
 ## Roadmap
 
 P0:
@@ -298,3 +351,12 @@ P2:
 - `README.md`：人类如何理解项目、当前状态和下一步。
 
 需求变化时，先更新 `spec.md`，再改代码。
+
+## Demo Video
+
+> 待录制
+
+## License
+
+MIT
+
