@@ -2,6 +2,7 @@ import { GlassPanel } from "@/components/ui/glass-panel";
 import { StatusPill } from "@/components/ui/status-pill";
 import { Shield, CheckCircle, XCircle } from "lucide-react";
 import type { RiskCheckResult } from "@/lib/api/types";
+import { deriveRiskCategories, riskPassed } from "@/lib/workflow/derive";
 
 interface RiskGateProps {
   result: RiskCheckResult;
@@ -48,8 +49,9 @@ function CheckItem({ name, passed, reason, warning }: CheckItemProps) {
 }
 
 export function RiskGate({ result }: RiskGateProps) {
-  const { checks } = result;
-  const failedChecks = Object.entries(checks).filter(([, c]) => !c.passed);
+  const categories = deriveRiskCategories(result);
+  const passed = riskPassed(result);
+  const failedChecks = categories.filter((category) => !category.passed);
 
   return (
     <GlassPanel accent="gold" className="p-0 overflow-hidden">
@@ -63,7 +65,7 @@ export function RiskGate({ result }: RiskGateProps) {
             <p className="text-[11px] text-slate-500">AI Agent policy enforcement</p>
           </div>
         </div>
-        {result.passed ? (
+        {passed ? (
           <StatusPill status="success">All Clear</StatusPill>
         ) : (
           <StatusPill status="danger">
@@ -73,31 +75,19 @@ export function RiskGate({ result }: RiskGateProps) {
       </div>
 
       <div className="p-3 space-y-2">
-        <CheckItem
-          name="Budget Check"
-          passed={checks.budgetCheck.passed}
-          reason={checks.budgetCheck.reason}
-        />
-        <CheckItem
-          name="Whitelist Check"
-          passed={checks.whitelistCheck.passed}
-          reason={checks.whitelistCheck.reason}
-          warning={
-            checks.whitelistCheck.blockedWallets
-              ? `Blocked: ${checks.whitelistCheck.blockedWallets.join(", ")}`
-              : undefined
-          }
-        />
-        <CheckItem
-          name="Payment Limit"
-          passed={checks.limitCheck.passed}
-          reason={checks.limitCheck.reason}
-        />
-        <CheckItem
-          name="Duplicate Check"
-          passed={checks.duplicateCheck.passed}
-          reason={checks.duplicateCheck.reason}
-        />
+        {categories.map((category) => (
+          <CheckItem
+            key={category.name}
+            name={category.name}
+            passed={category.passed}
+            reason={category.reason}
+            warning={
+              category.flaggedWallets.length > 0
+                ? `Blocked: ${category.flaggedWallets.join(", ")}`
+                : undefined
+            }
+          />
+        ))}
       </div>
     </GlassPanel>
   );

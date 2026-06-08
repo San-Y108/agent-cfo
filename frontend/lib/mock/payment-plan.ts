@@ -1,45 +1,27 @@
-import type { PaymentPlan } from "../api/types";
-import { mockContributors, mockSubscriptionBills } from "./contribution-records";
+import type { PaymentItem, PaymentPlan } from "../api/types";
+import { mockContributions } from "./contribution-records";
+
+/**
+ * mock 版 POST /api/payment-plan 响应。
+ * 严格镜像后端 create_payment_plan（app/routers/payments.py）:
+ * id=pay_NNN、reason="Completed task: ..."、status=Ready、riskLevel=Unchecked。
+ */
+const payments: PaymentItem[] = mockContributions.map((contribution, index) => ({
+  id: `pay_${String(index + 1).padStart(3, "0")}`,
+  recipient: contribution.name,
+  task: contribution.task,
+  wallet: contribution.wallet,
+  amount: contribution.amount,
+  token: contribution.token,
+  reason: `Completed task: ${contribution.task}`,
+  status: "Ready",
+  risks: [],
+}));
 
 export const mockPaymentPlan: PaymentPlan = {
-  id: "plan-1",
-  items: [
-    {
-      id: "item-1",
-      recipient: mockContributors[0],
-      amount: 20,
-      token: "USDC",
-      description: "撰写 AgentCFO 技术文档",
-    },
-    {
-      id: "item-2",
-      recipient: mockContributors[1],
-      amount: 15,
-      token: "USDC",
-      description: "设计 Demo Console UI",
-    },
-    {
-      id: "item-3",
-      recipient: mockContributors[2],
-      amount: 10,
-      token: "USDC",
-      description: "社群 AMA 主持",
-    },
-    {
-      id: "item-4",
-      recipient: {
-        id: "vendor-1",
-        name: mockSubscriptionBills[0].serviceName,
-        walletAddress: "0xDataAPIVendorAddress",
-        role: "工具订阅",
-      },
-      amount: mockSubscriptionBills[0].amount,
-      token: mockSubscriptionBills[0].token,
-      description: `Data API 订阅 (${mockSubscriptionBills[0].billingPeriod})`,
-    },
-  ],
-  totalAmount: 50,
-  token: "USDC",
-  status: "draft",
-  createdAt: "2026-06-07T00:00:00Z",
+  paymentPlanId: "plan_demo_001",
+  summary: `AgentCFO generated a payment plan for ${payments.length} payment item(s).`,
+  totalAmount: payments.reduce((sum, payment) => sum + payment.amount, 0),
+  riskLevel: "Unchecked",
+  payments,
 };

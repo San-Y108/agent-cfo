@@ -1,10 +1,12 @@
 import { GlassPanel } from "@/components/ui/glass-panel";
 import { StatusPill } from "@/components/ui/status-pill";
 import { Zap, CheckCircle } from "lucide-react";
-import type { CAWExecution } from "@/lib/api/types";
+import type { PaymentExecutionResult, PaymentPlan } from "@/lib/api/types";
+import { executedSummary, lookupPaymentItem, planToken } from "@/lib/workflow/derive";
 
 interface ExecutionResultProps {
-  executions: CAWExecution[];
+  execution: PaymentExecutionResult;
+  plan: PaymentPlan;
 }
 
 function truncateHash(hash: string): string {
@@ -12,8 +14,10 @@ function truncateHash(hash: string): string {
   return `${hash.slice(0, 8)}...${hash.slice(-6)}`;
 }
 
-export function ExecutionResult({ executions }: ExecutionResultProps) {
-  const totalExecuted = executions.reduce((sum, ex) => sum + ex.amount, 0);
+export function ExecutionResult({ execution, plan }: ExecutionResultProps) {
+  const token = planToken(plan);
+  const executed = executedSummary(execution, plan);
+  const network = execution.payments[0]?.network ?? "mock-testnet";
 
   return (
     <GlassPanel accent="blue" className="p-0 overflow-hidden">
@@ -33,35 +37,44 @@ export function ExecutionResult({ executions }: ExecutionResultProps) {
             </div>
             <div>
               <h2 className="text-sm font-semibold text-white">Execution Result</h2>
-              <p className="text-[11px] text-slate-500">Base Sepolia (testnet)</p>
+              <p className="text-[11px] text-slate-500">{network}</p>
             </div>
           </div>
         </div>
 
         <div className="space-y-2">
-          {executions.map((ex, index) => (
-            <div
-              key={ex.transactionHash + index}
-              className="flex items-center justify-between rounded-lg border border-white/[0.04] bg-white/[0.02] px-4 py-3"
-            >
-              <div className="min-w-0 flex-1">
-                <p className="text-sm font-semibold text-white">
-                  {ex.amount} {ex.token}{" "}
-                  <span className="text-slate-500 font-normal">→</span>{" "}
-                  <span className="font-mono-numbers text-slate-400">
-                    {ex.recipientWallet.slice(0, 8)}...{ex.recipientWallet.slice(-4)}
-                  </span>
-                </p>
-                <p className="mt-1 text-[11px] text-slate-600 font-mono-numbers">
-                  Mock tx: {truncateHash(ex.transactionHash)}
-                </p>
+          {execution.payments.map((item) => {
+            const planItem = lookupPaymentItem(plan, item.paymentItemId);
+            const wallet = planItem?.wallet ?? item.paymentItemId;
+            const reference = item.txHash ?? item.cawRequestId;
+            return (
+              <div
+                key={item.paymentItemId}
+                className="flex items-center justify-between rounded-lg border border-white/[0.04] bg-white/[0.02] px-4 py-3"
+              >
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-semibold text-white">
+                    {planItem?.amount ?? 0} {planItem?.token ?? token}{" "}
+                    <span className="text-slate-500 font-normal">→</span>{" "}
+                    <span className="font-mono-numbers text-slate-400">
+                      {planItem?.recipient ?? "Unknown"} · {wallet.slice(0, 8)}...
+                      {wallet.slice(-4)}
+                    </span>
+                  </p>
+                  <p className="mt-1 text-[11px] text-slate-600 font-mono-numbers">
+                    {item.txHash ? "Tx" : "Mock CAW ref"}: {truncateHash(reference)}
+                  </p>
+                </div>
+                <StatusPill
+                  status={item.status === "Failed" ? "danger" : "success"}
+                  className="shrink-0 ml-3"
+                >
+                  <CheckCircle className="h-3 w-3" />
+                  {item.status}
+                </StatusPill>
               </div>
-              <StatusPill status="success" className="shrink-0 ml-3">
-                <CheckCircle className="h-3 w-3" />
-                {ex.paymentStatus}
-              </StatusPill>
-            </div>
-          ))}
+            );
+          })}
         </div>
 
         <div className="mt-3 flex items-center justify-between rounded-lg border border-white/[0.04] bg-white/[0.02] px-4 py-3">
@@ -70,8 +83,7 @@ export function ExecutionResult({ executions }: ExecutionResultProps) {
               Agent Wallet
             </p>
             <p className="mt-0.5 text-sm font-mono-numbers text-slate-400">
-              {executions[0]?.agentWalletAddress?.slice(0, 10)}...
-              {executions[0]?.agentWalletAddress?.slice(-6) ?? "N/A"}
+              {execution.agentWalletAddress}
             </p>
           </div>
           <div className="text-right">
@@ -79,7 +91,7 @@ export function ExecutionResult({ executions }: ExecutionResultProps) {
               Total Executed
             </p>
             <p className="mt-0.5 text-lg font-bold text-white font-mono-numbers">
-              {totalExecuted} USDC
+              {executed.amount} {token}
             </p>
           </div>
         </div>

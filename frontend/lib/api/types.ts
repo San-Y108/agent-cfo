@@ -1,102 +1,116 @@
-export interface ApiError {
-  code: string;
-  message: string;
-  details?: Record<string, unknown>;
-}
+/**
+ * AgentCFO API contract types.
+ *
+ * 这些类型是后端 FastAPI Pydantic models 的镜像（app/models.py）。
+ * 后端是唯一 contract source of truth；mock mode 与 real mode 共用同一套类型。
+ * 修改前请先核对 app/models.py 与 app/routers/payments.py。
+ */
 
-export interface ApiResponse<T> {
-  ok: boolean;
-  data: T;
-  error?: ApiError;
-  meta?: Record<string, unknown>;
-}
+export type PaymentStatus =
+  | "Ready"
+  | "NeedsApproval"
+  | "Blocked"
+  | "Executed"
+  | "Failed";
 
-export interface Contributor {
-  id: string;
-  name: string;
-  walletAddress: string;
-  role: string;
-}
+export type RiskLevel = "Unchecked" | "Low" | "Medium" | "High" | "Blocked";
+
+// ---- Request payloads ----
 
 export interface ContributionRecord {
-  id: string;
-  contributor: Contributor;
-  taskDescription: string;
+  name: string;
+  role: string;
+  task: string;
+  wallet: string;
   amount: number;
   token: string;
-  status: "pending" | "approved" | "rejected";
-  createdAt: string;
-}
-
-export interface SubscriptionBill {
-  id: string;
-  serviceName: string;
-  amount: number;
-  token: string;
-  billingPeriod: string;
 }
 
 export interface BudgetRule {
   monthlyBudget: number;
   singlePaymentLimit: number;
   allowedToken: string;
+  whitelist: string[];
   requiresHumanApproval: boolean;
-  whitelist: string[]; // wallet addresses
 }
+
+export interface PaymentPlanRequest {
+  contributions: ContributionRecord[];
+  budgetRule: BudgetRule;
+}
+
+export interface RiskCheckRequest {
+  paymentPlanId: string;
+  budgetRule: BudgetRule;
+}
+
+export interface HumanApproval {
+  approved: boolean;
+  approvedBy?: string | null;
+}
+
+export interface ExecutePaymentRequest {
+  paymentPlanId: string;
+  approvedPaymentIds: string[];
+  humanApproval: HumanApproval;
+}
+
+// ---- Response payloads ----
 
 export interface PaymentItem {
   id: string;
-  recipient: Contributor;
+  recipient: string;
+  task: string;
+  wallet: string;
   amount: number;
   token: string;
-  description: string;
+  reason: string;
+  status: PaymentStatus;
+  risks: string[];
 }
 
-export type PaymentPlanStatus =
-  | "draft"
-  | "analyzing"
-  | "risk_checked"
-  | "pending_approval"
-  | "executing"
-  | "completed"
-  | "audit_generated";
-
 export interface PaymentPlan {
-  id: string;
-  items: PaymentItem[];
+  paymentPlanId: string;
+  summary: string;
   totalAmount: number;
-  token: string;
-  status: PaymentPlanStatus;
-  createdAt: string;
+  riskLevel: RiskLevel;
+  payments: PaymentItem[];
 }
 
 export interface RiskCheckResult {
-  passed: boolean;
-  checks: {
-    budgetCheck: { passed: boolean; reason?: string };
-    whitelistCheck: { passed: boolean; blockedWallets?: string[]; reason?: string };
-    limitCheck: { passed: boolean; exceededItems?: string[]; reason?: string };
-    duplicateCheck: { passed: boolean; duplicates?: string[]; reason?: string };
-  };
+  paymentPlanId: string;
+  overallStatus: PaymentStatus;
+  riskLevel: RiskLevel;
+  remainingBudget: number;
+  requiresHumanApproval: boolean;
+  payments: PaymentItem[];
 }
 
-export interface CAWExecution {
+export interface PaymentExecutionItem {
+  paymentItemId: string;
+  status: PaymentStatus;
+  mode: string;
+  network: string;
   agentWalletAddress: string;
-  testnetName: string;
-  transactionHash: string;
-  paymentStatus: "pending" | "success" | "failed";
-  token: string;
-  amount: number;
-  recipientWallet: string;
-  permissionBoundary: string;
+  txHash: string | null;
+  cawRequestId: string;
+  error?: string | null;
+}
+
+export interface PaymentExecutionResult {
+  executionId: string;
+  auditReportId: string;
+  mode: string;
+  agentWalletAddress: string;
+  payments: PaymentExecutionItem[];
 }
 
 export interface AuditReport {
-  id: string;
-  paymentPlanId: string;
-  timestamp: string;
-  summary: string;
-  transactions: CAWExecution[];
+  auditReportId: string;
+  mode: string;
+  paymentPlan: PaymentPlan;
   riskCheck: RiskCheckResult;
-  approvedBy: string;
+  humanApproval: HumanApproval;
+  execution: PaymentExecutionResult;
+  remainingBudget: number;
 }

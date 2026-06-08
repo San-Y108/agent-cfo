@@ -1,14 +1,18 @@
 import type { AuditReport } from "../api/types";
 import { mockPaymentPlan } from "./payment-plan";
 import { mockRiskCheckResult } from "./risk-check";
-import { mockCAWExecutions } from "./caw-execution";
+import { mockExecutionResult } from "./caw-execution";
 
+/**
+ * mock 版 GET /api/audit-report/{auditReportId} 响应。
+ * 镜像后端 AuditReport：聚合 paymentPlan / riskCheck / humanApproval / execution。
+ */
 export const mockAuditReport: AuditReport = {
-  id: "audit-1",
-  paymentPlanId: mockPaymentPlan.id,
-  timestamp: "2026-06-07T12:00:00Z",
-  summary: "Payment plan executed with 3 successful transactions. 1 item blocked by whitelist check (Bob).",
-  transactions: mockCAWExecutions,
+  auditReportId: mockExecutionResult.auditReportId,
+  mode: "mock",
+  paymentPlan: mockPaymentPlan,
   riskCheck: mockRiskCheckResult,
-  approvedBy: "HumanOperator",
+  humanApproval: { approved: true, approvedBy: "demo-operator" },
+  execution: mockExecutionResult,
+  remainingBudget: mockRiskCheckResult.remainingBudget,
 };

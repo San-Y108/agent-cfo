@@ -2,6 +2,7 @@ import { GlassPanel } from "@/components/ui/glass-panel";
 import { StatusPill } from "@/components/ui/status-pill";
 import { Wallet, ShieldAlert, ShieldCheck } from "lucide-react";
 import type { PaymentPlan, RiskCheckResult } from "@/lib/api/types";
+import { partitionByRisk, planToken } from "@/lib/workflow/derive";
 
 interface PaymentPlanProps {
   plan: PaymentPlan;
@@ -14,14 +15,10 @@ function truncateAddress(addr: string): string {
 }
 
 export function PaymentPlanBoard({ plan, riskResult }: PaymentPlanProps) {
-  const blockedWallets = riskResult.checks.whitelistCheck.blockedWallets ?? [];
-
-  const approvedItems = plan.items.filter(
-    (item) => !blockedWallets.includes(item.recipient.walletAddress)
-  );
-  const blockedItems = plan.items.filter(
-    (item) => blockedWallets.includes(item.recipient.walletAddress)
-  );
+  const { approved: approvedItems, blocked: blockedItems } =
+    partitionByRisk(riskResult);
+  const token = planToken(plan);
+  const rows = riskResult.payments;
 
   return (
     <GlassPanel accent="blue" className="p-0 overflow-hidden">
@@ -42,14 +39,14 @@ export function PaymentPlanBoard({ plan, riskResult }: PaymentPlanProps) {
           <p className="text-xl font-bold text-white font-mono-numbers">
             {plan.totalAmount}
           </p>
-          <p className="text-[11px] text-slate-500">{plan.token}</p>
+          <p className="text-[11px] text-slate-500">{token}</p>
         </div>
       </div>
 
       {/* Transaction Board */}
       <div className="p-3 space-y-2">
-        {plan.items.map((item) => {
-          const isBlocked = blockedWallets.includes(item.recipient.walletAddress);
+        {rows.map((item) => {
+          const isBlocked = item.status === "Blocked";
 
           return (
             <div
@@ -77,7 +74,7 @@ export function PaymentPlanBoard({ plan, riskResult }: PaymentPlanProps) {
                 <div className="min-w-0">
                   <div className="flex items-center gap-2">
                     <p className="text-sm font-medium text-white truncate">
-                      {item.recipient.name}
+                      {item.recipient}
                     </p>
                     {isBlocked ? (
                       <StatusPill status="danger">Blocked</StatusPill>
@@ -86,7 +83,7 @@ export function PaymentPlanBoard({ plan, riskResult }: PaymentPlanProps) {
                     )}
                   </div>
                   <p className="text-[11px] text-slate-500 font-mono-numbers">
-                    {truncateAddress(item.recipient.walletAddress)} · {item.description}
+                    {truncateAddress(item.wallet)} · {item.reason}
                   </p>
                 </div>
               </div>

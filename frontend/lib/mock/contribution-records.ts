@@ -1,62 +1,48 @@
-import type { ContributionRecord, SubscriptionBill } from "../api/types";
+import type { ContributionRecord } from "../api/types";
 
-export const mockContributors = [
+/**
+ * Demo 输入数据：贡献记录 / 订阅账单（后端 ContributionRecord 形状）。
+ * 这是 POST /api/payment-plan 的 `contributions` 输入，real mode 直接复用。
+ */
+
+export const WALLETS = {
+  alice: "0xAliceWalletAddress",
+  bob: "0xBobWalletAddress",
+  charlie: "0xCharlieWalletAddress",
+  vendor: "0xDataApiVendorAddress",
+} as const;
+
+export const mockContributions: ContributionRecord[] = [
   {
-    id: "user-1",
     name: "Alice",
-    walletAddress: "0xAliceWalletAddress",
-    role: "内容贡献",
-  },
-  {
-    id: "user-2",
-    name: "Bob",
-    walletAddress: "0xBobWalletAddress",
-    role: "设计贡献",
-  },
-  {
-    id: "user-3",
-    name: "Charlie",
-    walletAddress: "0xCharlieWalletAddress",
-    role: "社群运营贡献",
-  },
-];
-
-export const mockContributionRecords: ContributionRecord[] = [
-  {
-    id: "contrib-1",
-    contributor: mockContributors[0],
-    taskDescription: "撰写 AgentCFO 技术文档",
+    role: "Content Contributor",
+    task: "Wrote event recap article",
+    wallet: WALLETS.alice,
     amount: 20,
     token: "USDC",
-    status: "approved",
-    createdAt: "2026-06-01T00:00:00Z",
   },
   {
-    id: "contrib-2",
-    contributor: mockContributors[1],
-    taskDescription: "设计 Demo Console UI",
+    name: "Bob",
+    role: "Designer",
+    task: "Designed event poster",
+    wallet: WALLETS.bob,
     amount: 15,
     token: "USDC",
-    status: "approved",
-    createdAt: "2026-06-02T00:00:00Z",
   },
   {
-    id: "contrib-3",
-    contributor: mockContributors[2],
-    taskDescription: "社群 AMA 主持",
+    name: "Charlie",
+    role: "Community Operator",
+    task: "Hosted community AMA",
+    wallet: WALLETS.charlie,
     amount: 10,
     token: "USDC",
-    status: "approved",
-    createdAt: "2026-06-03T00:00:00Z",
   },
-];
-
-export const mockSubscriptionBills: SubscriptionBill[] = [
   {
-    id: "sub-1",
-    serviceName: "Data API",
+    name: "Data API",
+    role: "Tool Subscription",
+    task: "Data API subscription (2026-06)",
+    wallet: WALLETS.vendor,
     amount: 5,
     token: "USDC",
-    billingPeriod: "2026-06",
   },
 ];

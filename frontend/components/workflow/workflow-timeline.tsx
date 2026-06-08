@@ -7,6 +7,7 @@ import { CheckCircle, AlertTriangle, Circle } from "lucide-react";
 import type { DemoStep } from "@/lib/workflow/demo-steps";
 import { demoSteps } from "@/lib/workflow/demo-steps";
 import type { RiskCheckResult } from "@/lib/api/types";
+import { riskPassed } from "@/lib/workflow/derive";
 
 interface WorkflowTimelineProps {
   riskResult: RiskCheckResult;
@@ -16,14 +17,14 @@ function resolveStepStatus(
   step: DemoStep,
   riskResult: RiskCheckResult
 ): DemoStep["status"] {
-  if (step.id === "risk-check" && !riskResult.passed) {
+  if (step.id === "risk-check" && !riskPassed(riskResult)) {
     return "blocked";
   }
   return "completed";
 }
 
 export function WorkflowTimeline({ riskResult }: WorkflowTimelineProps) {
-  const hasRiskFlagged = !riskResult.passed;
+  const hasRiskFlagged = !riskPassed(riskResult);
 
   return (
     <GlassPanel className="p-5">

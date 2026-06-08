@@ -1,21 +1,16 @@
 import { GlassPanel } from "@/components/ui/glass-panel";
 import { StatusPill } from "@/components/ui/status-pill";
 import { UserCheck, CheckCircle, XCircle, Info } from "lucide-react";
-import type { PaymentPlan, RiskCheckResult } from "@/lib/api/types";
+import type { RiskCheckResult } from "@/lib/api/types";
+import { partitionByRisk } from "@/lib/workflow/derive";
 
 interface HumanApprovalProps {
-  plan: PaymentPlan;
   riskResult: RiskCheckResult;
 }
 
-export function HumanApproval({ plan, riskResult }: HumanApprovalProps) {
-  const blockedWallets = riskResult.checks.whitelistCheck.blockedWallets ?? [];
-  const approvedItems = plan.items.filter(
-    (item) => !blockedWallets.includes(item.recipient.walletAddress)
-  );
-  const blockedItems = plan.items.filter(
-    (item) => blockedWallets.includes(item.recipient.walletAddress)
-  );
+export function HumanApproval({ riskResult }: HumanApprovalProps) {
+  const { approved: approvedItems, blocked: blockedItems } =
+    partitionByRisk(riskResult);
 
   return (
     <GlassPanel accent="emerald" className="p-0 overflow-hidden">
@@ -43,8 +38,8 @@ export function HumanApproval({ plan, riskResult }: HumanApprovalProps) {
                 <CheckCircle className="h-3.5 w-3.5" />
               </div>
               <div>
-                <p className="text-sm font-medium text-emerald-300">{item.recipient.name}</p>
-                <p className="text-[11px] text-emerald-400/70">{item.description}</p>
+                <p className="text-sm font-medium text-emerald-300">{item.recipient}</p>
+                <p className="text-[11px] text-emerald-400/70">{item.reason}</p>
               </div>
             </div>
             <div className="text-right">
@@ -67,8 +62,8 @@ export function HumanApproval({ plan, riskResult }: HumanApprovalProps) {
                 <XCircle className="h-3.5 w-3.5" />
               </div>
               <div>
-                <p className="text-sm font-medium text-red-300">{item.recipient.name}</p>
-                <p className="text-[11px] text-red-400/70">{item.description}</p>
+                <p className="text-sm font-medium text-red-300">{item.recipient}</p>
+                <p className="text-[11px] text-red-400/70">{item.reason}</p>
               </div>
             </div>
             <div className="text-right">

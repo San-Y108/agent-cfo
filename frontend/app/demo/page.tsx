@@ -15,7 +15,7 @@ export default function DemoPage() {
       <TreasuryKpiStrip
         paymentPlan={demoData.paymentPlan}
         riskResult={demoData.riskResult}
-        executions={demoData.executions}
+        execution={demoData.execution}
       />
 
       {/* Compact Workflow */}
@@ -41,18 +41,15 @@ export default function DemoPage() {
 
       {/* Lower Grid: Approval + Execution */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-        <HumanApproval
+        <HumanApproval riskResult={demoData.riskResult} />
+        <ExecutionResult
+          execution={demoData.execution}
           plan={demoData.paymentPlan}
-          riskResult={demoData.riskResult}
         />
-        <ExecutionResult executions={demoData.executions} />
       </div>
 
       {/* Audit Report: Full width, like final proof */}
-      <AuditReport
-        report={demoData.auditReport}
-        plan={demoData.paymentPlan}
-      />
+      <AuditReport report={demoData.auditReport} />
     </CommandCenterShell>
   );
 }
