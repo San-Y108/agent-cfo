@@ -11,13 +11,13 @@ from app.models import (
     RiskCheckRequest,
     RiskCheckResult,
 )
-from app.services.caw_adapter import MockCawAdapter
+from app.services.caw_adapter import CawAdapter, create_caw_adapter
 from app.services.payment_planner import create_payment_planner
 from app.services.risk_engine import check_payment_risks
 from app.store import store
 
 router = APIRouter(prefix="/api", tags=["payments"])
-caw_adapter = MockCawAdapter()
+caw_adapter: CawAdapter = create_caw_adapter()
 payment_planner = create_payment_planner()
 
 

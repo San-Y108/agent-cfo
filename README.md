@@ -149,6 +149,19 @@ Frontend
 
 真实付款必须通过 Cobo Agentic Wallet。Mock mode 只能用于演示兜底，必须明确标注。
 
+## CAW Adapter Contract
+
+当前代码只定义了 CAW adapter contract 和默认 `MockCawAdapter`，还没有接入真实 Cobo Agentic Wallet。
+
+共同 contract：
+
+- `create_transfer(execution_id, payment)`：返回标准 `PaymentExecutionItem`。
+- `failed_transfer(execution_id, payment, error)`：返回标准失败 `PaymentExecutionItem`。
+- adapter 必须暴露 `mode`、`network`、`agent_wallet_address`。
+- 默认 factory 只返回 mock adapter，完整 Demo 仍然不需要 CAW secrets。
+
+未来 `RealCawAdapter` 必须保持 P0 API 行为不变：Risk Check 仍是唯一决定 `Ready` / `NeedsApproval` / `Blocked` 的地方，Execute Payment 仍必须要求 `humanApproval.approved=true`，blocked payment 不能进入 adapter。真实 CAW 接入前，需要 CAW 同学提供 base URL 或官方 SDK 选择、auth 方式、wallet id/address、pact schema、policy rules、approval flow、chain/token config、status query 和 audit evidence。缺少这些信息时必须保持 mock mode 或 fail closed。
+
 ## Tech Stack
 
 - **Language**: Python 3.14 当前本机可用；如依赖安装失败，改用 Python 3.12/3.13。
