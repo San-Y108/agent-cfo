@@ -1,8 +1,57 @@
 @import "tailwindcss";
 
-@theme {
+/* Manual dark mode via .dark class on <html> (Tailwind v4) */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* ============================================================
+   Semantic color tokens — single source of truth for contrast.
+   Light = default (:root), Dark = .dark.
+   Hero stays permanently dark and does NOT use these tokens.
+   ============================================================ */
+:root {
+  --bg: #f8fafc;          /* page background (slate-50) */
+  --surface: #ffffff;      /* card surface */
+  --surface-2: #f1f5f9;    /* secondary surface (slate-100) */
+  --surface-hover: #eef2f7;
+  --fg: #0f172a;           /* primary text (slate-900) */
+  --fg-muted: #475569;     /* secondary text (slate-600) — AA on light */
+  --fg-subtle: #64748b;    /* tertiary text (slate-500) */
+  --border: #e2e8f0;       /* hairline (slate-200) */
+  --border-strong: #cbd5e1;
+  --accent: #d97706;       /* amber-600 — readable on light bg */
+  --accent-fg: #ffffff;
+}
+
+.dark {
+  --bg: #030712;
+  --surface: #0b1120;
+  --surface-2: #111827;
+  --surface-hover: #1e293b;
+  --fg: #f8fafc;
+  --fg-muted: #a3a3a3;     /* neutral-400 */
+  --fg-subtle: #6b7280;    /* neutral-500 */
+  --border: #1f2937;       /* gray-800 */
+  --border-strong: #374151;
+  --accent: #f59e0b;       /* amber-500 — readable on dark bg */
+  --accent-fg: #0a0a0a;
+}
+
+/* Expose tokens as Tailwind color utilities: bg-bg, text-fg, border-border-token … */
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-surface-hover: var(--surface-hover);
+  --color-fg: var(--fg);
+  --color-fg-muted: var(--fg-muted);
+  --color-fg-subtle: var(--fg-subtle);
+  --color-border-token: var(--border);
+  --color-border-strong: var(--border-strong);
+  --color-accent: var(--accent);
+  --color-accent-fg: var(--accent-fg);
+
   --color-navy-950: #030712;
-  --color-navy-900: #0B1120;
+  --color-navy-900: #0b1120;
   --color-navy-800: #111827;
   --color-navy-700: #1e293b;
   --color-gold-400: #fbbf24;
@@ -11,11 +60,14 @@
 }
 
 :root {
+  color-scheme: light;
+}
+.dark {
   color-scheme: dark;
 }
 
 html {
-  background-color: #030712;
+  background-color: var(--bg);
   scroll-behavior: smooth;
 }
 
@@ -26,11 +78,12 @@ section[id] {
 
 body {
   margin: 0;
-  background-color: #030712;
-  color: #f8fafc;
+  background-color: var(--bg);
+  color: var(--fg);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 /* Subtle animated grid background */
@@ -99,9 +152,9 @@ body {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: rgba(255,255,255,0.1);
+  background: var(--border-strong);
   border-radius: 3px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(255,255,255,0.2);
+  background: var(--fg-subtle);
 }

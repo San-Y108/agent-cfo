@@ -3,17 +3,20 @@
 import { ArrowRight, Menu, X } from "lucide-react";
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { useT } from "@/lib/i18n/context";
+import type { DictKey } from "@/lib/i18n/dict";
+import { ThemeLanguageToggle } from "@/components/ui/theme-language-toggle";
 
 // Background "robot + hand" cinematic visual — remote video, verbatim from Velorix IIC demo.
 const BG_VIDEO =
   "https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260508_155101_f2540600-6fe9-433e-8e48-b3f4b72f0727.mp4";
 
-const NAV_ITEMS: { label: string; href: string }[] = [
-  { label: "Problem", href: "#problem" },
-  { label: "Workflow", href: "#workflow" },
-  { label: "Risk Guardrails", href: "#risk-guardrails" },
-  { label: "Wallet Execution", href: "#wallet-execution" },
-  { label: "Audit Trail", href: "#audit-trail" },
+const NAV_ITEMS: { key: DictKey; href: string }[] = [
+  { key: "nav.problem", href: "#problem" },
+  { key: "nav.workflow", href: "#workflow" },
+  { key: "nav.risk", href: "#risk-guardrails" },
+  { key: "nav.wallet", href: "#wallet-execution" },
+  { key: "nav.audit", href: "#audit-trail" },
 ];
 
 function HamburgerButton({ open, onClick }: { open: boolean; onClick: () => void }) {
@@ -41,6 +44,7 @@ function HamburgerButton({ open, onClick }: { open: boolean; onClick: () => void
 }
 
 function MobileMenu({ open, onClose }: { open: boolean; onClose: () => void }) {
+  const t = useT();
   return (
     <>
       <div
@@ -67,7 +71,7 @@ function MobileMenu({ open, onClose }: { open: boolean; onClose: () => void }) {
           <div className="flex flex-col gap-1">
             {NAV_ITEMS.map((item, i) => (
               <a
-                key={item.label}
+                key={item.key}
                 href={item.href}
                 onClick={onClose}
                 className="text-white/70 hover:text-white text-base py-3 px-3 rounded-xl hover:bg-white/5 transition-all duration-200 flex items-center justify-between group"
@@ -79,7 +83,7 @@ function MobileMenu({ open, onClose }: { open: boolean; onClose: () => void }) {
                   transition: `opacity 0.4s cubic-bezier(0.23,1,0.32,1) ${i * 50 + 80}ms, transform 0.4s cubic-bezier(0.23,1,0.32,1) ${i * 50 + 80}ms, color 0.2s, background 0.2s`,
                 }}
               >
-                {item.label}
+                {t(item.key)}
                 <ArrowRight size={14} className="opacity-0 group-hover:opacity-40 -translate-x-1 group-hover:translate-x-0 transition-all duration-200" />
               </a>
             ))}
@@ -101,8 +105,11 @@ function MobileMenu({ open, onClose }: { open: boolean; onClose: () => void }) {
               className="block w-full py-3 rounded-full text-black text-sm font-medium text-center transition-all duration-300 hover:opacity-80"
               style={{ fontFamily: "Inter, sans-serif", backgroundColor: "#ffffff" }}
             >
-              Open Demo
+              {t("nav.openDemo")}
             </Link>
+            <div className="mt-4 flex justify-center">
+              <ThemeLanguageToggle variant="hero" />
+            </div>
           </div>
         </div>
       </div>
@@ -112,6 +119,7 @@ function MobileMenu({ open, onClose }: { open: boolean; onClose: () => void }) {
 
 function Navbar() {
   const [open, setOpen] = useState(false);
+  const t = useT();
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => e.key === "Escape" && setOpen(false);
@@ -128,23 +136,26 @@ function Navbar() {
         <div className="hidden lg:flex items-center gap-1 rounded-full px-2 py-1.5" style={{ backgroundColor: "#0C0C0C" }}>
           {NAV_ITEMS.map((item) => (
             <a
-              key={item.label}
+              key={item.key}
               href={item.href}
               className="text-white/80 hover:text-white text-sm px-4 py-1.5 rounded-full hover:bg-white/10 transition-all duration-200"
               style={{ fontFamily: "Inter, sans-serif" }}
             >
-              {item.label}
+              {t(item.key)}
             </a>
           ))}
         </div>
         <div className="flex items-center gap-2">
+          <div className="hidden lg:block">
+            <ThemeLanguageToggle variant="hero" />
+          </div>
           <HamburgerButton open={open} onClick={() => setOpen((v) => !v)} />
           <Link
             href="/demo"
             className="hidden lg:block text-sm font-medium px-5 py-2 rounded-full text-black transition-all duration-300 hover:opacity-80"
             style={{ fontFamily: "Inter, sans-serif", backgroundColor: "#ffffff" }}
           >
-            Open Demo
+            {t("nav.openDemo")}
           </Link>
         </div>
       </nav>
@@ -154,6 +165,7 @@ function Navbar() {
 }
 
 export function VelorixHero() {
+  const t = useT();
   return (
     <div className="relative w-full h-screen overflow-hidden bg-black" style={{ fontFamily: "Inter, sans-serif" }}>
       <video
@@ -175,18 +187,14 @@ export function VelorixHero() {
             fontSize: "clamp(1.75rem, 5vw, 2.6rem)",
           }}
         >
-          Where DAO treasury decisions
-          <br className="hidden sm:block" />
-          {" "}become executable payment flows
+          {t("hero.title")}
         </h1>
 
         <p
           className="mt-5 md:mt-6 text-white/60 text-sm md:text-base leading-relaxed max-w-xs sm:max-w-sm md:max-w-md"
           style={{ fontFamily: "'Courier New', Courier, monospace", letterSpacing: "0.01em" }}
         >
-          from contributor records to wallet execution —
-          <br className="hidden sm:block" />
-          {" "}risk-checked, human-approved, audit-ready
+          {t("hero.subtitle")}
         </p>
 
         <Link
@@ -194,7 +202,7 @@ export function VelorixHero() {
           className="mt-7 md:mt-8 flex items-center gap-2.5 px-5 py-2.5 rounded-full text-black text-sm font-medium transition-all duration-300 hover:opacity-80 group"
           style={{ fontFamily: "Inter, sans-serif", backgroundColor: "#ffffff" }}
         >
-          Run the payout flow
+          {t("hero.cta")}
           <ArrowRight size={15} className="group-hover:translate-x-0.5 transition-transform duration-200" />
         </Link>
       </div>
