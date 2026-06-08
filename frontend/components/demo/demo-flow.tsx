@@ -11,17 +11,20 @@ import { StepApproval } from "./steps/step-approval";
 import { StepExecution } from "./steps/step-execution";
 import { StepAudit } from "./steps/step-audit";
 import { DemoBackdrop } from "@/components/ui/aceternity/background";
+import { ThemeLanguageToggle } from "@/components/ui/theme-language-toggle";
+import { useT } from "@/lib/i18n/context";
+import type { DictKey } from "@/lib/i18n/dict";
 import type { DemoData } from "@/lib/demo/demo-data";
 
 export type DemoStep = 0 | 1 | 2 | 3 | 4 | 5;
 
-const stepLabels = [
-  "Introduction",
-  "Payment Plan",
-  "Risk Check",
-  "Approval",
-  "Execution",
-  "Audit",
+const stepLabelKeys: DictKey[] = [
+  "demo.steps.intro",
+  "demo.steps.plan",
+  "demo.steps.risk",
+  "demo.steps.approval",
+  "demo.steps.execution",
+  "demo.steps.audit",
 ];
 
 interface DemoFlowProps {
@@ -29,6 +32,7 @@ interface DemoFlowProps {
 }
 
 export function DemoFlow({ data }: DemoFlowProps) {
+  const t = useT();
   const [step, setStep] = useState<DemoStep>(0);
   const [revealedSteps, setRevealedSteps] = useState<Set<number>>(new Set([0]));
   const [isRunning, setIsRunning] = useState(false);
@@ -87,43 +91,43 @@ export function DemoFlow({ data }: DemoFlowProps) {
 
   const stats = [
     {
-      label: "Budget",
+      label: t("demo.kpi.budget"),
       value: data.request.budgetRule.monthlyBudget,
       suffix: " USDC",
       tone: "neutral" as const,
     },
     {
-      label: "Planned",
+      label: t("demo.kpi.planned"),
       value: data.paymentPlan.totalAmount,
       suffix: " USDC",
       tone: "amber" as const,
     },
     {
-      label: "Approved",
+      label: t("demo.kpi.approved"),
       value: approvedCount,
-      suffix: " items",
+      suffix: "",
       tone: "emerald" as const,
     },
     {
-      label: "Blocked",
+      label: t("demo.kpi.blocked"),
       value: blockedCount,
-      suffix: " items",
+      suffix: "",
       tone: "red" as const,
     },
     {
-      label: "Mode",
+      label: t("demo.kpi.mode"),
       value: 0,
-      prefix: "Mock",
+      prefix: t("demo.kpi.mock"),
       tone: "blue" as const,
     },
   ];
 
   return (
-    <div className="relative min-h-screen bg-[#030712] flex flex-col">
+    <div className="relative min-h-screen bg-bg flex flex-col">
       <DemoBackdrop />
 
       {/* Header */}
-      <header className="relative border-b border-white/[0.06] bg-[#030712]/80 backdrop-blur-xl z-50 flex-shrink-0">
+      <header className="relative border-b border-border-token bg-bg/80 backdrop-blur-xl z-50 flex-shrink-0">
         <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-amber-500/30 to-transparent" />
         <div className="flex h-14 items-center justify-between px-4 sm:px-6">
           <div className="flex items-center gap-3">
@@ -133,9 +137,9 @@ export function DemoFlow({ data }: DemoFlowProps) {
               </svg>
             </div>
             <div className="flex items-baseline gap-2">
-              <h1 className="text-base font-bold text-white tracking-tight">AgentCFO</h1>
-              <span className="text-[10px] font-semibold uppercase tracking-wider text-amber-400 border border-amber-500/20 bg-amber-500/10 px-1.5 py-0.5 rounded">
-                Command Center
+              <h1 className="text-base font-bold text-fg tracking-tight">AgentCFO</h1>
+              <span className="text-[10px] font-semibold uppercase tracking-wider text-amber-600 dark:text-amber-400 border border-amber-500/20 bg-amber-500/10 px-1.5 py-0.5 rounded">
+                {t("demo.commandCenter")}
               </span>
             </div>
           </div>
@@ -144,8 +148,9 @@ export function DemoFlow({ data }: DemoFlowProps) {
             <div className="hidden lg:flex">
               <StatsStrip stats={stats} />
             </div>
-            <a href="/" className="text-xs text-neutral-500 hover:text-neutral-300 transition-colors hidden sm:inline">
-              ← Back
+            <ThemeLanguageToggle variant="app" />
+            <a href="/" className="text-xs text-fg-subtle hover:text-fg transition-colors hidden sm:inline">
+              ← {t("demo.back")}
             </a>
           </div>
         </div>
@@ -198,15 +203,16 @@ function StepProgress({
   revealed: Set<number>;
   onStepClick: (step: DemoStep) => void;
 }) {
+  const t = useT();
   const maxRevealed = Math.max(...revealed);
 
   return (
     <div className="flex items-center gap-1 overflow-x-auto pb-2 sm:gap-0">
-      {stepLabels.map((label, idx) => {
+      {stepLabelKeys.map((labelKey, idx) => {
         const isRevealed = revealed.has(idx);
         const isActive = current === idx;
         const isDone = idx < maxRevealed && !isActive;
-        const isLast = idx === stepLabels.length - 1;
+        const isLast = idx === stepLabelKeys.length - 1;
 
         return (
           <React.Fragment key={idx}>
@@ -219,12 +225,12 @@ function StepProgress({
               <span
                 className={`flex h-7 w-7 items-center justify-center rounded-full border text-xs font-semibold transition-all duration-300 ${
                   isActive
-                    ? "border-amber-500 bg-amber-500/20 text-amber-400 shadow-[0_0_12px_-2px_rgba(245,158,11,0.5)]"
+                    ? "border-amber-500 bg-amber-500/20 text-amber-600 dark:text-amber-400 shadow-[0_0_12px_-2px_rgba(245,158,11,0.5)]"
                     : isDone
-                    ? "border-emerald-500/40 bg-emerald-500/10 text-emerald-400"
+                    ? "border-emerald-500/40 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
                     : isRevealed
-                    ? "border-neutral-600 bg-neutral-800 text-neutral-400"
-                    : "border-neutral-800 bg-neutral-900 text-neutral-600"
+                    ? "border-border-strong bg-surface-2 text-fg-muted"
+                    : "border-border-token bg-surface text-fg-subtle"
                 }`}
               >
                 {isDone ? "✓" : idx + 1}
@@ -233,15 +239,15 @@ function StepProgress({
               <span
                 className={`whitespace-nowrap text-xs font-medium transition-colors duration-200 ${
                   isActive
-                    ? "text-amber-400"
+                    ? "text-amber-600 dark:text-amber-400"
                     : isDone
-                    ? "text-neutral-300"
+                    ? "text-fg"
                     : isRevealed
-                    ? "text-neutral-400 group-hover:text-neutral-200"
-                    : "text-neutral-600"
+                    ? "text-fg-muted group-hover:text-fg"
+                    : "text-fg-subtle"
                 }`}
               >
-                {label}
+                {t(labelKey)}
               </span>
             </button>
 
@@ -249,7 +255,7 @@ function StepProgress({
             {!isLast && (
               <span
                 className={`mx-1 hidden h-px w-6 flex-shrink-0 sm:block ${
-                  idx < maxRevealed ? "bg-emerald-500/30" : "bg-neutral-800"
+                  idx < maxRevealed ? "bg-emerald-500/30" : "bg-border-token"
                 }`}
               />
             )}

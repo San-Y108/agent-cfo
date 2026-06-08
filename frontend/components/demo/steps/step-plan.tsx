@@ -4,10 +4,12 @@ import React from "react";
 import { motion } from "framer-motion";
 import { BentoGrid, BentoCard, BentoCardTitle, BentoCardDescription } from "@/components/demo/bento-grid";
 import { AnimatedNumber } from "@/components/ui/aceternity/animated-number";
+import { useT } from "@/lib/i18n/context";
 import type { DemoData } from "@/lib/demo/demo-data";
 import { CheckCircle, AlertTriangle } from "lucide-react";
 
 export function StepPlan({ data }: { data: DemoData }) {
+  const t = useT();
   const payments = data.paymentPlan.payments;
 
   const container = {
@@ -29,9 +31,9 @@ export function StepPlan({ data }: { data: DemoData }) {
       <motion.h3
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        className="text-xl font-bold text-white"
+        className="text-xl font-bold text-fg"
       >
-        AI Generated Payment Plan
+        {t("demo.plan.title")}
       </motion.h3>
 
       <motion.div variants={container} initial="hidden" animate="show"
@@ -55,31 +57,31 @@ export function StepPlan({ data }: { data: DemoData }) {
                     }`}
                     >
                       {isBlocked ? (
-                        <AlertTriangle className="h-4 w-4 text-red-400" />
+                        <AlertTriangle className="h-4 w-4 text-red-600 dark:text-red-400" />
                       ) : (
-                        <CheckCircle className="h-4 w-4 text-emerald-400" />
+                        <CheckCircle className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
                       )}
                     </div>
                   </div>
 
                   <div className="mt-4 flex items-end justify-between"
                   >
-                    <div className="text-2xl font-bold text-white"
+                    <div className="text-2xl font-bold text-fg"
                     >
-                      <AnimatedNumber value={p.amount} /> <span className="text-sm font-normal text-neutral-500"
+                      <AnimatedNumber value={p.amount} /> <span className="text-sm font-normal text-fg-subtle"
                       >USDC</span>
                     </div>
                     <div className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${
                       isBlocked
-                        ? "bg-red-500/10 text-red-400 border border-red-500/20"
-                        : "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
+                        ? "bg-red-500/10 text-red-600 dark:text-red-400 border border-red-500/20"
+                        : "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20"
                     }`}
                     >
                       {p.status.toUpperCase()}
                     </div>
                   </div>
 
-                  <div className="mt-3 text-xs text-neutral-500 truncate"
+                  <div className="mt-3 text-xs text-fg-subtle truncate"
                   >
                     {p.wallet}
                   </div>
@@ -95,15 +97,15 @@ export function StepPlan({ data }: { data: DemoData }) {
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.6 }}
-        className="rounded-xl border border-neutral-800 bg-neutral-900/50 p-4"
+        className="rounded-xl border border-border-token bg-surface p-4"
       >
         <div className="flex items-center justify-between text-sm"
         >
-          <span className="text-neutral-400"
-          >Total planned: <strong className="text-white"
+          <span className="text-fg-muted"
+          >{t("demo.plan.totalPlanned")}: <strong className="text-fg"
           ><AnimatedNumber value={data.paymentPlan.totalAmount} /> USDC</strong></span>
-          <span className="text-neutral-400"
-          >{payments.filter((p) => p.status !== "Blocked").length} approved, {payments.filter((p) => p.status === "Blocked").length} blocked</span>
+          <span className="text-fg-muted"
+          >{payments.filter((p) => p.status !== "Blocked").length} {t("demo.plan.approvedSuffix")}, {payments.filter((p) => p.status === "Blocked").length} {t("demo.plan.blockedSuffix")}</span>
         </div>
       </motion.div>
     </div>

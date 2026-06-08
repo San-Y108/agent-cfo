@@ -6,10 +6,12 @@ import { BentoCard, BentoCardTitle, BentoCardDescription } from "@/components/de
 import { GradientOrb } from "@/components/ui/aceternity/background";
 import { Sparkles } from "@/components/ui/aceternity/sparkles";
 import { CopyableHash } from "@/components/ui/copyable-hash";
+import { useT } from "@/lib/i18n/context";
 import type { DemoData } from "@/lib/demo/demo-data";
 import { Zap, Wallet, Network, FileCheck } from "lucide-react";
 
 export function StepExecution({ data }: { data: DemoData }) {
+  const t = useT();
   const exec = data.execution;
   const firstPayment = exec.payments[0];
   const executedCount = exec.payments.filter((p) => p.status === "Executed").length;
@@ -19,9 +21,9 @@ export function StepExecution({ data }: { data: DemoData }) {
       <motion.h3
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        className="text-xl font-bold text-white"
+        className="text-xl font-bold text-fg"
       >
-        Executing via Cobo Agentic Wallet
+        {t("demo.exec.title")}
       </motion.h3>
 
       {/* Execution Animation */}
@@ -47,20 +49,20 @@ export function StepExecution({ data }: { data: DemoData }) {
           ))}
         </div>
         {/* Sparkle particles */}
-        <Sparkles count={20} color="bg-blue-300" />
+        <Sparkles count={20} color="bg-blue-400" />
 
         <div className="relative z-10 flex flex-col items-center gap-4 py-8">
           <motion.div
             animate={{ rotate: 360 }}
             transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
           >
-            <Zap className="h-12 w-12 text-blue-400" />
+            <Zap className="h-12 w-12 text-blue-600 dark:text-blue-400" />
           </motion.div>
-          <p className="text-lg font-semibold text-white">
-            Processing Transactions...
+          <p className="text-lg font-semibold text-fg">
+            {t("demo.exec.processing")}
           </p>
-          <p className="text-sm text-neutral-400">
-            Simulated execution on {firstPayment?.network ?? "mock-testnet"}
+          <p className="text-sm text-fg-muted">
+            {t("demo.exec.simulatedOn")} {firstPayment?.network ?? "mock-testnet"}
           </p>
         </div>
       </div>
@@ -72,35 +74,35 @@ export function StepExecution({ data }: { data: DemoData }) {
         transition={{ delay: 1.5 }}
         className="grid grid-cols-1 md:grid-cols-2 gap-4"
       >
-        <BentoCard>
-          <Wallet className="h-5 w-5 text-blue-400 mb-2" />
-          <BentoCardTitle>Agent Wallet</BentoCardTitle>
+        <BentoCard tone="blue">
+          <Wallet className="h-5 w-5 text-blue-600 dark:text-blue-400 mb-2" />
+          <BentoCardTitle>{t("demo.exec.agentWallet")}</BentoCardTitle>
           <BentoCardDescription>
             {exec.agentWalletAddress}
           </BentoCardDescription>
         </BentoCard>
 
-        <BentoCard>
-          <Network className="h-5 w-5 text-purple-400 mb-2" />
-          <BentoCardTitle>Network</BentoCardTitle>
+        <BentoCard tone="purple">
+          <Network className="h-5 w-5 text-purple-600 dark:text-purple-400 mb-2" />
+          <BentoCardTitle>{t("demo.exec.network")}</BentoCardTitle>
           <BentoCardDescription>
             {firstPayment?.network ?? "mock-testnet"}
           </BentoCardDescription>
         </BentoCard>
 
-        <BentoCard>
-          <FileCheck className="h-5 w-5 text-emerald-400 mb-2" />
-          <BentoCardTitle>Status</BentoCardTitle>
+        <BentoCard tone="emerald">
+          <FileCheck className="h-5 w-5 text-emerald-600 dark:text-emerald-400 mb-2" />
+          <BentoCardTitle>{t("demo.exec.status")}</BentoCardTitle>
           <BentoCardDescription>
-            {executedCount} / {exec.payments.length} transactions executed
+            {executedCount} / {exec.payments.length} {t("demo.exec.executed")}
           </BentoCardDescription>
         </BentoCard>
 
-        <BentoCard>
-          <Zap className="h-5 w-5 text-amber-400 mb-2" />
-          <BentoCardTitle>Mode</BentoCardTitle>
+        <BentoCard tone="amber">
+          <Zap className="h-5 w-5 text-amber-600 dark:text-amber-400 mb-2" />
+          <BentoCardTitle>{t("demo.exec.mode")}</BentoCardTitle>
           <BentoCardDescription>
-            {exec.mode} · simulated execution
+            {exec.mode} · {t("demo.exec.modeDesc")}
           </BentoCardDescription>
         </BentoCard>
       </motion.div>
@@ -112,21 +114,21 @@ export function StepExecution({ data }: { data: DemoData }) {
         transition={{ delay: 1.8 }}
       >
         <BentoCard colSpan={2}>
-          <BentoCardTitle>Transactions</BentoCardTitle>
+          <BentoCardTitle>{t("demo.exec.transactions")}</BentoCardTitle>
           <BentoCardDescription>
-            Each executed payment returns a transaction reference
+            {t("demo.exec.transactionsDesc")}
           </BentoCardDescription>
-          <div className="mt-4 flex flex-col divide-y divide-neutral-800">
+          <div className="mt-4 flex flex-col divide-y divide-border-token">
             {exec.payments.map((p) => (
               <div
                 key={p.paymentItemId}
                 className="flex items-center justify-between gap-3 py-2.5"
               >
                 <div className="flex items-center gap-2 min-w-0">
-                  <span className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-emerald-500/10 text-emerald-400">
+                  <span className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
                     <FileCheck className="h-3.5 w-3.5" />
                   </span>
-                  <span className="truncate text-sm text-neutral-300">
+                  <span className="truncate text-sm text-fg-muted">
                     {p.paymentItemId}
                   </span>
                 </div>
@@ -138,9 +140,8 @@ export function StepExecution({ data }: { data: DemoData }) {
             ))}
           </div>
           {!firstPayment?.txHash && (
-            <p className="mt-3 text-xs text-neutral-600">
-              tx hash is null in mock mode — request ID shown instead. Real tx
-              hashes appear after live Cobo Agentic Wallet execution.
+            <p className="mt-3 text-xs text-fg-subtle">
+              {t("demo.exec.txNote")}
             </p>
           )}
         </BentoCard>

@@ -3,10 +3,12 @@
 import React from "react";
 import { motion } from "framer-motion";
 import { BentoGrid, BentoCard, BentoCardTitle, BentoCardDescription } from "@/components/demo/bento-grid";
+import { useT } from "@/lib/i18n/context";
 import type { DemoData } from "@/lib/demo/demo-data";
 import { CheckCircle, AlertTriangle, XCircle } from "lucide-react";
 
 export function StepRisk({ data }: { data: DemoData }) {
+  const t = useT();
   const payments = data.riskResult.payments;
   const blockedPayments = payments.filter((p) => p.status === "Blocked");
 
@@ -28,9 +30,9 @@ export function StepRisk({ data }: { data: DemoData }) {
       <motion.h3
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        className="text-xl font-bold text-white"
+        className="text-xl font-bold text-fg"
       >
-        Risk Check Results
+        {t("demo.risk.title")}
       </motion.h3>
 
       {/* Payment-level Risk Items */}
@@ -62,9 +64,9 @@ export function StepRisk({ data }: { data: DemoData }) {
                       }`}
                     >
                       {isBlocked ? (
-                        <XCircle className="h-5 w-5 text-red-400" />
+                        <XCircle className="h-5 w-5 text-red-600 dark:text-red-400" />
                       ) : (
-                        <CheckCircle className="h-5 w-5 text-emerald-400" />
+                        <CheckCircle className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
                       )}
                     </div>
                     <div>
@@ -79,21 +81,21 @@ export function StepRisk({ data }: { data: DemoData }) {
                         key={ri}
                         className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${
                           isBlocked
-                            ? "bg-red-500/10 text-red-400 border border-red-500/20"
-                            : "bg-amber-500/10 text-amber-400 border border-amber-500/20"
+                            ? "bg-red-500/10 text-red-600 dark:text-red-400 border border-red-500/20"
+                            : "bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20"
                         }`}
                       >
                         {risk}
                       </span>
                     ))}
                     {payment.risks.length === 0 && (
-                      <span className="rounded-full px-2.5 py-0.5 text-xs font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                        All Clear
+                      <span className="rounded-full px-2.5 py-0.5 text-xs font-medium bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+                        {t("demo.risk.allClear")}
                       </span>
                     )}
                   </div>
 
-                  <div className="mt-2 text-sm font-bold text-white">
+                  <div className="mt-2 text-sm font-bold text-fg">
                     {payment.amount} {payment.token}
                   </div>
                 </BentoCard>
@@ -116,16 +118,14 @@ export function StepRisk({ data }: { data: DemoData }) {
               animate={{ rotate: [0, -5, 5, -5, 0] }}
               transition={{ duration: 0.5, delay: 1 }}
             >
-              <AlertTriangle className="h-6 w-6 text-red-400" />
+              <AlertTriangle className="h-6 w-6 text-red-600 dark:text-red-400" />
             </motion.div>
-            <h4 className="text-lg font-bold text-red-400">
-              Payment Blocked
+            <h4 className="text-lg font-bold text-red-600 dark:text-red-400">
+              {t("demo.risk.blockedTitle")}
             </h4>
           </div>
-          <p className="text-sm text-neutral-300">
-            {blockedPayments.map((p) => p.recipient).join(", ")} was
-            blocked due to risk check failures. These payments require
-            manual review and cannot be auto-approved.
+          <p className="text-sm text-fg-muted">
+            {blockedPayments.map((p) => p.recipient).join(", ")} {t("demo.risk.blockedBody")}
           </p>
         </motion.div>
       )}

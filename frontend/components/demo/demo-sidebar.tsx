@@ -12,39 +12,20 @@ import {
   Menu,
   X,
 } from "lucide-react";
+import { useT } from "@/lib/i18n/context";
+import type { DictKey } from "@/lib/i18n/dict";
 
 interface SidebarLink {
-  label: string;
-  href: string;
+  labelKey: DictKey;
   icon: React.ReactNode;
 }
 
 const primaryLinks: SidebarLink[] = [
-  {
-    label: "Payment Plan",
-    href: "#plan",
-    icon: <ClipboardList className="h-5 w-5 flex-shrink-0 text-neutral-300" />,
-  },
-  {
-    label: "Risk Check",
-    href: "#risk",
-    icon: <ShieldCheck className="h-5 w-5 flex-shrink-0 text-neutral-300" />,
-  },
-  {
-    label: "Approval",
-    href: "#approval",
-    icon: <UserCheck className="h-5 w-5 flex-shrink-0 text-neutral-300" />,
-  },
-  {
-    label: "Execution",
-    href: "#execution",
-    icon: <Wallet className="h-5 w-5 flex-shrink-0 text-neutral-300" />,
-  },
-  {
-    label: "Audit Report",
-    href: "#audit",
-    icon: <FileText className="h-5 w-5 flex-shrink-0 text-neutral-300" />,
-  },
+  { labelKey: "demo.sidebar.plan", icon: <ClipboardList className="h-5 w-5 flex-shrink-0" /> },
+  { labelKey: "demo.sidebar.risk", icon: <ShieldCheck className="h-5 w-5 flex-shrink-0" /> },
+  { labelKey: "demo.sidebar.approval", icon: <UserCheck className="h-5 w-5 flex-shrink-0" /> },
+  { labelKey: "demo.sidebar.execution", icon: <Wallet className="h-5 w-5 flex-shrink-0" /> },
+  { labelKey: "demo.sidebar.audit", icon: <FileText className="h-5 w-5 flex-shrink-0" /> },
 ];
 
 export function DemoSidebar({
@@ -57,7 +38,7 @@ export function DemoSidebar({
   return (
     <>
       {/* Desktop */}
-      <aside className="hidden md:flex w-[220px] flex-shrink-0 flex-col border-r border-neutral-800 bg-neutral-950 py-4">
+      <aside className="hidden md:flex w-[220px] flex-shrink-0 flex-col border-r border-border-token bg-surface py-4">
         <Logo />
         <nav className="mt-6 flex flex-col gap-0.5 px-2">
           {primaryLinks.map((link, idx) => (
@@ -86,18 +67,19 @@ function SidebarLinkItem({
   isActive: boolean;
   onClick: () => void;
 }) {
+  const t = useT();
   return (
     <button
       onClick={onClick}
       className={cn(
         "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
         isActive
-          ? "bg-neutral-800 text-white"
-          : "text-neutral-400 hover:bg-neutral-800/50 hover:text-neutral-200"
+          ? "bg-surface-2 text-fg"
+          : "text-fg-muted hover:bg-surface-2 hover:text-fg"
       )}
     >
       {link.icon}
-      {link.label}
+      {t(link.labelKey)}
     </button>
   );
 }
@@ -105,8 +87,8 @@ function SidebarLinkItem({
 function Logo() {
   return (
     <div className="flex items-center gap-2 px-4 py-2">
-      <div className="h-5 w-6 flex-shrink-0 rounded-bl-sm rounded-br-lg rounded-tl-lg rounded-tr-sm bg-white" />
-      <span className="text-sm font-medium text-white">AgentCFO</span>
+      <div className="h-5 w-6 flex-shrink-0 rounded-bl-sm rounded-br-lg rounded-tl-lg rounded-tr-sm bg-accent" />
+      <span className="text-sm font-medium text-fg">AgentCFO</span>
     </div>
   );
 }
@@ -122,13 +104,13 @@ function MobileSidebar({
 
   return (
     <div className="md:hidden">
-      <div className="flex items-center justify-between border-b border-neutral-800 bg-neutral-950 px-4 py-3">
+      <div className="flex items-center justify-between border-b border-border-token bg-surface px-4 py-3">
         <div className="flex items-center gap-2">
-          <div className="h-5 w-6 flex-shrink-0 rounded-bl-sm rounded-br-lg rounded-tl-lg rounded-tr-sm bg-white" />
-          <span className="text-sm font-medium text-white">AgentCFO</span>
+          <div className="h-5 w-6 flex-shrink-0 rounded-bl-sm rounded-br-lg rounded-tl-lg rounded-tr-sm bg-accent" />
+          <span className="text-sm font-medium text-fg">AgentCFO</span>
         </div>
         <Menu
-          className="h-5 w-5 text-neutral-300 cursor-pointer"
+          className="h-5 w-5 text-fg-muted cursor-pointer"
           onClick={() => setOpen(true)}
         />
       </div>
@@ -140,12 +122,12 @@ function MobileSidebar({
             animate={{ x: 0 }}
             exit={{ x: "-100%" }}
             transition={{ duration: 0.2 }}
-            className="fixed inset-0 z-[100] flex flex-col bg-neutral-950 p-4"
+            className="fixed inset-0 z-[100] flex flex-col bg-bg p-4"
           >
             <div className="flex items-center justify-between mb-6">
               <Logo />
               <X
-                className="h-5 w-5 text-neutral-300 cursor-pointer"
+                className="h-5 w-5 text-fg-muted cursor-pointer"
                 onClick={() => setOpen(false)}
               />
             </div>

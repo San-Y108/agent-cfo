@@ -33,17 +33,17 @@ export function CopyableHash({
     <button
       onClick={handleCopy}
       className={cn(
-        "group inline-flex items-center gap-1.5 rounded-md border border-neutral-700 bg-neutral-800/50 px-2 py-1 font-mono text-xs text-neutral-300 transition-colors hover:border-neutral-600 hover:bg-neutral-800",
+        "group inline-flex items-center gap-1.5 rounded-md border border-border-token bg-surface-2 px-2 py-1 font-mono text-xs text-fg-muted transition-colors hover:border-border-strong hover:text-fg",
         className
       )}
       title="Click to copy"
     >
-      {label && <span className="text-neutral-500">{label}:</span>}
+      {label && <span className="text-fg-subtle">{label}:</span>}
       <span className="max-w-[180px] truncate">{value}</span>
       {copied ? (
-        <Check className="h-3 w-3 flex-shrink-0 text-emerald-400" />
+        <Check className="h-3 w-3 flex-shrink-0 text-emerald-500 dark:text-emerald-400" />
       ) : (
-        <Copy className="h-3 w-3 flex-shrink-0 text-neutral-500 group-hover:text-neutral-300" />
+        <Copy className="h-3 w-3 flex-shrink-0 text-fg-subtle group-hover:text-fg" />
       )}
     </button>
   );

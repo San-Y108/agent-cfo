@@ -33,9 +33,9 @@ export function GridBackground({ className }: { className?: string }) {
       )}
     >
       <div
-        className="absolute inset-0 opacity-[0.025]"
+        className="absolute inset-0 opacity-[0.04] dark:opacity-[0.025]"
         style={{
-          backgroundImage: `linear-gradient(rgba(255,255,255,0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.5) 1px, transparent 1px)`,
+          backgroundImage: `linear-gradient(var(--grid-line) 1px, transparent 1px), linear-gradient(90deg, var(--grid-line) 1px, transparent 1px)`,
           backgroundSize: "48px 48px",
           maskImage:
             "radial-gradient(ellipse 80% 60% at 50% 0%, black 40%, transparent 100%)",
@@ -100,14 +100,14 @@ export function GradientOrb({
 }
 
 /**
- * 组合背景层：noise + grid，用于 /demo 全局底座。
+ * 组合背景层：base + grid + noise，用于 /demo 全局底座。随主题切换。
  */
 export function DemoBackdrop() {
   return (
     <>
-      <div className="pointer-events-none fixed inset-0 z-0 bg-[#030712]" />
+      <div className="pointer-events-none fixed inset-0 z-0 bg-bg" />
       <GridBackground />
-      <NoiseOverlay />
+      <NoiseOverlay className="dark:opacity-[0.04] opacity-[0.02]" />
     </>
   );
 }
