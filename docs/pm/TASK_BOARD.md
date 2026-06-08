@@ -23,7 +23,7 @@
 |------|--------|------|----------|
 | 交付/总控 | San-Y108 (严硕) | ✅ repo + 文档已完成 | 无 |
 | 后端/Agent | W5W8L9jlu | ✅ mock API 已完成 | 等 CAW 接真实付款 |
-| 前端 | Aafff623 | 🔵 已开工 | 正在搭建 frontend，计划部署 Vercel，技术栈待确认 |
+| 前端 | Aafff623 | 🔵 进展超预期 | 技术栈 Next.js 已确认，脚手架已跑通，分支 feat/frontend-bootstrap 待 merge |
 | 合约/CAW | gitgdut | 🟡 未确认 | 最高风险，必须优先验证 |
 | 物料/设计 | 待确认 | 🟡 未确认 | GitHub 用户名未提供 |
 
@@ -60,9 +60,9 @@
 
 | ID | 任务 | 交付物 | 截止 | 状态 |
 |----|------|--------|------|------|
-| T-020 | 确认技术栈 | React/Next/Vue | 6月8日 18:00 | 🔵 IN_PROGRESS |
-| T-021 | 脚手架跑通 | npm run dev 不报错 | 6月8日 22:00 | 🔵 IN_PROGRESS |
-| T-022 | 对接后端 mock API | 能调用 4 个接口 | 6月9日 | 🟡 TODO |
+| T-020 | 确认技术栈 | Next.js + TypeScript + Tailwind | 6月8日 18:00 | ✅ DONE |
+| T-021 | 脚手架跑通 | pnpm-lock + 完整组件结构 | 6月8日 22:00 | ✅ DONE |
+| T-022 | 对接后端 mock API | 能调用 4 个接口 | 6月9日 | 🔵 IN_PROGRESS |
 
 ### 合约/CAW（gitgdut）
 
@@ -102,13 +102,13 @@
 
 | ID | 任务 | 交付物 | 截止 | 状态 |
 |----|------|--------|------|------|
-| T-060 | 主流程页面 4 步 | 贡献输入→计划→风险→结果 | 6月9日 | 🟡 TODO |
-| T-061 | Bob 标红展示 | Blocked 状态醒目显示 | 6月9日 | 🟡 TODO |
-| T-062 | 人工确认按钮 | Approve / Reject | 6月9日 | 🟡 TODO |
+| T-060 | 主流程页面 4 步 | demo/page.tsx + 4 个组件 | 6月9日 | ✅ DONE |
+| T-061 | Bob 标红展示 | risk-gate.tsx Blocked 状态 | 6月9日 | ✅ DONE |
+| T-062 | 人工确认按钮 | human-approval.tsx | 6月9日 | ✅ DONE |
 | T-063 | tx hash 展示 | 可复制/可点击 | 6月10日 | 🟡 TODO |
-| T-064 | 审计报告页 | 像正式财务结算报告 | 6月10日 | 🟡 TODO |
-| T-065 | Mock 模式兜底 | 后端/CAW 不可用时仍能展示 | 6月10日 | 🟡 TODO |
-| T-066 | 部署前端到公网 | Vercel/Netlify 链接 | 6月10日 | 🟡 TODO |
+| T-064 | 审计报告页 | audit-report.tsx | 6月10日 | ✅ DONE |
+| T-065 | Mock 模式兜底 | lib/mock/ 完整 mock 层 | 6月10日 | ✅ DONE |
+| T-066 | 部署前端到公网 | Vercel 链接 | 6月10日 | 🔵 IN_PROGRESS |
 
 ### 合约/CAW
 
@@ -180,7 +180,7 @@ CAW 验证（🔴 未开始）
 | 状态 | 数量 |
 |------|------|
 | 🔴 BLOCKED | 0 |
-| 🟡 TODO | 30 |
-| 🔵 IN_PROGRESS | 2 |
-| ✅ DONE | 13 |
+| 🟡 TODO | 21 |
+| 🔵 IN_PROGRESS | 4 |
+| ✅ DONE | 20 |
 | ❌ CANCELLED | 0 |
