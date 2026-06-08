@@ -313,6 +313,37 @@ def test_caw_status_not_found_returns_404():
     assert response.json()["detail"] == "CAW status not found"
 
 
+def test_caw_status_response_schema_remains_compatible():
+    plan = create_plan()
+    run_risk_check(plan["paymentPlanId"])
+    execution_response = client.post(
+        "/api/execute-payment",
+        json={
+            "paymentPlanId": plan["paymentPlanId"],
+            "approvedPaymentIds": [plan["payments"][0]["id"]],
+            "humanApproval": {"approved": True, "approvedBy": "demo-operator"},
+        },
+    )
+    execution = execution_response.json()
+
+    response = client.get(f"/api/caw-status/{execution['payments'][0]['cawRequestId']}")
+
+    assert response.status_code == 200
+    assert set(response.json()) == {
+        "cawRequestId",
+        "executionId",
+        "paymentItemId",
+        "providerStatus",
+        "normalizedStatus",
+        "mode",
+        "network",
+        "agentWalletAddress",
+        "txHash",
+        "error",
+        "lastCheckedAt",
+    }
+
+
 def test_blocked_payment_is_not_sent_to_mock_caw(monkeypatch):
     adapter_calls = {"count": 0}
 

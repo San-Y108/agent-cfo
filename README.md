@@ -162,6 +162,19 @@ Frontend
 
 未来 `RealCawAdapter` 必须保持 P0 API 行为不变：Risk Check 仍是唯一决定 `Ready` / `NeedsApproval` / `Blocked` 的地方，Execute Payment 仍必须要求 `humanApproval.approved=true`，blocked payment 不能进入 adapter。真实 CAW 接入前，需要 CAW 同学提供 base URL 或官方 SDK 选择、auth 方式、wallet id/address、pact schema、policy rules、approval flow、chain/token config、status query 和 audit evidence。缺少这些信息时必须保持 mock mode 或 fail closed。
 
+## CAW Read-Only Observer
+
+Phase 4B 只加入了 CAW read-only observer skeleton，用来提前固定只读查询边界：
+
+- pact status query
+- transaction by `request_id`
+- audit logs query
+- provider status normalization
+
+当前 observer 只配套 fake read-only client 和测试，不调用真实 Cobo Agentic Wallet，不读取 CAW secrets，也不触发 transfer。它最多用于刷新本地 `CawStatus` 记录；Audit Report 是执行时快照，后续 status refresh 不能改写历史 Audit Report。Observer 不持久化 raw provider error，只保存稳定的公开错误码。
+
+真实 CAW read-only client 仍未接入。启用前需要 CAW 同学提供官方 SDK/API、auth、wallet、pact、policy、approval、chain/token、status query 和 audit log 细节；未知 provider status 必须 fail closed，不能自行猜测未确认的 REST endpoint。
+
 ## Tech Stack
 
 - **Language**: Python 3.14 当前本机可用；如依赖安装失败，改用 Python 3.12/3.13。
