@@ -40,7 +40,7 @@
 | T-003 | 管理文档 push | docs/pm/ 下 7 个文档 | 6月8日 12:00 | ✅ DONE |
 | T-004 | 交付总控报告 | DELIVERY_MASTER_REPORT | 6月8日 12:00 | ✅ DONE |
 | T-005 | 发开工消息 | 群消息 | 6月8日 12:00 | ✅ DONE |
-| T-006 | 确认全员已 clone | 4 人确认 | 6月8日 14:00 | 🔵 IN_PROGRESS |
+| T-006 | 确认全员已 clone | 3/4 人确认（后端+前端+CAW） | 6月8日 14:00 | ✅ DONE |
 | T-007 | 催 CAW 同学开始验证 | CAW 进度回复 | 6月8日 14:00 | ✅ DONE |
 
 ### 后端/Agent（W5W8L9jlu）
@@ -185,6 +185,6 @@ CAW 验证（🟡 文档分析完成，待申请 API Key + 创建钱包）
 |------|------|
 | 🔴 BLOCKED | 0 |
 | 🟡 TODO | 30 |
-| 🔵 IN_PROGRESS | 5 |
-| ✅ DONE | 28 |
+| 🔵 IN_PROGRESS | 4 |
+| ✅ DONE | 29 |
 | ❌ CANCELLED | 0 |
