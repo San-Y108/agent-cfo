@@ -69,6 +69,39 @@ def setup_function():
     store.reset()
 
 
+def test_health_check_returns_ok():
+    response = client.get("/health")
+
+    assert response.status_code == 200
+    assert response.json() == {"status": "ok", "service": "agent-cfo-backend"}
+
+
+def test_cors_preflight_allows_configured_origin():
+    response = client.options(
+        "/api/payment-plan",
+        headers={
+            "Origin": "http://localhost:5173",
+            "Access-Control-Request-Method": "POST",
+        },
+    )
+
+    assert response.status_code == 200
+    assert response.headers["access-control-allow-origin"] == "http://localhost:5173"
+    assert "POST" in response.headers["access-control-allow-methods"]
+
+
+def test_cors_preflight_rejects_unconfigured_origin():
+    response = client.options(
+        "/api/payment-plan",
+        headers={
+            "Origin": "https://not-allowed.example",
+            "Access-Control-Request-Method": "POST",
+        },
+    )
+
+    assert "access-control-allow-origin" not in response.headers
+
+
 def test_payment_plan_starts_unchecked():
     plan = create_plan()
 

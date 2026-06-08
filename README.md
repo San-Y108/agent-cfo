@@ -220,7 +220,13 @@ python -m venv .venv
 http://127.0.0.1:8000
 ```
 
-FastAPI 自动 docs / OpenAPI 当前已关闭，以保证运行时只暴露四个 P0 API。后续进入联调或需要文档展示时，可以在 `app/main.py` 重新开启。
+健康检查：
+
+```bash
+curl.exe http://127.0.0.1:8000/health
+```
+
+FastAPI 自动 docs / OpenAPI 当前已关闭，以保证运行时只暴露四个 P0 业务 API 和部署健康检查。后续进入联调或需要文档展示时，可以在 `app/main.py` 重新开启。
 
 ```text
 P0 routes only:
@@ -228,7 +234,42 @@ POST /api/payment-plan
 POST /api/risk-check
 POST /api/execute-payment
 GET  /api/audit-report/{auditReportId}
+GET  /health
 ```
+
+## Render Deployment
+
+Phase 1 demo backend can be deployed as a Render Web Service.
+
+Render settings:
+
+```text
+Build command: pip install -r requirements.txt
+Start command: python -m uvicorn app.main:app --host 0.0.0.0 --port $PORT
+```
+
+Render environment variables:
+
+```text
+PYTHON_VERSION=3.13.5
+CORS_ALLOWED_ORIGINS=https://your-frontend-domain.example
+```
+
+Production must set `CORS_ALLOWED_ORIGINS` to the actual frontend origin. If this variable is not set, the backend only uses local development defaults:
+
+```text
+http://localhost:5173
+http://127.0.0.1:5173
+http://localhost:3000
+```
+
+Deployed health check:
+
+```bash
+curl.exe https://<render-service>.onrender.com/health
+```
+
+This deployment is still mock backend mode: no real OpenAI planner, no real Cobo Agentic Wallet execution, no `.env`, and no secrets in the repository.
 
 ## Curl Verification
 
