@@ -24,7 +24,7 @@
 | 交付/总控 | San-Y108 (严硕) | ✅ repo + 文档已完成 | 无 |
 | 后端/Agent | W5W8L9jlu | 🔵 SQLite 持久化 + CAW 查询已提交 | 等 gitgdut 提供真实 CAW 配置 |
 | 前端 | Aafff623 | 🔵 进展超预期 | 技术栈 Next.js 已确认，脚手架已跑通，分支 feat/frontend-bootstrap 待 merge |
-| 合约/CAW | gitgdut | 🟡 未确认 | 最高风险，必须优先验证 |
+| 合约/CAW | gitgdut | 🔵 已开始 | Cobo 文档已通读，权限模型分析完成，待申请 API Key |
 | 物料/设计 | 待确认 | 🟡 未确认 | GitHub 用户名未提供 |
 
 ---
@@ -68,9 +68,9 @@
 
 | ID | 任务 | 交付物 | 截止 | 状态 |
 |----|------|--------|------|------|
-| T-030 | Cobo 文档 Quickstart 通读 | 确认看完了 | 6月8日 18:00 | 🟡 TODO |
-| T-031 | 申请开发者 API Key | Sandbox Key 或正式环境 Key | 6月8日 22:00 | 🟡 TODO |
-| T-032 | 搞懂 Cobo 权限模型 | 预算/白名单/限额对应关系 | 6月9日 | 🟡 TODO |
+| T-030 | Cobo 文档 Quickstart 通读 | 权限模型分析文档 | 6月8日 18:00 | ✅ DONE |
+| T-031 | 申请开发者 API Key | Sandbox Key 或正式环境 Key | 6月8日 22:00 | 🔵 IN_PROGRESS |
+| T-032 | 搞懂 Cobo 权限模型 | 三层权限 + 双层风控方案 | 6月9日 | ✅ DONE |
 | T-033 | 创建 Agent Wallet | Wallet 地址 | 6月9日 | 🟡 TODO |
 | T-034 | 准备测试网资金 | ETH 或 USDC 余额截图 | 6月9日 | 🟡 TODO |
 | T-035 | 第一笔测试网付款 | tx hash + 区块浏览器链接 | 6月10日 | 🟡 TODO |
@@ -180,7 +180,7 @@ CAW 验证（🔴 未开始）
 | 状态 | 数量 |
 |------|------|
 | 🔴 BLOCKED | 0 |
-| 🟡 TODO | 20 |
-| 🔵 IN_PROGRESS | 4 |
-| ✅ DONE | 21 |
+| 🟡 TODO | 18 |
+| 🔵 IN_PROGRESS | 5 |
+| ✅ DONE | 22 |
 | ❌ CANCELLED | 0 |
