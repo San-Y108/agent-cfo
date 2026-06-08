@@ -1,6 +1,6 @@
 # AgentCFO 任务看板
 
-> 最后更新：2026年6月8日
+> 最后更新：2026年6月8日 20:25
 > 规则：12 号之后不新增大功能，只修复、打磨、录视频、补材料
 
 ---
@@ -22,7 +22,7 @@
 | 岗位 | 负责人 | 进度 | 最大卡点 |
 |------|--------|------|----------|
 | 交付/总控 | San-Y108 (严硕) | ✅ repo + 文档已完成 | 无 |
-| 后端/Agent | W5W8L9jlu | ✅ mock API 已完成 | 等 CAW 接真实付款 |
+| 后端/Agent | W5W8L9jlu | 🔵 SQLite 持久化 + CAW 查询已提交 | 等 gitgdut 提供真实 CAW 配置 |
 | 前端 | Aafff623 | 🔵 进展超预期 | 技术栈 Next.js 已确认，脚手架已跑通，分支 feat/frontend-bootstrap 待 merge |
 | 合约/CAW | gitgdut | 🟡 未确认 | 最高风险，必须优先验证 |
 | 物料/设计 | 待确认 | 🟡 未确认 | GitHub 用户名未提供 |
@@ -92,11 +92,11 @@
 
 | ID | 任务 | 交付物 | 截止 | 状态 |
 |----|------|--------|------|------|
-| T-050 | 接入真实 CAW（替换 mock） | caw_adapter.py 调用 Cobo API | 6月10日 | 🟡 TODO |
+| T-050 | 接入真实 CAW（替换 mock） | caw_adapter.py 调用 Cobo API | 6月10日 | 🔵 IN_PROGRESS |
 | T-051 | 加入 LLM 生成付款计划 | 调用 LLM 替代硬编码 | 6月9日 | 🟡 TODO |
-| T-052 | 和前端联调 | 前端能调通 4 个接口 | 6月9日 | 🟡 TODO |
+| T-052 | 和前端联调 | 前端能调通 4 个接口 | 6月9日 | 🔵 IN_PROGRESS |
 | T-053 | 和 CAW 联调 | execute-payment 返回真实 tx hash | 6月10日 | 🟡 TODO |
-| T-054 | 部署后端到公网 | 可访问的 API 地址 | 6月10日 | 🟡 TODO |
+| T-054 | 部署后端到公网 | https://agentcfo-backend.onrender.com | 6月10日 | ✅ DONE |
 
 ### 前端
 
@@ -180,7 +180,7 @@ CAW 验证（🔴 未开始）
 | 状态 | 数量 |
 |------|------|
 | 🔴 BLOCKED | 0 |
-| 🟡 TODO | 21 |
+| 🟡 TODO | 20 |
 | 🔵 IN_PROGRESS | 4 |
-| ✅ DONE | 20 |
+| ✅ DONE | 21 |
 | ❌ CANCELLED | 0 |
