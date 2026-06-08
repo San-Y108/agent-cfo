@@ -69,7 +69,7 @@
 | ID | 任务 | 交付物 | 截止 | 状态 |
 |----|------|--------|------|------|
 | T-030 | Cobo 文档 Quickstart 通读 | 权限模型分析文档 | 6月8日 18:00 | ✅ DONE |
-| T-031 | 申请开发者 API Key | Sandbox Key 或正式环境 Key | 6月8日 22:00 | 🔵 IN_PROGRESS |
+| T-031 | 申请开发者 API Key | Sandbox Key 或正式环境 Key | 6月8日 22:00 | ✅ DONE |
 | T-032 | 搞懂 Cobo 权限模型 | 三层权限 + 双层风控方案 | 6月9日 | ✅ DONE |
 | T-033 | 创建 Agent Wallet | Wallet 地址 | 6月9日 | 🟡 TODO |
 | T-034 | 准备测试网资金 | ETH 或 USDC 余额截图 | 6月9日 | 🟡 TODO |
