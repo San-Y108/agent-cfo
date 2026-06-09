@@ -88,16 +88,61 @@ class FakeCawSdkClient:
         self.get_pact_calls = []
         self.transfer_calls = []
 
-    def submit_pact(self, **kwargs):
-        self.submit_pact_calls.append(kwargs)
+    def submit_pact(
+        self,
+        wallet_id=None,
+        intent=None,
+        original_intent=None,
+        spec=None,
+        name=None,
+        recipe_slugs=None,
+    ):
+        self.submit_pact_calls.append(
+            {
+                "wallet_id": wallet_id,
+                "intent": intent,
+                "original_intent": original_intent,
+                "spec": spec,
+                "name": name,
+                "recipe_slugs": recipe_slugs,
+            }
+        )
         return {"pact_id": self.pact["pact_id"]}
 
     def get_pact(self, pact_id):
         self.get_pact_calls.append(pact_id)
         return self.pact
 
-    def transfer_tokens(self, wallet_id, **kwargs):
-        self.transfer_calls.append({"wallet_id": wallet_id, **kwargs})
+    def transfer_tokens(
+        self,
+        wallet_uuid,
+        *,
+        dst_addr=None,
+        amount=None,
+        token_id="SETH",
+        chain_id=None,
+        request_id=None,
+        fee=None,
+        src_addr=None,
+        sponsor=None,
+        gas_provider=None,
+        description=None,
+    ):
+        self.transfer_calls.append(
+            {
+                "wallet_uuid": wallet_uuid,
+                "dst_addr": dst_addr,
+                "amount": amount,
+                "token_id": token_id,
+                "chain_id": chain_id,
+                "request_id": request_id,
+                "fee": fee,
+                "src_addr": src_addr,
+                "sponsor": sponsor,
+                "gas_provider": gas_provider,
+                "description": description,
+            }
+        )
         if self.transfer_error is not None:
             raise self.transfer_error
         return self.transfer_response
@@ -345,7 +390,8 @@ def test_real_caw_adapter_submits_pact_and_uses_pact_scoped_key_for_transfer():
     assert agent_client.api_key == "agent-credential-placeholder"
     assert pact_client.api_key == "pact-credential-placeholder"
     assert agent_client.submit_pact_calls[0]["wallet_id"] == "wallet_test_001"
-    policy = agent_client.submit_pact_calls[0]["policies"][0]
+    spec = agent_client.submit_pact_calls[0]["spec"]
+    policy = spec["policies"][0]
     assert policy["type"] == "transfer"
     assert policy["rules"]["when"]["chain_in"] == ["SETH"]
     assert policy["rules"]["when"]["token_in"] == [{"chain_id": "SETH", "token_id": "SETH"}]
@@ -353,17 +399,23 @@ def test_real_caw_adapter_submits_pact_and_uses_pact_scoped_key_for_transfer():
         {"chain_id": "SETH", "address": "0xAlice"}
     ]
     assert policy["rules"]["deny_if"]["amount_gt"] == "0.001"
-    assert agent_client.submit_pact_calls[0]["completion_conditions"] == [
+    assert spec["completion_conditions"] == [
         {"type": "tx_count", "threshold": "1"},
         {"type": "time_elapsed", "threshold": "3600"},
     ]
     assert pact_client.transfer_calls == [
         {
-            "wallet_id": "wallet_test_001",
+            "wallet_uuid": "wallet_test_001",
             "dst_addr": "0xAlice",
             "amount": "0.001",
             "token_id": "SETH",
+            "chain_id": "SETH",
             "request_id": "agentcfo_exec_demo_001_pay_001",
+            "fee": None,
+            "src_addr": None,
+            "sponsor": None,
+            "gas_provider": None,
+            "description": None,
         }
     ]
 

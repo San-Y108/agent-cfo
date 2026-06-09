@@ -220,6 +220,8 @@ Manual live test checklist, only after explicit approval:
 7. Execute one approved, risk-checked, low-value payment.
 8. Verify `/api/caw-status/{cawRequestId}` and `/api/audit-report/{auditReportId}`.
 
+For one-off local live-test scripts, set `AGENTCFO_DB_PATH` to an absolute repo-local path before importing `app.main`; otherwise the app process can initialize a different store than the script expects.
+
 Evidence to capture after an approved live test:
 
 | Field | Source |

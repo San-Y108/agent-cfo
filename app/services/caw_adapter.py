@@ -217,11 +217,14 @@ class RealCawAdapter(CawAdapter):
         pact_response = _maybe_await(
             client.submit_pact(
                 wallet_id=self.config.wallet_id,
-                policies=[self._transfer_policy()],
-                completion_conditions=[
-                    {"type": "tx_count", "threshold": "1"},
-                    {"type": "time_elapsed", "threshold": "3600"},
-                ],
+                spec={
+                    "policies": [self._transfer_policy()],
+                    "completion_conditions": [
+                        {"type": "tx_count", "threshold": "1"},
+                        {"type": "time_elapsed", "threshold": "3600"},
+                    ],
+                },
+                name="agentcfo-testnet-transfer",
             )
         )
         pact_id = _result_value(pact_response, "pact_id")
@@ -267,6 +270,7 @@ class RealCawAdapter(CawAdapter):
             dst_addr=payment.wallet,
             amount=_format_amount(payment.amount),
             token_id=payment.token,
+            chain_id=self.config.allowed_chain_ids[0],
             request_id=request_id,
         )
         if inspect.isawaitable(result):
