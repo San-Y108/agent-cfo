@@ -656,11 +656,38 @@ P1:
 
 P2:
 
-- Request Network invoice records。
-- Sablier Flow payroll。
-- Safe module references。
-- Multi-agent treasury。
-- Multi-chain support。
+- P2-0 external reference / evidence foundation。✅ Demo-safe metadata-only API 已实现。
+- P2A Request Network invoice records。✅ Mock/demo-safe invoice records 已实现；不调用 Request Finance API。
+- P2B Sablier Flow payroll。✅ Preview-only stream calculation 已实现；不创建真实 stream。
+- P2C Safe module references。✅ Reference-only metadata 已实现；不启用或部署 Safe module。
+- P2D Multi-chain readiness。✅ Readiness matrix 已实现；不新增真实链执行。
+- P2E Multi-agent treasury。✅ Mock budget partition view 已实现；不改变授权系统。
+
+P2 live integrations are not enabled. Do not claim Request Finance, Sablier, Safe, multichain execution, or multi-agent authorization is live without explicit approval, credentials, and new tests.
+
+## P2 Demo-safe Extension APIs
+
+These APIs are metadata, preview, or reference only. They do not change P0/P1 payment authorization, deterministic risk checks, CAW adapter behavior, or immutable Audit Report snapshots.
+
+| API | Status | Live external action |
+| --- | --- | --- |
+| `POST /api/external-references` | Generic external evidence metadata | None |
+| `GET /api/external-references/{externalReferenceId}` | Read external metadata | None |
+| `GET /api/external-references?paymentPlanId=...` | List linked metadata | None |
+| `POST /api/request-invoices` | Mock Request invoice record linked to payment/audit/CAW ids | No Request Finance API call |
+| `GET /api/request-invoices/{externalReferenceId}` | Read mock Request invoice record | None |
+| `POST /api/sablier-stream-previews` | Preview duration/rate for a future stream | No Sablier stream creation |
+| `POST /api/safe-permission-references` | Reference-only Safe permission note | No Safe module enablement/deployment |
+| `GET /api/multichain-readiness` | Design/readiness matrix | No new chain execution |
+| `GET /api/treasury-budget-partitions/{paymentPlanId}` | Mock department-agent budget view | No new authorization role |
+
+P2 implementation references:
+
+- Request Network / Request Finance: future live invoice integration requires a Request Finance API key and explicit approval before any live API call.
+- Sablier Flow: future live payroll requires wallet/signature approval and new risk rules before stream creation.
+- Safe modules: future Safe module work requires owner approval and security review before enablement or deployment.
+- Multi-chain: current real execution boundary remains the existing CAW testnet/token allowlist.
+- Multi-agent treasury: current mock partition view is advisory only; human approval and deterministic risk checks remain the only execution gates.
 
 ## Documentation Rules
 

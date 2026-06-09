@@ -128,6 +128,30 @@ ___
 - @物料：视频/PPT 说明 mock fallback + 1 笔真实 CAW evidence。
 ```
 
+### P2 Demo-safe Backend Spike 同步
+
+```
+@所有人 后端 P2 demo-safe spike 已完成，但不是 live integration。
+
+可以对外说：
+- 已有 external reference / evidence metadata foundation。
+- 已有 mock Request invoice records，可关联 paymentPlanId、paymentItemId、auditReportId、cawRequestId。
+- 已有 Sablier stream preview，只计算未来 payroll 的 duration/rate，不创建真实 stream。
+- 已有 Safe permission reference，只做权限说明，不启用 Safe module。
+- 已有 multi-chain readiness matrix，但真实执行仍只在当前 CAW testnet/token 边界内。
+- 已有 multi-agent mock budget partition，但不改变付款授权。
+
+不能对外说：
+- Request Finance 已 live 集成。
+- 已创建 Sablier stream。
+- 已启用 Safe module。
+- 已支持真实多链执行。
+- 已有新的 multi-agent 授权系统。
+
+前端如要展示，建议单独放在 “P2 Preview / Linked Evidence” 区域，不要混进 Audit Report snapshot。
+PM 口径：P2 是 demo-safe preview/mock/reference，不是 live payment capability。
+```
+
 ### Phase 1 → Phase 2 通知
 
 ```

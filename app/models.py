@@ -1,5 +1,6 @@
 from datetime import UTC, datetime
 from enum import StrEnum
+from typing import Any
 
 from pydantic import BaseModel, Field
 
@@ -23,6 +24,14 @@ class RiskLevel(StrEnum):
 class PlannerMode(StrEnum):
     MOCK = "mock"
     OPENAI = "openai"
+
+
+class ExternalReferenceType(StrEnum):
+    REQUEST_INVOICE = "request_invoice"
+    SABLIER_STREAM_PREVIEW = "sablier_stream_preview"
+    SAFE_PERMISSION_REFERENCE = "safe_permission_reference"
+    MULTICHAIN_READINESS = "multichain_readiness"
+    TREASURY_BUDGET_PARTITION = "treasury_budget_partition"
 
 
 class ContributionRecord(BaseModel):
@@ -163,3 +172,117 @@ class AuditReport(BaseModel):
     cawEvidence: list[dict] = Field(default_factory=list)
     outcomeSummary: dict = Field(default_factory=dict)
     snapshot: dict = Field(default_factory=dict)
+
+
+class ExternalReferenceCreate(BaseModel):
+    referenceType: ExternalReferenceType
+    provider: str
+    label: str
+    paymentPlanId: str | None = None
+    paymentItemId: str | None = None
+    auditReportId: str | None = None
+    cawRequestId: str | None = None
+    status: str
+    metadata: dict[str, Any] = Field(default_factory=dict)
+
+
+class ExternalReference(BaseModel):
+    externalReferenceId: str
+    referenceType: ExternalReferenceType
+    provider: str
+    label: str
+    paymentPlanId: str | None = None
+    paymentItemId: str | None = None
+    auditReportId: str | None = None
+    cawRequestId: str | None = None
+    status: str
+    metadata: dict[str, Any] = Field(default_factory=dict)
+    mode: str = "metadata-only"
+    liveIntegrationEnabled: bool = False
+    createdAt: str
+
+
+class ExternalReferenceList(BaseModel):
+    items: list[ExternalReference]
+
+
+class RequestInvoiceCreate(BaseModel):
+    paymentPlanId: str
+    paymentItemId: str
+    auditReportId: str | None = None
+    cawRequestId: str | None = None
+    requestFinanceInvoiceId: str
+    requestId: str | None = None
+    status: str
+    hostedUrl: str | None = None
+    txHashReference: str | None = None
+
+
+class RequestInvoiceRecord(BaseModel):
+    externalReferenceId: str
+    paymentPlanId: str
+    paymentItemId: str
+    auditReportId: str | None = None
+    cawRequestId: str | None = None
+    requestFinanceInvoiceId: str
+    requestId: str | None = None
+    status: str
+    hostedUrl: str | None = None
+    txHashReference: str | None = None
+    externalReference: ExternalReference
+
+
+class SablierStreamPreviewRequest(BaseModel):
+    paymentPlanId: str
+    paymentItemId: str
+    durationDays: int = Field(gt=0)
+
+
+class SablierStreamPreview(BaseModel):
+    externalReferenceId: str
+    mode: str
+    streamCreated: bool
+    paymentPlanId: str
+    paymentItemId: str
+    recipient: str
+    wallet: str
+    amount: float
+    token: str
+    durationDays: int
+    durationSeconds: int
+    ratePerSecond: float
+    safetyNotes: list[str]
+
+
+class SafePermissionReferenceRequest(BaseModel):
+    paymentPlanId: str
+    safeAddress: str
+    moduleName: str
+    permissionNotes: list[str] = Field(default_factory=list)
+
+
+class SafePermissionReference(BaseModel):
+    externalReferenceId: str
+    mode: str
+    moduleEnabled: bool
+    paymentPlanId: str
+    safeAddress: str
+    moduleName: str
+    permissionNotes: list[str]
+    safetyNotes: list[str]
+
+
+class MultichainReadiness(BaseModel):
+    currentExecutionBoundary: dict[str, Any]
+    liveMultichainExecutionEnabled: bool
+    chains: list[dict[str, Any]]
+    safetyNotes: list[str]
+
+
+class TreasuryBudgetPartition(BaseModel):
+    mode: str
+    authorizationChanged: bool
+    paymentPlanId: str
+    totalPlannedAmount: float
+    partitions: list[dict[str, Any]]
+    safetyNotes: list[str]

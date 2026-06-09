@@ -4,6 +4,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.routers.payments import router as payments_router
+from app.routers.p2_extensions import router as p2_extensions_router
 
 DEFAULT_CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
@@ -41,6 +42,7 @@ app.add_middleware(
 )
 
 app.include_router(payments_router)
+app.include_router(p2_extensions_router)
 
 
 @app.get("/health", include_in_schema=False)
