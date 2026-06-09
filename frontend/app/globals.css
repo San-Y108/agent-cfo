@@ -18,8 +18,8 @@
   --fg-subtle: #64748b;    /* tertiary text (slate-500) */
   --border: #e2e8f0;       /* hairline (slate-200) */
   --border-strong: #cbd5e1;
-  --accent: #d97706;       /* amber-600 — readable on light bg */
-  --accent-fg: #ffffff;
+  --accent: #B5FF4D;       /* Ramp lime — primary brand accent */
+  --accent-fg: #0D0D0D;     /* black text on lime bg */
   --success: #16a34a;      /* emerald-600 */
   --danger: #dc2626;       /* red-600 */
   --grid-line: rgba(15, 23, 42, 0.5);  /* dark lines on light bg */
@@ -35,8 +35,8 @@
   --fg-subtle: #6b7280;    /* neutral-500 */
   --border: #1f2937;       /* gray-800 */
   --border-strong: #374151;
-  --accent: #f59e0b;       /* amber-500 — readable on dark bg */
-  --accent-fg: #0a0a0a;
+  --accent: #B5FF4D;       /* Ramp lime — consistent across light/dark */
+  --accent-fg: #0D0D0D;     /* black text on lime bg */
   --success: #34d399;      /* emerald-400 */
   --danger: #f87171;       /* red-400 */
   --grid-line: rgba(255, 255, 255, 0.5);  /* light lines on dark bg */
@@ -62,9 +62,15 @@
   --color-navy-900: #0b1120;
   --color-navy-800: #111827;
   --color-navy-700: #1e293b;
-  --color-gold-400: #fbbf24;
-  --color-gold-500: #f59e0b;
-  --color-gold-600: #d97706;
+
+  /* Ramp lime palette */
+  --color-lime-400: #C8FF70;
+  --color-lime-500: #B5FF4D;
+  --color-lime-600: #A8F040;
+  --color-ink: #0D0D0D;
+  --color-canvas: #ffffff;
+  --color-surface-dark: #141414;
+  --color-surface-darker: #0a0a0a;
 }
 
 :root {
@@ -111,7 +117,7 @@ body {
 /* Radial glow for hero */
 .radial-glow {
   background:
-    radial-gradient(ellipse 80% 60% at 50% -10%, rgba(245, 158, 11, 0.08), transparent),
+    radial-gradient(ellipse 80% 60% at 50% -10%, rgba(181, 255, 77, 0.08), transparent),
     radial-gradient(ellipse 50% 40% at 80% 50%, rgba(59, 130, 246, 0.04), transparent);
 }
 
@@ -173,19 +179,33 @@ body {
    Token names are landing-* so they don't collide with /demo.
    ============================================================ */
 :root {
-  --landing-bg: #000000;        /* page stays pure black */
-  --landing-surface-dark: #0d0d0d;
-  --landing-surface-darker: #141414;
-  --landing-paper: #fff8f0;     /* warm cream card on black */
-  --landing-paper-muted: #eee7df;
-  --landing-ink: #211817;       /* deep coffee text inside paper cards */
-  --landing-ink-mid: #4a4138;
-  --landing-ink-subtle: #8a7f76;
-  --landing-muted: #9c948d;
-  --landing-orange: #ff4f00;    /* Zapier-inspired CTA */
-  --landing-orange-soft: rgba(255, 79, 0, 0.08);
+  --landing-bg: #0D0D0D;        /* Ramp near-black marketing canvas */
+  --landing-surface-dark: #141414;
+  --landing-surface-darker: #0a0a0a;
+  --landing-paper: #141414;     /* dark card surface (was warm cream) */
+  --landing-paper-muted: #1a1a1a;
+  --landing-ink: #f5f5f5;       /* light text on dark cards */
+  --landing-ink-mid: #a3a3a3;
+  --landing-ink-subtle: #6b7280;
+  --landing-muted: #737373;
+  --landing-lime: #B5FF4D;      /* Ramp lime accent */
+  --landing-lime-soft: rgba(181, 255, 77, 0.08);
   --landing-border-soft: rgba(255, 255, 255, 0.08);
-  --landing-border-paper: rgba(33, 24, 23, 0.12);
+  --landing-border-paper: rgba(255, 255, 255, 0.12);
+}
+
+/* Marquee animation */
+@keyframes marquee-scroll {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+
+.animate-marquee {
+  animation: marquee-scroll 25s linear infinite;
+}
+
+.animate-marquee:hover {
+  animation-play-state: paused;
 }
 
 /* Custom scrollbar */

@@ -1,11 +1,16 @@
 "use client";
 
 import { ArrowRight, Menu, X } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
+import { gsap } from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { useGSAP } from "@gsap/react";
 import { useT } from "@/lib/i18n/context";
 import type { DictKey } from "@/lib/i18n/dict";
 import { ThemeLanguageToggle } from "@/components/ui/theme-language-toggle";
+
+gsap.registerPlugin(ScrollTrigger);
 
 // Background "robot + hand" cinematic visual — remote video, verbatim from Velorix IIC demo.
 const BG_VIDEO =
@@ -66,7 +71,7 @@ function MobileMenu({ open, onClose }: { open: boolean; onClose: () => void }) {
       >
         <div
           className="pt-20 pb-6 px-5"
-          style={{ backgroundColor: "rgba(8,8,8,0.97)", borderBottom: "1px solid rgba(255,255,255,0.08)" }}
+          style={{ backgroundColor: "rgba(13,13,13,0.97)", borderBottom: "1px solid rgba(255,255,255,0.08)" }}
         >
           <div className="flex flex-col gap-1">
             {NAV_ITEMS.map((item, i) => (
@@ -102,8 +107,8 @@ function MobileMenu({ open, onClose }: { open: boolean; onClose: () => void }) {
             <Link
               href="/demo"
               onClick={onClose}
-              className="block w-full py-3 rounded-full text-black text-sm font-medium text-center transition-all duration-300 hover:opacity-80"
-              style={{ fontFamily: "Inter, sans-serif", backgroundColor: "#ffffff" }}
+              className="block w-full py-3 rounded-full text-sm font-medium text-center transition-all duration-300 hover:opacity-80"
+              style={{ fontFamily: "Inter, sans-serif", backgroundColor: "#B5FF4D", color: "#0D0D0D" }}
             >
               {t("nav.openDemo")}
             </Link>
@@ -133,12 +138,12 @@ function Navbar() {
         <span className="text-white text-xl font-semibold tracking-tight" style={{ fontFamily: "Inter, sans-serif" }}>
           AgentCFO
         </span>
-        <div className="hidden lg:flex items-center gap-1 rounded-full px-2 py-1.5" style={{ backgroundColor: "#0C0C0C" }}>
+        <div className="hidden lg:flex items-center gap-1 rounded-full px-2 py-1.5" style={{ backgroundColor: "rgba(255,255,255,0.06)" }}>
           {NAV_ITEMS.map((item) => (
             <a
               key={item.key}
               href={item.href}
-              className="text-white/80 hover:text-white text-sm px-4 py-1.5 rounded-full hover:bg-white/10 transition-all duration-200"
+              className="text-white/70 hover:text-white text-sm px-4 py-1.5 rounded-full hover:bg-white/10 transition-all duration-200"
               style={{ fontFamily: "Inter, sans-serif" }}
             >
               {t(item.key)}
@@ -152,8 +157,8 @@ function Navbar() {
           <HamburgerButton open={open} onClick={() => setOpen((v) => !v)} />
           <Link
             href="/demo"
-            className="hidden lg:block text-sm font-medium px-5 py-2 rounded-full text-black transition-all duration-300 hover:opacity-80"
-            style={{ fontFamily: "Inter, sans-serif", backgroundColor: "#ffffff" }}
+            className="hidden lg:block text-sm font-medium px-5 py-2 rounded-full transition-all duration-300 hover:opacity-80"
+            style={{ fontFamily: "Inter, sans-serif", backgroundColor: "#B5FF4D", color: "#0D0D0D" }}
           >
             {t("nav.openDemo")}
           </Link>
@@ -166,45 +171,122 @@ function Navbar() {
 
 export function VelorixHero() {
   const t = useT();
+  const heroRef = useRef<HTMLDivElement>(null);
+  const videoWrapRef = useRef<HTMLDivElement>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
+
+  useGSAP(() => {
+    if (!heroRef.current || !videoWrapRef.current || !contentRef.current) return;
+
+    const ctx = gsap.context(() => {
+      // --- 1. Video shrink + fade on scroll ---
+      gsap.to(videoWrapRef.current, {
+        scrollTrigger: {
+          trigger: heroRef.current,
+          start: "top top",
+          end: "bottom top",
+          scrub: 0.5,
+        },
+        scale: 0.9,
+        opacity: 0.3,
+        borderRadius: "24px",
+        ease: "none",
+      });
+
+      // --- 2. Content fade out ---
+      gsap.to(contentRef.current, {
+        scrollTrigger: {
+          trigger: heroRef.current,
+          start: "top top",
+          end: "50% top",
+          scrub: 0.5,
+        },
+        opacity: 0,
+        y: -30,
+        ease: "none",
+      });
+    }, heroRef);
+
+    return () => ctx.revert();
+  }, { scope: heroRef });
+
   return (
-    <div className="relative w-full h-screen overflow-hidden bg-black" style={{ fontFamily: "Inter, sans-serif" }}>
-      <video
-        className="absolute inset-0 z-0 w-full h-full object-cover"
-        src={BG_VIDEO}
-        autoPlay
-        loop
-        muted
-        playsInline
-      />
+    <div
+      ref={heroRef}
+      className="relative w-full min-h-screen overflow-hidden flex flex-col items-center justify-center"
+      style={{
+        fontFamily: "Inter, sans-serif",
+        backgroundColor: "#0D0D0D",
+      }}
+    >
+      {/* Video wrapper — transform target for 3D effect */}
+      <div
+        ref={videoWrapRef}
+        className="absolute inset-0 z-0"
+        style={{ willChange: "transform" }}
+      >
+        <video
+          className="w-full h-full object-cover"
+          src={BG_VIDEO}
+          autoPlay
+          loop
+          muted
+          playsInline
+        />
+      </div>
+
+      {/* Dark overlay — separate from video so it doesn't get 3D transformed */}
+      <div className="absolute inset-0 z-10 bg-black/50" />
 
       <Navbar />
 
-      <div className="relative z-20 flex flex-col items-center text-center pt-[90px] md:pt-[120px] px-5 sm:px-8">
+      <div ref={contentRef} className="relative z-20 flex flex-col items-center text-center px-5 sm:px-8 max-w-4xl mx-auto">
+        {/* Eyebrow */}
+        <span
+          className="text-[11px] font-medium uppercase tracking-[0.18em] text-[#B5FF4D] mb-6"
+          style={{ fontFamily: "'Courier New', Courier, monospace" }}
+        >
+          DAO AI Treasury Officer
+        </span>
+
         <h1
-          className="text-white font-normal leading-[1.12] tracking-tight max-w-3xl"
+          className="text-white font-bold leading-[1.05] tracking-tight max-w-3xl"
           style={{
             fontFamily: "Inter, sans-serif",
-            fontSize: "clamp(1.75rem, 5vw, 2.6rem)",
+            fontSize: "clamp(2.5rem, 6vw, 4rem)",
+            letterSpacing: "-0.03em",
           }}
         >
           {t("hero.title")}
         </h1>
 
         <p
-          className="mt-5 md:mt-6 text-white/60 text-sm md:text-base leading-relaxed max-w-xs sm:max-w-sm md:max-w-md"
-          style={{ fontFamily: "'Courier New', Courier, monospace", letterSpacing: "0.01em" }}
+          className="mt-6 text-white/50 text-sm md:text-base leading-relaxed max-w-lg"
+          style={{ fontFamily: "Inter, sans-serif", letterSpacing: "-0.01em" }}
         >
           {t("hero.subtitle")}
         </p>
 
         <Link
           href="/demo"
-          className="mt-7 md:mt-8 flex items-center gap-2.5 px-5 py-2.5 rounded-full text-black text-sm font-medium transition-all duration-300 hover:opacity-80 group"
-          style={{ fontFamily: "Inter, sans-serif", backgroundColor: "#ffffff" }}
+          className="mt-8 flex items-center gap-2.5 px-6 py-3 rounded-full text-sm font-semibold transition-all duration-300 hover:opacity-80 group"
+          style={{ fontFamily: "Inter, sans-serif", backgroundColor: "#B5FF4D", color: "#0D0D0D" }}
         >
           {t("hero.cta")}
           <ArrowRight size={15} className="group-hover:translate-x-0.5 transition-transform duration-200" />
         </Link>
+
+        {/* Trust microcopy */}
+        <div
+          className="mt-6 flex flex-wrap items-center gap-3 text-[11px] text-white/35"
+          style={{ fontFamily: "'Courier New', Courier, monospace" }}
+        >
+          <span>testnet-simulated</span>
+          <span className="text-white/15">·</span>
+          <span>Cobo Agentic Wallet</span>
+          <span className="text-white/15">·</span>
+          <span>no real funds</span>
+        </div>
       </div>
     </div>
   );

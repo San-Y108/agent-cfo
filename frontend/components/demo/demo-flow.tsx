@@ -100,7 +100,7 @@ export function DemoFlow({ data }: DemoFlowProps) {
       label: t("demo.kpi.planned"),
       value: data.paymentPlan.totalAmount,
       suffix: ` ${data.paymentPlan.payments[0]?.token ?? "USDC"}`,
-      tone: "amber" as const,
+      tone: "lime" as const,
     },
     {
       label: t("demo.kpi.approved"),
@@ -123,22 +123,22 @@ export function DemoFlow({ data }: DemoFlowProps) {
   ];
 
   return (
-    <div className="demo-pure-black relative min-h-screen bg-black flex flex-col">
+    <div className="relative min-h-screen flex flex-col" style={{ backgroundColor: "#ffffff" }}>
       <DemoBackdrop />
 
       {/* Header */}
-      <header className="relative border-b border-white/10 bg-black/80 backdrop-blur-xl z-50 flex-shrink-0">
-        <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-amber-500/30 to-transparent" />
+      <header className="relative border-b border-[#E5E5E5] bg-white/80 backdrop-blur-xl z-50 flex-shrink-0">
+        <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#B5FF4D]/40 to-transparent" />
         <div className="flex h-14 items-center justify-between px-4 sm:px-6">
           <div className="flex items-center gap-3">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-amber-500 to-amber-700 shadow-lg shadow-amber-500/20">
-              <svg className="h-4 w-4 text-white" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-[#B5FF4D] to-[#9ef916] shadow-lg shadow-[#B5FF4D]/20">
+              <svg className="h-4 w-4 text-[#0D0D0D]" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
             </div>
             <div className="flex items-baseline gap-2">
-              <h1 className="text-base font-bold text-fg tracking-tight">AgentCFO</h1>
-              <span className="text-[10px] font-semibold uppercase tracking-wider text-amber-600 dark:text-amber-400 border border-amber-500/20 bg-amber-500/10 px-1.5 py-0.5 rounded">
+              <h1 className="text-base font-bold text-[#0D0D0D] tracking-tight">AgentCFO</h1>
+              <span className="text-[10px] font-semibold uppercase tracking-wider text-[#0D0D0D] border border-[#B5FF4D]/30 bg-[#B5FF4D]/10 px-1.5 py-0.5 rounded">
                 {t("demo.commandCenter")}
               </span>
             </div>
@@ -149,7 +149,7 @@ export function DemoFlow({ data }: DemoFlowProps) {
               <StatsStrip stats={stats} />
             </div>
             <ThemeLanguageToggle variant="app" />
-            <a href="/" className="text-xs text-fg-subtle hover:text-fg transition-colors hidden sm:inline">
+            <a href="/" className="text-xs text-[#6B7280] hover:text-[#0D0D0D] transition-colors hidden sm:inline">
               ← {t("demo.back")}
             </a>
           </div>
@@ -160,7 +160,7 @@ export function DemoFlow({ data }: DemoFlowProps) {
       <div className="relative z-10 flex flex-1 min-h-0">
         <DemoSidebar activeIndex={step} onNavigate={(idx) => goToStep(idx as DemoStep)} />
 
-        <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
+        <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8" style={{ backgroundColor: "#F8F8F8" }}>
           {/* Step Progress */}
           <StepProgress current={step} revealed={revealedSteps} onStepClick={goToStep} />
 
@@ -225,12 +225,12 @@ function StepProgress({
               <span
                 className={`flex h-7 w-7 items-center justify-center rounded-full border text-xs font-semibold transition-all duration-300 ${
                   isActive
-                    ? "border-amber-500 bg-amber-500/20 text-amber-600 dark:text-amber-400 shadow-[0_0_12px_-2px_rgba(245,158,11,0.5)]"
+                    ? "border-[#B5FF4D] bg-[#B5FF4D]/20 text-[#0D0D0D] shadow-[0_0_12px_-2px_rgba(181,255,77,0.5)]"
                     : isDone
-                    ? "border-emerald-500/40 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
+                    ? "border-emerald-500/40 bg-emerald-500/10 text-emerald-600"
                     : isRevealed
-                    ? "border-border-strong bg-surface-2 text-fg-muted"
-                    : "border-border-token bg-surface text-fg-subtle"
+                    ? "border-[#E5E5E5] bg-white text-[#6B7280]"
+                    : "border-[#E5E5E5] bg-[#F8F8F8] text-[#9CA3AF]"
                 }`}
               >
                 {isDone ? "✓" : idx + 1}
@@ -239,12 +239,12 @@ function StepProgress({
               <span
                 className={`whitespace-nowrap text-xs font-medium transition-colors duration-200 ${
                   isActive
-                    ? "text-amber-600 dark:text-amber-400"
+                    ? "text-[#0D0D0D]"
                     : isDone
-                    ? "text-fg"
+                    ? "text-[#0D0D0D]"
                     : isRevealed
-                    ? "text-fg-muted group-hover:text-fg"
-                    : "text-fg-subtle"
+                    ? "text-[#6B7280] group-hover:text-[#0D0D0D]"
+                    : "text-[#9CA3AF]"
                 }`}
               >
                 {t(labelKey)}
@@ -255,7 +255,7 @@ function StepProgress({
             {!isLast && (
               <span
                 className={`mx-1 hidden h-px w-6 flex-shrink-0 sm:block ${
-                  idx < maxRevealed ? "bg-emerald-500/30" : "bg-border-token"
+                  idx < maxRevealed ? "bg-emerald-500/30" : "bg-[#E5E5E5]"
                 }`}
               />
             )}

@@ -20,7 +20,7 @@ export function GuardrailsCTA() {
             className="pointer-events-none absolute inset-0"
             style={{
               background:
-                "radial-gradient(ellipse 60% 60% at 20% 0%, rgba(255,79,0,0.08), transparent 60%), radial-gradient(ellipse 40% 40% at 90% 100%, rgba(255,79,0,0.04), transparent 60%)",
+                "radial-gradient(ellipse 60% 60% at 20% 0%, rgba(181,255,77,0.08), transparent 60%), radial-gradient(ellipse 40% 40% at 90% 100%, rgba(181,255,77,0.04), transparent 60%)",
             }}
           />
 
@@ -34,7 +34,7 @@ export function GuardrailsCTA() {
               transition={{ duration: 0.5, ease: "easeOut" }}
             >
               <span
-                className="text-[11px] font-medium uppercase tracking-[0.18em] text-[#ff4f00]"
+                className="text-[11px] font-medium uppercase tracking-[0.18em] text-[#B5FF4D]"
                 style={{ fontFamily: "'Courier New', Courier, monospace" }}
               >
                 Move funds with confidence
@@ -59,7 +59,7 @@ export function GuardrailsCTA() {
               <div className="mt-8 flex flex-wrap items-center gap-3">
                 <Link
                   href="/demo"
-                  className="group flex items-center gap-2 rounded-[10px] bg-[#ff4f00] px-5 py-3 text-sm font-semibold text-white transition-opacity hover:opacity-90"
+                  className="group flex items-center gap-2 rounded-[10px] bg-[#B5FF4D] px-5 py-3 text-sm font-semibold text-[#0D0D0D] transition-opacity hover:opacity-90"
                   style={{ fontFamily: "Inter, sans-serif" }}
                 >
                   Run demo

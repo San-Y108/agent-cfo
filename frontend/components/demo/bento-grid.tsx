@@ -23,7 +23,7 @@ export function BentoGrid({
   );
 }
 
-type BentoTone = "neutral" | "emerald" | "red" | "blue" | "amber" | "purple";
+type BentoTone = "neutral" | "emerald" | "red" | "blue" | "amber" | "purple" | "lime";
 
 const toneGlow: Record<BentoTone, string> = {
   neutral: "hover:shadow-[0_0_24px_-4px_rgba(120,120,120,0.18)] hover:border-border-strong",
@@ -32,6 +32,7 @@ const toneGlow: Record<BentoTone, string> = {
   blue: "hover:shadow-[0_0_28px_-4px_rgba(59,130,246,0.35)] hover:border-blue-500/40",
   amber: "hover:shadow-[0_0_28px_-4px_rgba(245,158,11,0.35)] hover:border-amber-500/40",
   purple: "hover:shadow-[0_0_28px_-4px_rgba(168,85,247,0.35)] hover:border-purple-500/40",
+  lime: "hover:shadow-[0_0_28px_-4px_rgba(181,255,77,0.35)] hover:border-[#B5FF4D]/40",
 };
 
 export function BentoCard({

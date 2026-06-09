@@ -61,7 +61,7 @@ export function RuntimeArchitecture() {
           className="mx-auto max-w-3xl text-center"
         >
           <span
-            className="text-[11px] font-medium uppercase tracking-[0.18em] text-[#ff4f00]"
+            className="text-[11px] font-medium uppercase tracking-[0.18em] text-[#B5FF4D]"
             style={{ fontFamily: "'Courier New', Courier, monospace" }}
           >
             The runtime
@@ -98,9 +98,9 @@ export function RuntimeArchitecture() {
           {/* Arrow */}
           <Connector />
           {/* Runtime center */}
-          <div className="flex flex-col items-stretch rounded-[14px] border border-[#ff4f00]/30 bg-[#ff4f00]/[0.04] p-5">
+          <div className="flex flex-col items-stretch rounded-[14px] border border-[#B5FF4D]/20 bg-[#B5FF4D]/[0.04] p-5">
             <div
-              className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#ff4f00]"
+              className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#B5FF4D]"
               style={{ fontFamily: "'Courier New', Courier, monospace" }}
             >
               AgentCFO Runtime
@@ -118,13 +118,13 @@ export function RuntimeArchitecture() {
                   className="flex items-center gap-2 rounded-md border border-white/10 bg-white/5 px-2.5 py-1.5 text-xs text-white/85"
                   style={{ fontFamily: "'Courier New', Courier, monospace" }}
                 >
-                  <span className="text-[#ff4f00]">{p.icon}</span>
+                  <span className="text-[#B5FF4D]">{p.icon}</span>
                   {p.label}
                 </div>
               ))}
             </div>
             <div
-              className="mt-4 rounded-md bg-[#211817] px-3 py-2 text-[10px] text-white/55"
+              className="mt-4 rounded-md bg-[#0D0D0D] px-3 py-2 text-[10px] text-white/40"
               style={{ fontFamily: "'Courier New', Courier, monospace" }}
             >
               visible in /demo console
@@ -149,7 +149,7 @@ export function RuntimeArchitecture() {
               className="rounded-[12px] border border-white/10 bg-white/[0.02] p-4"
             >
               <div
-                className="text-[10px] font-semibold uppercase tracking-[0.15em] text-[#ff4f00]"
+                className="text-[10px] font-semibold uppercase tracking-[0.15em] text-[#B5FF4D]"
                 style={{ fontFamily: "'Courier New', Courier, monospace" }}
               >
                 0{i + 1}
@@ -216,7 +216,7 @@ export function RuntimeArchitecture() {
   function Connector() {
     return (
       <div className="hidden items-center justify-center lg:flex">
-        <div className="flex h-8 w-8 items-center justify-center rounded-full border border-white/15 bg-white/5 text-[#ff4f00]">
+        <div className="flex h-8 w-8 items-center justify-center rounded-full border border-white/15 bg-white/5 text-[#B5FF4D]">
           <span style={{ fontFamily: "'Courier New', Courier, monospace" }} className="text-sm">
             →
           </span>

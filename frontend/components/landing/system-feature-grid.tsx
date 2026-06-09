@@ -49,7 +49,7 @@ export function SystemFeatureGrid() {
           className="mx-auto max-w-3xl text-center"
         >
           <span
-            className="text-[11px] font-medium uppercase tracking-[0.18em] text-[#ff4f00]"
+            className="text-[11px] font-medium uppercase tracking-[0.18em] text-[#B5FF4D]"
             style={{ fontFamily: "'Courier New', Courier, monospace" }}
           >
             The system
@@ -81,35 +81,35 @@ export function SystemFeatureGrid() {
               whileInView="show"
               viewport={{ once: true, margin: "-60px" }}
               transition={{ duration: 0.5, delay: i * 0.08, ease: "easeOut" }}
-              className="group relative overflow-hidden rounded-[14px] border border-[rgba(33,24,23,0.12)]"
-              style={{ backgroundColor: "#fff8f0" }}
+              className="group relative overflow-hidden rounded-[14px] border border-white/[0.08]"
+              style={{ backgroundColor: "#141414" }}
             >
               {/* Visual cover area */}
-              <div className="relative h-44 overflow-hidden border-b border-[rgba(33,24,23,0.08)] bg-gradient-to-br from-[#fff8f0] to-[#eee7df]">
+              <div className="relative h-44 overflow-hidden border-b border-white/[0.06] bg-gradient-to-br from-[#141414] to-[#0d0d0d]">
                 {f.visual}
               </div>
 
               {/* Body */}
               <div className="p-6">
                 <div className="flex items-center gap-2">
-                  <div className="flex h-7 w-7 items-center justify-center rounded-md bg-[#ff4f00]/10 text-[#ff4f00]">
+                  <div className="flex h-7 w-7 items-center justify-center rounded-md bg-[#B5FF4D]/10 text-[#B5FF4D]">
                     {f.icon}
                   </div>
                   <span
-                    className="text-[10px] font-medium uppercase tracking-[0.18em] text-[#8a7f76]"
+                    className="text-[10px] font-medium uppercase tracking-[0.18em] text-white/40"
                     style={{ fontFamily: "'Courier New', Courier, monospace" }}
                   >
                     0{i + 1}
                   </span>
                 </div>
                 <h3
-                  className="mt-3 text-lg font-medium text-[#211817]"
+                  className="mt-3 text-lg font-medium text-white"
                   style={{ fontFamily: "Inter, sans-serif" }}
                 >
                   {f.title}
                 </h3>
                 <p
-                  className="mt-2 text-sm leading-relaxed text-[#4a4138]"
+                  className="mt-2 text-sm leading-relaxed text-white/50"
                   style={{ fontFamily: "Inter, sans-serif" }}
                 >
                   {f.body}
@@ -128,15 +128,15 @@ export function SystemFeatureGrid() {
 function RecordsVisual() {
   return (
     <div className="absolute inset-0 flex items-center justify-center gap-3 p-6">
-      <div className="flex flex-col gap-1.5 rounded-md border border-[rgba(33,24,23,0.12)] bg-white px-3 py-2 text-[10px] text-[#211817] shadow-sm" style={{ fontFamily: "'Courier New', Courier, monospace" }}>
+      <div className="flex flex-col gap-1.5 rounded-md border border-white/[0.08] bg-[#1a1a1a] px-3 py-2 text-[10px] text-white shadow-sm" style={{ fontFamily: "'Courier New', Courier, monospace" }}>
         <div className="font-semibold">contributions.csv</div>
-        <div className="text-[#8a7f76]">alice, 20</div>
-        <div className="text-[#8a7f76]">bob, 15</div>
-        <div className="text-[#8a7f76]">charlie, 10</div>
+        <div className="text-white/40">alice, 20</div>
+        <div className="text-white/40">bob, 15</div>
+        <div className="text-white/40">charlie, 10</div>
       </div>
-      <div className="text-[#ff4f00]">→</div>
-      <div className="flex flex-col gap-1.5 rounded-md bg-[#211817] px-3 py-2 text-[10px] text-white shadow-md" style={{ fontFamily: "'Courier New', Courier, monospace" }}>
-        <div className="font-semibold text-[#ff4f00]">payment plan</div>
+      <div className="text-[#B5FF4D]">→</div>
+      <div className="flex flex-col gap-1.5 rounded-md bg-[#0D0D0D] px-3 py-2 text-[10px] text-white shadow-md" style={{ fontFamily: "'Courier New', Courier, monospace" }}>
+        <div className="font-semibold text-[#B5FF4D]">payment plan</div>
         <div>3 approved</div>
         <div>1 blocked</div>
       </div>
@@ -157,11 +157,11 @@ function RiskChecksVisual() {
       {checks.map((c) => (
         <div
           key={c.name}
-          className="flex items-center justify-between rounded-md border border-[rgba(33,24,23,0.08)] bg-white px-3 py-1.5 text-[10px]"
+          className="flex items-center justify-between rounded-md border border-white/[0.06] bg-[#1a1a1a] px-3 py-1.5 text-[10px]"
           style={{ fontFamily: "'Courier New', Courier, monospace" }}
         >
-          <span className="text-[#211817]">{c.name}</span>
-          <span className={c.pass ? "text-emerald-600" : "text-red-600"}>
+          <span className="text-white">{c.name}</span>
+          <span className={c.pass ? "text-emerald-400" : "text-red-400"}>
             {c.pass ? <Check className="h-3 w-3" /> : <X className="h-3 w-3" />}
           </span>
         </div>
@@ -173,13 +173,13 @@ function RiskChecksVisual() {
 function ApprovalVisual() {
   return (
     <div className="absolute inset-0 flex items-center justify-center gap-2 p-6">
-      <div className="flex flex-col gap-1.5 rounded-md border border-[rgba(33,24,23,0.08)] bg-white px-3 py-2 text-[10px] shadow-sm" style={{ fontFamily: "'Courier New', Courier, monospace" }}>
-        <div className="font-semibold text-emerald-600">3 approved</div>
-        <div className="text-[#8a7f76]">alice, charlie, data-api</div>
+      <div className="flex flex-col gap-1.5 rounded-md border border-white/[0.06] bg-[#1a1a1a] px-3 py-2 text-[10px] shadow-sm" style={{ fontFamily: "'Courier New', Courier, monospace" }}>
+        <div className="font-semibold text-emerald-400">3 approved</div>
+        <div className="text-white/40">alice, charlie, data-api</div>
       </div>
-      <div className="flex flex-col gap-1.5 rounded-md border border-[rgba(33,24,23,0.12)] bg-[#ff4f00]/5 px-3 py-2 text-[10px] shadow-sm" style={{ fontFamily: "'Courier New', Courier, monospace" }}>
-        <div className="font-semibold text-[#ff4f00]">1 blocked</div>
-        <div className="text-[#8a7f76]">bob — not whitelisted</div>
+      <div className="flex flex-col gap-1.5 rounded-md border border-white/[0.06] bg-[#B5FF4D]/5 px-3 py-2 text-[10px] shadow-sm" style={{ fontFamily: "'Courier New', Courier, monospace" }}>
+        <div className="font-semibold text-[#B5FF4D]">1 blocked</div>
+        <div className="text-white/40">bob — not whitelisted</div>
       </div>
     </div>
   );
@@ -188,14 +188,14 @@ function ApprovalVisual() {
 function AuditVisual() {
   return (
     <div className="absolute inset-0 flex flex-col items-stretch justify-center gap-1.5 p-6 text-[10px]" style={{ fontFamily: "'Courier New', Courier, monospace" }}>
-      <div className="rounded-md border border-[rgba(33,24,23,0.08)] bg-white px-3 py-1.5 text-[#211817]">
-        <span className="text-[#8a7f76]">tx</span> 0xae3f...2c91
+      <div className="rounded-md border border-white/[0.06] bg-[#1a1a1a] px-3 py-1.5 text-white">
+        <span className="text-white/40">tx</span> 0xae3f...2c91
       </div>
-      <div className="rounded-md border border-[rgba(33,24,23,0.08)] bg-white px-3 py-1.5 text-[#211817]">
-        <span className="text-[#8a7f76]">risk</span> 4 pass · 1 block
+      <div className="rounded-md border border-white/[0.06] bg-[#1a1a1a] px-3 py-1.5 text-white">
+        <span className="text-white/40">risk</span> 4 pass · 1 block
       </div>
-      <div className="rounded-md border border-[rgba(33,24,23,0.08)] bg-white px-3 py-1.5 text-[#211817]">
-        <span className="text-[#8a7f76]">approver</span> human
+      <div className="rounded-md border border-white/[0.06] bg-[#1a1a1a] px-3 py-1.5 text-white">
+        <span className="text-white/40">approver</span> human
       </div>
     </div>
   );

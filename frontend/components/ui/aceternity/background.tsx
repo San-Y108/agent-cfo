@@ -75,7 +75,7 @@ export function GradientOrb({
   color = "blue",
 }: {
   className?: string;
-  color?: "blue" | "purple" | "cyan" | "amber" | "emerald";
+  color?: "blue" | "purple" | "cyan" | "amber" | "emerald" | "lime";
 }) {
   const colorMap = {
     blue: "bg-blue-500/20",
@@ -83,6 +83,7 @@ export function GradientOrb({
     cyan: "bg-cyan-500/20",
     amber: "bg-amber-500/20",
     emerald: "bg-emerald-500/20",
+    lime: "bg-[#B5FF4D]/20",
   };
 
   return (
@@ -105,9 +106,9 @@ export function GradientOrb({
 export function DemoBackdrop() {
   return (
     <>
-      <div className="pointer-events-none fixed inset-0 z-0 bg-black" />
+      <div className="pointer-events-none fixed inset-0 z-0 bg-[#F8F8F8]" />
       <GridBackground />
-      <NoiseOverlay className="dark:opacity-[0.04] opacity-[0.02]" />
+      <NoiseOverlay className="opacity-[0.02]" />
     </>
   );
 }

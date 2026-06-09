@@ -98,8 +98,8 @@ export function StepExecution({ data }: { data: DemoData }) {
           </BentoCardDescription>
         </BentoCard>
 
-        <BentoCard tone="amber">
-          <Zap className="h-5 w-5 text-amber-600 dark:text-amber-400 mb-2" />
+        <BentoCard tone="lime">
+          <Zap className="h-5 w-5 text-[#5a9915] mb-2" />
           <BentoCardTitle>{t("demo.exec.mode")}</BentoCardTitle>
           <BentoCardDescription>
             {exec.mode} · {t("demo.exec.modeDesc")}

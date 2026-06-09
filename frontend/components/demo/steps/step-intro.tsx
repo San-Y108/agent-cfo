@@ -22,7 +22,7 @@ export function StepIntro({ data, onStart }: { data: DemoData; onStart: () => vo
         transition={{ duration: 0.8 }}
         className="relative flex flex-col items-center justify-center py-16 text-center"
       >
-        <GradientOrb color="amber" className="left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 opacity-60" />
+        <GradientOrb color="lime" className="left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 opacity-60" />
         <h2 className="relative z-10 text-3xl font-bold text-fg md:text-5xl">
           {t("demo.intro.title")}
         </h2>
@@ -34,7 +34,7 @@ export function StepIntro({ data, onStart }: { data: DemoData; onStart: () => vo
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
           onClick={onStart}
-          className="relative z-10 mt-10 flex items-center gap-3 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 px-8 py-4 text-lg font-semibold text-white shadow-lg shadow-amber-500/20 transition-shadow hover:shadow-amber-500/40"
+          className="relative z-10 mt-10 flex items-center gap-3 rounded-xl bg-gradient-to-r from-[#B5FF4D] to-[#9ef916] px-8 py-4 text-lg font-semibold text-[#0D0D0D] shadow-lg shadow-[#B5FF4D]/20 transition-shadow hover:shadow-[#B5FF4D]/40"
         >
           <Play className="h-5 w-5" />
           {t("demo.intro.generate")}
@@ -43,8 +43,8 @@ export function StepIntro({ data, onStart }: { data: DemoData; onStart: () => vo
 
       {/* Scene Summary Bento */}
       <BentoGrid>
-        <BentoCard tone="amber">
-          <Users className="h-6 w-6 text-amber-600 dark:text-amber-400 mb-3" />
+        <BentoCard tone="lime">
+          <Users className="h-6 w-6 text-[#5a9915] mb-3" />
           <BentoCardTitle>{t("demo.intro.contributors")}</BentoCardTitle>
           <BentoCardDescription>
             {contributors.length} {t("demo.intro.contributorsDesc")}

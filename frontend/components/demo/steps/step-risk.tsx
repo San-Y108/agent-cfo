@@ -44,12 +44,12 @@ export function StepRisk({ data }: { data: DemoData }) {
             return (
               <motion.div key={payment.id} variants={item}>
                 <BentoCard
-                  tone={isBlocked ? "red" : hasRisks ? "amber" : "emerald"}
+                  tone={isBlocked ? "red" : hasRisks ? "lime" : "emerald"}
                   className={
                     isBlocked
                       ? "border-red-500/40 bg-red-500/5"
                       : hasRisks
-                      ? "border-amber-500/30"
+                      ? "border-[#B5FF4D]/30"
                       : "border-emerald-500/20"
                   }
                 >
@@ -59,7 +59,7 @@ export function StepRisk({ data }: { data: DemoData }) {
                         isBlocked
                           ? "bg-red-500/10"
                           : hasRisks
-                          ? "bg-amber-500/10"
+                          ? "bg-[#B5FF4D]/10"
                           : "bg-emerald-500/10"
                       }`}
                     >
@@ -82,7 +82,7 @@ export function StepRisk({ data }: { data: DemoData }) {
                         className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${
                           isBlocked
                             ? "bg-red-500/10 text-red-600 dark:text-red-400 border border-red-500/20"
-                            : "bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20"
+                            : "bg-[#B5FF4D]/10 text-[#5a9915] border border-[#B5FF4D]/20"
                         }`}
                       >
                         {risk}

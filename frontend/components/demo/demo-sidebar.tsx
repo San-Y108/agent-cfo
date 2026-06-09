@@ -38,7 +38,7 @@ export function DemoSidebar({
   return (
     <>
       {/* Desktop */}
-      <aside className="hidden md:flex w-[220px] flex-shrink-0 flex-col border-r border-border-token bg-surface py-4">
+      <aside className="hidden md:flex w-[220px] flex-shrink-0 flex-col border-r border-[#E5E5E5] bg-white py-4">
         <Logo />
         <nav className="mt-6 flex flex-col gap-0.5 px-2">
           {primaryLinks.map((link, idx) => (
@@ -74,11 +74,13 @@ function SidebarLinkItem({
       className={cn(
         "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
         isActive
-          ? "bg-surface-2 text-fg"
-          : "text-fg-muted hover:bg-surface-2 hover:text-fg"
+          ? "bg-[#B5FF4D]/10 text-[#0D0D0D] border-l-2 border-[#B5FF4D]"
+          : "text-[#6B7280] hover:bg-[#F8F8F8] hover:text-[#0D0D0D]"
       )}
     >
-      {link.icon}
+      <span className={isActive ? "text-[#B5FF4D]" : "text-[#9CA3AF]"}>
+        {link.icon}
+      </span>
       {t(link.labelKey)}
     </button>
   );
@@ -87,8 +89,8 @@ function SidebarLinkItem({
 function Logo() {
   return (
     <div className="flex items-center gap-2 px-4 py-2">
-      <div className="h-5 w-6 flex-shrink-0 rounded-bl-sm rounded-br-lg rounded-tl-lg rounded-tr-sm bg-accent" />
-      <span className="text-sm font-medium text-fg">AgentCFO</span>
+      <div className="h-5 w-6 flex-shrink-0 rounded-bl-sm rounded-br-lg rounded-tl-lg rounded-tr-sm bg-[#B5FF4D]" />
+      <span className="text-sm font-medium text-[#0D0D0D]">AgentCFO</span>
     </div>
   );
 }
@@ -104,13 +106,13 @@ function MobileSidebar({
 
   return (
     <div className="md:hidden">
-      <div className="flex items-center justify-between border-b border-border-token bg-surface px-4 py-3">
+      <div className="flex items-center justify-between border-b border-[#E5E5E5] bg-white px-4 py-3">
         <div className="flex items-center gap-2">
-          <div className="h-5 w-6 flex-shrink-0 rounded-bl-sm rounded-br-lg rounded-tl-lg rounded-tr-sm bg-accent" />
-          <span className="text-sm font-medium text-fg">AgentCFO</span>
+          <div className="h-5 w-6 flex-shrink-0 rounded-bl-sm rounded-br-lg rounded-tl-lg rounded-tr-sm bg-[#B5FF4D]" />
+          <span className="text-sm font-medium text-[#0D0D0D]">AgentCFO</span>
         </div>
         <Menu
-          className="h-5 w-5 text-fg-muted cursor-pointer"
+          className="h-5 w-5 text-[#6B7280] cursor-pointer"
           onClick={() => setOpen(true)}
         />
       </div>
@@ -122,12 +124,12 @@ function MobileSidebar({
             animate={{ x: 0 }}
             exit={{ x: "-100%" }}
             transition={{ duration: 0.2 }}
-            className="fixed inset-0 z-[100] flex flex-col bg-bg p-4"
+            className="fixed inset-0 z-[100] flex flex-col bg-white p-4"
           >
             <div className="flex items-center justify-between mb-6">
               <Logo />
               <X
-                className="h-5 w-5 text-fg-muted cursor-pointer"
+                className="h-5 w-5 text-[#6B7280] cursor-pointer"
                 onClick={() => setOpen(false)}
               />
             </div>

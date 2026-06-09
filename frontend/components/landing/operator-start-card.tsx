@@ -56,7 +56,7 @@ export function OperatorStartCard() {
             transition={{ duration: 0.5, ease: "easeOut" }}
           >
             <span
-              className="text-[11px] font-medium uppercase tracking-[0.18em] text-[#ff4f00]"
+              className="text-[11px] font-medium uppercase tracking-[0.18em] text-[#B5FF4D]"
               style={{ fontFamily: "'Courier New', Courier, monospace" }}
             >
               For DAO Operators
@@ -79,17 +79,17 @@ export function OperatorStartCard() {
             </p>
           </motion.div>
 
-          {/* Right: paper card with tabs */}
+          {/* Right: dark card with tabs */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-80px" }}
             transition={{ duration: 0.6, delay: 0.1, ease: "easeOut" }}
-            className="rounded-[14px] border border-[rgba(33,24,23,0.12)] p-1.5 shadow-2xl"
-            style={{ backgroundColor: "#fff8f0" }}
+            className="rounded-[14px] border border-white/[0.08] p-1.5 shadow-2xl"
+            style={{ backgroundColor: "#141414" }}
           >
             {/* Tabs */}
-            <div className="flex items-center gap-1 rounded-[10px] bg-white/60 p-1">
+            <div className="flex items-center gap-1 rounded-[10px] bg-white/5 p-1">
               {TABS.map((tab) => {
                 const isActive = active === tab.key;
                 return (
@@ -97,11 +97,11 @@ export function OperatorStartCard() {
                     key={tab.key}
                     onClick={() => setActive(tab.key)}
                     className={`relative flex-1 rounded-[8px] px-3 py-2 text-xs font-semibold transition-colors ${
-                      isActive ? "text-white" : "text-[#211817]/60 hover:text-[#211817]"
+                      isActive ? "text-[#0D0D0D]" : "text-white/60 hover:text-white"
                     }`}
                     style={{
                       fontFamily: "Inter, sans-serif",
-                      backgroundColor: isActive ? "#ff4f00" : "transparent",
+                      backgroundColor: isActive ? "#B5FF4D" : "transparent",
                     }}
                   >
                     {tab.label}
@@ -118,20 +118,20 @@ export function OperatorStartCard() {
                   initial={{ opacity: 0, y: 6 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.25, delay: i * 0.04 }}
-                  className="group flex items-center gap-3 rounded-[10px] border border-[rgba(33,24,23,0.08)] bg-white px-3 py-2.5 transition-colors hover:border-[#ff4f00]/40"
+                  className="group flex items-center gap-3 rounded-[10px] border border-white/[0.06] bg-[#1a1a1a] px-3 py-2.5 transition-colors hover:border-[#B5FF4D]/40"
                 >
-                  <div className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-md bg-[#ff4f00]/10 text-[#ff4f00]">
+                  <div className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-md bg-[#B5FF4D]/10 text-[#B5FF4D]">
                     {it.icon}
                   </div>
                   <div className="min-w-0 flex-1">
                     <div
-                      className="truncate text-sm font-medium text-[#211817]"
+                      className="truncate text-sm font-medium text-white"
                       style={{ fontFamily: "Inter, sans-serif" }}
                     >
                       {it.name}
                     </div>
                     <div
-                      className="truncate text-[11px] text-[#8a7f76]"
+                      className="truncate text-[11px] text-white/40"
                       style={{ fontFamily: "Inter, sans-serif" }}
                     >
                       {it.meta}
@@ -141,10 +141,10 @@ export function OperatorStartCard() {
               ))}
             </div>
 
-            {/* CTA row inside paper card */}
-            <div className="mt-2 flex items-center justify-between rounded-[10px] bg-[#211817] px-4 py-3">
+            {/* CTA row inside dark card */}
+            <div className="mt-2 flex items-center justify-between rounded-[10px] bg-[#0D0D0D] px-4 py-3">
               <span
-                className="text-[11px] font-medium uppercase tracking-[0.15em] text-white/55"
+                className="text-[11px] font-medium uppercase tracking-[0.15em] text-white/40"
                 style={{ fontFamily: "'Courier New', Courier, monospace" }}
               >
                 {active === "records" && "Pipe in once"}
@@ -154,7 +154,7 @@ export function OperatorStartCard() {
               </span>
               <a
                 href="/demo"
-                className="flex items-center gap-1.5 text-xs font-semibold text-white"
+                className="flex items-center gap-1.5 text-xs font-semibold text-[#B5FF4D]"
                 style={{ fontFamily: "Inter, sans-serif" }}
               >
                 Try with demo data
