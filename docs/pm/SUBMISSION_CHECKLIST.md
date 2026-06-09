@@ -14,7 +14,7 @@
 | 2 | README.md 完整版 | 总控 + 物料 | 含项目介绍、架构、运行方式、CAW 说明、Demo 截图、tx hash、团队信息 | ☐ |
 | 3 | 项目说明文档 | 总控 | 问题背景、解决方案、赛道匹配、风险边界说明 | ☑ |
 | 4 | Demo 视频 3–5 分钟 | 物料 | 完整主流程演示，上传到 YouTube/Bilibili，链接写入 README | ☐ |
-| 5 | CAW 关键代码或配置说明 | 合约/CAW | 518 行后端对接说明已交付，真实代码替换 mock 待完成 | ☑ |
+| 5 | CAW 关键代码或配置说明 | 合约/CAW | 518 行后端对接说明已交付，real mode 验证待完成，mock fallback 保留 | ☑ |
 | 6 | Agent Wallet 地址 | 合约/CAW | 测试网地址，写入 README | ☐ |
 | 7 | Transaction Hash 列表 | 合约/CAW | 至少 3 笔测试网付款 tx hash，含区块浏览器链接，写入 README | ☐ |
 | 8 | 风险边界说明 | 总控 | 10 条安全边界声明，写入 README 或单独文档 | ☐ |

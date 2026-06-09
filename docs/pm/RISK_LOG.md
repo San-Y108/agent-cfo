@@ -39,9 +39,9 @@
 | 负责人 | W5W8L9jlu（后端） |
 | 发现日期 | 6月8日 |
 | 影响 | 当前 txHash=null，execute-payment 不会真正花钱 |
-| 当前状态 | ✅ SQLiteStore 已实现，/api/caw-status/{id} 已就绪，CAW 配置文档已到位（518行），可开始替换 mock |
-| 缓解措施 | 后端可直接使用配置文档替换 caw_adapter.py |
-| 截止 | 6月10日 替换为真实 CAW |
+| 当前状态 | ✅ SQLiteStore 已实现，/api/caw-status/{id} 已就绪，CAW 配置文档已到位（518行），可开始启用/验证 real CAW mode |
+| 缓解措施 | 后端可使用配置文档启用/验证 RealCawAdapter，默认 mock fallback 保留 |
+| 截止 | 6月10日 验证真实 CAW testnet 付款或明确启用 mock fallback |
 
 ### R-05 🟡 测试网资金获取
 

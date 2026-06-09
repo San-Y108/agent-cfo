@@ -6,4 +6,5 @@ __pycache__/
 *.sqlite
 *.sqlite3
 *.db
+cobo-agentic-wallet-backend-quickstart.md
 

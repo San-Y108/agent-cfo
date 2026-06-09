@@ -22,7 +22,7 @@
 | 岗位 | 负责人 | 进度 | 最大卡点 |
 |------|--------|------|----------|
 | 交付/总控 | San-Y108 (严硕) | ✅ repo + 文档已完成 | 无 |
-| 后端/Agent | W5W8L9jlu | ✅ SQLite + CAW查询 + Render部署 | CAW 配置已到位，可开始替换 mock |
+| 后端/Agent | W5W8L9jlu | ✅ SQLite + CAW查询 + Render部署 | CAW 配置已到位，可开始启用/验证 real CAW mode |
 | 前端 | Aafff623 | ✅ Landing + Demo + Vercel + i18n + 纯黑风格 + API 对接 | 待保持 main 与部署分支同步 |
 | 合约/CAW | gitgdut | ✅ API Key + Wallet + 配置文档 | 待准备测试网资金 + 第一笔交易 |
 | 物料/设计 | Eloise-qiu | 🟡 已确认 | GitHub 已加入 repo，待启动 PPT/视频/视觉 |
@@ -92,7 +92,7 @@
 
 | ID | 任务 | 交付物 | 截止 | 状态 |
 |----|------|--------|------|------|
-| T-050 | 接入真实 CAW（替换 mock） | caw_adapter.py 调用 Cobo API | 6月10日 | 🟡 TODO |
+| T-050 | 启用/验证真实 CAW mode | RealCawAdapter testnet 验证 | 6月10日 | 🟡 TODO |
 | T-051 | 加入 LLM 生成付款计划 | payment_planner.py (OpenAI) | 6月9日 | 🔵 IN_PROGRESS |
 | T-052 | 和前端联调 | 前端能调通 5 个接口 | 6月9日 | 🔵 IN_PROGRESS |
 | T-053 | 和 CAW 联调 | execute-payment 返回真实 tx hash | 6月10日 | 🟡 TODO |
@@ -116,7 +116,7 @@
 
 | ID | 任务 | 交付物 | 截止 | 状态 |
 |----|------|--------|------|------|
-| T-070 | 写真实 caw_adapter.py | 替换 mock 的代码 | 6月10日 | 🟡 TODO |
+| T-070 | 验证真实 CAW adapter | RealCawAdapter testnet 验证 | 6月10日 | 🟡 TODO |
 | T-071 | 和后端联调 | execute-payment 真实付款 | 6月10日 | 🟡 TODO |
 | T-072 | 完成至少 3 笔测试网付款 | 3 个 tx hash | 6月10日 | 🟡 TODO |
 | T-073 | 整理 CAW 配置说明 | cobo-agentic-wallet-backend-quickstart.md | 6月10日 | ✅ DONE |
@@ -171,7 +171,7 @@
     → 待保持 main 与部署分支同步
 
 CAW 验证（✅ API Key + Wallet + 配置文档已到位）
-    → 后端可开始替换 mock caw_adapter.py
+    → 后端可开始启用/验证 real CAW mode
     → 待准备测试网资金 + 第一笔交易拿 tx hash
 
 设计/物料（🟡 Eloise-qiu 已确认）
@@ -185,7 +185,7 @@ CAW 验证（✅ API Key + Wallet + 配置文档已到位）
 | 状态 | 数量 |
 |------|------|
 | 🔴 BLOCKED | 0 |
-| 🟡 TODO | 28 |
-| 🔵 IN_PROGRESS | 2 |
+| 🟡 TODO | 27 |
+| 🔵 IN_PROGRESS | 3 |
 | ✅ DONE | 33 |
 | ❌ CANCELLED | 0 |
