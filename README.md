@@ -209,6 +209,9 @@ Safety behavior:
 - Stable `request_id` is generated per payment item.
 - `txHash` stays `null` unless CAW returns a real `transaction_hash`.
 - Policy denial and provider failures are returned as redacted public error codes.
+- `caw_pact_submit_error` means pact submission failed before a transfer attempt.
+- `caw_transfer_submit_error` means pact activation passed but transfer submission failed.
+- `caw_policy_denied` means CAW policy rejected the transfer attempt.
 
 Do not commit `cobo-agentic-wallet-backend-quickstart.md`. Do not create or commit `.env`. Do not paste `AGENT_WALLET_API_KEY` or any pact-scoped API key into code, docs, logs, tests, screenshots, or chat.
 
@@ -224,6 +227,8 @@ Manual live test checklist, only after explicit approval:
 8. Verify `/api/caw-status/{cawRequestId}` and `/api/audit-report/{auditReportId}`.
 
 For one-off local live-test scripts, set `AGENTCFO_DB_PATH` to an absolute repo-local path before importing `app.main`; otherwise the app process can initialize a different store than the script expects.
+
+If a live test returns `txHash=null`, first query CAW by `request_id`. If CAW returns not found, check whether pact submission reached CAW before considering another transfer. The installed SDK requires `submit_pact(..., intent="...", spec={...})`; omitting `intent` fails before CAW creates a transaction record.
 
 Evidence to capture after an approved live test:
 
