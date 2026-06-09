@@ -665,3 +665,22 @@ def test_real_caw_adapter_unknown_provider_status_fails_closed():
     assert result.status == PaymentStatus.FAILED
     assert result.error == "caw_unknown_status"
     assert result.txHash is None
+
+
+def test_real_caw_adapter_missing_provider_status_fails_closed():
+    factory = FakeCawSdkFactory(
+        transfer_response={
+            "request_id": "agentcfo_exec_demo_001_pay_001",
+            "transaction_hash": "0xshouldnotcount",
+        }
+    )
+    adapter = RealCawAdapter(
+        config=real_config(),
+        sdk_client_factory=factory,
+    )
+
+    result = adapter.create_transfer("exec_demo_001", sample_real_payment())
+
+    assert result.status == PaymentStatus.FAILED
+    assert result.error == "caw_unknown_status"
+    assert result.txHash is None

@@ -48,13 +48,15 @@
 
 ### 第五步：CAW 执行付款
 
+> 彩排口径：默认 mock flow 的 `txHash=null` 是正常兜底；Phase 4C 已有 1 笔真实 CAW testnet evidence。前端应分开展示 Audit Report snapshot 与 Latest CAW Status。若 refresh 后拿到真实 txHash，只展示在 Latest CAW Status 区域，不改写历史 Audit Report 快照。
+
 | # | 检查项 | 状态 |
 |---|--------|------|
-| 20 | 执行过程中页面显示"Executing via Cobo Agentic Wallet" | ☐ |
-| 21 | 执行完成后显示 tx hash | ☐ |
+| 20 | 执行过程中页面显示"Executing via Cobo Agentic Wallet"或明确 mock execution mode | ☐ |
+| 21 | Latest CAW Status 区域能展示真实 tx hash；mock flow 明确显示 txHash=null | ☐ |
 | 22 | tx hash 可以复制 | ☐ |
-| 23 | tx hash 在区块浏览器上可查到（点击跳转） | ☐ |
-| 24 | 显示 Agent Wallet 地址 | ☐ |
+| 23 | 真实 evidence 的 tx hash 可在区块浏览器上查到；mock flow 不伪造链接 | ☐ |
+| 24 | 显示 masked Agent Wallet/source，完整地址是否公开需单独确认 | ☐ |
 | 25 | 付款状态显示"Completed" | ☐ |
 
 ### 第六步：审计报告
@@ -62,7 +64,7 @@
 | # | 检查项 | 状态 |
 |---|--------|------|
 | 26 | 审计报告页面可见 | ☐ |
-| 27 | 每笔付款有：收款人、金额、原因、状态、tx hash | ☐ |
+| 27 | 每笔付款有：收款人、金额、原因、状态、Audit snapshot txHash；Latest CAW Status 单独展示 | ☐ |
 | 28 | Bob 的付款显示 Blocked + 原因 | ☐ |
 | 29 | 有剩余预算信息 | ☐ |
 | 30 | 报告整体像一份正式财务结算报告 | ☐ |

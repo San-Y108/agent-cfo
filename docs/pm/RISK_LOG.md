@@ -1,6 +1,6 @@
 # AgentCFO 风险日志
 
-> 最后更新：2026年6月9日 00:15
+> 最后更新：2026年6月9日 Phase 4C closeout
 > 规则：任何新发现的风险必须当天更新到此文档，并在站会中同步
 
 ---
@@ -31,17 +31,17 @@
 | 兜底方案 | 如果 6月9日仍无产出，总控自己出 PPT 大纲 + 视频脚本框架 |
 | 截止 | 6月9日 18:00 前完成 PPT 7 页大纲 |
 
-### R-04 🟡 后端 mock 模式 + SQLite 持久化
+### R-04 🟡 后端 mock 模式 + SQLite/Render 持久化边界
 
 | 字段 | 内容 |
 |------|------|
 | 等级 | 🟡 P2 |
 | 负责人 | W5W8L9jlu（后端） |
 | 发现日期 | 6月8日 |
-| 影响 | 当前 txHash=null，execute-payment 不会真正花钱 |
-| 当前状态 | ✅ SQLiteStore 已实现，/api/caw-status/{id} 已就绪，CAW 配置文档已到位（518行），可开始替换 mock |
-| 缓解措施 | 后端可直接使用配置文档替换 caw_adapter.py |
-| 截止 | 6月10日 替换为真实 CAW |
+| 影响 | 默认 mock flow 的 txHash 仍为 null；线上历史 audit/status 是否保留取决于 Render 是否配置 persistent disk |
+| 当前状态 | ✅ SQLiteStore、/api/caw-status/{id}、/api/caw-status/{id}/refresh 已实现；Phase 4C 已完成 1 笔低额 CAW testnet transfer 证据；默认 mock/fail-closed 保留 |
+| 缓解措施 | Render 短期建议 SQLite + persistent disk；长期/多实例审计再迁移 Postgres。Audit Report 保持执行时快照，latest CAW status 单独刷新展示 |
+| 截止 | 6月10日 确认 Render 持久化策略和线上演示口径 |
 
 ### R-05 🟡 测试网资金获取
 
@@ -50,9 +50,10 @@
 | 等级 | 🟡 P2 |
 | 负责人 | gitgdut（合约/CAW） |
 | 发现日期 | 6月8日 |
-| 影响 | 没有测试币就无法演示真实付款 |
-| 缓解措施 | 用 PoW 水龙头（sepolia-faucet.pk910.de）零门槛获取，或用原生代币 ETH 替代 USDC |
-| 截止 | 6月9日 |
+| 影响 | 已证明 1 笔低额 SETH testnet transfer，但提交清单仍缺至少 3 笔 tx/截图证据 |
+| 当前状态 | ✅ README 已记录 1 笔 txHash 和 cawRequestId；仍缺至少 2 笔或需要调整提交口径 |
+| 缓解措施 | 若继续追 3 笔，必须每次单独人工批准；否则对外口径只主张 1 笔低额 testnet evidence。所有截图必须脱敏 |
+| 截止 | 6月10日 |
 
 ### R-06 🟡 路演当天网络/环境问题
 

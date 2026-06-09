@@ -67,7 +67,7 @@ AgentCFO 需要展示：哪些付款可以执行、哪些付款被 blocked、为
 
 ## Repository Status
 
-当前仓库已经 scaffold 了 FastAPI 后端 MVP。它实现了默认 mock、可显式启用 OpenAI Structured Outputs 的 Payment Plan，Risk Check、Execute Payment 和 Audit Report API，并预留了 Cobo Agentic Wallet adapter。CAW 默认仍是 mock；Phase 4C 只加入 testnet-only、显式开启的 RealCawAdapter skeleton。后端部署目标是 Render，前端已部署到 Vercel。
+当前仓库已经 scaffold 了 FastAPI 后端 MVP。它实现了默认 mock、可显式启用 OpenAI Structured Outputs 的 Payment Plan，Risk Check、Execute Payment 和 Audit Report API，并预留了 Cobo Agentic Wallet adapter。CAW 默认仍是 mock；Phase 4C 只加入 testnet-only、显式开启的 RealCawAdapter skeleton。后端部署目标是 Render，前端已部署到 Vercel：https://agentcfo-frontend.vercel.app。
 
 当前已有文件：
 
@@ -386,8 +386,8 @@ curl.exe http://127.0.0.1:8000/health
 版本和 demo sample：
 
 ```bash
-curl.exe http://127.0.0.1:8000/version
-curl.exe http://127.0.0.1:8000/api/demo-sample
+curl http://127.0.0.1:8000/version
+curl http://127.0.0.1:8000/api/demo-sample
 ```
 
 `/api/demo-sample` 只返回可复制的 mock demo payload，不创建 plan、不写入数据库、不执行付款。Alice 和 Charlie 在白名单内，Bob 故意不在白名单内，方便前端展示 blocked risk。
@@ -444,8 +444,8 @@ curl.exe https://agentcfo-backend.onrender.com/health
 Deployed smoke checks:
 
 ```bash
-curl.exe https://<render-service>.onrender.com/version
-curl.exe https://<render-service>.onrender.com/api/demo-sample
+curl https://agentcfo-backend.onrender.com/version
+curl https://agentcfo-backend.onrender.com/api/demo-sample
 ```
 
 预期返回：
@@ -501,9 +501,9 @@ Audit Reports are saved as execution-time snapshots. Later CAW status refreshes 
 本地或 Render 部署后，建议按这个顺序给前端 / PM / 评委做快速检查：
 
 ```bash
-curl.exe http://127.0.0.1:8000/health
-curl.exe http://127.0.0.1:8000/version
-curl.exe http://127.0.0.1:8000/api/demo-sample
+curl http://127.0.0.1:8000/health
+curl http://127.0.0.1:8000/version
+curl http://127.0.0.1:8000/api/demo-sample
 ```
 
 联调约定：
@@ -664,7 +664,7 @@ P2:
 
 ## Demo Video
 
-> 待录制
+> 待录制。最终提交前必须替换为 3–5 分钟 Demo 视频链接。当前已有 1 笔低额 CAW testnet tx hash；视频需明确说明它只证明 1 笔 testnet transfer，默认 mock fallback 仍保留。
 
 ## License
 

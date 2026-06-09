@@ -95,13 +95,35 @@ ___
 目标：每个模块独立跑通，不需要联调
 
 各人接下来的任务：
-- @后端：替换 mock caw_adapter.py + 保持 5 个 API 稳定
+- @后端：启用/验证 RealCawAdapter + 保持 5 个 API 稳定
 - @前端：继续打磨主流程页面 + 保持 Vercel Demo 可用
 - @合约/CAW：准备测试网资金 + 第一笔测试网付款
 - @物料：PPT 初版 + README 头图 + Demo 视频脚本
 - @总控：盯进度 + 站会 + README
 
 提醒：后端先提供 mock API，不等 CAW 完全跑通
+```
+
+### Phase 4C Closeout 同步
+
+```
+@所有人 ✅ Phase 4C backend closeout 已完成。
+
+后端状态：
+- 默认 mock/fail-closed 保留，不会默认花钱。
+- 已有 1 笔低额 Sepolia/SETH CAW testnet tx evidence，README 已记录 cawRequestId、provider status 900 和 tx hash。
+- 已新增只读 latest CAW status refresh：GET /api/caw-status/{cawRequestId}/refresh。
+- Audit Report 是执行时快照，后续 refresh 不能改写历史审计记录。
+
+注意口径：
+- 现在只能说“已有 1 笔真实 testnet transfer evidence”。
+- 不能说已有 3 笔 tx hash。
+- README 只展示 masked wallet/source，不贴 API key、raw provider response 或未脱敏地址。
+
+接下来：
+- @前端：审计页分开展示 Audit Report snapshot 和 Latest CAW Status。
+- @CAW：确认是否继续补 2 笔 tx，或调整提交口径。
+- @物料：视频/PPT 说明 mock fallback + 1 笔真实 CAW evidence。
 ```
 
 ### Phase 1 → Phase 2 通知
@@ -220,13 +242,13 @@ CAW 目前遇到问题：____
 @物料：PPT + 视频 + 设计，让项目看起来很专业
 @前端：页面能跑能看，评委看得懂
 @后端：Agent 大脑稳定输出
-@合约/CAW：真实链上交易，赛道硬要求达标
+@合约/CAW：真实链上交易证据到位后，赛道硬要求达标
 
 这个项目的核心亮点：
 ✅ AI Agent 参与真实经济活动
 ✅ 资金操作通过 Cobo Agentic Wallet 完成
 ✅ 有受控钱包、预算、白名单、限额、人工确认
-✅ 有真实测试网 tx hash 可验证
+✅ 有真实测试网 tx hash 可验证（如未就绪，必须改用 mock fallback 版本文案）
 ✅ 有完整审计报告
 
 辛苦大家！🔥

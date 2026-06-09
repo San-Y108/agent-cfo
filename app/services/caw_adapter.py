@@ -398,7 +398,7 @@ async def _close_client(client):
 
 def _normalize_caw_status_code(status_code) -> PaymentStatus | None:
     if status_code is None:
-        return PaymentStatus.EXECUTED
+        return None
     try:
         return CAW_STATUS_CODE_MAP[int(status_code)]
     except (TypeError, ValueError, KeyError):
