@@ -9,6 +9,8 @@ from app.models import PaymentExecutionItem, PaymentItem, PaymentStatus
 
 CAW_POLICY_DENIED_ERROR = "caw_policy_denied"
 CAW_PROVIDER_ERROR = "caw_provider_error"
+CAW_PACT_SUBMIT_ERROR = "caw_pact_submit_error"
+CAW_TRANSFER_SUBMIT_ERROR = "caw_transfer_submit_error"
 TESTNET_CHAIN_IDS = {"SETH", "TBASE_SETH", "SOLDEV_SOL"}
 CAW_STATUS_CODE_MAP = {
     100: PaymentStatus.NEEDS_APPROVAL,
@@ -123,15 +125,19 @@ class RealCawAdapter(CawAdapter):
 
         try:
             pact = self._activate_pact()
-            if pact is None:
-                return self.failed_transfer_with_request_id(
-                    payment,
-                    request_id,
-                    "caw_pact_not_active",
-                )
+        except Exception:
+            return self.failed_transfer_with_request_id(payment, request_id, CAW_PACT_SUBMIT_ERROR)
+        if pact is None:
+            return self.failed_transfer_with_request_id(
+                payment,
+                request_id,
+                "caw_pact_not_active",
+            )
+
+        try:
             result = self._call_transfer(payment, request_id, pact["api_key"])
         except Exception as exc:
-            error = CAW_POLICY_DENIED_ERROR if _is_policy_denied(exc) else CAW_PROVIDER_ERROR
+            error = CAW_POLICY_DENIED_ERROR if _is_policy_denied(exc) else CAW_TRANSFER_SUBMIT_ERROR
             return self.failed_transfer_with_request_id(payment, request_id, error)
 
         provider_status = _result_value(result, "status")
@@ -217,6 +223,7 @@ class RealCawAdapter(CawAdapter):
         pact_response = _maybe_await(
             client.submit_pact(
                 wallet_id=self.config.wallet_id,
+                intent="Create an AgentCFO testnet transfer pact",
                 spec={
                     "policies": [self._transfer_policy()],
                     "completion_conditions": [

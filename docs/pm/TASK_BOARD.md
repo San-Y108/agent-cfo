@@ -1,6 +1,6 @@
 # AgentCFO 任务看板
 
-> 最后更新：2026年6月8日 21:15
+> 最后更新：2026年6月9日 00:15
 > 规则：12 号之后不新增大功能，只修复、打磨、录视频、补材料
 
 ---
@@ -22,9 +22,9 @@
 | 岗位 | 负责人 | 进度 | 最大卡点 |
 |------|--------|------|----------|
 | 交付/总控 | San-Y108 (严硕) | ✅ repo + 文档已完成 | 无 |
-| 后端/Agent | W5W8L9jlu | ✅ SQLite + CAW查询 + Render部署 | 等 gitgdut 提供真实 CAW 配置 |
-| 前端 | Aafff623 | ✅ Landing + Demo + Vercel + i18n/主题 | 分支 feat/frontend-bootstrap 待 merge 进 main |
-| 合约/CAW | gitgdut | 🔵 已开始 | Cobo 文档已通读，权限模型分析完成，待申请 API Key |
+| 后端/Agent | W5W8L9jlu | ✅ SQLite + CAW查询 + Render部署 | CAW 配置已到位，可开始替换 mock |
+| 前端 | Aafff623 | ✅ Landing + Demo + Vercel + i18n + 纯黑风格 + API 对接 | 待保持 main 与部署分支同步 |
+| 合约/CAW | gitgdut | ✅ API Key + Wallet + 配置文档 | 待准备测试网资金 + 第一笔交易 |
 | 物料/设计 | Eloise-qiu | 🟡 已确认 | GitHub 已加入 repo，待启动 PPT/视频/视觉 |
 
 ---
@@ -52,7 +52,7 @@
 | T-012 | POST /api/risk-check | 可调用接口 | 6月8日 | ✅ DONE |
 | T-013 | POST /api/execute-payment | mock 接口（txHash=null） | 6月8日 | ✅ DONE |
 | T-014 | GET /api/audit-report/{id} | 可调用接口 | 6月8日 | ✅ DONE |
-| T-015 | 风险检查引擎 4 条规则 | budget/whitelist/limit/duplicate | 6月8日 | ✅ DONE |
+| T-015 | 风险检查引擎 6 条规则 | budget/whitelist/limit/token/duplicate wallet/duplicate task | 6月8日 | ✅ DONE |
 | T-016 | mock CAW 适配器 | caw_adapter.py (mock) | 6月8日 | ✅ DONE |
 | T-017 | 测试用例 | test_mvp_flow.py | 6月8日 | ✅ DONE |
 
@@ -62,7 +62,7 @@
 |----|------|--------|------|------|
 | T-020 | 确认技术栈 | Next.js + TypeScript + Tailwind | 6月8日 18:00 | ✅ DONE |
 | T-021 | 脚手架跑通 | pnpm-lock + 完整组件结构 | 6月8日 22:00 | ✅ DONE |
-| T-022 | 对接后端 mock API | 能调用 4 个接口 | 6月9日 | 🔵 IN_PROGRESS |
+| T-022 | 对接后端 mock API | 能调用 5 个接口（含 caw-status） | 6月9日 | ✅ DONE |
 
 ### 合约/CAW（gitgdut）
 
@@ -71,7 +71,7 @@
 | T-030 | Cobo 文档 Quickstart 通读 | 权限模型分析文档 | 6月8日 18:00 | ✅ DONE |
 | T-031 | 申请开发者 API Key | Sandbox Key 或正式环境 Key | 6月8日 22:00 | ✅ DONE |
 | T-032 | 搞懂 Cobo 权限模型 | 三层权限 + 双层风控方案 | 6月9日 | ✅ DONE |
-| T-033 | 创建 Agent Wallet | Wallet 地址 | 6月9日 | 🟡 TODO |
+| T-033 | 创建 Agent Wallet | Wallet 地址 | 6月9日 | ✅ DONE |
 | T-034 | 准备测试网资金 | ETH 或 USDC 余额截图 | 6月9日 | 🟡 TODO |
 | T-035 | 第一笔测试网付款 | tx hash + 区块浏览器链接 | 6月10日 | 🟡 TODO |
 
@@ -79,7 +79,7 @@
 
 | ID | 任务 | 交付物 | 截止 | 状态 |
 |----|------|--------|------|------|
-| T-040 | 项目名 + Logo 初稿 | 草图或方向 | 6月8日 22:00 | 🟡 TODO |
+| T-040 | 项目名 + Logo 初稿 | 草图或方向 | 6月8日 22:00 | 🔵 IN_PROGRESS |
 | T-041 | PPT 7 页大纲 | 初版 PPT 文件 | 6月9日 | 🟡 TODO |
 | T-042 | Demo 视频脚本 | 逐段台词 + 画面描述 | 6月9日 | 🟡 TODO |
 | T-043 | 赛道匹配说明文案 | 中英文各一版 | 6月9日 | 🟡 TODO |
@@ -92,9 +92,9 @@
 
 | ID | 任务 | 交付物 | 截止 | 状态 |
 |----|------|--------|------|------|
-| T-050 | 接入真实 CAW（替换 mock） | caw_adapter.py 调用 Cobo API | 6月10日 | 🔵 IN_PROGRESS |
-| T-051 | 加入 LLM 生成付款计划 | 调用 LLM 替代硬编码 | 6月9日 | 🟡 TODO |
-| T-052 | 和前端联调 | 前端能调通 4 个接口 | 6月9日 | 🔵 IN_PROGRESS |
+| T-050 | 接入真实 CAW（替换 mock） | caw_adapter.py 调用 Cobo API | 6月10日 | 🟡 TODO |
+| T-051 | 加入 LLM 生成付款计划 | payment_planner.py (OpenAI) | 6月9日 | 🔵 IN_PROGRESS |
+| T-052 | 和前端联调 | 前端能调通 5 个接口 | 6月9日 | 🔵 IN_PROGRESS |
 | T-053 | 和 CAW 联调 | execute-payment 返回真实 tx hash | 6月10日 | 🟡 TODO |
 | T-054 | 部署后端到公网 | https://agentcfo-backend.onrender.com | 6月10日 | ✅ DONE |
 | T-055 | SQLite 持久化 | store.py SQLiteStore + 测试 | 6月10日 | ✅ DONE |
@@ -119,7 +119,7 @@
 | T-070 | 写真实 caw_adapter.py | 替换 mock 的代码 | 6月10日 | 🟡 TODO |
 | T-071 | 和后端联调 | execute-payment 真实付款 | 6月10日 | 🟡 TODO |
 | T-072 | 完成至少 3 笔测试网付款 | 3 个 tx hash | 6月10日 | 🟡 TODO |
-| T-073 | 整理 CAW 配置说明 | Agent Wallet 地址 + 配置截图 | 6月10日 | 🟡 TODO |
+| T-073 | 整理 CAW 配置说明 | cobo-agentic-wallet-backend-quickstart.md | 6月10日 | ✅ DONE |
 
 ### 物料/设计
 
@@ -167,11 +167,12 @@
 
 前端主流程（✅ 已完成 + 已部署 Vercel）
     → Landing + Demo 完整可用
-    → 待 merge feat/frontend-bootstrap 进 main
+    → lib/api 层已对齐 5 个接口
+    → 待保持 main 与部署分支同步
 
-CAW 验证（🟡 文档分析完成，待申请 API Key + 创建钱包）
-    → 后端接真实 CAW（等 CAW 完成后替换 mock）
-    → tx hash 展示（等 CAW 完成后才有真实数据）
+CAW 验证（✅ API Key + Wallet + 配置文档已到位）
+    → 后端可开始替换 mock caw_adapter.py
+    → 待准备测试网资金 + 第一笔交易拿 tx hash
 
 设计/物料（🟡 Eloise-qiu 已确认）
     → 待启动 PPT、视频、视觉
@@ -184,7 +185,7 @@ CAW 验证（🟡 文档分析完成，待申请 API Key + 创建钱包）
 | 状态 | 数量 |
 |------|------|
 | 🔴 BLOCKED | 0 |
-| 🟡 TODO | 30 |
-| 🔵 IN_PROGRESS | 4 |
-| ✅ DONE | 29 |
+| 🟡 TODO | 28 |
+| 🔵 IN_PROGRESS | 2 |
+| ✅ DONE | 33 |
 | ❌ CANCELLED | 0 |

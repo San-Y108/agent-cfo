@@ -67,7 +67,7 @@ AgentCFO 需要展示：哪些付款可以执行、哪些付款被 blocked、为
 
 ## Repository Status
 
-当前仓库已经 scaffold 了 FastAPI 后端 MVP。它实现了默认 mock、可显式启用 OpenAI Structured Outputs 的 Payment Plan，Risk Check、Execute Payment 和 Audit Report API，并预留了 Cobo Agentic Wallet adapter。CAW 默认仍是 mock；Phase 4C 只加入 testnet-only、显式开启的 RealCawAdapter skeleton。
+当前仓库已经 scaffold 了 FastAPI 后端 MVP。它实现了默认 mock、可显式启用 OpenAI Structured Outputs 的 Payment Plan，Risk Check、Execute Payment 和 Audit Report API，并预留了 Cobo Agentic Wallet adapter。CAW 默认仍是 mock；Phase 4C 只加入 testnet-only、显式开启的 RealCawAdapter skeleton。后端部署目标是 Render，前端已部署到 Vercel。
 
 当前已有文件：
 
@@ -79,7 +79,7 @@ AgentCFO 需要展示：哪些付款可以执行、哪些付款被 blocked、为
 | `requirements.txt` | Python 依赖锁定版本 |
 | `docs/pm/` | 项目管理、站会、风险、提交和彩排清单 |
 
-当前可运行 mock API 服务。真实 CAW 交易没有默认启用，且不能在没有明确人工批准时执行；不要在 README 中补不存在的部署链接、Agent Wallet 地址或真实 tx hash。
+当前可运行 mock API 服务（本地 + Render 部署）。真实 CAW 交易没有默认启用，且不能在没有明确人工批准时执行；不要在 README 中补不存在的 Agent Wallet 地址或真实 tx hash。
 
 ## How To Work In This Repo
 
@@ -108,8 +108,9 @@ P0 APIs:
 | `POST /api/risk-check` | 对 Payment Plan 执行确定性风险检查 |
 | `POST /api/execute-payment` | 人工确认后，通过 CAW 执行可付款项 |
 | `GET /api/audit-report/{auditReportId}` | 返回最终 Audit Report |
+| `GET /api/caw-status/{cawRequestId}` | 返回 mock/CAW 请求状态 |
 
-详细接口以 `app/routers/payments.py`、`app/models.py` 和 README 的 curl.exe 示例为准。
+详细接口以 `app/routers/payments.py`、`app/models.py` 和 README 的 curl 示例为准。
 
 ## Architecture
 
@@ -135,16 +136,18 @@ Frontend
 
 ## Cobo Agentic Wallet Evidence
 
-以下内容需要合约 / CAW 同学在联调后补充，不能编造：
+以下内容按当前可验证状态维护；真实地址、tx hash 和截图必须由合约 / CAW 同学在联调后补充，不能编造：
 
 | 证据项 | 当前状态 |
 | --- | --- |
-| Agent Wallet Address | 待补充 |
-| Testnet / Chain | 待补充 |
-| Token | 待补充 |
-| Transaction Hash | 待补充 |
-| CAW Request ID | 待补充 |
-| CAW config notes | 待补充 |
+| CAW API Key | ✅ 已申请并配置（不写入仓库） |
+| Agent Wallet | ✅ 已创建（active；公开展示地址待 CAW 同学补充） |
+| SDK | ✅ 确认 `cobo-agentic-wallet v0.1.40` |
+| Testnet / Chain | ✅ 已配置 Sepolia / SETH；待真实付款验证 |
+| Token | ✅ 已配置测试网 token；待余额和付款截图验证 |
+| Transaction Hash | 待真实测试网付款后补充 |
+| CAW Request ID | 当前 mock 返回 `mock_caw_*`；真实 CAW 接入后补充 |
+| CAW config notes | ✅ 已交付 518 行后端对接说明 |
 | Payment screenshots | 待补充 |
 
 真实付款必须通过 Cobo Agentic Wallet。Mock mode 只能用于演示兜底，必须明确标注。
@@ -280,7 +283,7 @@ Phase 4B 只加入了 CAW read-only observer skeleton，用来提前固定只读
 - **Testing**: pytest + FastAPI TestClient
 - **Server**: Uvicorn
 - **Storage**: SQLite demo store with repository abstraction
-- **CAW**: Default mock adapter; opt-in testnet RealCawAdapter skeleton
+- **CAW**: Cobo Agentic Wallet SDK (`cobo-agentic-wallet==0.1.40`), default mock adapter, opt-in testnet RealCawAdapter skeleton
 
 ## Local Development
 
@@ -322,19 +325,19 @@ python -m venv .venv
 安装依赖：
 
 ```bash
-.\.venv\Scripts\python -m pip install -r requirements.txt
+.venv/bin/python -m pip install -r requirements.txt
 ```
 
 运行测试：
 
 ```bash
-.\.venv\Scripts\python -m pytest -q
+.venv/bin/python -m pytest -q
 ```
 
 启动开发服务：
 
 ```bash
-.\.venv\Scripts\python -m uvicorn app.main:app --reload
+.venv/bin/python -m uvicorn app.main:app --reload
 ```
 
 默认服务地址：
@@ -346,7 +349,7 @@ http://127.0.0.1:8000
 健康检查：
 
 ```bash
-curl.exe http://127.0.0.1:8000/health
+curl http://127.0.0.1:8000/health
 ```
 
 版本和 demo sample：
@@ -398,8 +401,10 @@ http://localhost:3000
 
 Deployed health check:
 
+部署后端验证：
+
 ```bash
-curl.exe https://<render-service>.onrender.com/health
+curl https://agentcfo-backend.onrender.com/health
 ```
 
 Deployed smoke checks:
@@ -409,7 +414,13 @@ curl.exe https://<render-service>.onrender.com/version
 curl.exe https://<render-service>.onrender.com/api/demo-sample
 ```
 
-This deployment is still mock backend mode: no real OpenAI planner, no real Cobo Agentic Wallet execution, no `.env`, and no secrets in the repository.
+预期返回：
+
+```json
+{"status":"ok","service":"agent-cfo-backend"}
+```
+
+This deployment is still mock backend mode by default: no real Cobo Agentic Wallet transfer, no `.env`, and no secrets in the repository. Render should set `CAW_ADAPTER_MODE=mock` and `CAW_ENABLE_TRANSFERS=false` for P1 online verification.
 
 ## Payment Planner Mode
 
@@ -474,36 +485,42 @@ curl.exe http://127.0.0.1:8000/api/demo-sample
 
 ## Curl Verification
 
-PowerShell 中建议使用 `curl.exe`，避免 `curl` alias 干扰。
+验证本地后端 API：
 
 创建 Payment Plan：
 
 ```bash
-curl.exe -X POST http://127.0.0.1:8000/api/payment-plan -H 'Content-Type: application/json' -d '{"contributions":[{"name":"Alice","role":"Content Contributor","task":"Wrote event recap article","wallet":"0xAlice","amount":20,"token":"USDC"}],"budgetRule":{"monthlyBudget":50,"singlePaymentLimit":25,"allowedToken":"USDC","whitelist":["0xAlice"],"requiresHumanApproval":true}}'
+curl -X POST http://127.0.0.1:8000/api/payment-plan -H 'Content-Type: application/json' -d '{"contributions":[{"name":"Alice","role":"Content Contributor","task":"Wrote event recap article","wallet":"0xAlice","amount":20,"token":"USDC"}],"budgetRule":{"monthlyBudget":50,"singlePaymentLimit":25,"allowedToken":"USDC","whitelist":["0xAlice"],"requiresHumanApproval":true}}'
 ```
 
 执行 Risk Check：
 
 ```bash
-curl.exe -X POST http://127.0.0.1:8000/api/risk-check -H 'Content-Type: application/json' -d '{"paymentPlanId":"plan_demo_001","budgetRule":{"monthlyBudget":50,"singlePaymentLimit":25,"allowedToken":"USDC","whitelist":["0xAlice"],"requiresHumanApproval":true}}'
+curl -X POST http://127.0.0.1:8000/api/risk-check -H 'Content-Type: application/json' -d '{"paymentPlanId":"plan_demo_001","budgetRule":{"monthlyBudget":50,"singlePaymentLimit":25,"allowedToken":"USDC","whitelist":["0xAlice"],"requiresHumanApproval":true}}'
 ```
 
 执行 mock payment：
 
 ```bash
-curl.exe -X POST http://127.0.0.1:8000/api/execute-payment -H 'Content-Type: application/json' -d '{"paymentPlanId":"plan_demo_001","approvedPaymentIds":["pay_001"],"humanApproval":{"approved":true,"approvedBy":"demo-operator"}}'
+curl -X POST http://127.0.0.1:8000/api/execute-payment -H 'Content-Type: application/json' -d '{"paymentPlanId":"plan_demo_001","approvedPaymentIds":["pay_001"],"humanApproval":{"approved":true,"approvedBy":"demo-operator"}}'
 ```
 
 查看 Audit Report：
 
 ```bash
-curl.exe http://127.0.0.1:8000/api/audit-report/audit_demo_001
+curl http://127.0.0.1:8000/api/audit-report/audit_demo_001
 ```
 
 查看 mock CAW status：
 
 ```bash
-curl.exe http://127.0.0.1:8000/api/caw-status/mock_caw_exec_demo_001_pay_001
+curl http://127.0.0.1:8000/api/caw-status/mock_caw_exec_demo_001_pay_001
+```
+
+验证部署后端：
+
+```bash
+curl https://agentcfo-backend.onrender.com/health
 ```
 
 所有执行结果当前都是 `mode="mock"`，`txHash=null`。
@@ -547,7 +564,7 @@ curl.exe http://127.0.0.1:8000/api/caw-status/mock_caw_exec_demo_001_pay_001
 
 完成标准：
 
-- 四个 P0 API 支持完整 Demo flow。
+- 核心业务 API 支持完整 Demo flow。
 - 前端可以展示 Payment Plan、Risk Check、Execution Result 和 Audit Report。
 - 至少一笔 CAW testnet transaction 有真实证据，或明确标注当前使用 mock mode。
 - README 和实际实现保持一致。
@@ -577,18 +594,18 @@ curl.exe http://127.0.0.1:8000/api/caw-status/mock_caw_exec_demo_001_pay_001
 P0:
 
 - Scaffold backend。已完成 mock MVP。
-- 实现四个 P0 API。已完成 mock MVP。
+- 实现 P0 核心 API。已完成 mock MVP，并补充 CAW 状态查询接口。
 - 接入 LLM planner。已完成默认 mock、显式 `openai` 模式的 structured planner。
-- 实现 deterministic Risk Engine。
+- 实现 deterministic Risk Engine。已完成，6 条规则。
 - 接入 CAW Adapter。当前默认 MockCawAdapter，已加入 opt-in testnet RealCawAdapter skeleton。
 - 输出 Audit Report。已完成 mock MVP。
 
 P1:
 
-- 部署后端服务。
-- 增加持久化。
-- 增加 CAW 状态轮询。
-- 补齐运行方式和环境变量说明。
+- 部署后端服务。✅ 已部署到 Render。
+- 增加持久化。✅ SQLiteStore 已实现。
+- 增加 CAW 状态轮询。✅ GET /api/caw-status/{id} 已实现。
+- 补齐运行方式和环境变量说明。✅ README 已更新。
 
 P2:
 

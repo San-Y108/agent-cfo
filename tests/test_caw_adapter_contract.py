@@ -69,6 +69,7 @@ class FakeCawSdkClient:
         self,
         api_key="agent-credential-placeholder",
         pact=None,
+        submit_error=None,
         transfer_response=None,
         transfer_error=None,
     ):
@@ -78,6 +79,7 @@ class FakeCawSdkClient:
             "status": "active",
             "api_key": "pact-credential-placeholder",
         }
+        self.submit_error = submit_error
         self.transfer_response = transfer_response or {
             "request_id": "agentcfo_exec_demo_001_pay_001",
             "transaction_hash": "0xrealtestnet",
@@ -97,6 +99,8 @@ class FakeCawSdkClient:
         name=None,
         recipe_slugs=None,
     ):
+        if not isinstance(intent, str) or not intent.strip():
+            raise ValueError("intent is required")
         self.submit_pact_calls.append(
             {
                 "wallet_id": wallet_id,
@@ -107,6 +111,8 @@ class FakeCawSdkClient:
                 "recipe_slugs": recipe_slugs,
             }
         )
+        if self.submit_error is not None:
+            raise self.submit_error
         return {"pact_id": self.pact["pact_id"]}
 
     def get_pact(self, pact_id):
@@ -149,8 +155,9 @@ class FakeCawSdkClient:
 
 
 class FakeCawSdkFactory:
-    def __init__(self, pact=None, transfer_response=None, transfer_error=None):
+    def __init__(self, pact=None, submit_error=None, transfer_response=None, transfer_error=None):
         self.pact = pact
+        self.submit_error = submit_error
         self.transfer_response = transfer_response
         self.transfer_error = transfer_error
         self.clients = []
@@ -159,6 +166,7 @@ class FakeCawSdkFactory:
         client = FakeCawSdkClient(
             api_key=api_key,
             pact=self.pact,
+            submit_error=self.submit_error,
             transfer_response=self.transfer_response,
             transfer_error=self.transfer_error,
         )
@@ -178,6 +186,10 @@ class FakePolicyDeniedError(Exception):
                 "details": {"api_key": "SHOULD_NOT_LEAK_CANARY"},
             },
         )()
+
+
+class FakeProviderError(Exception):
+    pass
 
 
 def real_config(**overrides):
@@ -364,6 +376,23 @@ def test_real_caw_adapter_fails_closed_without_active_pact():
     assert factory.clients[0].transfer_calls == []
 
 
+def test_real_caw_adapter_pact_submit_provider_error_is_redacted():
+    factory = FakeCawSdkFactory(submit_error=FakeProviderError("SHOULD_NOT_LEAK_CANARY"))
+    adapter = RealCawAdapter(
+        config=real_config(),
+        sdk_client_factory=factory,
+    )
+
+    result = adapter.create_transfer("exec_demo_001", sample_real_payment())
+
+    assert result.status == PaymentStatus.FAILED
+    assert result.error == "caw_pact_submit_error"
+    assert result.txHash is None
+    assert "SHOULD_NOT_LEAK_CANARY" not in result.model_dump_json()
+    assert len(factory.clients) == 1
+    assert factory.clients[0].transfer_calls == []
+
+
 def test_real_caw_adapter_submits_pact_and_uses_pact_scoped_key_for_transfer():
     factory = FakeCawSdkFactory(
         transfer_response={
@@ -390,6 +419,7 @@ def test_real_caw_adapter_submits_pact_and_uses_pact_scoped_key_for_transfer():
     assert agent_client.api_key == "agent-credential-placeholder"
     assert pact_client.api_key == "pact-credential-placeholder"
     assert agent_client.submit_pact_calls[0]["wallet_id"] == "wallet_test_001"
+    assert agent_client.submit_pact_calls[0]["intent"] == "Create an AgentCFO testnet transfer pact"
     spec = agent_client.submit_pact_calls[0]["spec"]
     policy = spec["policies"][0]
     assert policy["type"] == "transfer"
@@ -478,6 +508,21 @@ def test_real_caw_adapter_policy_denied_error_is_redacted():
 
     assert result.status == PaymentStatus.FAILED
     assert result.error == "caw_policy_denied"
+    assert result.txHash is None
+    assert "SHOULD_NOT_LEAK_CANARY" not in result.model_dump_json()
+
+
+def test_real_caw_adapter_transfer_provider_error_is_redacted():
+    factory = FakeCawSdkFactory(transfer_error=FakeProviderError("SHOULD_NOT_LEAK_CANARY"))
+    adapter = RealCawAdapter(
+        config=real_config(),
+        sdk_client_factory=factory,
+    )
+
+    result = adapter.create_transfer("exec_demo_001", sample_real_payment())
+
+    assert result.status == PaymentStatus.FAILED
+    assert result.error == "caw_transfer_submit_error"
     assert result.txHash is None
     assert "SHOULD_NOT_LEAK_CANARY" not in result.model_dump_json()
 
