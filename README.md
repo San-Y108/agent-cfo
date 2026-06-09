@@ -180,6 +180,20 @@ Required environment variable names:
 | `CAW_ALLOWED_RECIPIENTS` | comma-separated recipient allowlist | No |
 | `CAW_MAX_AMOUNT` | decimal natural-unit max amount | No |
 
+Local example with placeholders only:
+
+```text
+CAW_ADAPTER_MODE=real
+CAW_ENABLE_TRANSFERS=true
+AGENT_WALLET_API_URL=<provided-by-caw-teammate>
+AGENT_WALLET_API_KEY=<provided-by-caw-teammate>
+AGENT_WALLET_WALLET_ID=<provided-by-caw-teammate>
+CAW_ALLOWED_CHAIN_IDS=<testnet-chain-id>
+CAW_ALLOWED_TOKEN_IDS=<testnet-token-id>
+CAW_ALLOWED_RECIPIENTS=<test-recipient-address>
+CAW_MAX_AMOUNT=<low-testnet-amount>
+```
+
 Safety behavior:
 
 - Real adapter is used only when `CAW_ADAPTER_MODE=real`.
@@ -205,6 +219,41 @@ Manual live test checklist, only after explicit approval:
 6. Start the server.
 7. Execute one approved, risk-checked, low-value payment.
 8. Verify `/api/caw-status/{cawRequestId}` and `/api/audit-report/{auditReportId}`.
+
+Evidence to capture after an approved live test:
+
+| Field | Source |
+| --- | --- |
+| `chain` | `CAW_ALLOWED_CHAIN_IDS` and CAW transaction/status view |
+| `token` | payment item token and CAW transaction/status view |
+| `request_id` | stable CAW SDK request id generated per payment |
+| `cawRequestId` | backend execution response and `/api/caw-status/{cawRequestId}` |
+| `txHash` | CAW transaction response/status when available |
+| `auditReportId` | backend execution response |
+| `CAW status` | `/api/caw-status/{cawRequestId}` and CAW status/audit log view |
+
+Render env checklist for testnet real mode:
+
+```text
+CAW_ADAPTER_MODE=real
+CAW_ENABLE_TRANSFERS=true
+AGENT_WALLET_API_URL=<provided-by-caw-teammate>
+AGENT_WALLET_API_KEY=<Render secret env var>
+AGENT_WALLET_WALLET_ID=<provided-by-caw-teammate>
+CAW_ALLOWED_CHAIN_IDS=<testnet-chain-id>
+CAW_ALLOWED_TOKEN_IDS=<testnet-token-id>
+CAW_ALLOWED_RECIPIENTS=<test-recipient-address>
+CAW_MAX_AMOUNT=<low-testnet-amount>
+```
+
+Rollback to mock mode:
+
+```text
+CAW_ADAPTER_MODE=mock
+CAW_ENABLE_TRANSFERS=false
+```
+
+After rollback, restart the local server or redeploy Render so the app process reloads environment variables. Mock mode must return `mode="mock"` and `txHash=null`.
 
 No live transfer is run by tests. Tests use fake SDK clients only.
 
