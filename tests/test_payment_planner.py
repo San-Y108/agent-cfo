@@ -1,3 +1,6 @@
+import pytest
+from pydantic import ValidationError
+
 from app.models import PaymentPlanRequest
 from app.services.payment_planner import (
     MockPaymentPlanner,
@@ -107,6 +110,31 @@ def test_openai_planner_uses_fake_client_and_backend_forces_safe_fields():
     assert plan.payments[0].status == "Ready"
     assert plan.payments[0].risks == []
     assert plan.payments[0].reason == "Alice completed the recap and should be paid."
+    system_message = fake_responses.calls[0]["input"][0]["content"]
+    assert "Do not approve payments" in system_message
+    assert "do not assign risk status" in system_message
+    assert "do not change recipients" in system_message
+
+
+def test_openai_draft_schema_rejects_authorization_fields():
+    with pytest.raises(ValidationError):
+        OpenAiStructuredPaymentPlanner.DraftPlan.model_validate(
+            {
+                "summary": "Bad authorization draft",
+                "payments": [
+                    {
+                        "recipient": "Alice",
+                        "task": "Wrote event recap article",
+                        "wallet": "0xAlice",
+                        "amount": 20,
+                        "token": "USDC",
+                        "reason": "Alice completed the recap.",
+                        "status": "Executed",
+                        "risks": [],
+                    }
+                ],
+            }
+        )
 
 
 def test_openai_planner_falls_back_to_mock_when_client_fails():
