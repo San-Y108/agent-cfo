@@ -79,6 +79,7 @@ class CawAdapterConfig:
     allowed_chain_ids: list[str] = field(default_factory=list)
     allowed_token_ids: list[str] = field(default_factory=list)
     allowed_recipients: list[str] = field(default_factory=list)
+    source_address: str | None = None
     max_amount: Decimal | None = None
     pact_activation_max_polls: int = 3
 
@@ -98,6 +99,7 @@ class CawAdapterConfig:
             allowed_chain_ids=_split_env("CAW_ALLOWED_CHAIN_IDS"),
             allowed_token_ids=_split_env("CAW_ALLOWED_TOKEN_IDS"),
             allowed_recipients=_split_env("CAW_ALLOWED_RECIPIENTS"),
+            source_address=_optional_env("CAW_SOURCE_ADDRESS"),
             max_amount=_decimal_env("CAW_MAX_AMOUNT"),
         )
 
@@ -302,6 +304,7 @@ class RealCawAdapter(CawAdapter):
                     token_id=payment.token,
                     chain_id=self.config.allowed_chain_ids[0],
                     request_id=request_id,
+                    src_addr=self.config.source_address,
                 )
             )
         finally:

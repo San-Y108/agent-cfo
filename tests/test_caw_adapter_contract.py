@@ -279,6 +279,7 @@ def real_config(**overrides):
         "allowed_chain_ids": ["SETH"],
         "allowed_token_ids": ["SETH"],
         "allowed_recipients": ["0xAlice"],
+        "source_address": None,
         "max_amount": "0.001",
     }
     values.update(overrides)
@@ -310,6 +311,7 @@ def test_caw_config_from_env_defaults_to_mock(monkeypatch):
         "CAW_ALLOWED_CHAIN_IDS",
         "CAW_ALLOWED_TOKEN_IDS",
         "CAW_ALLOWED_RECIPIENTS",
+        "CAW_SOURCE_ADDRESS",
         "CAW_MAX_AMOUNT",
     ]:
         monkeypatch.delenv(name, raising=False)
@@ -330,6 +332,7 @@ def test_caw_config_from_env_parses_real_mode_allowlists(monkeypatch):
     monkeypatch.setenv("CAW_ALLOWED_CHAIN_IDS", "SETH")
     monkeypatch.setenv("CAW_ALLOWED_TOKEN_IDS", "SETH")
     monkeypatch.setenv("CAW_ALLOWED_RECIPIENTS", "0xAlice, 0xCharlie")
+    monkeypatch.setenv("CAW_SOURCE_ADDRESS", "0xSource")
     monkeypatch.setenv("CAW_MAX_AMOUNT", "0.001")
 
     config = CawAdapterConfig.from_env()
@@ -343,6 +346,7 @@ def test_caw_config_from_env_parses_real_mode_allowlists(monkeypatch):
     assert config.allowed_chain_ids == ["SETH"]
     assert config.allowed_token_ids == ["SETH"]
     assert config.allowed_recipients == ["0xAlice", "0xCharlie"]
+    assert config.source_address == "0xSource"
     assert str(config.max_amount) == "0.001"
     assert isinstance(adapter, RealCawAdapter)
 
@@ -526,6 +530,19 @@ def test_real_caw_adapter_submits_pact_and_uses_pact_scoped_key_for_transfer():
             "description": None,
         }
     ]
+
+
+def test_real_caw_adapter_passes_configured_source_address_to_transfer():
+    factory = FakeCawSdkFactory()
+    adapter = RealCawAdapter(
+        config=real_config(source_address="0xSource"),
+        sdk_client_factory=factory,
+    )
+
+    result = adapter.create_transfer("exec_demo_001", sample_real_payment())
+
+    assert result.status == PaymentStatus.EXECUTED
+    assert factory.clients[1].transfer_calls[0]["src_addr"] == "0xSource"
 
 
 def test_real_caw_adapter_runs_async_sdk_calls_in_one_flow():

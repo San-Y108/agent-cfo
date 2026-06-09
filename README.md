@@ -181,6 +181,7 @@ Required environment variable names:
 | `CAW_ALLOWED_CHAIN_IDS` | comma-separated testnet chain ids, for example `SETH` | No |
 | `CAW_ALLOWED_TOKEN_IDS` | comma-separated token ids | No |
 | `CAW_ALLOWED_RECIPIENTS` | comma-separated recipient allowlist | No |
+| `CAW_SOURCE_ADDRESS` | optional source address for wallets with multiple compatible addresses | No |
 | `CAW_MAX_AMOUNT` | decimal natural-unit max amount | No |
 
 Local example with placeholders only:
@@ -194,6 +195,7 @@ AGENT_WALLET_WALLET_ID=<provided-by-caw-teammate>
 CAW_ALLOWED_CHAIN_IDS=<testnet-chain-id>
 CAW_ALLOWED_TOKEN_IDS=<testnet-token-id>
 CAW_ALLOWED_RECIPIENTS=<test-recipient-address>
+CAW_SOURCE_ADDRESS=<wallet-source-address-if-needed>
 CAW_MAX_AMOUNT=<low-testnet-amount>
 ```
 
@@ -253,6 +255,7 @@ AGENT_WALLET_WALLET_ID=<provided-by-caw-teammate>
 CAW_ALLOWED_CHAIN_IDS=<testnet-chain-id>
 CAW_ALLOWED_TOKEN_IDS=<testnet-token-id>
 CAW_ALLOWED_RECIPIENTS=<test-recipient-address>
+CAW_SOURCE_ADDRESS=<wallet-source-address-if-needed>
 CAW_MAX_AMOUNT=<low-testnet-amount>
 ```
 
@@ -547,6 +550,7 @@ curl https://agentcfo-backend.onrender.com/health
 | CAW_ALLOWED_CHAIN_IDS | 测试网 chain id allowlist | real mode 必需 |
 | CAW_ALLOWED_TOKEN_IDS | token id allowlist | real mode 必需 |
 | CAW_ALLOWED_RECIPIENTS | recipient allowlist | real mode 必需 |
+| CAW_SOURCE_ADDRESS | 多个兼容源地址时指定扣款地址 | 可选，但 live test 推荐设置 |
 | CAW_MAX_AMOUNT | 单笔最大金额 | real mode 必需 |
 | AGENTCFO_DB_PATH | SQLite demo database path | 可选，本地默认 `agentcfo_demo.sqlite3` |
 | AGENTCFO_STORE_BACKEND | 可选切回 in-memory store | 仅本地临时 demo 使用 |
