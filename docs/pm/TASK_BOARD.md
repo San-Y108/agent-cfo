@@ -1,6 +1,6 @@
 # AgentCFO 任务看板
 
-> 最后更新：2026年6月8日 22:00
+> 最后更新：2026年6月9日 00:15
 > 规则：12 号之后不新增大功能，只修复、打磨、录视频、补材料
 
 ---
@@ -22,9 +22,9 @@
 | 岗位 | 负责人 | 进度 | 最大卡点 |
 |------|--------|------|----------|
 | 交付/总控 | San-Y108 (严硕) | ✅ repo + 文档已完成 | 无 |
-| 后端/Agent | W5W8L9jlu | ✅ SQLite + CAW查询 + Render部署 | 等 gitgdut 提供 CAW 配置（13项） |
+| 后端/Agent | W5W8L9jlu | ✅ SQLite + CAW查询 + Render部署 | CAW 配置已到位，可开始替换 mock |
 | 前端 | Aafff623 | ✅ Landing + Demo + Vercel + i18n + 纯黑风格 | 分支 feat/frontend-bootstrap 待 merge 进 main |
-| 合约/CAW | gitgdut | 🔵 已开始 | Cobo 文档分析完成，待申请 API Key；后端已列出 13 项 CAW 配置需求 |
+| 合约/CAW | gitgdut | ✅ API Key + Wallet + 配置文档 | 待准备测试网资金 + 第一笔交易 |
 | 物料/设计 | Eloise-qiu | 🟡 已确认 | GitHub 已加入 repo，待启动 PPT/视频/视觉 |
 
 ---
@@ -69,9 +69,9 @@
 | ID | 任务 | 交付物 | 截止 | 状态 |
 |----|------|--------|------|------|
 | T-030 | Cobo 文档 Quickstart 通读 | 权限模型分析文档 | 6月8日 18:00 | ✅ DONE |
-| T-031 | 申请开发者 API Key | Sandbox Key 或正式环境 Key | 6月8日 22:00 | 🔵 IN_PROGRESS |
+| T-031 | 申请开发者 API Key | Sandbox Key 或正式环境 Key | 6月8日 22:00 | ✅ DONE |
 | T-032 | 搞懂 Cobo 权限模型 | 三层权限 + 双层风控方案 | 6月9日 | ✅ DONE |
-| T-033 | 创建 Agent Wallet | Wallet 地址 | 6月9日 | 🟡 TODO |
+| T-033 | 创建 Agent Wallet | Wallet 地址 | 6月9日 | ✅ DONE |
 | T-034 | 准备测试网资金 | ETH 或 USDC 余额截图 | 6月9日 | 🟡 TODO |
 | T-035 | 第一笔测试网付款 | tx hash + 区块浏览器链接 | 6月10日 | 🟡 TODO |
 
@@ -119,7 +119,7 @@
 | T-070 | 写真实 caw_adapter.py | 替换 mock 的代码 | 6月10日 | 🟡 TODO |
 | T-071 | 和后端联调 | execute-payment 真实付款 | 6月10日 | 🟡 TODO |
 | T-072 | 完成至少 3 笔测试网付款 | 3 个 tx hash | 6月10日 | 🟡 TODO |
-| T-073 | 整理 CAW 配置说明 | Agent Wallet 地址 + 配置截图 | 6月10日 | 🟡 TODO |
+| T-073 | 整理 CAW 配置说明 | cobo-agentic-wallet-backend-quickstart.md | 6月10日 | ✅ DONE |
 
 ### 物料/设计
 
@@ -169,9 +169,9 @@
     → Landing + Demo 完整可用
     → 待 merge feat/frontend-bootstrap 进 main
 
-CAW 验证（🟡 文档分析完成，待申请 API Key + 创建钱包）
-    → 后端接真实 CAW（等 CAW 完成后替换 mock）
-    → tx hash 展示（等 CAW 完成后才有真实数据）
+CAW 验证（✅ API Key + Wallet + 配置文档已到位）
+    → 后端可开始替换 mock caw_adapter.py
+    → 待准备测试网资金 + 第一笔交易拿 tx hash
 
 设计/物料（🟡 Eloise-qiu 已确认）
     → 待启动 PPT、视频、视觉
@@ -184,7 +184,7 @@ CAW 验证（🟡 文档分析完成，待申请 API Key + 创建钱包）
 | 状态 | 数量 |
 |------|------|
 | 🔴 BLOCKED | 0 |
-| 🟡 TODO | 30 |
-| 🔵 IN_PROGRESS | 5 |
-| ✅ DONE | 28 |
+| 🟡 TODO | 28 |
+| 🔵 IN_PROGRESS | 4 |
+| ✅ DONE | 31 |
 | ❌ CANCELLED | 0 |
