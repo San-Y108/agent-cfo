@@ -103,6 +103,7 @@ class PaymentExecutionItem(BaseModel):
     txHash: str | None
     cawRequestId: str
     error: str | None = None
+    diagnosticCode: str | None = None
 
 
 class PaymentExecutionResult(BaseModel):
@@ -124,6 +125,7 @@ class CawStatus(BaseModel):
     agentWalletAddress: str
     txHash: str | None
     error: str | None = None
+    diagnosticCode: str | None = None
     lastCheckedAt: str
 
     @classmethod
@@ -140,6 +142,7 @@ class CawStatus(BaseModel):
             agentWalletAddress=payment.agentWalletAddress,
             txHash=payment.txHash,
             error=payment.error,
+            diagnosticCode=payment.diagnosticCode,
             lastCheckedAt=datetime.now(UTC).isoformat(),
         )
 

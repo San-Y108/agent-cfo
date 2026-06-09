@@ -132,6 +132,7 @@ def _build_audit_evidence(
                     else "tx hash returned by CAW"
                 ),
                 "error": payment.error,
+                "diagnosticCode": payment.diagnosticCode,
             }
             for payment in execution.payments
         ],

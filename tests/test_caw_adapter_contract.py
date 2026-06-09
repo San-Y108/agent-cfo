@@ -464,6 +464,7 @@ def test_real_caw_adapter_pact_submit_provider_error_is_redacted():
 
     assert result.status == PaymentStatus.FAILED
     assert result.error == "caw_pact_submit_error"
+    assert result.diagnosticCode == "FakeProviderError"
     assert result.txHash is None
     assert "SHOULD_NOT_LEAK_CANARY" not in result.model_dump_json()
     assert len(factory.clients) == 1
@@ -608,6 +609,7 @@ def test_real_caw_adapter_policy_denied_error_is_redacted():
 
     assert result.status == PaymentStatus.FAILED
     assert result.error == "caw_policy_denied"
+    assert result.diagnosticCode == "FakePolicyDeniedError"
     assert result.txHash is None
     assert "SHOULD_NOT_LEAK_CANARY" not in result.model_dump_json()
 
@@ -623,6 +625,7 @@ def test_real_caw_adapter_transfer_provider_error_is_redacted():
 
     assert result.status == PaymentStatus.FAILED
     assert result.error == "caw_transfer_submit_error"
+    assert result.diagnosticCode == "FakeProviderError"
     assert result.txHash is None
     assert "SHOULD_NOT_LEAK_CANARY" not in result.model_dump_json()
 

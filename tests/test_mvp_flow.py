@@ -512,6 +512,7 @@ def test_caw_status_response_schema_remains_compatible():
         "agentWalletAddress",
         "txHash",
         "error",
+        "diagnosticCode",
         "lastCheckedAt",
     }
 
@@ -595,6 +596,7 @@ def test_caw_adapter_failure_appears_in_audit_report(monkeypatch):
     assert execution["payments"][0]["mode"] == "mock"
     assert execution["payments"][0]["txHash"] is None
     assert execution["payments"][0]["error"] == "caw_provider_error"
+    assert execution["payments"][0]["diagnosticCode"] is None
     assert "SHOULD_NOT_LEAK_CANARY" not in execution_response.text
 
     status_response = client.get(f"/api/caw-status/{execution['payments'][0]['cawRequestId']}")
@@ -605,6 +607,7 @@ def test_caw_adapter_failure_appears_in_audit_report(monkeypatch):
     assert caw_status["mode"] == "mock"
     assert caw_status["txHash"] is None
     assert caw_status["error"] == "caw_provider_error"
+    assert caw_status["diagnosticCode"] is None
     assert "SHOULD_NOT_LEAK_CANARY" not in status_response.text
 
     report_response = client.get(f"/api/audit-report/{execution['auditReportId']}")
@@ -613,7 +616,9 @@ def test_caw_adapter_failure_appears_in_audit_report(monkeypatch):
     report = report_response.json()
     assert report["execution"]["payments"][0]["status"] == "Failed"
     assert report["execution"]["payments"][0]["error"] == "caw_provider_error"
+    assert report["execution"]["payments"][0]["diagnosticCode"] is None
     assert report["outcomeSummary"]["failedPaymentIds"] == [plan["payments"][0]["id"]]
     assert report["outcomeSummary"]["failedReasons"][plan["payments"][0]["id"]] == "caw_provider_error"
     assert report["cawEvidence"][0]["error"] == "caw_provider_error"
+    assert report["cawEvidence"][0]["diagnosticCode"] is None
     assert "SHOULD_NOT_LEAK_CANARY" not in report_response.text

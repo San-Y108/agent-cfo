@@ -125,8 +125,13 @@ class RealCawAdapter(CawAdapter):
 
         try:
             pact = self._activate_pact()
-        except Exception:
-            return self.failed_transfer_with_request_id(payment, request_id, CAW_PACT_SUBMIT_ERROR)
+        except Exception as exc:
+            return self.failed_transfer_with_request_id(
+                payment,
+                request_id,
+                CAW_PACT_SUBMIT_ERROR,
+                diagnostic_code=_safe_exception_code(exc),
+            )
         if pact is None:
             return self.failed_transfer_with_request_id(
                 payment,
@@ -138,7 +143,12 @@ class RealCawAdapter(CawAdapter):
             result = self._call_transfer(payment, request_id, pact["api_key"])
         except Exception as exc:
             error = CAW_POLICY_DENIED_ERROR if _is_policy_denied(exc) else CAW_TRANSFER_SUBMIT_ERROR
-            return self.failed_transfer_with_request_id(payment, request_id, error)
+            return self.failed_transfer_with_request_id(
+                payment,
+                request_id,
+                error,
+                diagnostic_code=_safe_exception_code(exc),
+            )
 
         provider_status = _result_value(result, "status")
         normalized_status = _normalize_caw_status_code(provider_status)
@@ -179,6 +189,7 @@ class RealCawAdapter(CawAdapter):
         payment: PaymentItem,
         request_id: str,
         error: str,
+        diagnostic_code: str | None = None,
     ) -> PaymentExecutionItem:
         return PaymentExecutionItem(
             paymentItemId=payment.id,
@@ -189,6 +200,7 @@ class RealCawAdapter(CawAdapter):
             txHash=None,
             cawRequestId=request_id,
             error=error,
+            diagnosticCode=diagnostic_code,
         )
 
     def _first_guard_error(self, payment: PaymentItem) -> str | None:
@@ -352,6 +364,10 @@ def _result_value(result, key: str):
 
 def _is_policy_denied(exc: Exception) -> bool:
     return exc.__class__.__name__ == "PolicyDeniedError" or hasattr(exc, "denial")
+
+
+def _safe_exception_code(exc: Exception) -> str:
+    return exc.__class__.__name__
 
 
 def _run_coroutine(coroutine):
