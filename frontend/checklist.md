@@ -143,20 +143,20 @@
 - [x] 主色：blue `#60A5FA`，配 stage 04 配色系
 - [x] 验证标准：3 钱包可切换、Transfer mock 可走通、Copy hash 可点
 
-#### H2.3 Phase 3：Analytics `/console/analytics`（紫色主色）
-- [ ] 迁移 `AnalyticsView.tsx`（recharts AreaChart + PieChart + 3 个 KPI 卡）
-- [ ] 适配 recharts 主题（深色/浅色 token 切换）
-- [ ] **创新点 1**：KPI 大数字用 PipelineShowcase 同款大字号 + 渐变描边
-- [ ] **创新点 2**：饼图配色用 5 stage 主色（cyan / coral / lime / blue / violet）
-- [ ] **创新点 3**：时间范围切换器（30d / 90d / 1y）用 landing pill 风格
-- [ ] 主色：violet `#C084FC`，配 stage 05 配色系
+#### H2.3 Phase 3：Analytics `/console/analytics`（紫色主色）✅
+- [x] 迁移 `AnalyticsView.tsx`（recharts AreaChart + PieChart + 4 个 KPI 卡）
+- [x] 适配 recharts 主题（深色/浅色 token 切换，XAxis/YAxis/Tooltip 全部用 token）
+- [x] **创新点 1**：KPI 大数字用 PipelineShowcase 同款大字号 + violet→violet-light 渐变描边
+- [x] **创新点 2**：饼图配色用 5 stage 主色（cyan / coral / lime / blue / violet）
+- [x] **创新点 3**：时间范围切换器（30d / 90d / 1y）用 landing pill 风格 + framer-motion layoutId
+- [x] 主色：violet `#C084FC`，配 stage 05 配色系
 
-#### H2.4 Phase 4：Policy `/console/policy`（珊瑚红主色）
-- [ ] 迁移 `RulesPolicy.tsx`（白名单 CRUD + 阈值滑块 + Slack webhook）
-- [ ] **创新点 1**：5 类规则用 PipelineShowcase 大编号 01-05 排版，每条规则一行
-- [ ] **创新点 2**：白名单 CRUD 表单用 CardSplitter 同款动画（新增地址时炸裂出现）
-- [ ] **创新点 3**：阈值滑块用 lime 主色 + 实时数值闪烁反馈
-- [ ] 主色：coral `#FB7185`，配 stage 02 配色系
+#### H2.4 Phase 4：Policy `/console/policy`（珊瑚红主色）✅
+- [x] 迁移 `RulesPolicy.tsx`（白名单 CRUD + 阈值滑块 + Slack webhook）
+- [x] **创新点 1**：5 类规则用 PipelineShowcase 大编号 01-05 排版，每条规则一行，hover 高亮
+- [x] **创新点 2**：白名单 CRUD 表单用 AnimatePresence 炸裂动画（新增/删除带 scale 动效）
+- [x] **创新点 3**：阈值滑块用 lime 主色 + 实时数值闪烁反馈（useFlashingValue hook）
+- [x] 主色：coral `#FB7185`，配 stage 02 配色系
 
 #### H2.5 Phase 5：Treasury (Live Run) `/console`（最难，**最后做**）
 > 这是 64KB 巨型组件，**用 landing PipelineShowcase 的 GSAP 水平滚动重写**（按 Q1=B 决策）。
