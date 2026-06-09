@@ -136,21 +136,38 @@ Frontend
 
 ## Cobo Agentic Wallet Evidence
 
-以下内容按当前可验证状态维护；真实地址、tx hash 和截图必须由合约 / CAW 同学在联调后补充，不能编造：
+以下内容按当前可验证状态维护。公开文档只记录脱敏地址和公开 tx hash；不要补 API key、pact-scoped key、`.env`、raw provider response 或未脱敏钱包地址。
 
 | 证据项 | 当前状态 |
 | --- | --- |
 | CAW API Key | ✅ 已申请并配置（不写入仓库） |
-| Agent Wallet | ✅ 已创建（active；公开展示地址待 CAW 同学补充） |
+| Agent Wallet | ✅ 已创建；公开文档只使用 masked source `0x2cda...76da` |
 | SDK | ✅ 确认 `cobo-agentic-wallet v0.1.40` |
-| Testnet / Chain | ✅ 已配置 Sepolia / SETH；待真实付款验证 |
-| Token | ✅ 已配置测试网 token；待余额和付款截图验证 |
-| Transaction Hash | 待真实测试网付款后补充 |
-| CAW Request ID | 当前 mock 返回 `mock_caw_*`；真实 CAW 接入后补充 |
+| Testnet / Chain | ✅ Sepolia / `SETH` |
+| Token | ✅ `SETH` |
+| Transaction Hash | ✅ `0x85a5a2e934ca0e34c7fb3e038ca06e54e15bd29b56b64e5b01ff80eb20ed4d98` |
+| CAW Request ID | ✅ `agentcfo_exec_demo_002_pay_001` |
+| Provider final status | ✅ `900` |
+| CAW audit actions | ✅ `transfer.allowed` and `transfer.initiate` were allowed |
 | CAW config notes | ✅ 已交付 518 行后端对接说明 |
-| Payment screenshots | 待补充 |
+| Payment screenshots | 待补充；截图必须先脱敏 |
 
 真实付款必须通过 Cobo Agentic Wallet。Mock mode 只能用于演示兜底，必须明确标注。
+
+Phase 4C successful testnet evidence:
+
+| Field | Public evidence |
+| --- | --- |
+| `chain` / `token` | `SETH` / `SETH` |
+| `amount` | `0.001` |
+| recipient | `0xAf3f...594B` |
+| source | `0x2cda...76da` |
+| `request_id` / `cawRequestId` | `agentcfo_exec_demo_002_pay_001` |
+| provider final status | `900` |
+| `txHash` | `0x85a5a2e934ca0e34c7fb3e038ca06e54e15bd29b56b64e5b01ff80eb20ed4d98` |
+| audit log summary | `transfer.allowed` and `transfer.initiate` were allowed |
+
+This proves one low-value CAW testnet transfer. It does not prove three separate tx hashes.
 
 ## CAW Adapter Contract
 
@@ -226,7 +243,7 @@ Manual live test checklist, only after explicit approval:
 5. Run `python -m pytest -q`.
 6. Start the server.
 7. Execute one approved, risk-checked, low-value payment.
-8. Verify `/api/caw-status/{cawRequestId}` and `/api/audit-report/{auditReportId}`.
+8. Verify `/api/caw-status/{cawRequestId}`, `/api/caw-status/{cawRequestId}/refresh`, and `/api/audit-report/{auditReportId}`.
 
 For one-off local live-test scripts, set `AGENTCFO_DB_PATH` to an absolute repo-local path before importing `app.main`; otherwise the app process can initialize a different store than the script expects.
 
@@ -272,16 +289,22 @@ No live transfer is run by tests. Tests use fake SDK clients only.
 
 ## CAW Read-Only Observer
 
-Phase 4B 只加入了 CAW read-only observer skeleton，用来提前固定只读查询边界：
+Phase 4B 加入了 CAW read-only observer skeleton；Phase 4C closeout 暴露了只读 refresh API。它们用来固定只读查询边界：
 
 - pact status query
 - transaction by `request_id`
 - audit logs query
 - provider status normalization
 
-当前 observer 只配套 fake read-only client 和测试，不调用真实 Cobo Agentic Wallet，不读取 CAW secrets，也不触发 transfer。它最多用于刷新本地 `CawStatus` 记录；Audit Report 是执行时快照，后续 status refresh 不能改写历史 Audit Report。Observer 不持久化 raw provider error，只保存稳定的公开错误码。
+`GET /api/caw-status/{cawRequestId}` 读取当前本地保存的 CAW status。
 
-真实 CAW read-only client 仍未接入。启用前需要 CAW 同学提供官方 SDK/API、auth、wallet、pact、policy、approval、chain/token、status query 和 audit log 细节；未知 provider status 必须 fail closed，不能自行猜测未确认的 REST endpoint。
+`GET /api/caw-status/{cawRequestId}/refresh` 先确认本地 `cawRequestId` 存在，再通过 read-only client 按 `request_id` 查询 CAW 最新交易状态，归一化 provider status，保存更新后的 `CawStatus`，并返回更新结果。它不会调用 `transfer_tokens`，不会创建新付款计划，不会触发任何转账。
+
+Audit Report 是执行时快照，后续 status refresh 不能改写历史 Audit Report。Frontend should treat Audit Report as immutable evidence and CAW Status as the latest refreshable status. If the audit snapshot has `txHash=null` but refreshed CAW Status has a real `txHash`, show the real hash in a separate “Latest CAW Status” area and keep the audit snapshot unchanged.
+
+Observer 不持久化 raw provider error，只保存稳定的公开错误码。未知 provider status 必须 fail closed，API 返回安全公开错误，不回显 provider 原文。
+
+真实 CAW read-only client 只用于查询，不用于转账。启用前需要 CAW 同学确认官方 SDK/API、auth、wallet、pact、policy、approval、chain/token、status query 和 audit log 细节；未知 provider status 必须 fail closed，不能自行猜测未确认的 REST endpoint。
 
 ## Tech Stack
 
@@ -357,7 +380,7 @@ http://127.0.0.1:8000
 健康检查：
 
 ```bash
-curl http://127.0.0.1:8000/health
+curl.exe http://127.0.0.1:8000/health
 ```
 
 版本和 demo sample：
@@ -369,15 +392,18 @@ curl.exe http://127.0.0.1:8000/api/demo-sample
 
 `/api/demo-sample` 只返回可复制的 mock demo payload，不创建 plan、不写入数据库、不执行付款。Alice 和 Charlie 在白名单内，Bob 故意不在白名单内，方便前端展示 blocked risk。
 
-FastAPI 自动 docs / OpenAPI 当前已关闭，以保证运行时只暴露四个 P0 业务 API 和部署健康检查。后续进入联调或需要文档展示时，可以在 `app/main.py` 重新开启。
+FastAPI 自动 docs / OpenAPI 当前已关闭。运行时暴露 P0 业务 API、只读查询 API、demo sample 和部署健康检查。后续进入联调或需要文档展示时，可以在 `app/main.py` 重新开启。
 
 ```text
-P0 routes only:
+Core routes:
 POST /api/payment-plan
 POST /api/risk-check
 POST /api/execute-payment
 GET  /api/audit-report/{auditReportId}
 GET  /api/caw-status/{cawRequestId}
+GET  /api/caw-status/{cawRequestId}/refresh
+GET  /api/demo-sample
+GET  /version
 GET  /health
 ```
 
@@ -396,7 +422,7 @@ Render environment variables:
 
 ```text
 PYTHON_VERSION=3.13.5
-CORS_ALLOWED_ORIGINS=https://your-frontend-domain.example
+CORS_ALLOWED_ORIGINS=https://agentcfo-frontend.vercel.app
 ```
 
 Production must set `CORS_ALLOWED_ORIGINS` to the actual frontend origin. If this variable is not set, the backend only uses local development defaults:
@@ -412,7 +438,7 @@ Deployed health check:
 部署后端验证：
 
 ```bash
-curl https://agentcfo-backend.onrender.com/health
+curl.exe https://agentcfo-backend.onrender.com/health
 ```
 
 Deployed smoke checks:
@@ -498,40 +524,46 @@ curl.exe http://127.0.0.1:8000/api/demo-sample
 创建 Payment Plan：
 
 ```bash
-curl -X POST http://127.0.0.1:8000/api/payment-plan -H 'Content-Type: application/json' -d '{"contributions":[{"name":"Alice","role":"Content Contributor","task":"Wrote event recap article","wallet":"0xAlice","amount":20,"token":"USDC"}],"budgetRule":{"monthlyBudget":50,"singlePaymentLimit":25,"allowedToken":"USDC","whitelist":["0xAlice"],"requiresHumanApproval":true}}'
+curl.exe -X POST http://127.0.0.1:8000/api/payment-plan -H "Content-Type: application/json" -d "{\"contributions\":[{\"name\":\"Alice\",\"role\":\"Content Contributor\",\"task\":\"Wrote event recap article\",\"wallet\":\"0xAlice\",\"amount\":20,\"token\":\"USDC\"}],\"budgetRule\":{\"monthlyBudget\":50,\"singlePaymentLimit\":25,\"allowedToken\":\"USDC\",\"whitelist\":[\"0xAlice\"],\"requiresHumanApproval\":true}}"
 ```
 
 执行 Risk Check：
 
 ```bash
-curl -X POST http://127.0.0.1:8000/api/risk-check -H 'Content-Type: application/json' -d '{"paymentPlanId":"plan_demo_001","budgetRule":{"monthlyBudget":50,"singlePaymentLimit":25,"allowedToken":"USDC","whitelist":["0xAlice"],"requiresHumanApproval":true}}'
+curl.exe -X POST http://127.0.0.1:8000/api/risk-check -H "Content-Type: application/json" -d "{\"paymentPlanId\":\"plan_demo_001\",\"budgetRule\":{\"monthlyBudget\":50,\"singlePaymentLimit\":25,\"allowedToken\":\"USDC\",\"whitelist\":[\"0xAlice\"],\"requiresHumanApproval\":true}}"
 ```
 
 执行 mock payment：
 
 ```bash
-curl -X POST http://127.0.0.1:8000/api/execute-payment -H 'Content-Type: application/json' -d '{"paymentPlanId":"plan_demo_001","approvedPaymentIds":["pay_001"],"humanApproval":{"approved":true,"approvedBy":"demo-operator"}}'
+curl.exe -X POST http://127.0.0.1:8000/api/execute-payment -H "Content-Type: application/json" -d "{\"paymentPlanId\":\"plan_demo_001\",\"approvedPaymentIds\":[\"pay_001\"],\"humanApproval\":{\"approved\":true,\"approvedBy\":\"demo-operator\"}}"
 ```
 
 查看 Audit Report：
 
 ```bash
-curl http://127.0.0.1:8000/api/audit-report/audit_demo_001
+curl.exe http://127.0.0.1:8000/api/audit-report/audit_demo_001
 ```
 
-查看 mock CAW status：
+查看当前 CAW status：
 
 ```bash
-curl http://127.0.0.1:8000/api/caw-status/mock_caw_exec_demo_001_pay_001
+curl.exe http://127.0.0.1:8000/api/caw-status/mock_caw_exec_demo_001_pay_001
+```
+
+刷新 latest CAW status：
+
+```bash
+curl.exe http://127.0.0.1:8000/api/caw-status/mock_caw_exec_demo_001_pay_001/refresh
 ```
 
 验证部署后端：
 
 ```bash
-curl https://agentcfo-backend.onrender.com/health
+curl.exe https://agentcfo-backend.onrender.com/health
 ```
 
-所有执行结果当前都是 `mode="mock"`，`txHash=null`。
+默认 mock 执行结果是 `mode="mock"`，`txHash=null`。Real CAW refresh 返回真实 `txHash` 时，前端应把它展示在 latest CAW status 区域，不要改写 Audit Report 快照。
 
 ## Environment Variables
 

@@ -12,7 +12,12 @@ from app.models import (
     RiskCheckResult,
     RiskLevel,
 )
-from app.services.caw_observer import CawReadOnlyObserver
+from app.services.caw_observer import (
+    CawProviderRefreshError,
+    CawProviderStatusUnsupported,
+    CawProviderTransactionNotFound,
+    CawReadOnlyObserver,
+)
 from app.services.caw_read_only_client import (
     CawReadOnlyConfig,
     CawTransactionRecord,
@@ -416,3 +421,94 @@ def test_observer_refresh_does_not_rewrite_audit_report(tmp_path):
     assert saved_status == refreshed_status
     assert saved_report == audit_report
     assert saved_report.execution.payments[0].status == PaymentStatus.EXECUTED
+
+
+def test_observer_refresh_maps_status_code_900_and_stores_tx_hash(tmp_path):
+    repository = SQLiteStore(str(tmp_path / "agentcfo.sqlite3"))
+    original_status = CawStatus.from_execution_item(
+        sample_execution().executionId,
+        sample_execution().payments[0],
+    )
+    client = FakeCawReadOnlyClient(
+        transactions={
+            original_status.cawRequestId: CawTransactionRecord(
+                requestId=original_status.cawRequestId,
+                providerStatus="900",
+                txHash="0xtestnet",
+            )
+        }
+    )
+    observer = CawReadOnlyObserver(client, repository)
+
+    repository.save_caw_status(original_status)
+    refreshed_status = observer.refresh_caw_status(original_status.cawRequestId)
+    saved_report = repository.get_audit_report(sample_execution().auditReportId)
+
+    assert refreshed_status.providerStatus == "900"
+    assert refreshed_status.normalizedStatus == PaymentStatus.EXECUTED
+    assert refreshed_status.txHash == "0xtestnet"
+    assert repository.get_caw_status(original_status.cawRequestId) == refreshed_status
+    assert saved_report is None
+
+
+def test_observer_refresh_provider_not_found_is_safe_public_error(tmp_path):
+    repository = SQLiteStore(str(tmp_path / "agentcfo.sqlite3"))
+    original_status = CawStatus.from_execution_item(
+        sample_execution().executionId,
+        sample_execution().payments[0],
+    )
+    observer = CawReadOnlyObserver(FakeCawReadOnlyClient(), repository)
+
+    repository.save_caw_status(original_status)
+
+    with pytest.raises(CawProviderTransactionNotFound) as exc_info:
+        observer.refresh_caw_status(original_status.cawRequestId)
+
+    assert str(exc_info.value) == "CAW provider transaction not found"
+
+
+def test_observer_refresh_provider_error_is_safe_public_error(tmp_path):
+    class BrokenReadOnlyClient(FakeCawReadOnlyClient):
+        def get_transaction_by_request_id(self, request_id):
+            raise RuntimeError("SHOULD_NOT_LEAK_CANARY")
+
+    repository = SQLiteStore(str(tmp_path / "agentcfo.sqlite3"))
+    original_status = CawStatus.from_execution_item(
+        sample_execution().executionId,
+        sample_execution().payments[0],
+    )
+    observer = CawReadOnlyObserver(BrokenReadOnlyClient(), repository)
+
+    repository.save_caw_status(original_status)
+
+    with pytest.raises(CawProviderRefreshError) as exc_info:
+        observer.refresh_caw_status(original_status.cawRequestId)
+
+    assert str(exc_info.value) == "CAW status refresh failed"
+    assert "SHOULD_NOT_LEAK_CANARY" not in str(exc_info.value)
+
+
+def test_observer_refresh_unknown_provider_status_fails_closed(tmp_path):
+    repository = SQLiteStore(str(tmp_path / "agentcfo.sqlite3"))
+    original_status = CawStatus.from_execution_item(
+        sample_execution().executionId,
+        sample_execution().payments[0],
+    )
+    client = FakeCawReadOnlyClient(
+        transactions={
+            original_status.cawRequestId: CawTransactionRecord(
+                requestId=original_status.cawRequestId,
+                providerStatus="SHOULD_NOT_LEAK_CANARY",
+                txHash=None,
+            )
+        }
+    )
+    observer = CawReadOnlyObserver(client, repository)
+
+    repository.save_caw_status(original_status)
+
+    with pytest.raises(CawProviderStatusUnsupported) as exc_info:
+        observer.refresh_caw_status(original_status.cawRequestId)
+
+    assert str(exc_info.value) == "Unsupported CAW transaction status"
+    assert "SHOULD_NOT_LEAK_CANARY" not in str(exc_info.value)

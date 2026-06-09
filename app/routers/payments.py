@@ -14,6 +14,17 @@ from app.models import (
     RiskCheckResult,
 )
 from app.services.caw_adapter import CawAdapter, create_caw_adapter
+from app.services.caw_observer import (
+    CawProviderRefreshError,
+    CawProviderStatusUnsupported,
+    CawProviderTransactionNotFound,
+    CawReadOnlyObserver,
+    CawStatusNotFound,
+)
+from app.services.caw_read_only_client import (
+    MissingCawReadOnlyConfig,
+    create_caw_read_only_client,
+)
 from app.services.payment_planner import create_payment_planner
 from app.services.risk_engine import check_payment_risks
 from app.store import store
@@ -342,3 +353,18 @@ def get_caw_status(cawRequestId: str):
     if caw_status is None:
         raise HTTPException(status_code=404, detail="CAW status not found")
     return caw_status
+
+
+@router.get("/caw-status/{cawRequestId}/refresh", response_model=CawStatus)
+def refresh_caw_status(cawRequestId: str):
+    try:
+        observer = CawReadOnlyObserver(create_caw_read_only_client(), store)
+        return observer.refresh_caw_status(cawRequestId)
+    except CawStatusNotFound:
+        raise HTTPException(status_code=404, detail="CAW status not found")
+    except CawProviderTransactionNotFound:
+        raise HTTPException(status_code=404, detail="CAW provider transaction not found")
+    except CawProviderStatusUnsupported:
+        raise HTTPException(status_code=502, detail="Unsupported CAW transaction status")
+    except (CawProviderRefreshError, MissingCawReadOnlyConfig):
+        raise HTTPException(status_code=502, detail="CAW status refresh failed")

@@ -3,9 +3,12 @@ import os
 from fastapi.testclient import TestClient
 
 os.environ["AGENTCFO_DB_PATH"] = ":memory:"
+os.environ["CAW_ADAPTER_MODE"] = "mock"
+os.environ["CAW_ENABLE_TRANSFERS"] = "false"
 
-from app.main import app
+from app.main import app, get_public_caw_mode
 from app.routers import payments as payments_router
+from app.services.caw_read_only_client import CawTransactionRecord, FakeCawReadOnlyClient
 from app.store import store
 
 
@@ -96,6 +99,12 @@ def test_version_returns_non_sensitive_demo_metadata():
     assert "OPENAI_API_KEY" not in response.text
 
 
+def test_public_caw_mode_does_not_echo_unknown_env_values(monkeypatch):
+    monkeypatch.setenv("CAW_ADAPTER_MODE", "SHOULD_NOT_LEAK_CANARY")
+
+    assert get_public_caw_mode() == "unknown"
+
+
 def test_cors_preflight_allows_configured_origin():
     response = client.options(
         "/api/payment-plan",
@@ -159,6 +168,7 @@ def test_registered_business_routes_include_p0_and_caw_status():
     assert {
         "/api/audit-report/{auditReportId}",
         "/api/caw-status/{cawRequestId}",
+        "/api/caw-status/{cawRequestId}/refresh",
         "/api/demo-sample",
         "/api/execute-payment",
         "/api/payment-plan",
@@ -485,6 +495,13 @@ def test_caw_status_not_found_returns_404():
     assert response.json()["detail"] == "CAW status not found"
 
 
+def test_caw_status_refresh_not_found_returns_404():
+    response = client.get("/api/caw-status/missing_caw_request/refresh")
+
+    assert response.status_code == 404
+    assert response.json()["detail"] == "CAW status not found"
+
+
 def test_caw_status_response_schema_remains_compatible():
     plan = create_plan()
     run_risk_check(plan["paymentPlanId"])
@@ -515,6 +532,136 @@ def test_caw_status_response_schema_remains_compatible():
         "diagnosticCode",
         "lastCheckedAt",
     }
+
+
+def test_caw_status_refresh_updates_latest_status_without_mutating_audit(monkeypatch):
+    plan = create_plan()
+    run_risk_check(plan["paymentPlanId"])
+    execution_response = client.post(
+        "/api/execute-payment",
+        json={
+            "paymentPlanId": plan["paymentPlanId"],
+            "approvedPaymentIds": [plan["payments"][0]["id"]],
+            "humanApproval": {"approved": True, "approvedBy": "demo-operator"},
+        },
+    )
+    execution = execution_response.json()
+    caw_request_id = execution["payments"][0]["cawRequestId"]
+    audit_report_id = execution["auditReportId"]
+    before_report = client.get(f"/api/audit-report/{audit_report_id}").json()
+
+    monkeypatch.setattr(
+        payments_router,
+        "create_caw_read_only_client",
+        lambda: FakeCawReadOnlyClient(
+            transactions={
+                caw_request_id: CawTransactionRecord(
+                    requestId=caw_request_id,
+                    providerStatus="900",
+                    txHash="0xtestnet",
+                )
+            }
+        ),
+    )
+
+    refresh_response = client.get(f"/api/caw-status/{caw_request_id}/refresh")
+    current_response = client.get(f"/api/caw-status/{caw_request_id}")
+    after_report = client.get(f"/api/audit-report/{audit_report_id}").json()
+
+    assert refresh_response.status_code == 200
+    refreshed = refresh_response.json()
+    assert refreshed["providerStatus"] == "900"
+    assert refreshed["normalizedStatus"] == "Executed"
+    assert refreshed["txHash"] == "0xtestnet"
+    assert current_response.json() == refreshed
+    assert after_report == before_report
+    assert after_report["cawEvidence"][0]["txHash"] is None
+
+
+def test_caw_status_refresh_provider_missing_is_safe_404(monkeypatch):
+    plan = create_plan()
+    run_risk_check(plan["paymentPlanId"])
+    execution_response = client.post(
+        "/api/execute-payment",
+        json={
+            "paymentPlanId": plan["paymentPlanId"],
+            "approvedPaymentIds": [plan["payments"][0]["id"]],
+            "humanApproval": {"approved": True, "approvedBy": "demo-operator"},
+        },
+    )
+    caw_request_id = execution_response.json()["payments"][0]["cawRequestId"]
+    monkeypatch.setattr(
+        payments_router,
+        "create_caw_read_only_client",
+        lambda: FakeCawReadOnlyClient(),
+    )
+
+    response = client.get(f"/api/caw-status/{caw_request_id}/refresh")
+
+    assert response.status_code == 404
+    assert response.json()["detail"] == "CAW provider transaction not found"
+
+
+def test_caw_status_refresh_unknown_status_fails_closed_without_secret_leak(monkeypatch):
+    plan = create_plan()
+    run_risk_check(plan["paymentPlanId"])
+    execution_response = client.post(
+        "/api/execute-payment",
+        json={
+            "paymentPlanId": plan["paymentPlanId"],
+            "approvedPaymentIds": [plan["payments"][0]["id"]],
+            "humanApproval": {"approved": True, "approvedBy": "demo-operator"},
+        },
+    )
+    caw_request_id = execution_response.json()["payments"][0]["cawRequestId"]
+    monkeypatch.setattr(
+        payments_router,
+        "create_caw_read_only_client",
+        lambda: FakeCawReadOnlyClient(
+            transactions={
+                caw_request_id: CawTransactionRecord(
+                    requestId=caw_request_id,
+                    providerStatus="SHOULD_NOT_LEAK_CANARY",
+                    txHash=None,
+                )
+            }
+        ),
+    )
+
+    response = client.get(f"/api/caw-status/{caw_request_id}/refresh")
+
+    assert response.status_code == 502
+    assert response.json()["detail"] == "Unsupported CAW transaction status"
+    assert "SHOULD_NOT_LEAK_CANARY" not in response.text
+
+
+def test_caw_status_refresh_provider_error_is_safe_502(monkeypatch):
+    class BrokenReadOnlyClient:
+        def get_transaction_by_request_id(self, request_id):
+            raise RuntimeError("SHOULD_NOT_LEAK_CANARY")
+
+    plan = create_plan()
+    run_risk_check(plan["paymentPlanId"])
+    execution_response = client.post(
+        "/api/execute-payment",
+        json={
+            "paymentPlanId": plan["paymentPlanId"],
+            "approvedPaymentIds": [plan["payments"][0]["id"]],
+            "humanApproval": {"approved": True, "approvedBy": "demo-operator"},
+        },
+    )
+    caw_request_id = execution_response.json()["payments"][0]["cawRequestId"]
+    monkeypatch.setattr(
+        payments_router,
+        "create_caw_read_only_client",
+        lambda: BrokenReadOnlyClient(),
+    )
+
+    response = client.get(f"/api/caw-status/{caw_request_id}/refresh")
+
+    assert response.status_code == 502
+    assert response.json()["detail"] == "CAW status refresh failed"
+    assert "SHOULD_NOT_LEAK_CANARY" not in response.text
 
 
 def test_blocked_payment_is_not_sent_to_mock_caw(monkeypatch):

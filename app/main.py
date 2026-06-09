@@ -18,6 +18,11 @@ def get_cors_allowed_origins() -> list[str]:
     return origins or DEFAULT_CORS_ALLOWED_ORIGINS
 
 
+def get_public_caw_mode() -> str:
+    mode = os.getenv("CAW_ADAPTER_MODE", "mock").strip().lower()
+    return mode if mode in {"mock", "real"} else "unknown"
+
+
 app = FastAPI(
     title="AgentCFO Backend MVP",
     description="Mock backend API for AgentCFO payment planning, risk checks, execution, and audit reports.",
@@ -51,5 +56,5 @@ def version():
         "apiMode": "mock-demo",
         "docsEnabled": False,
         "openapiEnabled": False,
-        "cawMode": "mock",
+        "cawMode": get_public_caw_mode(),
     }
