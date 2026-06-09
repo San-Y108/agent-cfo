@@ -141,7 +141,7 @@ Frontend
 | 证据项 | 当前状态 |
 | --- | --- |
 | CAW API Key | ✅ 已申请并配置（不写入仓库） |
-| Agent Wallet | ✅ 已创建；公开文档只使用 masked source `0x2cda...76da` |
+|| Agent Wallet | ✅ 已创建；primary: `0x2cda...76da`，secondary: `0xaa55...c199`（同一 CAW 钱包） |
 | SDK | ✅ 确认 `cobo-agentic-wallet v0.1.40` |
 | Testnet / Chain | ✅ Sepolia / `SETH` |
 | Token | ✅ `SETH` |
@@ -168,6 +168,21 @@ Phase 4C successful testnet evidence:
 | audit log summary | `transfer.allowed` and `transfer.initiate` were allowed |
 
 This proves one low-value CAW testnet transfer. It does not prove three separate tx hashes.
+
+Phase 4C additional evidence — intra-wallet transfer (same CAW wallet, secondary → primary):
+
+| Field | Public evidence |
+| --- | --- |
+| `chain` / `token` | `SETH` / `SETH` |
+| `amount` | `0.001` |
+| sender | `0xaa55...c199` |
+| recipient | `0x2cda...76da` |
+| `txHash` | `0x6bd793bc3030c995245b2e73a466898e46278be092aa9f7a3c86cad21cbbae8a` |
+| block | `11019278` |
+| timestamp | `2026-06-09T01:46:00+00:00` (UTC) |
+| explorer | https://sepolia.etherscan.io/tx/0x6bd793bc3030c995245b2e73a466898e46278be092aa9f7a3c86cad21cbbae8a |
+
+This proves both addresses belong to the same CAW wallet and can transact on Sepolia testnet.
 
 ## CAW Adapter Contract
 
