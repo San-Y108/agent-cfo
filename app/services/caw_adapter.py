@@ -219,32 +219,38 @@ class RealCawAdapter(CawAdapter):
         return None
 
     def _activate_pact(self):
-        client = self._client(self.config.api_key)
-        pact_response = _maybe_await(
-            client.submit_pact(
-                wallet_id=self.config.wallet_id,
-                intent="Create an AgentCFO testnet transfer pact",
-                spec={
-                    "policies": [self._transfer_policy()],
-                    "completion_conditions": [
-                        {"type": "tx_count", "threshold": "1"},
-                        {"type": "time_elapsed", "threshold": "3600"},
-                    ],
-                },
-                name="agentcfo-testnet-transfer",
-            )
-        )
-        pact_id = _result_value(pact_response, "pact_id")
-        if not pact_id:
-            return None
+        return _run_coroutine(self._activate_pact_async())
 
-        for _ in range(self.config.pact_activation_max_polls):
-            pact = _maybe_await(client.get_pact(pact_id))
-            status = _result_value(pact, "status")
-            pact_api_key = _result_value(pact, "api_key")
-            if status and status.strip().lower() == "active" and pact_api_key:
-                return {"pact_id": pact_id, "api_key": pact_api_key}
-        return None
+    async def _activate_pact_async(self):
+        client = self._client(self.config.api_key)
+        try:
+            pact_response = await _await_if_needed(
+                client.submit_pact(
+                    wallet_id=self.config.wallet_id,
+                    intent="Create an AgentCFO testnet transfer pact",
+                    spec={
+                        "policies": [self._transfer_policy()],
+                        "completion_conditions": [
+                            {"type": "tx_count", "threshold": "1"},
+                            {"type": "time_elapsed", "threshold": "3600"},
+                        ],
+                    },
+                    name="agentcfo-testnet-transfer",
+                )
+            )
+            pact_id = _result_value(pact_response, "pact_id")
+            if not pact_id:
+                return None
+
+            for _ in range(self.config.pact_activation_max_polls):
+                pact = await _await_if_needed(client.get_pact(pact_id))
+                status = _result_value(pact, "status")
+                pact_api_key = _result_value(pact, "api_key")
+                if status and status.strip().lower() == "active" and pact_api_key:
+                    return {"pact_id": pact_id, "api_key": pact_api_key}
+            return None
+        finally:
+            await _close_client(client)
 
     def _transfer_policy(self):
         chain_id = self.config.allowed_chain_ids[0]
@@ -271,18 +277,23 @@ class RealCawAdapter(CawAdapter):
         }
 
     def _call_transfer(self, payment: PaymentItem, request_id: str, pact_api_key: str):
+        return _run_coroutine(self._call_transfer_async(payment, request_id, pact_api_key))
+
+    async def _call_transfer_async(self, payment: PaymentItem, request_id: str, pact_api_key: str):
         client = self._client(pact_api_key)
-        result = client.transfer_tokens(
-            self.config.wallet_id,
-            dst_addr=payment.wallet,
-            amount=_format_amount(payment.amount),
-            token_id=payment.token,
-            chain_id=self.config.allowed_chain_ids[0],
-            request_id=request_id,
-        )
-        if inspect.isawaitable(result):
-            return asyncio.run(result)
-        return result
+        try:
+            return await _await_if_needed(
+                client.transfer_tokens(
+                    self.config.wallet_id,
+                    dst_addr=payment.wallet,
+                    amount=_format_amount(payment.amount),
+                    token_id=payment.token,
+                    chain_id=self.config.allowed_chain_ids[0],
+                    request_id=request_id,
+                )
+            )
+        finally:
+            await _close_client(client)
 
     def _client(self, api_key: str):
         if self._sdk_client is not None and api_key == self.config.api_key:
@@ -343,10 +354,27 @@ def _is_policy_denied(exc: Exception) -> bool:
     return exc.__class__.__name__ == "PolicyDeniedError" or hasattr(exc, "denial")
 
 
-def _maybe_await(result):
+def _run_coroutine(coroutine):
+    try:
+        asyncio.get_running_loop()
+    except RuntimeError:
+        return asyncio.run(coroutine)
+    raise RuntimeError("CAW adapter sync methods cannot run inside an active event loop")
+
+
+async def _await_if_needed(result):
     if inspect.isawaitable(result):
-        return asyncio.run(result)
+        return await result
     return result
+
+
+async def _close_client(client):
+    close = getattr(client, "close", None)
+    if close is None:
+        return
+    result = close()
+    if inspect.isawaitable(result):
+        await result
 
 
 def _normalize_caw_status_code(status_code) -> PaymentStatus | None:

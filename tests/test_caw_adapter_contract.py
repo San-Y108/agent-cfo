@@ -1,3 +1,5 @@
+import asyncio
+
 from app.models import PaymentItem, PaymentStatus
 from app.services.caw_adapter import (
     CawAdapter,
@@ -154,16 +156,91 @@ class FakeCawSdkClient:
         return self.transfer_response
 
 
+class FakeAsyncCawSdkClient(FakeCawSdkClient):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.loop = None
+
+    def _capture_or_validate_loop(self):
+        running_loop = asyncio.get_running_loop()
+        if self.loop is None:
+            self.loop = running_loop
+            return
+        if self.loop is not running_loop:
+            raise RuntimeError("Event loop is closed")
+
+    async def submit_pact(
+        self,
+        wallet_id=None,
+        intent=None,
+        original_intent=None,
+        spec=None,
+        name=None,
+        recipe_slugs=None,
+    ):
+        self._capture_or_validate_loop()
+        return super().submit_pact(
+            wallet_id=wallet_id,
+            intent=intent,
+            original_intent=original_intent,
+            spec=spec,
+            name=name,
+            recipe_slugs=recipe_slugs,
+        )
+
+    async def get_pact(self, pact_id):
+        self._capture_or_validate_loop()
+        return super().get_pact(pact_id)
+
+    async def transfer_tokens(
+        self,
+        wallet_uuid,
+        *,
+        dst_addr=None,
+        amount=None,
+        token_id="SETH",
+        chain_id=None,
+        request_id=None,
+        fee=None,
+        src_addr=None,
+        sponsor=None,
+        gas_provider=None,
+        description=None,
+    ):
+        self._capture_or_validate_loop()
+        return super().transfer_tokens(
+            wallet_uuid,
+            dst_addr=dst_addr,
+            amount=amount,
+            token_id=token_id,
+            chain_id=chain_id,
+            request_id=request_id,
+            fee=fee,
+            src_addr=src_addr,
+            sponsor=sponsor,
+            gas_provider=gas_provider,
+            description=description,
+        )
+
+
 class FakeCawSdkFactory:
-    def __init__(self, pact=None, submit_error=None, transfer_response=None, transfer_error=None):
+    def __init__(
+        self,
+        pact=None,
+        submit_error=None,
+        transfer_response=None,
+        transfer_error=None,
+        client_type=FakeCawSdkClient,
+    ):
         self.pact = pact
         self.submit_error = submit_error
         self.transfer_response = transfer_response
         self.transfer_error = transfer_error
+        self.client_type = client_type
         self.clients = []
 
     def __call__(self, base_url, api_key):
-        client = FakeCawSdkClient(
+        client = self.client_type(
             api_key=api_key,
             pact=self.pact,
             submit_error=self.submit_error,
@@ -448,6 +525,29 @@ def test_real_caw_adapter_submits_pact_and_uses_pact_scoped_key_for_transfer():
             "description": None,
         }
     ]
+
+
+def test_real_caw_adapter_runs_async_sdk_calls_in_one_flow():
+    factory = FakeCawSdkFactory(
+        client_type=FakeAsyncCawSdkClient,
+        transfer_response={
+            "request_id": "agentcfo_exec_demo_001_pay_001",
+            "transaction_hash": "0xrealtestnet",
+            "status": 900,
+        },
+    )
+    adapter = RealCawAdapter(
+        config=real_config(),
+        sdk_client_factory=factory,
+    )
+
+    result = adapter.create_transfer("exec_demo_001", sample_real_payment())
+
+    assert result.status == PaymentStatus.EXECUTED
+    assert result.txHash == "0xrealtestnet"
+    agent_client, pact_client = factory.clients
+    assert agent_client.get_pact_calls == ["pact_test_001"]
+    assert pact_client.transfer_calls[0]["chain_id"] == "SETH"
 
 
 def test_real_caw_adapter_keeps_tx_hash_null_when_caw_does_not_return_hash():
