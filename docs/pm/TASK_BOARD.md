@@ -23,7 +23,7 @@
 |------|--------|------|----------|
 | 交付/总控 | San-Y108 (严硕) | ✅ repo + 文档已完成 | 无 |
 | 后端/Agent | W5W8L9jlu | ✅ SQLite + CAW查询 + Render部署 | CAW 配置已到位，可开始替换 mock |
-| 前端 | Aafff623 | ✅ Landing + Demo + Vercel + i18n + 纯黑风格 | 分支 feat/frontend-bootstrap 待 merge 进 main |
+| 前端 | Aafff623 | ✅ Landing + Demo + Vercel + i18n + 纯黑风格 + API 对接 | 待保持 main 与部署分支同步 |
 | 合约/CAW | gitgdut | ✅ API Key + Wallet + 配置文档 | 待准备测试网资金 + 第一笔交易 |
 | 物料/设计 | Eloise-qiu | 🟡 已确认 | GitHub 已加入 repo，待启动 PPT/视频/视觉 |
 
@@ -62,7 +62,7 @@
 |----|------|--------|------|------|
 | T-020 | 确认技术栈 | Next.js + TypeScript + Tailwind | 6月8日 18:00 | ✅ DONE |
 | T-021 | 脚手架跑通 | pnpm-lock + 完整组件结构 | 6月8日 22:00 | ✅ DONE |
-| T-022 | 对接后端 mock API | 能调用 4 个接口 | 6月9日 | 🔵 IN_PROGRESS |
+| T-022 | 对接后端 mock API | 能调用 5 个接口（含 caw-status） | 6月9日 | ✅ DONE |
 
 ### 合约/CAW（gitgdut）
 
@@ -94,7 +94,7 @@
 |----|------|--------|------|------|
 | T-050 | 接入真实 CAW（替换 mock） | caw_adapter.py 调用 Cobo API | 6月10日 | 🟡 TODO |
 | T-051 | 加入 LLM 生成付款计划 | payment_planner.py (OpenAI) | 6月9日 | 🔵 IN_PROGRESS |
-| T-052 | 和前端联调 | 前端能调通 4 个接口 | 6月9日 | 🔵 IN_PROGRESS |
+| T-052 | 和前端联调 | 前端能调通 5 个接口 | 6月9日 | 🔵 IN_PROGRESS |
 | T-053 | 和 CAW 联调 | execute-payment 返回真实 tx hash | 6月10日 | 🟡 TODO |
 | T-054 | 部署后端到公网 | https://agentcfo-backend.onrender.com | 6月10日 | ✅ DONE |
 | T-055 | SQLite 持久化 | store.py SQLiteStore + 测试 | 6月10日 | ✅ DONE |
@@ -167,7 +167,8 @@
 
 前端主流程（✅ 已完成 + 已部署 Vercel）
     → Landing + Demo 完整可用
-    → 待 merge feat/frontend-bootstrap 进 main
+    → lib/api 层已对齐 5 个接口
+    → 待保持 main 与部署分支同步
 
 CAW 验证（✅ API Key + Wallet + 配置文档已到位）
     → 后端可开始替换 mock caw_adapter.py

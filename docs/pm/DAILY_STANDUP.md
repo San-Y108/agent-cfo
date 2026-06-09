@@ -51,8 +51,8 @@ ___
 |------|----------|------|----------|
 | 总控 | repo + 文档 + 看板 + Render 部署完成 | 无 | 发消息给 Eloise-qiu，准备站会 |
 | 物料 | 未启动 | 人已确认（Eloise-qiu），待发消息 | 启动 PPT 大纲 |
-| 前端 | Landing + Demo + Vercel + i18n + 纯黑风格 | 分支待 merge 进 main | 继续打磨 UI |
-| 后端 | 5 个 API + SQLite + Render + OpenAI planner | 等 CAW 替换 mock | 开始替换 caw_adapter.py |
+| 前端 | Landing + Demo + Vercel + i18n + 纯黑风格 + API 对接 | 待保持 main 与部署分支同步 | 继续打磨 UI |
+| 后端 | 5 个 API + SQLite + Render + deterministic planner | 等 CAW 替换 mock | 开始替换 caw_adapter.py |
 | 合约/CAW | API Key + Wallet + 518 行配置文档 | 待准备测试网资金 | 第一笔测试网交易 |
 
 **最高风险：** R-02 设计/物料同学待启动

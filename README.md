@@ -67,7 +67,7 @@ AgentCFO 需要展示：哪些付款可以执行、哪些付款被 blocked、为
 
 ## Repository Status
 
-当前仓库实现了 FastAPI 后端 MVP，包含 mock 和真实 CAW 两套适配器。后端已部署到 Render，前端已部署到 Vercel。
+当前仓库实现了 FastAPI 后端 MVP，当前 main 分支使用 MockCawAdapter；真实 CAW 配置已到位，等待替换 adapter。后端已部署到 Render，前端已部署到 Vercel。
 
 当前已有文件：
 
@@ -79,7 +79,7 @@ AgentCFO 需要展示：哪些付款可以执行、哪些付款被 blocked、为
 | `requirements.txt` | Python 依赖锁定版本 |
 | `docs/pm/` | 项目管理、站会、风险、提交和彩排清单 |
 
-当前可运行 mock API 服务。真实 CAW 配置已到位（API Key + Wallet + SDK），后端可开始替换 mock adapter。
+当前可运行 mock API 服务（本地 + Render 部署）。真实 CAW 配置已到位（API Key + Agent Wallet + SDK），后端可开始替换 mock adapter。
 
 ## How To Work In This Repo
 
@@ -108,8 +108,9 @@ P0 APIs:
 | `POST /api/risk-check` | 对 Payment Plan 执行确定性风险检查 |
 | `POST /api/execute-payment` | 人工确认后，通过 CAW 执行可付款项 |
 | `GET /api/audit-report/{auditReportId}` | 返回最终 Audit Report |
+| `GET /api/caw-status/{cawRequestId}` | 返回 mock/CAW 请求状态 |
 
-详细接口以 `app/routers/payments.py`、`app/models.py` 和 README 的 curl.exe 示例为准。
+详细接口以 `app/routers/payments.py`、`app/models.py` 和 README 的 curl 示例为准。
 
 ## Architecture
 
@@ -135,16 +136,18 @@ Frontend
 
 ## Cobo Agentic Wallet Evidence
 
-以下内容需要合约 / CAW 同学在联调后补充，不能编造：
+以下内容按当前可验证状态维护；真实地址、tx hash 和截图必须由合约 / CAW 同学在联调后补充，不能编造：
 
 | 证据项 | 当前状态 |
 | --- | --- |
-| Agent Wallet Address | 待补充 |
-| Testnet / Chain | 待补充 |
-| Token | 待补充 |
-| Transaction Hash | 待补充 |
-| CAW Request ID | 待补充 |
-| CAW config notes | 待补充 |
+| CAW API Key | ✅ 已申请并配置（不写入仓库） |
+| Agent Wallet | ✅ 已创建（active；公开展示地址待 CAW 同学补充） |
+| SDK | ✅ 确认 `cobo-agentic-wallet v0.1.40` |
+| Testnet / Chain | ✅ 已配置 Sepolia / SETH；待真实付款验证 |
+| Token | ✅ 已配置测试网 token；待余额和付款截图验证 |
+| Transaction Hash | 待真实测试网付款后补充 |
+| CAW Request ID | 当前 mock 返回 `mock_caw_*`；真实 CAW 接入后补充 |
+| CAW config notes | ✅ 已交付 518 行后端对接说明 |
 | Payment screenshots | 待补充 |
 
 真实付款必须通过 Cobo Agentic Wallet。Mock mode 只能用于演示兜底，必须明确标注。
@@ -223,10 +226,10 @@ http://127.0.0.1:8000
 健康检查：
 
 ```bash
-curl.exe http://127.0.0.1:8000/health
+curl http://127.0.0.1:8000/health
 ```
 
-FastAPI 自动 docs / OpenAPI 当前已关闭，以保证运行时只暴露四个 P0 业务 API 和部署健康检查。后续进入联调或需要文档展示时，可以在 `app/main.py` 重新开启。
+FastAPI 自动 docs / OpenAPI 当前已关闭，以保证运行时只暴露核心业务 API 和部署健康检查。后续进入联调或需要文档展示时，可以在 `app/main.py` 重新开启。
 
 ```text
 P0 routes only:
@@ -348,7 +351,7 @@ curl https://agentcfo-backend.onrender.com/health
 
 | 变量类别 | 用途 | 状态 |
 | --- | --- | --- |
-| LLM API key | 调用 Agent / LLM 生成 Payment Plan | Phase 2 OpenAI planner 已开发 |
+| LLM API key | 调用 Agent / LLM 生成 Payment Plan | 🔵 开发中，main 分支当前仍为确定性 mock planner |
 | CAW API key | 调用 Cobo Agentic Wallet | ✅ 已配置 |
 | CAW wallet id | 选择 Agent Wallet | ✅ 已配置 |
 | CAW base URL | CAW API endpoint | ✅ 已配置 |
@@ -374,7 +377,7 @@ curl https://agentcfo-backend.onrender.com/health
 
 完成标准：
 
-- 四个 P0 API 支持完整 Demo flow。
+- 核心业务 API 支持完整 Demo flow。
 - 前端可以展示 Payment Plan、Risk Check、Execution Result 和 Audit Report。
 - 至少一笔 CAW testnet transaction 有真实证据，或明确标注当前使用 mock mode。
 - README 和实际实现保持一致。
@@ -404,8 +407,8 @@ curl https://agentcfo-backend.onrender.com/health
 P0:
 
 - Scaffold backend。已完成 mock MVP。
-- 实现四个 P0 API。已完成 mock MVP。
-- 接入 LLM planner。Phase 2 OpenAI planner 已开发（phase2-openai-planner 分支）。
+- 实现 P0 核心 API。已完成 mock MVP，并补充 CAW 状态查询接口。
+- 接入 LLM planner。🔵 开发中，main 分支当前仍使用确定性 mock planner。
 - 实现 deterministic Risk Engine。已完成，6 条规则。
 - 接入 CAW Adapter。当前为 MockCawAdapter，真实 CAW 配置已到位。
 - 输出 Audit Report。已完成 mock MVP。

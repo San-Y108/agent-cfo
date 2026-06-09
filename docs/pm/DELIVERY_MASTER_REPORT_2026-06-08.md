@@ -140,15 +140,17 @@
 
 - [x] GitHub 仓库创建：https://github.com/San-Y108/agent-cfo
 - [x] README 初始框架已 push
-- [x] 6 个管理文档已 push（TASK_BOARD / DAILY_STANDUP / RISK_LOG / SUBMISSION_CHECKLIST / DEMO_REHEARSAL_CHECKLIST / TEAM_SYNC_MESSAGES）
+- [x] 7 个管理文档已 push
+- [x] 发开工消息到群
+- [x] 确认 3/4 人已 clone（后端+前端+CAW）
+- [x] 催 CAW 同学（已交付 API Key + Wallet + 配置文档）
+- [x] 发第一次站会
+- [x] 站会后更新 TASK_BOARD.md
 
 ### 待完成
 
-- [ ] 发开工消息到群（见下方群消息模板）
-- [ ] 确认 4 个人已读 + 已 clone
-- [ ] 单独催 CAW 同学
-- [ ] 今晚 22:00 发第一次站会
-- [ ] 站会后更新 TASK_BOARD.md
+- [ ] 发消息给 Eloise-qiu 启动物料
+- [ ] 确认全员已 clone（4/4）
 
 ---
 
@@ -281,9 +283,9 @@ ___
 ___
 
 --- 总控同步 ---
-整体进度：1 / 10
-最高风险：R-01 CAW 沙箱验证
-明天重点催：@合约/CAW Agent Wallet 创建
+整体进度：33 / 63（52%）
+最高风险：R-02 设计/物料同学待启动
+明天重点催：@设计 PPT 大纲 + @CAW 测试网资金 + @后端 替换 mock
 
 ---
 
@@ -308,11 +310,11 @@ ___
 | GitHub 仓库（public） | 总控 | ✅ 已完成 |
 | README.md 完整版 | 总控 + 物料 | 🟡 待补充 |
 | Demo 视频 3-5 分钟 | 物料 | 🟡 待录制 |
-| CAW 关键代码/配置说明 | 合约/CAW | 🟡 待填写 |
-| Agent Wallet 地址 | 合约/CAW | 🟡 待补充 |
-| Transaction Hash 列表 | 合约/CAW | 🟡 待补充 |
-| 风险边界说明 | 总控 | 🟡 待补充 |
-| 前端演示链接 | 前端 | 🟡 待部署 |
+| CAW 关键代码/配置说明 | 合约/CAW | ✅ 配置说明已交付，真实 adapter 待替换 |
+| Agent Wallet 地址 | 合约/CAW | ✅ Wallet 已创建，公开地址待写入 README |
+| Transaction Hash 列表 | 合约/CAW | 🟡 待真实测试网付款后补充 |
+| 风险边界说明 | 总控 | ✅ README 已覆盖 mock/审批/风控边界 |
+| 前端演示链接 | 前端 | ✅ 已部署 Vercel |
 | PPT 7 页 | 物料 | 🟡 待制作 |
 | 5 分钟路演稿 | 总控 | 🟡 待撰写 |
 | 流程截图包 | 物料 | 🟡 待截图 |
