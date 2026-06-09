@@ -24,7 +24,7 @@
 | 交付/总控 | San-Y108 (严硕) | ✅ repo + 文档已完成 | 无 |
 | 后端/Agent | W5W8L9jlu | ✅ SQLite + CAW查询/refresh + Render部署 + Phase 4C closeout | 当前 Render 为 ephemeral/mock-demo |
 | 前端 | Aafff623 | ✅ Landing + Demo + Vercel + i18n + 纯黑风格 + API 对接 | 待保持 main 与部署分支同步 |
-| 合约/CAW | gitgdut | ✅ API Key + Wallet + 配置文档 + 2 笔 testnet tx evidence | 截图仍需脱敏 |
+| 合约/CAW | gitgdut | ✅ API Key + Wallet + 配置文档 + 2 笔 testnet tx evidence | 还差 1 笔 tx 满足 3 笔要求；本地联调已完成，线上验证待做 |
 | 物料/设计 | Eloise-qiu | 🔵 PPT 初版已交，待启动视频/视觉 | 无 |
 
 ---
@@ -119,8 +119,8 @@
 | ID | 任务 | 交付物 | 截止 | 状态 |
 |----|------|--------|------|------|
 | T-070 | 验证真实 CAW adapter | Phase 4C skeleton + 1 笔 testnet evidence；非 production-ready | 6月10日 | ✅ DONE |
-| T-071 | 和后端联调 | 本地 live transfer 已完成；线上验证/截图待补 | 6月10日 | 🔵 IN_PROGRESS |
-| T-072 | 完成至少 3 笔测试网付款 | 3 个 tx hash | 6月10日 | 🟡 TODO |
+| T-071 | 和后端联调 | 本地 live transfer 已完成（2 笔 tx）；线上验证待做 | 6月10日 | 🔵 IN_PROGRESS |
+| T-072 | 完成至少 3 笔测试网付款 | 3 个 tx hash（当前 2 笔，还差 1 笔） | 6月10日 | 🟡 TODO |
 | T-073 | 整理 CAW 配置说明 | cobo-agentic-wallet-backend-quickstart.md | 6月10日 | ✅ DONE |
 
 ### 物料/设计
@@ -175,6 +175,8 @@
 CAW 验证（✅ API Key + Wallet + 配置文档 + 2 笔低额 testnet tx evidence）
     → README 已记录 2 笔 tx hash + 区块浏览器链接
     → Agent Wallet 有 2 个地址，已验证内部转账
+    → 还差 1 笔 tx 满足 T-072 的 3 笔要求
+    → 本地联调已完成，线上验证待做
 
 设计/物料（🔵 PPT 初版已交）
     → 待启动视频脚本、视觉设计、Demo 视频录制
