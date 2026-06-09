@@ -10,6 +10,8 @@ Request Network invoice records were implemented first because they are the leas
 
 Do not enable live Request Finance, Sablier, Safe, multichain execution, or multi-agent authorization until explicitly approved.
 
+Frontend and PM handoff for the demo-safe P2 surface is documented in [`P2_DEMO_HANDOFF.md`](P2_DEMO_HANDOFF.md), including curl examples, frontend field contracts, UI task guidance, and approved demo wording.
+
 ## Current Gates
 
 | Gate | Status |

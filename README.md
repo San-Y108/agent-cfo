@@ -665,6 +665,8 @@ P2:
 
 P2 live integrations are not enabled. Do not claim Request Finance, Sablier, Safe, multichain execution, or multi-agent authorization is live without explicit approval, credentials, and new tests.
 
+Frontend/PM handoff for the demo-safe P2 surface is in [`docs/pm/P2_DEMO_HANDOFF.md`](docs/pm/P2_DEMO_HANDOFF.md). It includes curl examples, frontend response contracts, demo UI guidance, and approved PM/video wording.
+
 ## P2 Demo-safe Extension APIs
 
 These APIs are metadata, preview, or reference only. They do not change P0/P1 payment authorization, deterministic risk checks, CAW adapter behavior, or immutable Audit Report snapshots.
