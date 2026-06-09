@@ -13,7 +13,7 @@ export default function ConsoleLayout({
   const [drawerOpen, setDrawerOpen] = useState(false);
 
   return (
-    <div className="flex min-h-screen bg-[#0D0D0D]"
+    <div className="flex min-h-screen bg-surface dark:bg-[#0D0D0D]"
     >
       {/* Sidebar */}
       <ConsoleSidebar />

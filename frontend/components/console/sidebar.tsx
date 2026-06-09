@@ -45,18 +45,18 @@ export function ConsoleSidebar() {
 
   return (
     <aside
-      className="fixed left-0 top-0 z-40 flex h-screen w-[260px] flex-col border-r border-white/[0.06] bg-[#0D0D0D]"
+      className="fixed left-0 top-0 z-40 flex h-screen w-[260px] flex-col border-r border-border-token dark:border-white/[0.06] bg-surface dark:bg-[#0D0D0D]"
     >
       {/* Brand wordmark */}
       <div className="flex items-center gap-2 px-5 pt-6 pb-4">
         <span
-          className="text-lg font-bold tracking-tight text-white"
+          className="text-lg font-bold tracking-tight text-fg"
           style={{ fontFamily: "Inter, sans-serif" }}
         >
           AgentCFO
         </span>
         <span
-          className="rounded bg-white/5 px-1.5 py-0.5 text-[9px] font-mono uppercase tracking-wider text-white/30"
+          className="rounded bg-surface-2 dark:bg-white/5 px-1.5 py-0.5 text-[9px] font-mono uppercase tracking-wider text-fg-subtle"
           style={{ fontFamily: "'Courier New', Courier, monospace" }}
         >
           v0.1
@@ -73,21 +73,22 @@ export function ConsoleSidebar() {
               <li key={item.href}>
                 <Link
                   href={item.href}
-                  className="group relative flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors"
+                  className={`group relative flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors ${
+                    isActive
+                      ? ""
+                      : "text-fg-muted dark:text-white/55 hover:text-fg dark:hover:text-white/85"
+                  }`}
                   style={{
                     backgroundColor: isActive ? `${item.color}10` : "transparent",
-                    color: isActive ? item.color : "rgba(255,255,255,0.55)",
                   }}
                   onMouseEnter={(e) => {
                     if (!isActive) {
                       e.currentTarget.style.backgroundColor = `${item.color}08`;
-                      e.currentTarget.style.color = "rgba(255,255,255,0.85)";
                     }
                   }}
                   onMouseLeave={(e) => {
                     if (!isActive) {
                       e.currentTarget.style.backgroundColor = "transparent";
-                      e.currentTarget.style.color = "rgba(255,255,255,0.55)";
                     }
                   }}
                 >
@@ -106,7 +107,7 @@ export function ConsoleSidebar() {
                     style={{ backgroundColor: item.color }}
                   />
                   <Icon size={16} style={{ color: isActive ? item.color : "inherit" }} />
-                  <span className="font-medium" style={{ fontFamily: "Inter, sans-serif" }}>
+                  <span className="font-medium text-fg-muted dark:text-white/55 group-hover:text-fg dark:group-hover:text-white/85" style={{ fontFamily: "Inter, sans-serif" }}>
                     {t(item.labelKey)}
                   </span>
                 </Link>
@@ -117,12 +118,12 @@ export function ConsoleSidebar() {
       </nav>
 
       {/* Bottom: theme/lang toggle + exit */}
-      <div className="border-t border-white/[0.06] px-4 py-4">
+      <div className="border-t border-border-token dark:border-white/[0.06] px-4 py-4">
         <div className="flex items-center justify-between">
           <ThemeLanguageToggle variant="app" />
           <Link
             href="/"
-            className="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs text-white/40 transition-colors hover:bg-white/5 hover:text-white/70"
+            className="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs text-fg-subtle transition-colors hover:bg-surface-hover dark:hover:bg-white/5 hover:text-fg-muted dark:hover:text-white/70"
             style={{ fontFamily: "Inter, sans-serif" }}
           >
             <LogOut size={13} />

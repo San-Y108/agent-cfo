@@ -38,17 +38,17 @@ export function ConsoleTopbar({ onOpenDrawer }: { onOpenDrawer: () => void }) {
   const meta = TAB_META[pathname] || TAB_META["/console"];
 
   return (
-    <header className="flex items-center justify-between border-b border-white/[0.06] bg-[#0D0D0D]/80 px-6 py-4 backdrop-blur-sm">
+    <header className="flex items-center justify-between border-b border-border-token dark:border-white/[0.06] bg-surface/80 dark:bg-[#0D0D0D]/80 px-6 py-4 backdrop-blur-sm">
       {/* Left: title + subtitle */}
       <div>
         <h1
-          className="text-base font-semibold text-white"
+          className="text-base font-semibold text-fg"
           style={{ fontFamily: "Inter, sans-serif" }}
         >
           {t(meta.titleKey as any)}
         </h1>
         <p
-          className="mt-0.5 max-w-md text-xs text-white/40"
+          className="mt-0.5 max-w-md text-xs text-fg-subtle"
           style={{ fontFamily: "Inter, sans-serif" }}
         >
           {t(meta.subtitleKey as any)}
@@ -58,10 +58,10 @@ export function ConsoleTopbar({ onOpenDrawer }: { onOpenDrawer: () => void }) {
       {/* Right: activity pill + drawer trigger */}
       <div className="flex items-center gap-3">
         {/* Activity indicator pill */}
-        <div className="hidden items-center gap-2 rounded-full border border-white/[0.08] bg-white/[0.03] px-3 py-1.5 sm:flex">
+        <div className="hidden items-center gap-2 rounded-full border border-border-token dark:border-white/[0.08] bg-surface-2 dark:bg-white/[0.03] px-3 py-1.5 sm:flex">
           <Activity size={12} className="text-emerald-400" />
           <span
-            className="text-[10px] font-mono uppercase tracking-wider text-white/50"
+            className="text-[10px] font-mono uppercase tracking-wider text-fg-muted"
             style={{ fontFamily: "'Courier New', Courier, monospace" }}
           >
             Sepolia Testnet
@@ -71,12 +71,12 @@ export function ConsoleTopbar({ onOpenDrawer }: { onOpenDrawer: () => void }) {
         {/* Sandbox / Live Rules trigger */}
         <button
           onClick={onOpenDrawer}
-          className="group flex items-center gap-2 rounded-lg border border-white/[0.08] bg-white/[0.03] px-3 py-2 text-xs text-white/60 transition-all hover:border-white/20 hover:bg-white/[0.06] hover:text-white/90"
+          className="group flex items-center gap-2 rounded-lg border border-border-token dark:border-white/[0.08] bg-surface-2 dark:bg-white/[0.03] px-3 py-2 text-xs text-fg-muted transition-all hover:border-border-strong dark:hover:border-white/20 hover:bg-surface-hover dark:hover:bg-white/[0.06] hover:text-fg"
           style={{ fontFamily: "Inter, sans-serif" }}
         >
           <FlaskConical size={14} className="text-[#5EEAD4]" />
           <span className="hidden sm:inline">Sandbox</span>
-          <span className="mx-0.5 text-white/20">|</span>
+          <span className="mx-0.5 text-fg-subtle dark:text-white/20">|</span>
           <SlidersHorizontal size={14} className="text-[#FB7185]" />
           <span className="hidden sm:inline">Rules</span>
         </button>

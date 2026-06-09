@@ -90,17 +90,17 @@ export function ConsoleDrawer({
             animate={{ x: 0 }}
             exit={{ x: "100%" }}
             transition={{ type: "spring", stiffness: 300, damping: 30 }}
-            className="fixed right-0 top-0 z-50 h-screen w-[380px] border-l border-white/[0.06] bg-[#0D0D0D] shadow-2xl"
+            className="fixed right-0 top-0 z-50 h-screen w-[380px] border-l border-border-token dark:border-white/[0.06] bg-surface dark:bg-[#0D0D0D] shadow-2xl"
           >
             {/* Header */}
-            <div className="flex items-center justify-between border-b border-white/[0.06] px-5 py-4">
-              <div className="flex gap-1 rounded-lg border border-white/[0.08] bg-white/[0.03] p-0.5">
+            <div className="flex items-center justify-between border-b border-border-token dark:border-white/[0.06] px-5 py-4">
+              <div className="flex gap-1 rounded-lg border border-border-token dark:border-white/[0.08] bg-surface-2 dark:bg-white/[0.03] p-0.5">
                 <button
                   onClick={() => setActiveTab("sandbox")}
                   className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition-colors ${
                     activeTab === "sandbox"
-                      ? "bg-white/10 text-[#5EEAD4]"
-                      : "text-white/40 hover:text-white/70"
+                      ? "bg-surface-hover dark:bg-white/10 text-[#5EEAD4]"
+                      : "text-fg-subtle dark:text-white/40 hover:text-fg-muted dark:hover:text-white/70"
                   }`}
                 >
                   <FlaskConical size={13} />
@@ -110,8 +110,8 @@ export function ConsoleDrawer({
                   onClick={() => setActiveTab("rules")}
                   className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition-colors ${
                     activeTab === "rules"
-                      ? "bg-white/10 text-[#FB7185]"
-                      : "text-white/40 hover:text-white/70"
+                      ? "bg-surface-hover dark:bg-white/10 text-[#FB7185]"
+                      : "text-fg-subtle dark:text-white/40 hover:text-fg-muted dark:hover:text-white/70"
                   }`}
                 >
                   <SlidersHorizontal size={13} />
@@ -120,7 +120,7 @@ export function ConsoleDrawer({
               </div>
               <button
                 onClick={onClose}
-                className="flex h-8 w-8 items-center justify-center rounded-lg text-white/40 transition-colors hover:bg-white/5 hover:text-white"
+                className="flex h-8 w-8 items-center justify-center rounded-lg text-fg-subtle dark:text-white/40 transition-colors hover:bg-surface-hover dark:hover:bg-white/5 hover:text-fg dark:hover:text-white"
               >
                 <X size={16} />
               </button>
@@ -132,7 +132,7 @@ export function ConsoleDrawer({
                 <div className="space-y-6">
                   {/* Latency slider */}
                   <div>
-                    <label className="flex items-center gap-2 text-xs font-medium text-white/70">
+                    <label className="flex items-center gap-2 text-xs font-medium text-fg-muted">
                       <Wifi size={13} className="text-[#5EEAD4]" />
                       Network Latency
                     </label>
@@ -145,21 +145,21 @@ export function ConsoleDrawer({
                       onChange={(e) => handleLatencyChange(Number(e.target.value))}
                       className="mt-2 w-full accent-[#5EEAD4]"
                     />
-                    <div className="mt-1 text-right text-[10px] font-mono text-white/40">
+                    <div className="mt-1 text-right text-[10px] font-mono text-fg-subtle">
                       {latency}ms
                     </div>
                   </div>
 
                   {/* Error toggle */}
-                  <div className="flex items-center justify-between rounded-lg border border-white/[0.06] bg-white/[0.03] px-4 py-3">
+                  <div className="flex items-center justify-between rounded-lg border border-border-token dark:border-white/[0.06] bg-surface-2 dark:bg-white/[0.03] px-4 py-3">
                     <div className="flex items-center gap-2">
                       <AlertTriangle size={14} className="text-[#FB7185]" />
-                      <span className="text-xs text-white/70">Simulate Error</span>
+                      <span className="text-xs text-fg-muted">Simulate Error</span>
                     </div>
                     <button
                       onClick={() => handleSimErrorToggle(!simulateError)}
                       className={`relative h-5 w-9 rounded-full transition-colors ${
-                        simulateError ? "bg-[#FB7185]" : "bg-white/10"
+                        simulateError ? "bg-[#FB7185]" : "bg-surface-hover dark:bg-white/10"
                       }`}
                     >
                       <span
@@ -176,17 +176,17 @@ export function ConsoleDrawer({
                   {/* Terminal logs */}
                   <div>
                     <div className="mb-2 flex items-center justify-between">
-                      <span className="text-xs font-medium text-white/70">Live Logs</span>
+                      <span className="text-xs font-medium text-fg-muted">Live Logs</span>
                       <button
                         onClick={() => setLogs(["[sandbox] cleared"])}
-                        className="flex items-center gap-1 text-[10px] text-white/30 transition-colors hover:text-white/60"
+                        className="flex items-center gap-1 text-[10px] text-fg-subtle transition-colors hover:text-fg-muted"
                       >
                         <Trash2 size={10} />
                         Clear
                       </button>
                     </div>
-                    <div className="rounded-lg border border-white/[0.06] bg-black/40 p-3">
-                      <div className="h-48 overflow-y-auto font-mono text-[10px] leading-relaxed text-white/50">
+                    <div className="rounded-lg border border-border-token dark:border-white/[0.06] bg-surface-2 dark:bg-black/40 p-3">
+                      <div className="h-48 overflow-y-auto font-mono text-[10px] leading-relaxed text-fg-subtle">
                         {logs.map((log, i) => (
                           <div key={i} className="py-0.5">
                             {log}
@@ -247,7 +247,7 @@ export function ConsoleDrawer({
                         value={whitelistInput}
                         onChange={(e) => setWhitelistInput(e.target.value)}
                         placeholder="0x..."
-                        className="flex-1 rounded-lg border border-white/[0.08] bg-white/[0.03] px-3 py-2 text-xs text-white/80 placeholder:text-white/20 focus:border-white/20 focus:outline-none"
+                        className="flex-1 rounded-lg border border-border-token dark:border-white/[0.08] bg-surface-2 dark:bg-white/[0.03] px-3 py-2 text-xs text-fg placeholder:text-fg-subtle focus:border-border-strong dark:focus:border-white/20 focus:outline-none"
                         style={{ fontFamily: "'Courier New', Courier, monospace" }}
                         onKeyDown={(e) => e.key === "Enter" && handleAddWhitelist()}
                       />
@@ -262,17 +262,17 @@ export function ConsoleDrawer({
                       {whitelist.map((addr) => (
                         <li
                           key={addr}
-                          className="flex items-center justify-between rounded-md border border-white/[0.04] bg-white/[0.02] px-2.5 py-1.5"
+                          className="flex items-center justify-between rounded-md border border-border-token dark:border-white/[0.04] bg-surface-2 dark:bg-white/[0.02] px-2.5 py-1.5"
                         >
                           <span
-                            className="truncate text-[10px] text-white/50"
+                            className="truncate text-[10px] text-fg-subtle"
                             style={{ fontFamily: "'Courier New', Courier, monospace" }}
                           >
                             {addr.slice(0, 14)}...{addr.slice(-8)}
                           </span>
                           <button
                             onClick={() => handleRemoveWhitelist(addr)}
-                            className="ml-2 text-white/20 transition-colors hover:text-[#FB7185]"
+                            className="ml-2 text-fg-subtle transition-colors hover:text-[#FB7185]"
                           >
                             <X size={12} />
                           </button>
@@ -284,7 +284,7 @@ export function ConsoleDrawer({
                   {/* Save button */}
                   <button
                     onClick={() => addLog("rules saved to global state")}
-                    className="flex w-full items-center justify-center gap-2 rounded-lg bg-white/[0.06] py-2.5 text-xs font-medium text-white/70 transition-colors hover:bg-white/10 hover:text-white"
+                    className="flex w-full items-center justify-center gap-2 rounded-lg bg-surface-hover dark:bg-white/[0.06] py-2.5 text-xs font-medium text-fg-muted transition-colors hover:bg-surface-2 dark:hover:bg-white/10 hover:text-fg dark:hover:text-white"
                   >
                     <Save size={13} />
                     Save Rules
