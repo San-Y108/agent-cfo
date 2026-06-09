@@ -67,7 +67,7 @@ AgentCFO 需要展示：哪些付款可以执行、哪些付款被 blocked、为
 
 ## Repository Status
 
-当前仓库已经 scaffold 了 FastAPI 后端 MVP。它实现了默认 mock、可显式启用 OpenAI Structured Outputs 的 Payment Plan，Risk Check、Execute Payment 和 Audit Report API，并预留了 Cobo Agentic Wallet adapter。
+当前仓库已经 scaffold 了 FastAPI 后端 MVP。它实现了默认 mock、可显式启用 OpenAI Structured Outputs 的 Payment Plan，Risk Check、Execute Payment 和 Audit Report API，并预留了 Cobo Agentic Wallet adapter。CAW 默认仍是 mock；Phase 4C 只加入 testnet-only、显式开启的 RealCawAdapter skeleton。
 
 当前已有文件：
 
@@ -79,7 +79,7 @@ AgentCFO 需要展示：哪些付款可以执行、哪些付款被 blocked、为
 | `requirements.txt` | Python 依赖锁定版本 |
 | `docs/pm/` | 项目管理、站会、风险、提交和彩排清单 |
 
-当前可运行 mock API 服务。真实 CAW 交易尚未接入；不要在 README 中补不存在的部署链接、Agent Wallet 地址或真实 tx hash。
+当前可运行 mock API 服务。真实 CAW 交易没有默认启用，且不能在没有明确人工批准时执行；不要在 README 中补不存在的部署链接、Agent Wallet 地址或真实 tx hash。
 
 ## How To Work In This Repo
 
@@ -151,16 +151,62 @@ Frontend
 
 ## CAW Adapter Contract
 
-当前代码只定义了 CAW adapter contract 和默认 `MockCawAdapter`，还没有接入真实 Cobo Agentic Wallet。
+当前代码定义了 CAW adapter contract、默认 `MockCawAdapter`，以及 testnet-only 的 opt-in `RealCawAdapter` skeleton。完整 Demo 默认仍然不需要 CAW secrets。
 
 共同 contract：
 
 - `create_transfer(execution_id, payment)`：返回标准 `PaymentExecutionItem`。
 - `failed_transfer(execution_id, payment, error)`：返回标准失败 `PaymentExecutionItem`。
 - adapter 必须暴露 `mode`、`network`、`agent_wallet_address`。
-- 默认 factory 只返回 mock adapter，完整 Demo 仍然不需要 CAW secrets。
+- 默认 factory 返回 mock adapter；只有显式设置 real mode 和 transfer flag 时才会尝试真实 testnet adapter。
 
-未来 `RealCawAdapter` 必须保持 P0 API 行为不变：Risk Check 仍是唯一决定 `Ready` / `NeedsApproval` / `Blocked` 的地方，Execute Payment 仍必须要求 `humanApproval.approved=true`，blocked payment 不能进入 adapter。真实 CAW 接入前，需要 CAW 同学提供 base URL 或官方 SDK 选择、auth 方式、wallet id/address、pact schema、policy rules、approval flow、chain/token config、status query 和 audit evidence。缺少这些信息时必须保持 mock mode 或 fail closed。
+`RealCawAdapter` 必须保持 P0 API 行为不变：Risk Check 仍是唯一决定 `Ready` / `NeedsApproval` / `Blocked` 的地方，Execute Payment 仍必须要求 `humanApproval.approved=true`，blocked payment 不能进入 adapter。缺少 base URL、auth、wallet id、pact active 状态、policy rules、approval flow、chain/token/recipient allowlist 或 amount limit 时必须 fail closed。
+
+## Phase 4C Testnet CAW Adapter
+
+Phase 4C-0 / 4C-1 adds a testnet-only `RealCawAdapter` skeleton behind the existing `CawAdapter` contract. Default mode remains mock. The real adapter is opt-in and fail-closed.
+
+Required environment variable names:
+
+| Name | Purpose | Secret |
+| --- | --- | --- |
+| `CAW_ADAPTER_MODE` | `mock` or `real`; default is `mock` | No |
+| `CAW_ENABLE_TRANSFERS` | must be `true` before any real transfer attempt | No |
+| `AGENT_WALLET_API_URL` | CAW API base URL | No |
+| `AGENT_WALLET_API_KEY` | Agent API key used only to submit/poll pact | Yes |
+| `AGENT_WALLET_WALLET_ID` | Agent Wallet wallet id | No |
+| `CAW_ALLOWED_CHAIN_IDS` | comma-separated testnet chain ids, for example `SETH` | No |
+| `CAW_ALLOWED_TOKEN_IDS` | comma-separated token ids | No |
+| `CAW_ALLOWED_RECIPIENTS` | comma-separated recipient allowlist | No |
+| `CAW_MAX_AMOUNT` | decimal natural-unit max amount | No |
+
+Safety behavior:
+
+- Real adapter is used only when `CAW_ADAPTER_MODE=real`.
+- Real transfer attempts are blocked unless `CAW_ENABLE_TRANSFERS=true`.
+- Missing `AGENT_WALLET_API_URL`, `AGENT_WALLET_API_KEY`, or `AGENT_WALLET_WALLET_ID` fails closed.
+- Chain, token, recipient, and amount are checked locally before any SDK transfer call.
+- Only configured testnet chain ids are allowed; mainnet is not implemented.
+- Contract calls are not implemented.
+- The adapter submits a pact, polls until active with a bounded limit, then uses only the in-memory pact-scoped API key for `transfer_tokens`.
+- Stable `request_id` is generated per payment item.
+- `txHash` stays `null` unless CAW returns a real `transaction_hash`.
+- Policy denial and provider failures are returned as redacted public error codes.
+
+Do not commit `cobo-agentic-wallet-backend-quickstart.md`. Do not create or commit `.env`. Do not paste `AGENT_WALLET_API_KEY` or any pact-scoped API key into code, docs, logs, tests, screenshots, or chat.
+
+Manual live test checklist, only after explicit approval:
+
+1. Confirm the test recipient address.
+2. Confirm testnet chain, token id, and low amount.
+3. Confirm the Agent Wallet has testnet balance.
+4. Confirm all env vars are set through the deployment/user environment, not `.env`.
+5. Run `python -m pytest -q`.
+6. Start the server.
+7. Execute one approved, risk-checked, low-value payment.
+8. Verify `/api/caw-status/{cawRequestId}` and `/api/audit-report/{auditReportId}`.
+
+No live transfer is run by tests. Tests use fake SDK clients only.
 
 ## CAW Read-Only Observer
 
@@ -183,7 +229,7 @@ Phase 4B 只加入了 CAW read-only observer skeleton，用来提前固定只读
 - **Testing**: pytest + FastAPI TestClient
 - **Server**: Uvicorn
 - **Storage**: SQLite demo store with repository abstraction
-- **CAW**: Mock adapter only, no real credentials
+- **CAW**: Default mock adapter; opt-in testnet RealCawAdapter skeleton
 
 ## Local Development
 
@@ -413,17 +459,22 @@ curl.exe http://127.0.0.1:8000/api/caw-status/mock_caw_exec_demo_001_pay_001
 
 ## Environment Variables
 
-当前 MVP 不读取任何 CAW secrets。真实 CAW 接入时至少需要覆盖：
+默认 mock 模式不读取任何 CAW secrets。只有显式启用 testnet real adapter 时，后端才会从环境变量读取 CAW 配置：
 
 | 变量类别 | 用途 | 状态 |
 | --- | --- | --- |
 | PAYMENT_PLANNER_MODE | `mock` 或 `openai`，默认 `mock` | 可选 |
 | OPENAI_API_KEY | 显式启用 OpenAI planner 时使用 | 不提交，必须走环境变量 |
 | OPENAI_MODEL | OpenAI planner 模型，默认 `gpt-4.1-mini` | 可选 |
-| CAW API key | 调用 Cobo Agentic Wallet | 待 CAW 同学提供 |
-| CAW wallet id | 选择 Agent Wallet | 待 CAW 同学提供 |
-| CAW base URL | CAW API endpoint | 待 CAW 同学提供 |
-| Testnet config | 测试网链和 token 配置 | 待 CAW 同学提供 |
+| CAW_ADAPTER_MODE | `mock` 或 `real`，默认 `mock` | 可选 |
+| CAW_ENABLE_TRANSFERS | 必须为 `true` 才允许真实 testnet transfer attempt | 可选 |
+| AGENT_WALLET_API_URL | Cobo Agentic Wallet API base URL | real mode 必需 |
+| AGENT_WALLET_API_KEY | 调用 Cobo Agentic Wallet 和申请 pact-scoped key | real mode 必需，不提交 |
+| AGENT_WALLET_WALLET_ID | 选择 Agent Wallet | real mode 必需 |
+| CAW_ALLOWED_CHAIN_IDS | 测试网 chain id allowlist | real mode 必需 |
+| CAW_ALLOWED_TOKEN_IDS | token id allowlist | real mode 必需 |
+| CAW_ALLOWED_RECIPIENTS | recipient allowlist | real mode 必需 |
+| CAW_MAX_AMOUNT | 单笔最大金额 | real mode 必需 |
 | AGENTCFO_DB_PATH | SQLite demo database path | 可选，本地默认 `agentcfo_demo.sqlite3` |
 | AGENTCFO_STORE_BACKEND | 可选切回 in-memory store | 仅本地临时 demo 使用 |
 
@@ -478,7 +529,7 @@ P0:
 - 实现四个 P0 API。已完成 mock MVP。
 - 接入 LLM planner。已完成默认 mock、显式 `openai` 模式的 structured planner。
 - 实现 deterministic Risk Engine。
-- 接入 CAW Adapter。当前为 MockCawAdapter。
+- 接入 CAW Adapter。当前默认 MockCawAdapter，已加入 opt-in testnet RealCawAdapter skeleton。
 - 输出 Audit Report。已完成 mock MVP。
 
 P1:
