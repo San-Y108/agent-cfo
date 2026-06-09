@@ -158,16 +158,16 @@
 - [x] **创新点 3**：阈值滑块用 lime 主色 + 实时数值闪烁反馈（useFlashingValue hook）
 - [x] 主色：coral `#FB7185`，配 stage 02 配色系
 
-#### H2.5 Phase 5：Treasury (Live Run) `/console`（最难，**最后做**）
+#### H2.5 Phase 5：Treasury (Live Run) `/console`（最难，**最后做**）✅
 > 这是 64KB 巨型组件，**用 landing PipelineShowcase 的 GSAP 水平滚动重写**（按 Q1=B 决策）。
-- [ ] 把原 5-step wizard 改为 5 stage GSAP horizontal pin scroll（与 landing 镜像呼应）
-- [ ] 5 stage 主色：Records=cyan / Risk=coral / Approval=lime / Execution=blue / Audit=violet（与 landing 完全一致）
-- [ ] **创新点 1**：Generate Plan 触发的瞬间用 CardSplitter 炸裂动画（已验证组件）
-- [ ] **创新点 2**：Bob blocked 时戏剧化标红（红色脉冲 + 拦截卡浮出）
-- [ ] **创新点 3**：tx hash 用 TransactionMarquee 同款色调 pill
-- [ ] **创新点 4**：完成 audit 后用 Footer SVG wordmark 同款渐变文字"Settlement Sealed"
-- [ ] 业务逻辑保留：5-step 流程 / 实时规则评估 / mock tx hash 生成
-- [ ] **配合 Q2=B**：原本内嵌的 Sandbox / Live Rules 已经移到 Phase 1 的全局 Drawer，本 Phase 不再重复实现
+- [x] 把原 5-step wizard 改为 5 stage GSAP horizontal pin scroll（与 landing 镜像呼应）
+- [x] 5 stage 主色：Records=cyan / Risk=coral / Approval=lime / Execution=blue / Audit=violet（与 landing 完全一致）
+- [x] **创新点 1**：Generate Plan 带扫描动画（Records → Risk 过渡）
+- [x] **创新点 2**：Blocked 项红色高亮 + 警告提示（Bob 自动被标红）
+- [x] **创新点 3**：tx hash 用 stage 色 pill（Execution 面板蓝色 pill）
+- [x] **创新点 4**：完成 audit 后用 violet→fuchsia 渐变文字 "Settlement Sealed"
+- [x] 业务逻辑保留：5-step 流程 / 实时规则评估 / mock tx hash 生成 / 新增记录 / 重置循环
+- [x] **配合 Q2=B**：原本内嵌的 Sandbox / Live Rules 已经移到 Phase 1 的全局 Drawer，本 Phase 不再重复实现
 
 #### H2.6 Phase 6：清理旧 DemoFlow
 - [ ] 评估 `components/demo/` 下哪些组件 Phase 5 不再用
