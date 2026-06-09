@@ -10,10 +10,11 @@
 
 - **日期**：2026-06-09
 - **分支**：`feat/frontend-bootstrap`
-- **HEAD commit**：`7307c77c`（landing 重设计 + footer 已落地，已 push 到远端）
+- **HEAD commit**：`feat(console): phase 1`（Dashboard 壳 + 4 路由 + Drawer 已落地，亮色模式已修复）
 - **远端**：`origin/feat/frontend-bootstrap`（已同步）
 - **工作目录**：`D:\OneDrive\Desktop\threetwoa\my-competition\agent-cfo\frontend`
 - **dev server 注意**：`PORT=3100 pnpm dev`（`:3001` 有陈旧 Service Worker 会白屏；`:3000` 经常被占用，请用 `:3100`）
+- **最新变更**：亮色模式修复 — console 所有组件（layout/sidebar/topbar/drawer/4 pages）已替换硬编码 `bg-[#0D0D0D]`/`text-white` 为 `bg-surface`/`text-fg` + `dark:` 变体
 
 ---
 
