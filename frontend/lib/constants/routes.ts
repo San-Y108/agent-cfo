@@ -1,6 +1,6 @@
 export const ROUTES = {
   home: "/",
-  demo: "/demo",
+  console: "/console",
   audit: "/audit",
   settings: "/settings",
 } as const;

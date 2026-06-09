@@ -6,7 +6,7 @@ import Link from "next/link";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
-import { useT } from "@/lib/i18n/context";
+import { useT, useApp } from "@/lib/i18n/context";
 import type { DictKey } from "@/lib/i18n/dict";
 import { ThemeLanguageToggle } from "@/components/ui/theme-language-toggle";
 
@@ -105,7 +105,7 @@ function MobileMenu({ open, onClose }: { open: boolean; onClose: () => void }) {
             }}
           >
             <Link
-              href="/demo"
+              href="/console"
               onClick={onClose}
               className="block w-full py-3 rounded-full text-sm font-medium text-center transition-all duration-300 hover:opacity-80"
               style={{ fontFamily: "Inter, sans-serif", backgroundColor: "#B5FF4D", color: "#0D0D0D" }}
@@ -156,7 +156,7 @@ function Navbar() {
           </div>
           <HamburgerButton open={open} onClick={() => setOpen((v) => !v)} />
           <Link
-            href="/demo"
+            href="/console"
             className="hidden lg:block text-sm font-medium px-5 py-2 rounded-full transition-all duration-300 hover:opacity-80"
             style={{ fontFamily: "Inter, sans-serif", backgroundColor: "#B5FF4D", color: "#0D0D0D" }}
           >
@@ -171,6 +171,7 @@ function Navbar() {
 
 export function VelorixHero() {
   const t = useT();
+  const { lang } = useApp();
   const heroRef = useRef<HTMLDivElement>(null);
   const videoWrapRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
@@ -268,7 +269,7 @@ export function VelorixHero() {
         </p>
 
         <Link
-          href="/demo"
+          href="/console"
           className="mt-8 flex items-center gap-2.5 px-6 py-3 rounded-full text-sm font-semibold transition-all duration-300 hover:opacity-80 group"
           style={{ fontFamily: "Inter, sans-serif", backgroundColor: "#B5FF4D", color: "#0D0D0D" }}
         >

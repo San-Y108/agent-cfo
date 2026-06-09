@@ -58,7 +58,7 @@ export function GuardrailsCTA() {
 
               <div className="mt-8 flex flex-wrap items-center gap-3">
                 <Link
-                  href="/demo"
+                  href="/console"
                   className="group flex items-center gap-2 rounded-[10px] bg-[#B5FF4D] px-5 py-3 text-sm font-semibold text-[#0D0D0D] transition-opacity hover:opacity-90"
                   style={{ fontFamily: "Inter, sans-serif" }}
                 >
