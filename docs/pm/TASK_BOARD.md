@@ -72,8 +72,8 @@
 | T-031 | 申请开发者 API Key | Sandbox Key 或正式环境 Key | 6月8日 22:00 | ✅ DONE |
 | T-032 | 搞懂 Cobo 权限模型 | 三层权限 + 双层风控方案 | 6月9日 | ✅ DONE |
 | T-033 | 创建 Agent Wallet | Wallet 地址 | 6月9日 | ✅ DONE |
-| T-034 | 准备测试网资金 | ETH 或 USDC 余额截图 | 6月9日 | 🟡 TODO |
-| T-035 | 第一笔测试网付款 | 1 个 tx hash 已写入 README；区块浏览器链接/截图待补 | 6月10日 | 🔵 IN_PROGRESS |
+| T-034 | 准备测试网资金 | ETH 或 USDC 余额截图 | 6月9日 | ✅ DONE|
+| T-035 | 第一笔测试网付款 | 1 个 tx hash 已写入 README；区块浏览器链接/截图待补 | 6月10日 | ✅ DONE |
 
 ### 物料/设计（Eloise-qiu）
 
