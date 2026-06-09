@@ -92,7 +92,7 @@
 
 | ID | 任务 | 交付物 | 截止 | 状态 |
 |----|------|--------|------|------|
-| T-050 | 接入真实 CAW（替换 mock） | caw_adapter.py 调用 Cobo API | 6月10日 | 🔵 IN_PROGRESS |
+| T-050 | 接入真实 CAW（替换 mock） | caw_adapter.py 调用 Cobo API | 6月10日 | 🟡 TODO |
 | T-051 | 加入 LLM 生成付款计划 | payment_planner.py (OpenAI) | 6月9日 | 🔵 IN_PROGRESS |
 | T-052 | 和前端联调 | 前端能调通 4 个接口 | 6月9日 | 🔵 IN_PROGRESS |
 | T-053 | 和 CAW 联调 | execute-payment 返回真实 tx hash | 6月10日 | 🟡 TODO |
@@ -184,7 +184,7 @@ CAW 验证（✅ API Key + Wallet + 配置文档已到位）
 | 状态 | 数量 |
 |------|------|
 | 🔴 BLOCKED | 0 |
-| 🟡 TODO | 27 |
-| 🔵 IN_PROGRESS | 3 |
+| 🟡 TODO | 28 |
+| 🔵 IN_PROGRESS | 2 |
 | ✅ DONE | 33 |
 | ❌ CANCELLED | 0 |

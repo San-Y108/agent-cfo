@@ -79,7 +79,7 @@ AgentCFO 需要展示：哪些付款可以执行、哪些付款被 blocked、为
 | `requirements.txt` | Python 依赖锁定版本 |
 | `docs/pm/` | 项目管理、站会、风险、提交和彩排清单 |
 
-当前可运行 mock API 服务。真实 CAW 交易尚未接入；不要在 README 中补不存在的部署链接、Agent Wallet 地址或真实 tx hash。
+当前可运行 mock API 服务。真实 CAW 配置已到位（API Key + Wallet + SDK），后端可开始替换 mock adapter。
 
 ## How To Work In This Repo
 
@@ -199,19 +199,19 @@ python -m venv .venv
 安装依赖：
 
 ```bash
-.\.venv\Scripts\python -m pip install -r requirements.txt
+.venv/bin/python -m pip install -r requirements.txt
 ```
 
 运行测试：
 
 ```bash
-.\.venv\Scripts\python -m pytest -q
+.venv/bin/python -m pytest -q
 ```
 
 启动开发服务：
 
 ```bash
-.\.venv\Scripts\python -m uvicorn app.main:app --reload
+.venv/bin/python -m uvicorn app.main:app --reload
 ```
 
 默认服务地址：
@@ -266,11 +266,19 @@ http://localhost:3000
 
 Deployed health check:
 
+部署后端验证：
+
 ```bash
-curl.exe https://<render-service>.onrender.com/health
+curl https://agentcfo-backend.onrender.com/health
 ```
 
-This deployment is still mock backend mode: no real OpenAI planner, no real Cobo Agentic Wallet execution, no `.env`, and no secrets in the repository.
+预期返回：
+
+```json
+{"status":"ok","service":"agent-cfo-backend"}
+```
+
+此部署仍为 mock 后端模式：无真实 OpenAI planner，无真实 Cobo Agentic Wallet 执行，无 `.env`，仓库中无 secrets。
 
 ## Persistence
 
@@ -294,36 +302,42 @@ Audit Reports are saved as execution-time snapshots. Later CAW status refreshes 
 
 ## Curl Verification
 
-PowerShell 中建议使用 `curl.exe`，避免 `curl` alias 干扰。
+验证本地后端 API：
 
 创建 Payment Plan：
 
 ```bash
-curl.exe -X POST http://127.0.0.1:8000/api/payment-plan -H 'Content-Type: application/json' -d '{"contributions":[{"name":"Alice","role":"Content Contributor","task":"Wrote event recap article","wallet":"0xAlice","amount":20,"token":"USDC"}],"budgetRule":{"monthlyBudget":50,"singlePaymentLimit":25,"allowedToken":"USDC","whitelist":["0xAlice"],"requiresHumanApproval":true}}'
+curl -X POST http://127.0.0.1:8000/api/payment-plan -H 'Content-Type: application/json' -d '{"contributions":[{"name":"Alice","role":"Content Contributor","task":"Wrote event recap article","wallet":"0xAlice","amount":20,"token":"USDC"}],"budgetRule":{"monthlyBudget":50,"singlePaymentLimit":25,"allowedToken":"USDC","whitelist":["0xAlice"],"requiresHumanApproval":true}}'
 ```
 
 执行 Risk Check：
 
 ```bash
-curl.exe -X POST http://127.0.0.1:8000/api/risk-check -H 'Content-Type: application/json' -d '{"paymentPlanId":"plan_demo_001","budgetRule":{"monthlyBudget":50,"singlePaymentLimit":25,"allowedToken":"USDC","whitelist":["0xAlice"],"requiresHumanApproval":true}}'
+curl -X POST http://127.0.0.1:8000/api/risk-check -H 'Content-Type: application/json' -d '{"paymentPlanId":"plan_demo_001","budgetRule":{"monthlyBudget":50,"singlePaymentLimit":25,"allowedToken":"USDC","whitelist":["0xAlice"],"requiresHumanApproval":true}}'
 ```
 
 执行 mock payment：
 
 ```bash
-curl.exe -X POST http://127.0.0.1:8000/api/execute-payment -H 'Content-Type: application/json' -d '{"paymentPlanId":"plan_demo_001","approvedPaymentIds":["pay_001"],"humanApproval":{"approved":true,"approvedBy":"demo-operator"}}'
+curl -X POST http://127.0.0.1:8000/api/execute-payment -H 'Content-Type: application/json' -d '{"paymentPlanId":"plan_demo_001","approvedPaymentIds":["pay_001"],"humanApproval":{"approved":true,"approvedBy":"demo-operator"}}'
 ```
 
 查看 Audit Report：
 
 ```bash
-curl.exe http://127.0.0.1:8000/api/audit-report/audit_demo_001
+curl http://127.0.0.1:8000/api/audit-report/audit_demo_001
 ```
 
 查看 mock CAW status：
 
 ```bash
-curl.exe http://127.0.0.1:8000/api/caw-status/mock_caw_exec_demo_001_pay_001
+curl http://127.0.0.1:8000/api/caw-status/mock_caw_exec_demo_001_pay_001
+```
+
+验证部署后端：
+
+```bash
+curl https://agentcfo-backend.onrender.com/health
 ```
 
 所有执行结果当前都是 `mode="mock"`，`txHash=null`。
