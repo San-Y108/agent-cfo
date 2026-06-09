@@ -300,6 +300,8 @@ Phase 4B 加入了 CAW read-only observer skeleton；Phase 4C closeout 暴露了
 
 `GET /api/caw-status/{cawRequestId}/refresh` 先确认本地 `cawRequestId` 存在，再通过 read-only client 按 `request_id` 查询 CAW 最新交易状态，归一化 provider status，保存更新后的 `CawStatus`，并返回更新结果。它不会调用 `transfer_tokens`，不会创建新付款计划，不会触发任何转账。
 
+In mock or ephemeral Render mode, refresh can safely return `404 CAW provider transaction not found` for a mock `cawRequestId`, because no real CAW provider transaction exists for mock execution. This is expected and must not be retried by triggering a live transfer.
+
 Audit Report 是执行时快照，后续 status refresh 不能改写历史 Audit Report。Frontend should treat Audit Report as immutable evidence and CAW Status as the latest refreshable status. If the audit snapshot has `txHash=null` but refreshed CAW Status has a real `txHash`, show the real hash in a separate “Latest CAW Status” area and keep the audit snapshot unchanged.
 
 Observer 不持久化 raw provider error，只保存稳定的公开错误码。未知 provider status 必须 fail closed，API 返回安全公开错误，不回显 provider 原文。
@@ -456,6 +458,8 @@ curl https://agentcfo-backend.onrender.com/api/demo-sample
 
 This deployment is still mock backend mode by default: no real Cobo Agentic Wallet transfer, no `.env`, and no secrets in the repository. Render should set `CAW_ADAPTER_MODE=mock` and `CAW_ENABLE_TRANSFERS=false` for P1 online verification.
 
+Current Render persistence decision: the live Render demo is treated as `mock-demo` with ephemeral SQLite storage unless a Render persistent disk is explicitly approved and attached later. It is valid for online P0 mock flow verification, but it does not preserve or prove local CAW evidence across deploys or restarts.
+
 ## Payment Planner Mode
 
 The backend defaults to the deterministic mock planner:
@@ -492,7 +496,7 @@ For temporary local demos, you can force the old in-memory store:
 AGENTCFO_STORE_BACKEND=memory
 ```
 
-On Render, SQLite is only suitable for a single-instance demo. To keep SQLite data across deploys or restarts, attach a Render persistent disk and set `AGENTCFO_DB_PATH` to a path on that disk. If SQLite is stored on Render's normal ephemeral filesystem, deploys or restarts can lose the database file. For long-running audit storage, multi-instance services, or production-like usage, use Postgres in a later phase instead.
+On Render, SQLite is only suitable for a single-instance demo. Current closeout decision: no persistent disk is configured or verified for this release, so the Render service must be treated as ephemeral/mock-only for audit evidence. To keep SQLite data across deploys or restarts, first get explicit approval, then attach a Render persistent disk and set `AGENTCFO_DB_PATH` to a path on that disk. If SQLite is stored on Render's normal ephemeral filesystem, deploys or restarts can lose the database file. For long-running audit storage, multi-instance services, or production-like usage, use Postgres in a later phase instead; do not implement Postgres without explicit approval.
 
 Audit Reports are saved as execution-time snapshots. Later CAW status refreshes must not rewrite historical Audit Report content.
 
@@ -513,7 +517,7 @@ curl http://127.0.0.1:8000/api/demo-sample
 | API mode | `mock-demo` |
 | CAW mode | `mock` |
 | Mock tx hash | `null` |
-| Real CAW transfer | 未接入 |
+| Real CAW transfer | Render mock flow 不执行；仅本地 Phase 4C 记录了 1 笔 testnet evidence |
 | Demo sample | `GET /api/demo-sample`，非写入 |
 | P0 flow | `payment-plan -> risk-check -> execute-payment -> audit-report` |
 
@@ -564,6 +568,8 @@ curl.exe https://agentcfo-backend.onrender.com/health
 ```
 
 默认 mock 执行结果是 `mode="mock"`，`txHash=null`。Real CAW refresh 返回真实 `txHash` 时，前端应把它展示在 latest CAW status 区域，不要改写 Audit Report 快照。
+
+在 Render mock-demo 环境中，`/api/caw-status/{mockId}/refresh` 返回 `404 CAW provider transaction not found` 是安全预期：它只说明 mock request 没有真实 CAW provider transaction，不会调用 `transfer_tokens`。
 
 ## Environment Variables
 

@@ -22,9 +22,9 @@
 | 岗位 | 负责人 | 进度 | 最大卡点 |
 |------|--------|------|----------|
 | 交付/总控 | San-Y108 (严硕) | ✅ repo + 文档已完成 | 无 |
-| 后端/Agent | W5W8L9jlu | ✅ SQLite + CAW查询/refresh + Render部署 + Phase 4C closeout | 线上是否保留证据取决于 Render 持久化 |
+| 后端/Agent | W5W8L9jlu | ✅ SQLite + CAW查询/refresh + Render部署 + Phase 4C closeout | 当前 Render 为 ephemeral/mock-demo；持久 evidence 需另批 persistent disk/Postgres |
 | 前端 | Aafff623 | ✅ Landing + Demo + Vercel + i18n + 纯黑风格 + API 对接 | 待保持 main 与部署分支同步 |
-| 合约/CAW | gitgdut | ✅ API Key + Wallet + 配置文档 + 1 笔 testnet tx evidence | 仍缺 3 笔 tx 列表和脱敏截图 |
+| 合约/CAW | gitgdut | ✅ API Key + Wallet + 配置文档 + 1 笔 testnet tx evidence | 仍未满足 3 笔 tx 要求；至少还缺 2 笔或需调整提交口径，截图仍需脱敏 |
 | 物料/设计 | Eloise-qiu | 🟡 已确认 | GitHub 已加入 repo，待启动 PPT/视频/视觉 |
 
 ---
@@ -95,7 +95,7 @@
 | T-050 | 启用/验证真实 CAW mode | opt-in testnet RealCawAdapter skeleton + 1 笔 tx evidence | 6月10日 | ✅ DONE |
 | T-051 | 加入 LLM 生成付款计划 | payment_planner.py (OpenAI) | 6月9日 | 🔵 IN_PROGRESS |
 | T-052 | 和前端联调 | 前端能调通 5 个接口 | 6月9日 | 🔵 IN_PROGRESS |
-| T-053 | 和 CAW 联调 | 本地 live test 完成 1 笔；线上证据取决于 Render store | 6月10日 | 🔵 IN_PROGRESS |
+| T-053 | 和 CAW 联调 | 本地 live test 完成 1 笔；当前 Render mock-demo 不展示本地 evidence | 6月10日 | 🔵 IN_PROGRESS |
 | T-054 | 部署后端到公网 | https://agentcfo-backend.onrender.com | 6月10日 | ✅ DONE |
 | T-055 | SQLite 持久化 | store.py SQLiteStore + 测试 | 6月10日 | ✅ DONE |
 | T-056 | CAW 状态查询接口 | GET /api/caw-status/{id} | 6月10日 | ✅ DONE |

@@ -53,7 +53,7 @@
 | # | 检查项 | 状态 |
 |---|--------|------|
 | 20 | 执行过程中页面显示"Executing via Cobo Agentic Wallet"或明确 mock execution mode | ☐ |
-| 21 | Latest CAW Status 区域能展示真实 tx hash；mock flow 明确显示 txHash=null | ☐ |
+| 21 | 使用已记录 evidence 或已批准 real transfer 时，Latest CAW Status 区域能展示真实 tx hash；mock flow 明确显示 txHash=null | ☐ |
 | 22 | tx hash 可以复制 | ☐ |
 | 23 | 真实 evidence 的 tx hash 可在区块浏览器上查到；mock flow 不伪造链接 | ☐ |
 | 24 | 显示 masked Agent Wallet/source，完整地址是否公开需单独确认 | ☐ |

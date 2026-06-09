@@ -72,10 +72,10 @@ ___
 | 总控 | README/PM 文档同步 Phase 4C 真实状态 | 需要确认提交口径：1 笔 tx 还是继续补到 3 笔 | 跟进部署、证据包和提交材料 |
 | 物料 | 待补 Demo 视频/PPT/截图包 | 截图必须脱敏，不能含 API key/raw provider response | 录制 mock flow + CAW evidence 说明 |
 | 前端 | 已有 Vercel 与主流程页面 | 需展示 Audit Report snapshot 与 Latest CAW Status 两块 | 接入 `/api/caw-status/{id}/refresh` |
-| 后端 | Phase 4C closeout 完成；read-only CAW status refresh API 已提交；默认 mock/fail-closed 保留 | Render 是否保留 evidence 取决于 persistent disk / Postgres 策略 | 部署后验证线上 P0 mock flow 和 refresh 口径 |
+| 后端 | Phase 4C closeout 完成；read-only CAW status refresh API 已提交；默认 mock/fail-closed 保留 | 当前 Render 已定性为 ephemeral/mock-demo，不保留/证明本地 CAW evidence | 部署后验证线上 P0 mock flow 和 refresh 口径；持久 evidence 需另批 persistent disk 或 Postgres |
 | 合约/CAW | 已完成 1 笔低额 SETH testnet transfer，provider status 900，txHash 已写入 README | 当前只证明 1 笔，不满足“至少 3 笔”；截图仍需脱敏补充 | 确认是否继续补 2 笔 tx 或调整提交口径 |
 
-**最高风险：** CAW 提交材料仍缺至少 3 笔 tx/截图证据；Render SQLite 证据持久化需确认
+**最高风险：** CAW 提交材料仍缺至少 3 笔 tx/截图证据；当前 Render SQLite 为 ephemeral/mock-demo，不能作为持久 evidence 来源
 
 **明日重点催：** @CAW 补证据包/确认 3 笔口径 + @前端 接 latest CAW status + @物料 Demo 视频/PPT
 

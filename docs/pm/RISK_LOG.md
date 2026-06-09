@@ -38,10 +38,10 @@
 | 等级 | 🟡 P2 |
 | 负责人 | W5W8L9jlu（后端） |
 | 发现日期 | 6月8日 |
-| 影响 | 默认 mock flow 的 txHash 仍为 null；线上历史 audit/status 是否保留取决于 Render 是否配置 persistent disk |
+| 影响 | 默认 mock flow 的 txHash 仍为 null；当前 Render demo 按 ephemeral/mock-only 处理，不承诺保留线上 audit/status evidence |
 | 当前状态 | ✅ SQLiteStore、/api/caw-status/{id}、/api/caw-status/{id}/refresh 已实现；Phase 4C 已完成 1 笔低额 CAW testnet transfer 证据；默认 mock/fail-closed 保留 |
-| 缓解措施 | Render 短期建议 SQLite + persistent disk；长期/多实例审计再迁移 Postgres。Audit Report 保持执行时快照，latest CAW status 单独刷新展示 |
-| 截止 | 6月10日 确认 Render 持久化策略和线上演示口径 |
+| 缓解措施 | 本次 closeout 决策：Render 仅用于 P0 mock flow 在线验证；本地 1 笔 CAW evidence 不能由 Render 展示，除非在 Render 重新执行或显式 seed。下一步推荐 SQLite + Render persistent disk；长期/多实例审计再迁移 Postgres，均需单独批准。Audit Report 保持执行时快照，latest CAW status 单独刷新展示 |
+| 截止 | 已决策：当前 Render 为 ephemeral/mock-demo；如需持久 evidence，另行批准 persistent disk 或 Postgres |
 
 ### R-05 🟡 测试网资金获取
 
