@@ -100,6 +100,16 @@ body {
   transition: background-color 0.3s ease, color 0.3s ease;
 }
 
+/* Selection color — matches Ramp lime theme */
+::selection {
+  background-color: #B5FF4D;
+  color: #0D0D0D;
+}
+::-moz-selection {
+  background-color: #B5FF4D;
+  color: #0D0D0D;
+}
+
 /* Subtle animated grid background */
 @keyframes grid-pulse {
   0%, 100% { opacity: 0.3; }
@@ -143,6 +153,19 @@ body {
 .font-mono-numbers {
   font-variant-numeric: tabular-nums;
   font-feature-settings: "tnum";
+}
+
+/* Marquee animation for transaction ticker */
+@keyframes marquee {
+  0% { transform: translateX(0%); }
+  100% { transform: translateX(-50%); }
+}
+.animate-marquee {
+  display: flex;
+  animation: marquee 30s linear infinite;
+}
+.animate-marquee:hover {
+  animation-play-state: paused;
 }
 
 /* Respect reduced motion preference */

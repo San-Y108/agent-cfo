@@ -14,12 +14,47 @@ export const dict = {
     "nav.risk": "Risk Guardrails",
     "nav.wallet": "Wallet Execution",
     "nav.audit": "Audit Trail",
-    "nav.openDemo": "Open Demo",
+    "nav.openDemo": "Open Console",
 
     // ---- hero ----
     "hero.title": "Where DAO treasury decisions become executable payment flows",
     "hero.subtitle": "from contributor records to wallet execution — risk-checked, human-approved, audit-ready",
     "hero.cta": "Run the payout flow",
+
+    // ---- hero card ----
+    "heroCard.secured": "Secured",
+    "heroCard.title": "AI Treasury Agent",
+    "heroCard.desc": "Autonomous payment planning, risk validation, and controlled wallet execution for DAO treasuries.",
+
+    // ---- card splitter ----
+    "cardSplitter.eyebrow": "Interactive Split",
+    "cardSplitter.title": "One budget card. Split into targeted payouts.",
+    "cardSplitter.subtitle": "Scroll down to see how AgentCFO breaks a single master budget into individual contributor cards.",
+
+    // ---- web3 node cloud ----
+    "web3Cloud.eyebrow": "Web3 Trust Stack",
+    "web3Cloud.title": "Web3 Trusted Infrastructure Integration Map",
+    "web3Cloud.desc": "AgentCFO weaves multi-sig suites, automation modules and Cobo HSM into a closed-loop trusted capital allocation network, granting Agent payment sovereignty under control.",
+    "web3Cloud.hint": "Hover or move mouse to explore underlying trusted protocols...",
+
+    // ---- faq ----
+    "faq.title": "Frequently Queried Specifications",
+    "faq.subtitle": "Understand the core mechanics protecting your DAO Treasury against rogue behaviors through cryptographic hardware limits.",
+    "faq.q1": "Is my corporate money secure under AI automated operations?",
+    "faq.a1": "Absolutely. Crucially, the AI Agent (AgentCFO) NEVER holds your private keys. It only reads contribution metrics and signs raw intent data packages under pre-approved, non-custodial boundaries defined strictly in your hardware and policy config.",
+    "faq.q2": "How does Cobo Agentic Wallet restrict rogue transactions?",
+    "faq.a2": "Permissions are guarded by four distinct, deterministic policy layers: spending caps (single or monthly bounds), recipient smart contract Whitelisting, human multi-sig confirmation overrides, and duplicate task identifiers that automatically halt invalid operations.",
+    "faq.q3": "Can this settle payouts on other EVM production mainnets?",
+    "faq.a3": "Yes. Although our primary hackathon Demo runs isolated on the Sepolia Testnet for security, the underlying Cobo SDK and transaction builders are fully prepared to scale across any EVM networks (Ethereum, Polygon, Arbitrum, Base, etc.).",
+
+    // ---- hsm monitor ----
+    "hsm.header": "HSM-CAW Node Monitor",
+    "hsm.latency": "HSM SIGNER LATENCY",
+    "hsm.quorum": "MULTI-SIG QUORUM",
+    "hsm.encryption": "VAULT ENCRYPTION",
+    "hsm.policies": "ACTIVE SAFE BOUNDS",
+    "hsm.load": "CAW Hardware signing load:",
+    "hsm.enter": "Enter Console",
 
     // ---- landing: problem ----
     "problem.eyebrow": "The Problem",
@@ -67,7 +102,7 @@ export const dict = {
     "wallet.title": "Funds move only under a controlled wallet",
     "wallet.1": "Agent operates inside a Cobo Agentic Wallet permission boundary",
     "wallet.2": "No private keys exposed — execution is policy-gated",
-    "wallet.3": "Testnet-simulated in demo, production-ready integration path",
+    "wallet.3": "Testnet-simulated in console, production-ready integration path",
     "wallet.4": "Every transfer ties back to an approved payment item",
     "wallet.blocked": "blocked",
     "wallet.mockLabel": "agent-wallet · policy-gated",
@@ -78,8 +113,8 @@ export const dict = {
     "audit.subtitle": "approved · blocked · executed — all in one settlement report",
     "audit.cta.title": "Give every DAO an AI CFO with a controlled wallet",
     "audit.cta.sub": "see the full payout flow, end to end",
-    "audit.cta.button": "Open Demo",
-    "footer.tagline": "AgentCFO · DAO AI Treasury Officer · Cobo Agentic Commerce · Mock demo, no real transactions",
+    "audit.cta.button": "Open Console",
+    "footer.tagline": "AgentCFO · DAO AI Treasury Officer · Cobo Agentic Commerce · Mock console, no real transactions",
 
     // ---- demo ----
     "demo.commandCenter": "Command Center",
@@ -183,12 +218,47 @@ export const dict = {
     "nav.risk": "风险护栏",
     "nav.wallet": "钱包执行",
     "nav.audit": "审计追溯",
-    "nav.openDemo": "进入 Demo",
+    "nav.openDemo": "进入 Console",
 
     // ---- hero ----
     "hero.title": "让 DAO 国库决策变成可执行的付款流",
     "hero.subtitle": "从贡献记录到钱包执行 —— 风险已检查、人工已批准、可审计",
     "hero.cta": "运行付款流程",
+
+    // ---- hero card ----
+    "heroCard.secured": "已安全保护",
+    "heroCard.title": "AI 财务官 Agent",
+    "heroCard.desc": "为 DAO 国库提供自主付款规划、风险验证和受控钱包执行。",
+
+    // ---- card splitter ----
+    "cardSplitter.eyebrow": "交互式拆分",
+    "cardSplitter.title": "一张预算卡，拆分为定向付款。",
+    "cardSplitter.subtitle": "向下滚动，观看 AgentCFO 如何将单张主预算卡拆分为个人贡献者卡片。",
+
+    // ---- web3 node cloud ----
+    "web3Cloud.eyebrow": "Web3 信任集成栈",
+    "web3Cloud.title": "Web3 可信基础设施集成图谱",
+    "web3Cloud.desc": "AgentCFO 将领衔的多签套件、自动化模块及 Cobo 硬件安全模块 (HSM) 编织成闭环的可信资金调配网，在控制中赋予 Agent 付款主权。",
+    "web3Cloud.hint": "鼠标悬停或移动了解底层可信协议的作用...",
+
+    // ---- faq ----
+    "faq.title": "安全策略与执行解答 FAQ",
+    "faq.subtitle": "了解受密码学硬件保护的、防范恶意交易行为的底层 DAO 金库核心管理流程。",
+    "faq.q1": "在 AI 自动运转下，企业资金安全吗？",
+    "faq.a1": "绝对安全。关键在于，AI 代理 (AgentCFO) 绝不持有您的私钥。它主要负责自动解析贡献度列表并提交交易申请，所有的资金划拨必须受物理硬件和多签规则的静态断言限制。",
+    "faq.q2": "Cobo 协同钱包如何对可疑交易实施限制？",
+    "faq.a2": "所有的发放申请均受制于四个独立的确定性防护屏障：支出预算硬性约束（单笔或单月额度限制）、付款智能合约白名单拦截、多签持有人的应急物理断电机制、以及防止重复付款的防重放防冒用锁标识器。",
+    "faq.q3": "它可以将其部署到其他 EVM 生产网络中吗？",
+    "faq.a3": "可以。虽然当前的 Hackathon 演示由于预算安全因素运行在 Sepolia 测试网，但其底层的 Cobo SDK 和支付流程交易构造器完全兼容所有支持的多虚拟机 EVM 企业规范（Ethereum, Polygon, Arbitrum, Base 等）。",
+
+    // ---- hsm monitor ----
+    "hsm.header": "HSM-CAW 节点监视器",
+    "hsm.latency": "HSM 签名响应时延",
+    "hsm.quorum": "多签仲裁门限",
+    "hsm.encryption": "财库密钥加密算法",
+    "hsm.policies": "已配置的安全规则数量",
+    "hsm.load": "CAW 硬件签名负载：",
+    "hsm.enter": "进入 Console",
 
     // ---- landing: problem ----
     "problem.eyebrow": "痛点",
@@ -236,7 +306,7 @@ export const dict = {
     "wallet.title": "资金只在受控钱包内流动",
     "wallet.1": "Agent 在 Cobo Agentic Wallet 权限边界内运作",
     "wallet.2": "不暴露私钥 —— 执行受策略门控",
-    "wallet.3": "Demo 中为测试网模拟，具备生产级接入路径",
+    "wallet.3": "Console 中为测试网模拟，具备生产级接入路径",
     "wallet.4": "每笔转账都对应一条已批准的付款项",
     "wallet.blocked": "已拦截",
     "wallet.mockLabel": "agent-wallet · 策略门控",
@@ -247,8 +317,8 @@ export const dict = {
     "audit.subtitle": "已批准 · 已拦截 · 已执行 —— 尽在一份结算报告",
     "audit.cta.title": "给每个 DAO 配一位带受控钱包的 AI 财务官",
     "audit.cta.sub": "完整看一遍端到端的付款流程",
-    "audit.cta.button": "进入 Demo",
-    "footer.tagline": "AgentCFO · DAO AI 财务官 · Cobo Agentic Commerce · 模拟 Demo，无真实交易",
+    "audit.cta.button": "进入 Console",
+    "footer.tagline": "AgentCFO · DAO AI 财务官 · Cobo Agentic Commerce · 模拟 Console，无真实交易",
 
     // ---- demo ----
     "demo.commandCenter": "指挥中心",

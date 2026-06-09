@@ -6,8 +6,8 @@ import { useApp } from "@/lib/i18n/context";
 
 /**
  * 主题 + 语言切换器。
- * variant="hero" 用于落地页 Hero（恒暗背景，固定浅色描边样式）。
- * variant="app" 用于 /demo header（跟随 token 主题）。
+ * variant="hero" 用于落地页 Hero — 落地页恒暗、不暴露主题切换，仅保留语言切换。
+ * variant="app"  用于业务层（/console 及其子路由），跟随 token 主题，含主题 + 语言切换。
  */
 export function ThemeLanguageToggle({
   variant = "app",
@@ -17,7 +17,7 @@ export function ThemeLanguageToggle({
   const { theme, lang, toggleTheme, toggleLang } = useApp();
 
   if (variant === "hero") {
-    // Hero 恒暗：用半透明白描边，保证在暗视频上始终可见
+    // Hero 恒暗：仅语言切换，主题按钮被刻意移除
     return (
       <div className="flex items-center gap-1.5">
         <button
@@ -29,18 +29,11 @@ export function ThemeLanguageToggle({
           <Languages size={14} />
           {lang === "en" ? "EN" : "中"}
         </button>
-        <button
-          onClick={toggleTheme}
-          aria-label="Toggle theme"
-          className="flex h-8 w-8 items-center justify-center rounded-full border border-white/15 bg-white/5 text-white/80 transition-colors hover:bg-white/10"
-        >
-          {theme === "dark" ? <Sun size={14} /> : <Moon size={14} />}
-        </button>
       </div>
     );
   }
 
-  // app: 跟随 token 主题
+  // app: 跟随 token 主题，保留主题 + 语言切换
   return (
     <div className="flex items-center gap-1.5">
       <button
