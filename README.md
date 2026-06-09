@@ -590,6 +590,10 @@ curl.exe https://agentcfo-backend.onrender.com/health
 | CAW_ALLOWED_RECIPIENTS | recipient allowlist | real mode 必需 |
 | CAW_SOURCE_ADDRESS | 多个兼容源地址时指定扣款地址 | 可选，但 live test 推荐设置 |
 | CAW_MAX_AMOUNT | 单笔最大金额 | real mode 必需 |
+| REQUEST_FINANCE_MODE | `mock` 或 `live`，默认 `mock` | 可选 |
+| REQUEST_FINANCE_API_BASE_URL | Request Finance API base URL，默认 `https://api.request.finance/` | 可选 |
+| REQUEST_FINANCE_API_KEY | Request Finance API key | live mode 必需，不提交 |
+| REQUEST_FINANCE_ALLOW_INVOICE_CREATE | 预留的 invoice-create guard；默认 `false` | 可选，当前仍不得开启 |
 | AGENTCFO_DB_PATH | SQLite demo database path | 可选，本地默认 `agentcfo_demo.sqlite3` |
 | AGENTCFO_STORE_BACKEND | 可选切回 in-memory store | 仅本地临时 demo 使用 |
 
@@ -662,10 +666,31 @@ P2:
 - P2C Safe module references。✅ Reference-only metadata 已实现；不启用或部署 Safe module。
 - P2D Multi-chain readiness。✅ Readiness matrix 已实现；不新增真实链执行。
 - P2E Multi-agent treasury。✅ Mock budget partition view 已实现；不改变授权系统。
+- P2F Request Finance live integration spike。✅ Env-gated client/status path 已实现；默认仍是 mock，live read-only smoke 可验证；真实 invoice creation 仍需明确人工批准。
 
-P2 live integrations are not enabled. Do not claim Request Finance, Sablier, Safe, multichain execution, or multi-agent authorization is live without explicit approval, credentials, and new tests.
+P2 live integrations are not enabled by default. Do not claim Request Finance invoice creation, Sablier, Safe, multichain execution, or multi-agent authorization is live without explicit approval, credentials, and new tests.
 
 Frontend/PM handoff for the demo-safe P2 surface is in [`docs/pm/P2_DEMO_HANDOFF.md`](docs/pm/P2_DEMO_HANDOFF.md). It includes curl examples, frontend response contracts, demo UI guidance, and approved PM/video wording.
+
+## P2F Request Finance Live Spike
+
+Request Finance integration is guarded by environment variables and defaults to mock mode:
+
+```text
+REQUEST_FINANCE_MODE=mock
+REQUEST_FINANCE_API_BASE_URL=https://api.request.finance/
+REQUEST_FINANCE_API_KEY=<Render secret env var>
+REQUEST_FINANCE_ALLOW_INVOICE_CREATE=false
+```
+
+Safety behavior:
+
+- `/version` exposes only non-sensitive status: mode, whether a key is configured, whether the invoice-create guard is enabled, and whether invoice creation is implemented.
+- Mock mode keeps the previous `/api/request-invoices` behavior and does not create a live client.
+- Live mode fails closed if `REQUEST_FINANCE_API_KEY` or base URL is missing.
+- Live invoice creation is not implemented in this spike and remains blocked even if the guard exists; do not enable the guard or call `POST /invoices` without explicit approval and payload mapping work.
+- Local/Render live smoke may use only `GET /invoices?take=1` for read-only validation.
+- Audit Report snapshots stay immutable; Request Finance records remain linked external metadata.
 
 ## P2 Demo-safe Extension APIs
 
@@ -676,7 +701,7 @@ These APIs are metadata, preview, or reference only. They do not change P0/P1 pa
 | `POST /api/external-references` | Generic external evidence metadata | None |
 | `GET /api/external-references/{externalReferenceId}` | Read external metadata | None |
 | `GET /api/external-references?paymentPlanId=...` | List linked metadata | None |
-| `POST /api/request-invoices` | Mock Request invoice record linked to payment/audit/CAW ids | No Request Finance API call |
+| `POST /api/request-invoices` | Mock Request invoice record by default; live path is env-gated and approval-gated | No live invoice creation unless explicitly approved |
 | `GET /api/request-invoices/{externalReferenceId}` | Read mock Request invoice record | None |
 | `POST /api/sablier-stream-previews` | Preview duration/rate for a future stream | No Sablier stream creation |
 | `POST /api/safe-permission-references` | Reference-only Safe permission note | No Safe module enablement/deployment |
@@ -685,7 +710,7 @@ These APIs are metadata, preview, or reference only. They do not change P0/P1 pa
 
 P2 implementation references:
 
-- Request Network / Request Finance: future live invoice integration requires a Request Finance API key and explicit approval before any live API call.
+- Request Network / Request Finance: live client/status path is env-gated; live read-only smoke is allowed with configured credentials, but invoice creation still requires explicit approval.
 - Sablier Flow: future live payroll requires wallet/signature approval and new risk rules before stream creation.
 - Safe modules: future Safe module work requires owner approval and security review before enablement or deployment.
 - Multi-chain: current real execution boundary remains the existing CAW testnet/token allowlist.

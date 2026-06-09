@@ -1,0 +1,142 @@
+import os
+from dataclasses import dataclass
+from typing import Protocol
+from urllib.parse import urljoin
+
+import httpx
+
+from app.models import RequestInvoiceCreate
+
+DEFAULT_REQUEST_FINANCE_API_BASE_URL = "https://api.request.finance/"
+
+
+class RequestFinanceConfigurationError(Exception):
+    pass
+
+
+class RequestFinanceLiveActionNotApproved(Exception):
+    pass
+
+
+class RequestFinanceProviderError(Exception):
+    pass
+
+
+@dataclass(frozen=True)
+class RequestFinanceConfig:
+    mode: str = "mock"
+    api_base_url: str = DEFAULT_REQUEST_FINANCE_API_BASE_URL
+    api_key: str | None = None
+    allow_invoice_create: bool = False
+
+    @classmethod
+    def from_env(cls):
+        mode = os.getenv("REQUEST_FINANCE_MODE", "mock").strip().lower()
+        api_base_url = os.getenv(
+            "REQUEST_FINANCE_API_BASE_URL",
+            DEFAULT_REQUEST_FINANCE_API_BASE_URL,
+        ).strip()
+        api_key = os.getenv("REQUEST_FINANCE_API_KEY")
+        allow_invoice_create = (
+            os.getenv("REQUEST_FINANCE_ALLOW_INVOICE_CREATE", "false").strip().lower()
+            == "true"
+        )
+        return cls(
+            mode=mode,
+            api_base_url=api_base_url,
+            api_key=api_key,
+            allow_invoice_create=allow_invoice_create,
+        )
+
+    @property
+    def public_mode(self):
+        return self.mode if self.mode in {"mock", "live"} else "unknown"
+
+    @property
+    def api_key_configured(self):
+        return bool(self.api_key)
+
+    def require_live_config(self):
+        if self.mode != "live":
+            return
+        if not self.api_base_url:
+            raise RequestFinanceConfigurationError(
+                "Request Finance live mode requires REQUEST_FINANCE_API_BASE_URL"
+            )
+        if not self.api_key:
+            raise RequestFinanceConfigurationError(
+                "Request Finance live mode requires REQUEST_FINANCE_API_KEY"
+            )
+
+    def require_invoice_create_approval(self):
+        if not self.allow_invoice_create:
+            raise RequestFinanceLiveActionNotApproved(
+                "Live Request Finance invoice creation is disabled; explicit approval is required"
+            )
+
+
+@dataclass(frozen=True)
+class RequestFinanceInvoiceResult:
+    request_finance_invoice_id: str
+    request_id: str | None
+    status: str
+    hosted_url: str | None
+
+
+class RequestFinanceClient(Protocol):
+    def create_invoice(self, request: RequestInvoiceCreate) -> RequestFinanceInvoiceResult: ...
+    def list_invoices(self, take: int = 1) -> dict: ...
+
+
+class MockRequestFinanceClient:
+    def create_invoice(self, request: RequestInvoiceCreate):
+        return RequestFinanceInvoiceResult(
+            request_finance_invoice_id=request.requestFinanceInvoiceId,
+            request_id=request.requestId,
+            status=request.status,
+            hosted_url=request.hostedUrl,
+        )
+
+    def list_invoices(self, take: int = 1):
+        return {"mode": "mock", "take": take, "items": []}
+
+
+class LiveRequestFinanceClient:
+    def __init__(self, config: RequestFinanceConfig):
+        config.require_live_config()
+        self.config = config
+
+    def create_invoice(self, request: RequestInvoiceCreate):
+        self.config.require_invoice_create_approval()
+        raise RequestFinanceLiveActionNotApproved(
+            "Live Request Finance invoice payload mapping requires explicit approval before POST /invoices"
+        )
+
+    def list_invoices(self, take: int = 1):
+        endpoint = urljoin(self.config.api_base_url.rstrip("/") + "/", "invoices")
+        try:
+            response = httpx.get(
+                endpoint,
+                params={"take": take},
+                headers={"Authorization": f"Bearer {self.config.api_key}"},
+                timeout=10,
+            )
+            response.raise_for_status()
+        except httpx.HTTPStatusError as error:
+            raise RequestFinanceProviderError(
+                f"Request Finance read-only smoke failed with HTTP {error.response.status_code}"
+            ) from error
+        except httpx.HTTPError as error:
+            raise RequestFinanceProviderError(
+                "Request Finance read-only smoke failed with a transport error"
+            ) from error
+        return response.json()
+
+
+def create_request_finance_client(config: RequestFinanceConfig | None = None):
+    selected_config = config or RequestFinanceConfig.from_env()
+    if selected_config.mode == "mock":
+        return MockRequestFinanceClient()
+    if selected_config.mode == "live":
+        return LiveRequestFinanceClient(selected_config)
+    raise RequestFinanceConfigurationError("REQUEST_FINANCE_MODE must be mock or live")

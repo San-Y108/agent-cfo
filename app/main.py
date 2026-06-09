@@ -5,6 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.routers.payments import router as payments_router
 from app.routers.p2_extensions import router as p2_extensions_router
+from app.services.request_finance import RequestFinanceConfig
 
 DEFAULT_CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
@@ -22,6 +23,16 @@ def get_cors_allowed_origins() -> list[str]:
 def get_public_caw_mode() -> str:
     mode = os.getenv("CAW_ADAPTER_MODE", "mock").strip().lower()
     return mode if mode in {"mock", "real"} else "unknown"
+
+
+def get_public_request_finance_status():
+    config = RequestFinanceConfig.from_env()
+    return {
+        "mode": config.public_mode,
+        "apiKeyConfigured": config.api_key_configured,
+        "invoiceCreateGuardEnabled": config.allow_invoice_create,
+        "invoiceCreateImplemented": False,
+    }
 
 
 app = FastAPI(
@@ -59,4 +70,5 @@ def version():
         "docsEnabled": False,
         "openapiEnabled": False,
         "cawMode": get_public_caw_mode(),
+        "requestFinance": get_public_request_finance_status(),
     }

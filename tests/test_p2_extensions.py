@@ -5,9 +5,20 @@ from fastapi.testclient import TestClient
 os.environ["AGENTCFO_DB_PATH"] = ":memory:"
 os.environ["CAW_ADAPTER_MODE"] = "mock"
 os.environ["CAW_ENABLE_TRANSFERS"] = "false"
+os.environ["REQUEST_FINANCE_MODE"] = "mock"
+os.environ.pop("REQUEST_FINANCE_API_KEY", None)
+os.environ.pop("REQUEST_FINANCE_ALLOW_INVOICE_CREATE", None)
 
 from app.main import app
 from app.store import store
+import app.services.p2_extensions as p2_service_module
+import app.routers.p2_extensions as p2_router_module
+from app.models import RequestInvoiceCreate
+from app.services.p2_extensions import P2ExtensionService
+from app.services.request_finance import (
+    RequestFinanceConfig,
+    RequestFinanceInvoiceResult,
+)
 
 
 client = TestClient(app)
@@ -141,6 +152,142 @@ def test_request_invoice_record_is_demo_safe_and_audit_linked():
     lookup = client.get(f"/api/request-invoices/{invoice['externalReferenceId']}")
     assert lookup.status_code == 200
     assert lookup.json() == invoice
+
+
+def test_request_invoice_mock_mode_does_not_call_live_client(monkeypatch):
+    plan, execution = create_p0_flow()
+
+    def fail_if_called(_config):
+        raise AssertionError("live client should not be created in mock mode")
+
+    monkeypatch.setenv("REQUEST_FINANCE_MODE", "mock")
+    monkeypatch.setenv("REQUEST_FINANCE_API_KEY", "fake-key-not-used")
+    monkeypatch.setattr(p2_service_module, "create_request_finance_client", fail_if_called)
+
+    response = client.post(
+        "/api/request-invoices",
+        json={
+            "paymentPlanId": plan["paymentPlanId"],
+            "paymentItemId": plan["payments"][0]["id"],
+            "auditReportId": execution["auditReportId"],
+            "cawRequestId": execution["payments"][0]["cawRequestId"],
+            "requestFinanceInvoiceId": "rf_demo_001",
+            "requestId": "request_demo_001",
+            "status": "draft",
+            "hostedUrl": "https://example.invalid/request/rf_demo_001",
+            "txHashReference": None,
+        },
+    )
+
+    assert response.status_code == 200
+    assert response.json()["externalReference"]["liveIntegrationEnabled"] is False
+
+
+def test_request_invoice_live_mode_uses_fake_client_without_mutating_audit_snapshot():
+    class FakeRequestFinanceClient:
+        def __init__(self):
+            self.calls = 0
+
+        def create_invoice(self, request: RequestInvoiceCreate):
+            self.calls += 1
+            return RequestFinanceInvoiceResult(
+                request_finance_invoice_id="rf_live_fake_001",
+                request_id="request_live_fake_001",
+                status="created",
+                hosted_url="https://example.invalid/request/rf_live_fake_001",
+            )
+
+        def list_invoices(self, take: int = 1):
+            return {"items": [], "take": take}
+
+    plan, execution = create_p0_flow()
+    audit_before = client.get(f"/api/audit-report/{execution['auditReportId']}").json()
+    fake_client = FakeRequestFinanceClient()
+    service = P2ExtensionService(
+        store,
+        request_finance_config=RequestFinanceConfig(
+            mode="live",
+            api_key="fake-key",
+            allow_invoice_create=True,
+        ),
+        request_finance_client=fake_client,
+    )
+
+    invoice = service.create_request_invoice(
+        RequestInvoiceCreate(
+            paymentPlanId=plan["paymentPlanId"],
+            paymentItemId=plan["payments"][0]["id"],
+            auditReportId=execution["auditReportId"],
+            cawRequestId=execution["payments"][0]["cawRequestId"],
+            requestFinanceInvoiceId="rf_demo_001",
+            requestId=None,
+            status="draft",
+            hostedUrl=None,
+            txHashReference=None,
+        )
+    )
+
+    audit_after = client.get(f"/api/audit-report/{execution['auditReportId']}").json()
+    assert fake_client.calls == 1
+    assert invoice.requestFinanceInvoiceId == "rf_live_fake_001"
+    assert invoice.requestId == "request_live_fake_001"
+    assert invoice.status == "created"
+    assert invoice.externalReference.metadata["requestFinanceMode"] == "live"
+    assert audit_after == audit_before
+
+
+def test_request_invoice_live_mode_without_key_fails_closed(monkeypatch):
+    plan, execution = create_p0_flow()
+
+    monkeypatch.setenv("REQUEST_FINANCE_MODE", "live")
+    monkeypatch.delenv("REQUEST_FINANCE_API_KEY", raising=False)
+    monkeypatch.setenv("REQUEST_FINANCE_ALLOW_INVOICE_CREATE", "true")
+
+    response = client.post(
+        "/api/request-invoices",
+        json={
+            "paymentPlanId": plan["paymentPlanId"],
+            "paymentItemId": plan["payments"][0]["id"],
+            "auditReportId": execution["auditReportId"],
+            "cawRequestId": execution["payments"][0]["cawRequestId"],
+            "requestFinanceInvoiceId": "rf_demo_001",
+            "requestId": "request_demo_001",
+            "status": "draft",
+            "hostedUrl": "https://example.invalid/request/rf_demo_001",
+            "txHashReference": None,
+        },
+    )
+
+    assert response.status_code == 503
+    assert response.json()["detail"] == (
+        "Request Finance live mode requires REQUEST_FINANCE_API_KEY"
+    )
+
+
+def test_request_invoice_live_mode_requires_create_approval(monkeypatch):
+    plan, execution = create_p0_flow()
+
+    monkeypatch.setenv("REQUEST_FINANCE_MODE", "live")
+    monkeypatch.setenv("REQUEST_FINANCE_API_KEY", "fake-key")
+    monkeypatch.delenv("REQUEST_FINANCE_ALLOW_INVOICE_CREATE", raising=False)
+
+    response = client.post(
+        "/api/request-invoices",
+        json={
+            "paymentPlanId": plan["paymentPlanId"],
+            "paymentItemId": plan["payments"][0]["id"],
+            "auditReportId": execution["auditReportId"],
+            "cawRequestId": execution["payments"][0]["cawRequestId"],
+            "requestFinanceInvoiceId": "rf_demo_001",
+            "requestId": "request_demo_001",
+            "status": "draft",
+            "hostedUrl": "https://example.invalid/request/rf_demo_001",
+            "txHashReference": None,
+        },
+    )
+
+    assert response.status_code == 403
+    assert "explicit approval is required" in response.json()["detail"]
 
 
 def test_sablier_stream_preview_calculates_rate_without_creating_stream():

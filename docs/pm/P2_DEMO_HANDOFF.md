@@ -2,7 +2,7 @@
 
 Date: 2026-06-09
 
-Backend status: demo-safe P2 surface is available for presentation and frontend integration. It is metadata, preview, reference, and mock-only. It does not enable live Request Finance, Sablier streams, Safe modules, multichain execution, or multi-agent authorization.
+Backend status: demo-safe P2 surface is available for presentation and frontend integration. It is metadata, preview, reference, and mock by default. P2F adds an env-gated Request Finance live-client/read-only smoke path, but it does not enable live invoice creation without explicit approval. It does not enable Sablier streams, Safe modules, multichain execution, or multi-agent authorization.
 
 Online backend base URL:
 
@@ -17,7 +17,8 @@ Show P2 as a linked-evidence preview layer on top of the completed P0/P1 flow.
 Allowed demo claims:
 
 - P2 APIs can attach external reference metadata to a payment plan item, Audit Report id, and CAW request id.
-- Request invoice records are mock/demo-safe records.
+- Request invoice records are mock/demo-safe records by default.
+- Request Finance live mode can expose non-sensitive status and read-only smoke validation when explicitly configured.
 - Sablier payroll is preview-only and creates no stream.
 - Safe module work is reference-only and enables no module.
 - Multichain is readiness/design-only and does not add a new execution chain.
@@ -25,7 +26,7 @@ Allowed demo claims:
 
 Do not claim:
 
-- Live Request Finance integration is complete.
+- Live Request Finance invoice creation is complete.
 - A real Sablier stream was created.
 - A Safe module was enabled or deployed.
 - New multichain execution is live.
@@ -114,6 +115,13 @@ Expected P0 execution boundary on Render mock-demo:
 - `cawRequestId`: present on each attempted payment
 - no live CAW transfer
 
+Expected Request Finance boundary:
+
+- default `REQUEST_FINANCE_MODE`: `mock`
+- `/version` may expose `requestFinance.mode`, `requestFinance.apiKeyConfigured`, `requestFinance.invoiceCreateGuardEnabled`, and `requestFinance.invoiceCreateImplemented`
+- `apiKeyConfigured` is boolean only and never returns the key
+- real invoice creation is not implemented in this spike and remains blocked unless explicitly approved in a later step
+
 ## P2 API Curl Examples
 
 Create an external reference:
@@ -148,7 +156,7 @@ List external references for a payment plan:
 curl -s "$BASE_URL/api/external-references?paymentPlanId=plan_demo_001"
 ```
 
-Create a mock Request invoice record:
+Create a mock/default Request invoice record:
 
 ```bash
 curl -s -X POST "$BASE_URL/api/request-invoices" \
@@ -241,6 +249,13 @@ curl -s "$BASE_URL/api/treasury-budget-partitions/plan_demo_001"
 - `txHashReference`: string or null
 - `externalReference`: `ExternalReference`
 
+`/version` Request Finance status:
+
+- `requestFinance.mode`: `mock`, `live`, or `unknown`
+- `requestFinance.apiKeyConfigured`: boolean
+- `requestFinance.invoiceCreateGuardEnabled`: boolean
+- `requestFinance.invoiceCreateImplemented`: false
+
 `SablierStreamPreview`:
 
 - `externalReferenceId`: string
@@ -292,6 +307,7 @@ Frontend repository is not present in the current backend workspace. Implement t
 - Keep Audit Report snapshot read-only and separate from linked P2 metadata.
 - Display badges from backend fields: `metadata-only`, `mock invoice`, `preview-only`, `reference-only`, `design-only`, `mock-budget-partition`.
 - For Request invoice records, show `requestFinanceInvoiceId`, `requestId`, `status`, `hostedUrl`, `paymentItemId`, `auditReportId`, and `cawRequestId`.
+- If `/version.requestFinance.mode=live`, show it as "Request Finance live client configured" only; do not label invoice creation complete unless a test invoice was explicitly approved and created.
 - For Sablier preview, show `streamCreated=false`, `durationDays`, `durationSeconds`, `ratePerSecond`, `recipient`, `wallet`, `amount`, and `token`.
 - For Safe reference, show `moduleEnabled=false`, `safeAddress`, `moduleName`, and `permissionNotes`.
 - For multichain readiness, show `liveMultichainExecutionEnabled=false` and the readiness rows.
@@ -302,15 +318,16 @@ Frontend repository is not present in the current backend workspace. Implement t
 Recommended wording:
 
 - "P2 adds a demo-safe linked evidence layer on top of the completed P0/P1 payment flow."
-- "The Request invoice record is linked to the payment plan item, Audit Report id, and CAW request id, but it is not a live Request Finance API call."
+- "The Request invoice record is linked to the payment plan item, Audit Report id, and CAW request id. By default it is mock/demo-safe; P2F adds an env-gated live client and read-only smoke path."
 - "Sablier is shown as a payroll stream preview only; no stream is created."
 - "Safe and multichain are readiness/reference surfaces only."
 - "The multi-agent treasury view is advisory and does not change payment authorization."
 - "Current real CAW evidence remains one low-value testnet transaction; Render mock-demo execution returns mock mode and no tx hash."
+- "Live Request Finance invoice creation is not claimed unless a separate approved test invoice is created."
 
 Avoid wording:
 
-- "Request Finance live integration is done."
+- "Request Finance live invoice creation is done."
 - "A Sablier stream was created."
 - "Safe module automation is enabled."
 - "Multichain execution is live."
@@ -319,7 +336,7 @@ Avoid wording:
 
 ## Human-only Blockers
 
-- Live Request Finance requires an API key and explicit approval.
+- Live Request Finance invoice creation requires an API key, explicit approval, and enabling the invoice-create guard.
 - Live Sablier streams require wallet/signature approval, new risk rules, and tests.
 - Live Safe module enablement requires owner approval and security review.
 - New multichain execution requires CAW allowlist/config approval and tests.

@@ -14,6 +14,11 @@ from app.models import (
     SafePermissionReferenceRequest,
     TreasuryBudgetPartition,
 )
+from app.services.request_finance import (
+    RequestFinanceClient,
+    RequestFinanceConfig,
+    create_request_finance_client,
+)
 
 
 class P2RecordNotFound(Exception):
@@ -25,8 +30,15 @@ class P2ValidationError(Exception):
 
 
 class P2ExtensionService:
-    def __init__(self, store):
+    def __init__(
+        self,
+        store,
+        request_finance_config: RequestFinanceConfig | None = None,
+        request_finance_client: RequestFinanceClient | None = None,
+    ):
         self.store = store
+        self.request_finance_config = request_finance_config or RequestFinanceConfig.from_env()
+        self.request_finance_client = request_finance_client
 
     def create_external_reference(self, request: ExternalReferenceCreate):
         self._validate_links(
@@ -62,6 +74,13 @@ class P2ExtensionService:
         )
 
     def create_request_invoice(self, request: RequestInvoiceCreate):
+        if self.request_finance_config.mode == "live":
+            return self._create_live_request_invoice(request)
+        if self.request_finance_config.mode != "mock":
+            raise P2ValidationError("REQUEST_FINANCE_MODE must be mock or live")
+        return self._create_mock_request_invoice(request)
+
+    def _create_mock_request_invoice(self, request: RequestInvoiceCreate):
         metadata = {
             "requestFinanceInvoiceId": request.requestFinanceInvoiceId,
             "requestId": request.requestId,
@@ -78,6 +97,40 @@ class P2ExtensionService:
                 auditReportId=request.auditReportId,
                 cawRequestId=request.cawRequestId,
                 status=request.status,
+                metadata=metadata,
+            )
+        )
+        return self._request_invoice_from_reference(reference)
+
+    def _create_live_request_invoice(self, request: RequestInvoiceCreate):
+        self._validate_links(
+            request.paymentPlanId,
+            request.paymentItemId,
+            request.auditReportId,
+            request.cawRequestId,
+        )
+        self.request_finance_config.require_live_config()
+        client = self.request_finance_client or create_request_finance_client(
+            self.request_finance_config
+        )
+        invoice = client.create_invoice(request)
+        metadata = {
+            "requestFinanceInvoiceId": invoice.request_finance_invoice_id,
+            "requestId": invoice.request_id,
+            "hostedUrl": invoice.hosted_url,
+            "txHashReference": request.txHashReference,
+            "requestFinanceMode": "live",
+        }
+        reference = self.create_external_reference(
+            ExternalReferenceCreate(
+                referenceType=ExternalReferenceType.REQUEST_INVOICE,
+                provider="request-finance",
+                label=f"Request invoice {invoice.request_finance_invoice_id}",
+                paymentPlanId=request.paymentPlanId,
+                paymentItemId=request.paymentItemId,
+                auditReportId=request.auditReportId,
+                cawRequestId=request.cawRequestId,
+                status=invoice.status,
                 metadata=metadata,
             )
         )

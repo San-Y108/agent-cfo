@@ -94,15 +94,34 @@ def test_version_returns_non_sensitive_demo_metadata():
         "docsEnabled": False,
         "openapiEnabled": False,
         "cawMode": "mock",
+        "requestFinance": {
+            "mode": "mock",
+            "apiKeyConfigured": False,
+            "invoiceCreateGuardEnabled": False,
+            "invoiceCreateImplemented": False,
+        },
     }
     assert "AGENTCFO_DB_PATH" not in response.text
     assert "OPENAI_API_KEY" not in response.text
+    assert "REQUEST_FINANCE_API_KEY" not in response.text
 
 
 def test_public_caw_mode_does_not_echo_unknown_env_values(monkeypatch):
     monkeypatch.setenv("CAW_ADAPTER_MODE", "SHOULD_NOT_LEAK_CANARY")
 
     assert get_public_caw_mode() == "unknown"
+
+
+def test_public_request_finance_status_does_not_echo_secret(monkeypatch):
+    monkeypatch.setenv("REQUEST_FINANCE_MODE", "SHOULD_NOT_LEAK_CANARY")
+    monkeypatch.setenv("REQUEST_FINANCE_API_KEY", "SECRET_CANARY")
+
+    response = client.get("/version")
+
+    assert response.status_code == 200
+    assert response.json()["requestFinance"]["mode"] == "unknown"
+    assert response.json()["requestFinance"]["apiKeyConfigured"] is True
+    assert "SECRET_CANARY" not in response.text
 
 
 def test_cors_preflight_allows_configured_origin():

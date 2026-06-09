@@ -13,7 +13,12 @@ from app.models import (
     SafePermissionReferenceRequest,
     TreasuryBudgetPartition,
 )
-from app.services.p2_extensions import P2ExtensionService, P2RecordNotFound
+from app.services.p2_extensions import P2ExtensionService, P2RecordNotFound, P2ValidationError
+from app.services.request_finance import (
+    RequestFinanceConfigurationError,
+    RequestFinanceLiveActionNotApproved,
+    RequestFinanceProviderError,
+)
 from app.store import store
 
 router = APIRouter(prefix="/api", tags=["p2-demo-safe"])
@@ -60,6 +65,14 @@ def create_request_invoice(request: RequestInvoiceCreate):
         return _service().create_request_invoice(request)
     except P2RecordNotFound as error:
         raise HTTPException(status_code=404, detail=str(error))
+    except RequestFinanceConfigurationError as error:
+        raise HTTPException(status_code=503, detail=str(error))
+    except RequestFinanceLiveActionNotApproved as error:
+        raise HTTPException(status_code=403, detail=str(error))
+    except RequestFinanceProviderError as error:
+        raise HTTPException(status_code=502, detail=str(error))
+    except P2ValidationError as error:
+        raise HTTPException(status_code=400, detail=str(error))
 
 
 @router.get("/request-invoices/{externalReferenceId}", response_model=RequestInvoiceRecord)
