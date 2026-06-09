@@ -88,6 +88,8 @@ ___
 
 ### Phase 0 → Phase 1 通知
 
+> 历史模板：本段是 Phase 4C closeout 前的早期同步消息。当前 backend 状态以 “Phase 4C Closeout 同步” 为准。
+
 ```
 @所有人 ✅ Phase 0 启动对齐完成！
 

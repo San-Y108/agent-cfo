@@ -47,13 +47,15 @@ ___
 
 **整体进度：33 / 63（52%）**
 
+> 历史快照：本段保留 6 月 8 日当时状态，不代表当前 backend closeout 状态。后续 Phase 4C 已完成 1 笔低额 CAW testnet evidence、read-only CAW status refresh API 和 Render mock-demo/ephemeral 持久化口径，见 2026-06-09 站会。
+
 | 成员 | 今日进展 | 卡点 | 明日计划 |
 |------|----------|------|----------|
 | 总控 | repo + 文档 + 看板 + Render 部署完成 | 无 | 发消息给 Eloise-qiu，准备站会 |
 | 物料 | 未启动 | 人已确认（Eloise-qiu），待发消息 | 启动 PPT 大纲 |
 | 前端 | Landing + Demo + Vercel + i18n + 纯黑风格 + API 对接 | 待保持 main 与部署分支同步 | 继续打磨 UI |
-| 后端 | 5 个 API + SQLite + Render + deterministic planner | 等 CAW real mode 验证 | 启用/验证 RealCawAdapter |
-| 合约/CAW | API Key + Wallet + 518 行配置文档 | 待准备测试网资金 | 第一笔测试网交易 |
+| 后端 | 5 个 API + SQLite + Render + deterministic planner | 当时仍等 CAW real mode 验证；后续已完成 Phase 4C closeout | 见 2026-06-09 当前状态 |
+| 合约/CAW | API Key + Wallet + 518 行配置文档 | 当时待准备测试网资金；后续已完成 1 笔低额 testnet tx evidence | 见 2026-06-09 当前状态 |
 
 **最高风险：** R-02 设计/物料同学待启动
 
