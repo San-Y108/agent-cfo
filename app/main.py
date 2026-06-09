@@ -41,3 +41,15 @@ app.include_router(payments_router)
 @app.get("/health", include_in_schema=False)
 def health_check():
     return {"status": "ok", "service": "agent-cfo-backend"}
+
+
+@app.get("/version", include_in_schema=False)
+def version():
+    return {
+        "service": "agent-cfo-backend",
+        "version": app.version,
+        "apiMode": "mock-demo",
+        "docsEnabled": False,
+        "openapiEnabled": False,
+        "cawMode": "mock",
+    }

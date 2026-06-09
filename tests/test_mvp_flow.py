@@ -80,6 +80,22 @@ def test_health_check_returns_ok():
     assert response.json() == {"status": "ok", "service": "agent-cfo-backend"}
 
 
+def test_version_returns_non_sensitive_demo_metadata():
+    response = client.get("/version")
+
+    assert response.status_code == 200
+    assert response.json() == {
+        "service": "agent-cfo-backend",
+        "version": "0.1.0",
+        "apiMode": "mock-demo",
+        "docsEnabled": False,
+        "openapiEnabled": False,
+        "cawMode": "mock",
+    }
+    assert "AGENTCFO_DB_PATH" not in response.text
+    assert "OPENAI_API_KEY" not in response.text
+
+
 def test_cors_preflight_allows_configured_origin():
     response = client.options(
         "/api/payment-plan",
@@ -140,13 +156,27 @@ def test_payment_plan_schema_validation_rejects_invalid_amount():
 def test_registered_business_routes_include_p0_and_caw_status():
     routes = sorted(route.path for route in app.routes if getattr(route, "include_in_schema", False))
 
-    assert routes == [
+    assert {
         "/api/audit-report/{auditReportId}",
         "/api/caw-status/{cawRequestId}",
+        "/api/demo-sample",
         "/api/execute-payment",
         "/api/payment-plan",
         "/api/risk-check",
-    ]
+    }.issubset(set(routes))
+
+
+def test_demo_sample_returns_non_mutating_payment_plan_request():
+    response = client.get("/api/demo-sample")
+
+    assert response.status_code == 200
+    sample = response.json()
+    assert sample["mode"] == "mock-demo"
+    assert sample["externalSystemTouched"] is False
+    assert sample["paymentPlanRequest"]["budgetRule"]["allowedToken"] == "USDC"
+    assert len(sample["paymentPlanRequest"]["contributions"]) == 3
+    assert "0xBob" not in sample["paymentPlanRequest"]["budgetRule"]["whitelist"]
+    assert store.next_plan_id() == "plan_demo_001"
 
 
 def test_full_mock_flow_returns_audit_report():

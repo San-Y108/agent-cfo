@@ -252,6 +252,15 @@ http://127.0.0.1:8000
 curl.exe http://127.0.0.1:8000/health
 ```
 
+版本和 demo sample：
+
+```bash
+curl.exe http://127.0.0.1:8000/version
+curl.exe http://127.0.0.1:8000/api/demo-sample
+```
+
+`/api/demo-sample` 只返回可复制的 mock demo payload，不创建 plan、不写入数据库、不执行付款。Alice 和 Charlie 在白名单内，Bob 故意不在白名单内，方便前端展示 blocked risk。
+
 FastAPI 自动 docs / OpenAPI 当前已关闭，以保证运行时只暴露四个 P0 业务 API 和部署健康检查。后续进入联调或需要文档展示时，可以在 `app/main.py` 重新开启。
 
 ```text
@@ -296,6 +305,13 @@ Deployed health check:
 curl.exe https://<render-service>.onrender.com/health
 ```
 
+Deployed smoke checks:
+
+```bash
+curl.exe https://<render-service>.onrender.com/version
+curl.exe https://<render-service>.onrender.com/api/demo-sample
+```
+
 This deployment is still mock backend mode: no real OpenAI planner, no real Cobo Agentic Wallet execution, no `.env`, and no secrets in the repository.
 
 ## Payment Planner Mode
@@ -337,6 +353,27 @@ AGENTCFO_STORE_BACKEND=memory
 On Render, SQLite is only suitable for a single-instance demo. To keep SQLite data across deploys or restarts, attach a Render persistent disk and set `AGENTCFO_DB_PATH` to a path on that disk. If SQLite is stored on Render's normal ephemeral filesystem, deploys or restarts can lose the database file. For long-running audit storage, multi-instance services, or production-like usage, use Postgres in a later phase instead.
 
 Audit Reports are saved as execution-time snapshots. Later CAW status refreshes must not rewrite historical Audit Report content.
+
+## Demo Smoke Test
+
+本地或 Render 部署后，建议按这个顺序给前端 / PM / 评委做快速检查：
+
+```bash
+curl.exe http://127.0.0.1:8000/health
+curl.exe http://127.0.0.1:8000/version
+curl.exe http://127.0.0.1:8000/api/demo-sample
+```
+
+联调约定：
+
+| 项目 | 当前值 |
+| --- | --- |
+| API mode | `mock-demo` |
+| CAW mode | `mock` |
+| Mock tx hash | `null` |
+| Real CAW transfer | 未接入 |
+| Demo sample | `GET /api/demo-sample`，非写入 |
+| P0 flow | `payment-plan -> risk-check -> execute-payment -> audit-report` |
 
 ## Curl Verification
 

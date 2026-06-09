@@ -53,6 +53,54 @@ def create_payment_plan(request: PaymentPlanRequest):
     return payment_plan
 
 
+@router.get("/demo-sample")
+def get_demo_sample():
+    return {
+        "mode": "mock-demo",
+        "externalSystemTouched": False,
+        "notes": [
+            "Use this payload with POST /api/payment-plan.",
+            "Alice and Charlie are whitelisted; Bob is intentionally not whitelisted.",
+            "This endpoint does not create plans, execute payments, or seed storage.",
+        ],
+        "paymentPlanRequest": {
+            "contributions": [
+                {
+                    "name": "Alice",
+                    "role": "Content Contributor",
+                    "task": "Wrote event recap article",
+                    "wallet": "0xAlice",
+                    "amount": 20,
+                    "token": "USDC",
+                },
+                {
+                    "name": "Bob",
+                    "role": "Designer",
+                    "task": "Designed event poster",
+                    "wallet": "0xBob",
+                    "amount": 15,
+                    "token": "USDC",
+                },
+                {
+                    "name": "Charlie",
+                    "role": "Community Operator",
+                    "task": "Managed community and exported data",
+                    "wallet": "0xCharlie",
+                    "amount": 10,
+                    "token": "USDC",
+                },
+            ],
+            "budgetRule": {
+                "monthlyBudget": 50,
+                "singlePaymentLimit": 25,
+                "allowedToken": "USDC",
+                "whitelist": ["0xAlice", "0xCharlie"],
+                "requiresHumanApproval": True,
+            },
+        },
+    }
+
+
 @router.post("/risk-check", response_model=RiskCheckResult)
 def run_risk_check(request: RiskCheckRequest):
     payment_plan = store.get_payment_plan(request.paymentPlanId)
