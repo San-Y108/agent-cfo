@@ -43,41 +43,41 @@ ___
 
 ### Day 0 站会
 
-**日期：____-__-__**
+**日期：2026-06-08**
 
-**整体进度：0 / 10**
+**整体进度：33 / 63（52%）**
 
 | 成员 | 今日进展 | 卡点 | 明日计划 |
 |------|----------|------|----------|
-| 总控 | | | |
-| 物料 | | | |
-| 前端 | | | |
-| 后端 | | | |
-| 合约/CAW | | | |
+| 总控 | repo + 文档 + 看板 + Render 部署完成 | 无 | 发消息给 Eloise-qiu，准备站会 |
+| 物料 | 未启动 | 人已确认（Eloise-qiu），待发消息 | 启动 PPT 大纲 |
+| 前端 | Landing + Demo + Vercel + i18n + 纯黑风格 + API 对接 | 待保持 main 与部署分支同步 | 继续打磨 UI |
+| 后端 | 5 个 API + SQLite + Render + deterministic planner | 等 CAW real mode 验证 | 启用/验证 RealCawAdapter |
+| 合约/CAW | API Key + Wallet + 518 行配置文档 | 待准备测试网资金 | 第一笔测试网交易 |
 
-**最高风险：** R-01 CAW 沙箱验证
+**最高风险：** R-02 设计/物料同学待启动
 
-**明日重点催：** 合约/CAW 完成测试网第一笔付款
+**明日重点催：** @设计 PPT 大纲 + @CAW 测试网资金 + @后端 real mode 验证
 
 ---
 
 ### Day 1 站会
 
-**日期：____-__-__**
+**日期：2026-06-09**
 
-**整体进度：___ / 10**
+**整体进度：Phase 4C backend closeout done；提交材料仍在补证据/视频/PPT**
 
 | 成员 | 今日进展 | 卡点 | 明日计划 |
 |------|----------|------|----------|
-| 总控 | | | |
-| 物料 | | | |
-| 前端 | | | |
-| 后端 | | | |
-| 合约/CAW | | | |
+| 总控 | README/PM 文档同步 Phase 4C 真实状态 | 需要确认提交口径：1 笔 tx 还是继续补到 3 笔 | 跟进部署、证据包和提交材料 |
+| 物料 | 待补 Demo 视频/PPT/截图包 | 截图必须脱敏，不能含 API key/raw provider response | 录制 mock flow + CAW evidence 说明 |
+| 前端 | 已有 Vercel 与主流程页面 | 需展示 Audit Report snapshot 与 Latest CAW Status 两块 | 接入 `/api/caw-status/{id}/refresh` |
+| 后端 | Phase 4C closeout 完成；read-only CAW status refresh API 已提交；默认 mock/fail-closed 保留 | 当前 Render 已定性为 ephemeral/mock-demo，不保留/证明本地 CAW evidence | 部署后验证线上 P0 mock flow 和 refresh 口径；持久 evidence 需另批 persistent disk 或 Postgres |
+| 合约/CAW | 已完成 1 笔低额 SETH testnet transfer，provider status 900，txHash 已写入 README | 当前只证明 1 笔，不满足“至少 3 笔”；截图仍需脱敏补充 | 确认是否继续补 2 笔 tx 或调整提交口径 |
 
-**最高风险：**
+**最高风险：** CAW 提交材料仍缺至少 3 笔 tx/截图证据；当前 Render SQLite 为 ephemeral/mock-demo，不能作为持久 evidence 来源
 
-**明日重点催：**
+**明日重点催：** @CAW 补证据包/确认 3 笔口径 + @前端 接 latest CAW status + @物料 Demo 视频/PPT
 
 ---
 

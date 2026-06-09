@@ -1,57 +1,233 @@
+from datetime import UTC, datetime
+
 from fastapi import APIRouter, HTTPException
 
 from app.models import (
     AuditReport,
+    CawStatus,
     ExecutePaymentRequest,
     PaymentExecutionResult,
-    PaymentItem,
     PaymentPlan,
     PaymentPlanRequest,
     PaymentStatus,
     RiskCheckRequest,
     RiskCheckResult,
-    RiskLevel,
 )
-from app.services.caw_adapter import MockCawAdapter
+from app.services.caw_adapter import CawAdapter, create_caw_adapter
+from app.services.caw_observer import (
+    CawProviderRefreshError,
+    CawProviderStatusUnsupported,
+    CawProviderTransactionNotFound,
+    CawReadOnlyObserver,
+    CawStatusNotFound,
+)
+from app.services.caw_read_only_client import (
+    MissingCawReadOnlyConfig,
+    create_caw_read_only_client,
+)
+from app.services.payment_planner import create_payment_planner
 from app.services.risk_engine import check_payment_risks
 from app.store import store
 
 router = APIRouter(prefix="/api", tags=["payments"])
-caw_adapter = MockCawAdapter()
+caw_adapter: CawAdapter = create_caw_adapter()
+payment_planner = create_payment_planner()
+CAW_PROVIDER_ERROR = "caw_provider_error"
+
+
+def _payment_snapshot(payment):
+    return {
+        "id": payment.id,
+        "recipient": payment.recipient,
+        "task": payment.task,
+        "wallet": payment.wallet,
+        "amount": payment.amount,
+        "token": payment.token,
+    }
+
+
+def _risk_snapshot_matches_payment_plan(payment_plan: PaymentPlan, risk_check: RiskCheckResult):
+    plan_snapshot = {
+        payment.id: _payment_snapshot(payment)
+        for payment in payment_plan.payments
+    }
+    risk_snapshot = {
+        payment.id: _payment_snapshot(payment)
+        for payment in risk_check.payments
+    }
+    return plan_snapshot == risk_snapshot
+
+
+def _build_risk_rule_evidence(risk_check: RiskCheckResult):
+    evidence = []
+    for payment in risk_check.payments:
+        if payment.risks:
+            for risk in payment.risks:
+                evidence.append(
+                    {
+                        "ruleId": risk.lower().replace(" ", "-"),
+                        "outcome": "blocked",
+                        "affectedPaymentIds": [payment.id],
+                        "reason": risk,
+                    }
+                )
+        else:
+            evidence.append(
+                {
+                    "ruleId": "risk-check-passed",
+                    "outcome": "passed",
+                    "affectedPaymentIds": [payment.id],
+                    "reason": "No deterministic risk rules were triggered.",
+                }
+            )
+    return evidence
+
+
+def _build_audit_evidence(
+    payment_plan: PaymentPlan,
+    risk_check: RiskCheckResult,
+    request: ExecutePaymentRequest,
+    execution: PaymentExecutionResult,
+):
+    blocked_payments = [
+        payment
+        for payment in risk_check.payments
+        if payment.status == PaymentStatus.BLOCKED
+    ]
+    failed_payments = [
+        payment
+        for payment in execution.payments
+        if payment.status == PaymentStatus.FAILED
+    ]
+    executed_payment_ids = [
+        payment.paymentItemId
+        for payment in execution.payments
+        if payment.status == PaymentStatus.EXECUTED
+    ]
+    return {
+        "inputSummary": {
+            "paymentPlanId": payment_plan.paymentPlanId,
+            "paymentCount": len(payment_plan.payments),
+            "totalAmount": payment_plan.totalAmount,
+            "tokens": sorted({payment.token for payment in payment_plan.payments}),
+        },
+        "decisionTrail": [
+            {"step": "payment-plan", "status": "created", "id": payment_plan.paymentPlanId},
+            {"step": "risk-check", "status": risk_check.overallStatus, "id": risk_check.paymentPlanId},
+            {
+                "step": "human-approval",
+                "status": "approved" if request.humanApproval.approved else "rejected",
+                "approvedBy": request.humanApproval.approvedBy,
+            },
+            {"step": "caw-execution", "status": "completed", "id": execution.executionId},
+            {"step": "audit-snapshot", "status": "captured", "id": execution.auditReportId},
+        ],
+        "riskRuleEvidence": _build_risk_rule_evidence(risk_check),
+        "humanApprovalEvidence": {
+            "approved": request.humanApproval.approved,
+            "approvedBy": request.humanApproval.approvedBy,
+            "approvedPaymentIds": request.approvedPaymentIds,
+            "source": "execute-payment-request",
+        },
+        "cawEvidence": [
+            {
+                "paymentItemId": payment.paymentItemId,
+                "mode": payment.mode,
+                "network": payment.network,
+                "agentWalletAddress": payment.agentWalletAddress,
+                "cawRequestId": payment.cawRequestId,
+                "txHash": payment.txHash,
+                "txHashExplanation": (
+                    "mock execution does not create a real tx hash"
+                    if payment.mode == "mock" and payment.txHash is None
+                    else "tx hash returned by CAW"
+                ),
+                "error": payment.error,
+                "diagnosticCode": payment.diagnosticCode,
+            }
+            for payment in execution.payments
+        ],
+        "outcomeSummary": {
+            "executedPaymentIds": executed_payment_ids,
+            "blockedPaymentIds": [payment.id for payment in blocked_payments],
+            "blockedReasons": {
+                payment.id: payment.risks
+                for payment in blocked_payments
+            },
+            "failedPaymentIds": [payment.paymentItemId for payment in failed_payments],
+            "failedReasons": {
+                payment.paymentItemId: payment.error
+                for payment in failed_payments
+                if payment.error
+            },
+        },
+        "snapshot": {
+            "capturedAt": datetime.now(UTC).isoformat(),
+            "sourceExecutionId": execution.executionId,
+            "immutable": True,
+        },
+    }
 
 
 @router.post("/payment-plan", response_model=PaymentPlan)
 def create_payment_plan(request: PaymentPlanRequest):
     payment_plan_id = store.next_plan_id()
-    payments = [
-        PaymentItem(
-            id=f"pay_{index:03d}",
-            recipient=contribution.name,
-            task=contribution.task,
-            wallet=contribution.wallet,
-            amount=contribution.amount,
-            token=contribution.token,
-            reason=f"Completed task: {contribution.task}",
-            status=PaymentStatus.READY,
-            risks=[],
-        )
-        for index, contribution in enumerate(request.contributions, start=1)
-    ]
-    total_amount = sum(payment.amount for payment in payments)
-    payment_plan = PaymentPlan(
-        paymentPlanId=payment_plan_id,
-        summary=f"AgentCFO generated a payment plan for {len(payments)} payment item(s).",
-        totalAmount=total_amount,
-        riskLevel=RiskLevel.UNCHECKED,
-        payments=payments,
-    )
-    store.payment_plans[payment_plan_id] = payment_plan
+    payment_plan = payment_planner.generate(request, payment_plan_id)
+    store.save_payment_plan(payment_plan)
     return payment_plan
+
+
+@router.get("/demo-sample")
+def get_demo_sample():
+    return {
+        "mode": "mock-demo",
+        "externalSystemTouched": False,
+        "notes": [
+            "Use this payload with POST /api/payment-plan.",
+            "Alice and Charlie are whitelisted; Bob is intentionally not whitelisted.",
+            "This endpoint does not create plans, execute payments, or seed storage.",
+        ],
+        "paymentPlanRequest": {
+            "contributions": [
+                {
+                    "name": "Alice",
+                    "role": "Content Contributor",
+                    "task": "Wrote event recap article",
+                    "wallet": "0xAlice",
+                    "amount": 20,
+                    "token": "USDC",
+                },
+                {
+                    "name": "Bob",
+                    "role": "Designer",
+                    "task": "Designed event poster",
+                    "wallet": "0xBob",
+                    "amount": 15,
+                    "token": "USDC",
+                },
+                {
+                    "name": "Charlie",
+                    "role": "Community Operator",
+                    "task": "Managed community and exported data",
+                    "wallet": "0xCharlie",
+                    "amount": 10,
+                    "token": "USDC",
+                },
+            ],
+            "budgetRule": {
+                "monthlyBudget": 50,
+                "singlePaymentLimit": 25,
+                "allowedToken": "USDC",
+                "whitelist": ["0xAlice", "0xCharlie"],
+                "requiresHumanApproval": True,
+            },
+        },
+    }
 
 
 @router.post("/risk-check", response_model=RiskCheckResult)
 def run_risk_check(request: RiskCheckRequest):
-    payment_plan = store.payment_plans.get(request.paymentPlanId)
+    payment_plan = store.get_payment_plan(request.paymentPlanId)
     if payment_plan is None:
         raise HTTPException(status_code=404, detail="Payment plan not found")
 
@@ -68,22 +244,34 @@ def run_risk_check(request: RiskCheckRequest):
         requiresHumanApproval=request.budgetRule.requiresHumanApproval,
         payments=checked_payments,
     )
-    store.risk_checks[request.paymentPlanId] = result
+    store.save_risk_check(result)
     return result
 
 
 @router.post("/execute-payment", response_model=PaymentExecutionResult)
 def execute_payment(request: ExecutePaymentRequest):
-    payment_plan = store.payment_plans.get(request.paymentPlanId)
+    payment_plan = store.get_payment_plan(request.paymentPlanId)
     if payment_plan is None:
         raise HTTPException(status_code=404, detail="Payment plan not found")
 
-    risk_check = store.risk_checks.get(request.paymentPlanId)
+    risk_check = store.get_risk_check(request.paymentPlanId)
     if risk_check is None:
         raise HTTPException(status_code=400, detail="Risk check is required before execution")
 
+    if not _risk_snapshot_matches_payment_plan(payment_plan, risk_check):
+        raise HTTPException(
+            status_code=400,
+            detail="Risk check snapshot does not match payment plan",
+        )
+
     if not request.humanApproval.approved:
         raise HTTPException(status_code=400, detail="Human approval is required before execution")
+
+    if not request.approvedPaymentIds:
+        raise HTTPException(status_code=400, detail="At least one payment item must be approved")
+
+    if len(request.approvedPaymentIds) != len(set(request.approvedPaymentIds)):
+        raise HTTPException(status_code=400, detail="Duplicate approved payment ids are not allowed")
 
     payment_by_id = {payment.id: payment for payment in risk_check.payments}
     selected_payments = []
@@ -105,9 +293,9 @@ def execute_payment(request: ExecutePaymentRequest):
     for payment in selected_payments:
         try:
             executed_payments.append(caw_adapter.create_transfer(execution_id, payment))
-        except Exception as exc:
+        except Exception:
             executed_payments.append(
-                caw_adapter.failed_transfer(execution_id, payment, str(exc))
+                caw_adapter.failed_transfer(execution_id, payment, CAW_PROVIDER_ERROR)
             )
     audit_report_id = store.next_audit_report_id()
     execution = PaymentExecutionResult(
@@ -117,6 +305,9 @@ def execute_payment(request: ExecutePaymentRequest):
         agentWalletAddress=caw_adapter.agent_wallet_address,
         payments=executed_payments,
     )
+    for payment in executed_payments:
+        store.save_caw_status(CawStatus.from_execution_item(execution_id, payment))
+
     audit_report = AuditReport(
         auditReportId=audit_report_id,
         mode=caw_adapter.mode,
@@ -125,15 +316,55 @@ def execute_payment(request: ExecutePaymentRequest):
         humanApproval=request.humanApproval,
         execution=execution,
         remainingBudget=risk_check.remainingBudget,
+        **_build_audit_evidence(payment_plan, risk_check, request, execution),
     )
-    store.executions[execution_id] = execution
-    store.audit_reports[audit_report_id] = audit_report
+    store.save_execution(execution)
+    store.save_audit_report(audit_report)
+    return execution
+
+
+@router.get("/payment-plan/{paymentPlanId}", response_model=PaymentPlan)
+def get_payment_plan(paymentPlanId: str):
+    payment_plan = store.get_payment_plan(paymentPlanId)
+    if payment_plan is None:
+        raise HTTPException(status_code=404, detail="Payment plan not found")
+    return payment_plan
+
+
+@router.get("/execution/{executionId}", response_model=PaymentExecutionResult)
+def get_execution(executionId: str):
+    execution = store.get_execution(executionId)
+    if execution is None:
+        raise HTTPException(status_code=404, detail="Execution not found")
     return execution
 
 
 @router.get("/audit-report/{auditReportId}", response_model=AuditReport)
 def get_audit_report(auditReportId: str):
-    audit_report = store.audit_reports.get(auditReportId)
+    audit_report = store.get_audit_report(auditReportId)
     if audit_report is None:
         raise HTTPException(status_code=404, detail="Audit report not found")
     return audit_report
+
+
+@router.get("/caw-status/{cawRequestId}", response_model=CawStatus)
+def get_caw_status(cawRequestId: str):
+    caw_status = store.get_caw_status(cawRequestId)
+    if caw_status is None:
+        raise HTTPException(status_code=404, detail="CAW status not found")
+    return caw_status
+
+
+@router.get("/caw-status/{cawRequestId}/refresh", response_model=CawStatus)
+def refresh_caw_status(cawRequestId: str):
+    try:
+        observer = CawReadOnlyObserver(create_caw_read_only_client(), store)
+        return observer.refresh_caw_status(cawRequestId)
+    except CawStatusNotFound:
+        raise HTTPException(status_code=404, detail="CAW status not found")
+    except CawProviderTransactionNotFound:
+        raise HTTPException(status_code=404, detail="CAW provider transaction not found")
+    except CawProviderStatusUnsupported:
+        raise HTTPException(status_code=502, detail="Unsupported CAW transaction status")
+    except (CawProviderRefreshError, MissingCawReadOnlyConfig):
+        raise HTTPException(status_code=502, detail="CAW status refresh failed")

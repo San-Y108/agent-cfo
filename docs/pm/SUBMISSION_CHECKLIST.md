@@ -1,6 +1,6 @@
 # AgentCFO 提交材料清单
 
-> 最后更新：Day 0 启动日
+> 最后更新：2026年6月9日 Phase 4C closeout
 > 截止时间：13 号中午 12:00 前全部就绪
 > 规则：打勾 = 已完成并验证通过，不是"觉得差不多了"
 
@@ -10,14 +10,14 @@
 
 | # | 材料 | 负责人 | 说明 | 状态 |
 |---|------|--------|------|------|
-| 1 | GitHub 仓库公开访问 | 总控 | repo 必须 public，所有 collaborator 已加 | ☐ |
+| 1 | GitHub 仓库公开访问 | 总控 | repo 必须 public，所有 collaborator 已加 | ☑ |
 | 2 | README.md 完整版 | 总控 + 物料 | 含项目介绍、架构、运行方式、CAW 说明、Demo 截图、tx hash、团队信息 | ☐ |
-| 3 | 项目说明文档 | 总控 | 问题背景、解决方案、赛道匹配、风险边界说明 | ☐ |
+| 3 | 项目说明文档 | 总控 | 问题背景、解决方案、赛道匹配、风险边界说明 | ☑ |
 | 4 | Demo 视频 3–5 分钟 | 物料 | 完整主流程演示，上传到 YouTube/Bilibili，链接写入 README | ☐ |
-| 5 | CAW 关键代码或配置说明 | 合约/CAW | docs/caw-integration.md，含代码片段 + 配置截图 | ☐ |
-| 6 | Agent Wallet 地址 | 合约/CAW | 测试网地址，写入 README | ☐ |
-| 7 | Transaction Hash 列表 | 合约/CAW | 至少 3 笔测试网付款 tx hash，含区块浏览器链接，写入 README | ☐ |
-| 8 | 风险边界说明 | 总控 | 10 条安全边界声明，写入 README 或单独文档 | ☐ |
+| 5 | CAW 关键代码或配置说明 | 合约/CAW | 配置说明 + opt-in testnet RealCawAdapter skeleton + 1 笔 testnet evidence 已就绪；默认 mock/fail-closed | ☑ |
+| 6 | Agent Wallet 地址 | 合约/CAW | README 已记录 masked source；如比赛要求完整公开地址需单独确认 | ☐ |
+| 7 | Transaction Hash 列表 | 合约/CAW | 已有 1 笔 `0x85a5a2e934ca0e34c7fb3e038ca06e54e15bd29b56b64e5b01ff80eb20ed4d98`；仍缺至少 2 笔或需调整提交口径 | ☐ |
+| 8 | 风险边界说明 | 总控 | README 已覆盖 mock、审批、风控、fail-closed、refresh 不转账、audit immutable | ☑ |
 
 ---
 
@@ -25,8 +25,8 @@
 
 | # | 材料 | 负责人 | 说明 | 状态 |
 |---|------|--------|------|------|
-| 9 | 前端演示链接 | 前端 | Vercel / Netlify 部署链接 | ☐ |
-| 10 | 后端 API 地址 | 后端 | 可访问的 API 地址（或至少提供 curl 示例） | ☐ |
+| 9 | 前端演示链接 | 前端 | Vercel 部署链接已就绪 | ☑ |
+| 10 | 后端 API 地址 | 后端 | Render API 地址 + curl 示例已就绪 | ☑ |
 | 11 | 流程截图包 | 物料 | 贡献输入 → 计划生成 → 风险检查 → 确认 → 执行 → 审计报告，每步至少 1 张截图 | ☐ |
 | 12 | 操作记录 | 总控 | 证明我们实际操作过的证据：终端截图、API 调用截图、钱包余额变化截图 | ☐ |
 | 13 | README 头图 | 物料 | 16:9 海报，放在 assets/poster.png | ☐ |
@@ -49,19 +49,19 @@
 
 | # | 章节 | 状态 |
 |---|------|------|
-| 1 | 项目名称 + 一句话介绍 | ☐ |
-| 2 | 问题背景 | ☐ |
-| 3 | 解决方案 | ☐ |
-| 4 | 为什么适合 Cobo Agentic Commerce | ☐ |
-| 5 | 产品流程图 | ☐ |
-| 6 | 架构图 | ☐ |
+| 1 | 项目名称 + 一句话介绍 | ☑ |
+| 2 | 问题背景 | ☑ |
+| 3 | 解决方案 | ☑ |
+| 4 | 为什么适合 Cobo Agentic Commerce | ☑ |
+| 5 | 产品流程图 | ☑ |
+| 6 | 架构图 | ☑ |
 | 7 | Demo 截图（至少 4 张） | ☐ |
-| 8 | CAW 使用说明 | ☐ |
-| 9 | Agent Wallet 地址 | ☐ |
-| 10 | Transaction Hash（至少 3 笔） | ☐ |
-| 11 | 运行方式（前端 + 后端） | ☐ |
-| 12 | 风险边界说明 | ☐ |
-| 13 | 团队分工表 | ☐ |
+| 8 | CAW 使用说明 | ☑ |
+| 9 | Agent Wallet 地址 | ☐ masked source 已记录；完整地址是否公开待确认 |
+| 10 | Transaction Hash（至少 3 笔） | ☐ 已有 1 笔，仍缺至少 2 笔 |
+| 11 | 运行方式（后端 + 部署 API） | ☑ |
+| 12 | 风险边界说明 | ☑ |
+| 13 | 团队分工表 | ☑ |
 | 14 | Demo 视频链接 | ☐ |
 
 ---

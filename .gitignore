@@ -3,4 +3,8 @@
 __pycache__/
 *.py[cod]
 .pytest_cache/
+*.sqlite
+*.sqlite3
+*.db
+cobo-agentic-wallet-backend-quickstart.md
 
