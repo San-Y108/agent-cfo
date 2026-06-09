@@ -148,6 +148,7 @@ def test_request_invoice_record_is_demo_safe_and_audit_linked():
     assert invoice["externalReference"]["liveIntegrationEnabled"] is False
     assert invoice["requestFinanceInvoiceId"] == "rf_demo_001"
     assert invoice["status"] == "draft"
+    assert invoice["externalReference"]["metadata"]["requestFinanceMode"] == "mock"
 
     lookup = client.get(f"/api/request-invoices/{invoice['externalReferenceId']}")
     assert lookup.status_code == 200
@@ -264,12 +265,45 @@ def test_request_invoice_live_mode_without_key_fails_closed(monkeypatch):
     )
 
 
-def test_request_invoice_live_mode_requires_create_approval(monkeypatch):
+def test_request_invoice_live_readonly_mode_records_demo_safe_invoice_without_live_create(
+    monkeypatch,
+):
     plan, execution = create_p0_flow()
+
+    def fail_if_called(_config):
+        raise AssertionError("live create client should not be created in live-readonly mode")
 
     monkeypatch.setenv("REQUEST_FINANCE_MODE", "live")
     monkeypatch.setenv("REQUEST_FINANCE_API_KEY", "fake-key")
     monkeypatch.delenv("REQUEST_FINANCE_ALLOW_INVOICE_CREATE", raising=False)
+    monkeypatch.setattr(p2_service_module, "create_request_finance_client", fail_if_called)
+
+    response = client.post(
+        "/api/request-invoices",
+        json={
+            "paymentPlanId": plan["paymentPlanId"],
+            "paymentItemId": plan["payments"][0]["id"],
+            "auditReportId": execution["auditReportId"],
+            "cawRequestId": execution["payments"][0]["cawRequestId"],
+            "requestFinanceInvoiceId": "rf_demo_001",
+            "requestId": "request_demo_001",
+            "status": "draft",
+            "hostedUrl": "https://example.invalid/request/rf_demo_001",
+            "txHashReference": None,
+        },
+    )
+
+    assert response.status_code == 200
+    invoice = response.json()
+    assert invoice["externalReference"]["metadata"]["requestFinanceMode"] == "live-readonly"
+
+
+def test_request_invoice_live_create_guard_reaches_blocked_live_client(monkeypatch):
+    plan, execution = create_p0_flow()
+
+    monkeypatch.setenv("REQUEST_FINANCE_MODE", "live")
+    monkeypatch.setenv("REQUEST_FINANCE_API_KEY", "fake-key")
+    monkeypatch.setenv("REQUEST_FINANCE_ALLOW_INVOICE_CREATE", "true")
 
     response = client.post(
         "/api/request-invoices",
@@ -287,7 +321,7 @@ def test_request_invoice_live_mode_requires_create_approval(monkeypatch):
     )
 
     assert response.status_code == 403
-    assert "explicit approval is required" in response.json()["detail"]
+    assert "payload mapping requires explicit approval" in response.json()["detail"]
 
 
 def test_sablier_stream_preview_calculates_rate_without_creating_stream():

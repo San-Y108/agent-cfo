@@ -688,6 +688,7 @@ Safety behavior:
 - `/version` exposes only non-sensitive status: mode, whether a key is configured, whether the invoice-create guard is enabled, and whether invoice creation is implemented.
 - Mock mode keeps the previous `/api/request-invoices` behavior and does not create a live client.
 - Live mode fails closed if `REQUEST_FINANCE_API_KEY` or base URL is missing.
+- Live mode with the invoice-create guard disabled still records a demo-safe linked invoice record and marks it as `requestFinanceMode=live-readonly`.
 - Live invoice creation is not implemented in this spike and remains blocked even if the guard exists; do not enable the guard or call `POST /invoices` without explicit approval and payload mapping work.
 - Local/Render live smoke may use only `GET /invoices?take=1` for read-only validation.
 - Audit Report snapshots stay immutable; Request Finance records remain linked external metadata.

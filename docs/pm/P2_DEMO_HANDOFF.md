@@ -120,6 +120,7 @@ Expected Request Finance boundary:
 - default `REQUEST_FINANCE_MODE`: `mock`
 - `/version` may expose `requestFinance.mode`, `requestFinance.apiKeyConfigured`, `requestFinance.invoiceCreateGuardEnabled`, and `requestFinance.invoiceCreateImplemented`
 - `apiKeyConfigured` is boolean only and never returns the key
+- live mode with creation disabled returns demo-safe linked invoice metadata marked `requestFinanceMode=live-readonly`
 - real invoice creation is not implemented in this spike and remains blocked unless explicitly approved in a later step
 
 ## P2 API Curl Examples
@@ -248,6 +249,7 @@ curl -s "$BASE_URL/api/treasury-budget-partitions/plan_demo_001"
 - `hostedUrl`: string or null
 - `txHashReference`: string or null
 - `externalReference`: `ExternalReference`
+- `externalReference.metadata.requestFinanceMode`: `mock`, `live-readonly`, or `live`
 
 `/version` Request Finance status:
 

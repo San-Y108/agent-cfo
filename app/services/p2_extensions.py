@@ -75,17 +75,28 @@ class P2ExtensionService:
 
     def create_request_invoice(self, request: RequestInvoiceCreate):
         if self.request_finance_config.mode == "live":
+            self.request_finance_config.require_live_config()
+            if not self.request_finance_config.allow_invoice_create:
+                return self._create_mock_request_invoice(
+                    request,
+                    request_finance_mode="live-readonly",
+                )
             return self._create_live_request_invoice(request)
         if self.request_finance_config.mode != "mock":
             raise P2ValidationError("REQUEST_FINANCE_MODE must be mock or live")
         return self._create_mock_request_invoice(request)
 
-    def _create_mock_request_invoice(self, request: RequestInvoiceCreate):
+    def _create_mock_request_invoice(
+        self,
+        request: RequestInvoiceCreate,
+        request_finance_mode: str = "mock",
+    ):
         metadata = {
             "requestFinanceInvoiceId": request.requestFinanceInvoiceId,
             "requestId": request.requestId,
             "hostedUrl": request.hostedUrl,
             "txHashReference": request.txHashReference,
+            "requestFinanceMode": request_finance_mode,
         }
         reference = self.create_external_reference(
             ExternalReferenceCreate(
