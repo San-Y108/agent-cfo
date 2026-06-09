@@ -52,7 +52,7 @@
 | T-012 | POST /api/risk-check | 可调用接口 | 6月8日 | ✅ DONE |
 | T-013 | POST /api/execute-payment | mock 接口（txHash=null） | 6月8日 | ✅ DONE |
 | T-014 | GET /api/audit-report/{id} | 可调用接口 | 6月8日 | ✅ DONE |
-| T-015 | 风险检查引擎 4 条规则 | budget/whitelist/limit/duplicate | 6月8日 | ✅ DONE |
+| T-015 | 风险检查引擎 6 条规则 | budget/whitelist/limit/token/duplicate wallet/duplicate task | 6月8日 | ✅ DONE |
 | T-016 | mock CAW 适配器 | caw_adapter.py (mock) | 6月8日 | ✅ DONE |
 | T-017 | 测试用例 | test_mvp_flow.py | 6月8日 | ✅ DONE |
 
@@ -184,7 +184,7 @@ CAW 验证（✅ API Key + Wallet + 配置文档已到位）
 | 状态 | 数量 |
 |------|------|
 | 🔴 BLOCKED | 0 |
-| 🟡 TODO | 28 |
-| 🔵 IN_PROGRESS | 4 |
-| ✅ DONE | 31 |
+| 🟡 TODO | 27 |
+| 🔵 IN_PROGRESS | 3 |
+| ✅ DONE | 33 |
 | ❌ CANCELLED | 0 |

@@ -18,20 +18,6 @@
 
 ## 活跃风险
 
-### R-01 🟢 CAW 配置已到位
-
-| 字段 | 内容 |
-|------|------|
-| 等级 | 🟡→🟢 P3（大幅降级） |
-| 负责人 | gitgdut（合约/CAW） |
-| 发现日期 | 6月8日 |
-| 影响 | CAW 是赛道硬要求 |
-| 当前状态 | ✅ API Key 已申请，Agent Wallet 已创建（active），SDK 确认（cobo-agentic-wallet v0.1.40），完整后端对接文档已交付（518行） |
-| 待办 | 准备测试网资金 → 第一笔测试网交易拿 tx hash |
-| 缓解措施 | 后端可直接使用配置文档开始替换 mock caw_adapter.py |
-| 兜底方案 | 如果测试网资金获取困难，用 PoW 水龙头（sepolia-faucet.pk910.de） |
-| 截止 | 6月10日 22:00 前必须有第一笔 tx hash |
-
 ### R-02 🟡 物料/设计同学已确认，待启动
 
 | 字段 | 内容 |
@@ -49,12 +35,12 @@
 
 | 字段 | 内容 |
 |------|------|
-| 等级 | 🟠→🟡 P2（降级） |
+| 等级 | 🟡 P2 |
 | 负责人 | W5W8L9jlu（后端） |
 | 发现日期 | 6月8日 |
-| 影响 | 当前 txHash=null，execute-payment 不会真正花钱；但 SQLite 持久化已解决重启丢数据问题 |
-| 当前状态 | ✅ SQLiteStore 已实现，/api/caw-status/{id} 已就绪，等 CAW 真实配置替换 mock |
-| 缓解措施 | SQLite 持久化 + CAW 状态查询接口已就绪，接真实 CAW 只需替换 caw_adapter.py |
+| 影响 | 当前 txHash=null，execute-payment 不会真正花钱 |
+| 当前状态 | ✅ SQLiteStore 已实现，/api/caw-status/{id} 已就绪，CAW 配置文档已到位（518行），可开始替换 mock |
+| 缓解措施 | 后端可直接使用配置文档替换 caw_adapter.py |
 | 截止 | 6月10日 替换为真实 CAW |
 
 ### R-05 🟡 测试网资金获取
@@ -82,6 +68,16 @@
 ---
 
 ## 已关闭风险
+
+### R-01 🟢 CAW 配置已到位
+
+| 字段 | 内容 |
+|------|------|
+| 等级 | 🟢 P3（已关闭） |
+| 负责人 | gitgdut（合约/CAW） |
+| 发现日期 | 6月8日 |
+| 关闭日期 | 6月9日 |
+| 关闭原因 | API Key 已申请，Agent Wallet 已创建（active），SDK 确认（cobo-agentic-wallet v0.1.40），完整后端对接文档已交付（518行） |
 
 ### R-03 🟢 前端已部署 Vercel
 

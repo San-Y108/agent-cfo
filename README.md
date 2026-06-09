@@ -67,7 +67,7 @@ AgentCFO 需要展示：哪些付款可以执行、哪些付款被 blocked、为
 
 ## Repository Status
 
-当前仓库已经 scaffold 了 FastAPI 后端 MVP。它实现了 mock 版 Payment Plan、Risk Check、Execute Payment 和 Audit Report API，并预留了 Cobo Agentic Wallet adapter。
+当前仓库实现了 FastAPI 后端 MVP，包含 mock 和真实 CAW 两套适配器。后端已部署到 Render，前端已部署到 Vercel。
 
 当前已有文件：
 
@@ -157,7 +157,7 @@ Frontend
 - **Testing**: pytest + FastAPI TestClient
 - **Server**: Uvicorn
 - **Storage**: SQLite demo store with repository abstraction
-- **CAW**: Mock adapter only, no real credentials
+- **CAW**: Cobo Agentic Wallet SDK (cobo-agentic-wallet v0.1.40), real credentials configured
 
 ## Local Development
 
@@ -334,11 +334,11 @@ curl.exe http://127.0.0.1:8000/api/caw-status/mock_caw_exec_demo_001_pay_001
 
 | 变量类别 | 用途 | 状态 |
 | --- | --- | --- |
-| LLM API key | 调用 Agent / LLM 生成 Payment Plan | 暂未接入 |
-| CAW API key | 调用 Cobo Agentic Wallet | 待 CAW 同学提供 |
-| CAW wallet id | 选择 Agent Wallet | 待 CAW 同学提供 |
-| CAW base URL | CAW API endpoint | 待 CAW 同学提供 |
-| Testnet config | 测试网链和 token 配置 | 待 CAW 同学提供 |
+| LLM API key | 调用 Agent / LLM 生成 Payment Plan | Phase 2 OpenAI planner 已开发 |
+| CAW API key | 调用 Cobo Agentic Wallet | ✅ 已配置 |
+| CAW wallet id | 选择 Agent Wallet | ✅ 已配置 |
+| CAW base URL | CAW API endpoint | ✅ 已配置 |
+| Testnet config | 测试网链和 token 配置 | ✅ 已配置（SETH/Sepolia） |
 | AGENTCFO_DB_PATH | SQLite demo database path | 可选，本地默认 `agentcfo_demo.sqlite3` |
 | AGENTCFO_STORE_BACKEND | 可选切回 in-memory store | 仅本地临时 demo 使用 |
 
@@ -391,17 +391,17 @@ P0:
 
 - Scaffold backend。已完成 mock MVP。
 - 实现四个 P0 API。已完成 mock MVP。
-- 接入 LLM planner。
-- 实现 deterministic Risk Engine。
-- 接入 CAW Adapter。当前为 MockCawAdapter。
+- 接入 LLM planner。Phase 2 OpenAI planner 已开发（phase2-openai-planner 分支）。
+- 实现 deterministic Risk Engine。已完成，6 条规则。
+- 接入 CAW Adapter。当前为 MockCawAdapter，真实 CAW 配置已到位。
 - 输出 Audit Report。已完成 mock MVP。
 
 P1:
 
-- 部署后端服务。
-- 增加持久化。
-- 增加 CAW 状态轮询。
-- 补齐运行方式和环境变量说明。
+- 部署后端服务。✅ 已部署到 Render。
+- 增加持久化。✅ SQLiteStore 已实现。
+- 增加 CAW 状态轮询。✅ GET /api/caw-status/{id} 已实现。
+- 补齐运行方式和环境变量说明。✅ README 已更新。
 
 P2:
 
