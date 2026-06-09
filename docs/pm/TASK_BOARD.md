@@ -1,6 +1,6 @@
 # AgentCFO 任务看板
 
-> 最后更新：2026年6月9日 Phase 4C closeout
+> 最后更新：2026年6月9日 20:30
 > 规则：12 号之后不新增大功能，只修复、打磨、录视频、补材料
 
 ---
@@ -22,10 +22,10 @@
 | 岗位 | 负责人 | 进度 | 最大卡点 |
 |------|--------|------|----------|
 | 交付/总控 | San-Y108 (严硕) | ✅ repo + 文档已完成 | 无 |
-| 后端/Agent | W5W8L9jlu | ✅ SQLite + CAW查询/refresh + Render部署 + Phase 4C closeout | 当前 Render 为 ephemeral/mock-demo；持久 evidence 需另批 persistent disk/Postgres |
+| 后端/Agent | W5W8L9jlu | ✅ SQLite + CAW查询/refresh + Render部署 + Phase 4C closeout | 当前 Render 为 ephemeral/mock-demo |
 | 前端 | Aafff623 | ✅ Landing + Demo + Vercel + i18n + 纯黑风格 + API 对接 | 待保持 main 与部署分支同步 |
-| 合约/CAW | gitgdut | ✅ API Key + Wallet + 配置文档 + 1 笔 testnet tx evidence | 仍未满足 3 笔 tx 要求；至少还缺 2 笔或需调整提交口径，截图仍需脱敏 |
-| 物料/设计 | Eloise-qiu | 🟡 已确认 | GitHub 已加入 repo，待启动 PPT/视频/视觉 |
+| 合约/CAW | gitgdut | ✅ API Key + Wallet + 配置文档 + 2 笔 testnet tx evidence | 截图仍需脱敏 |
+| 物料/设计 | Eloise-qiu | 🔵 PPT 初版已交，待启动视频/视觉 | 无 |
 
 ---
 
@@ -72,15 +72,15 @@
 | T-031 | 申请开发者 API Key | Sandbox Key 或正式环境 Key | 6月8日 22:00 | ✅ DONE |
 | T-032 | 搞懂 Cobo 权限模型 | 三层权限 + 双层风控方案 | 6月9日 | ✅ DONE |
 | T-033 | 创建 Agent Wallet | Wallet 地址 | 6月9日 | ✅ DONE |
-|| T-034 | 准备测试网资金 | ETH 或 USDC 余额截图 | 6月9日 | ✅ DONE |
-|| T-035 | 第一笔测试网付款 | tx hash + 区块浏览器链接 | 6月10日 | ✅ DONE |
+| T-034 | 准备测试网资金 | ETH 或 USDC 余额截图 | 6月9日 | ✅ DONE |
+| T-035 | 第一笔测试网付款 | tx hash + 区块浏览器链接 | 6月10日 | ✅ DONE |
 
 ### 物料/设计（Eloise-qiu）
 
 | ID | 任务 | 交付物 | 截止 | 状态 |
 |----|------|--------|------|------|
 | T-040 | 项目名 + Logo 初稿 | 草图或方向 | 6月8日 22:00 | 🔵 IN_PROGRESS |
-| T-041 | PPT 7 页大纲 | 初版 PPT 文件 | 6月9日 | 🟡 TODO |
+| T-041 | PPT 7 页大纲 | 初版 PPT 文件 | 6月9日 | ✅ DONE |
 | T-042 | Demo 视频脚本 | 逐段台词 + 画面描述 | 6月9日 | 🟡 TODO |
 | T-043 | 赛道匹配说明文案 | 中英文各一版 | 6月9日 | 🟡 TODO |
 
@@ -99,6 +99,7 @@
 | T-054 | 部署后端到公网 | https://agentcfo-backend.onrender.com | 6月10日 | ✅ DONE |
 | T-055 | SQLite 持久化 | store.py SQLiteStore + 测试 | 6月10日 | ✅ DONE |
 | T-056 | CAW 状态查询接口 | GET /api/caw-status/{id} | 6月10日 | ✅ DONE |
+| T-057 | CAW 状态刷新接口 | GET /api/caw-status/{id}/refresh | 6月10日 | ✅ DONE |
 
 ### 前端
 
@@ -111,6 +112,7 @@
 | T-064 | 审计报告页 | audit-report.tsx | 6月10日 | ✅ DONE |
 | T-065 | Mock 模式兜底 | lib/mock/ 完整 mock 层 | 6月10日 | ✅ DONE |
 | T-066 | 部署前端到公网 | https://agentcfo-frontend.vercel.app | 6月10日 | ✅ DONE |
+| T-067 | 审计页区分展示 Audit Report vs Latest CAW Status | 两类数据分区展示，不互相覆盖 | 6月10日 | 🟡 TODO |
 
 ### 合约/CAW
 
@@ -126,7 +128,7 @@
 | ID | 任务 | 交付物 | 截止 | 状态 |
 |----|------|--------|------|------|
 | T-080 | README 头图 16:9 | poster.png | 6月10日 | 🟡 TODO |
-| T-081 | PPT 初版 | 7 页完整 PPT | 6月10日 | 🟡 TODO |
+| T-081 | PPT 初版 | 7 页完整 PPT | 6月10日 | ✅ DONE |
 | T-082 | Demo 视频脚本终版 | 逐段台词定稿 | 6月10日 | 🟡 TODO |
 
 ---
@@ -170,12 +172,12 @@
     → lib/api 层已对齐 5 个接口
     → 待保持 main 与部署分支同步
 
-CAW 验证（✅ API Key + Wallet + 配置文档 + 1 笔低额 testnet tx evidence）
-    → README 已记录 cawRequestId、provider status 900、tx hash
-    → 只证明 1 笔，不证明 3 笔；截图仍需脱敏补充
+CAW 验证（✅ API Key + Wallet + 配置文档 + 2 笔低额 testnet tx evidence）
+    → README 已记录 2 笔 tx hash + 区块浏览器链接
+    → Agent Wallet 有 2 个地址，已验证内部转账
 
-设计/物料（🟡 Eloise-qiu 已确认）
-    → 待启动 PPT、视频、视觉
+设计/物料（🔵 PPT 初版已交）
+    → 待启动视频脚本、视觉设计、Demo 视频录制
 ```
 
 ---
@@ -185,7 +187,7 @@ CAW 验证（✅ API Key + Wallet + 配置文档 + 1 笔低额 testnet tx eviden
 | 状态 | 数量 |
 |------|------|
 | 🔴 BLOCKED | 0 |
-| 🟡 TODO | 21 |
+| 🟡 TODO | 19 |
 | 🔵 IN_PROGRESS | 5 |
-| ✅ DONE | 37 |
+| ✅ DONE | 39 |
 | ❌ CANCELLED | 0 |
