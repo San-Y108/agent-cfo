@@ -281,7 +281,7 @@ curl https://agentcfo-backend.onrender.com/health
 {"status":"ok","service":"agent-cfo-backend"}
 ```
 
-此部署仍为 mock 后端模式：无真实 OpenAI planner，无真实 Cobo Agentic Wallet 执行，无 `.env`，仓库中无 secrets。
+此部署仍为 mock 后端模式：planner 为确定性 mock planner，CAW adapter 为 MockCawAdapter。CAW 凭据已配置为 Render 环境变量（非 `.env` 文件），但当前代码路径未读取。仓库中无 secrets。
 
 ## Persistence
 
@@ -347,15 +347,15 @@ curl https://agentcfo-backend.onrender.com/health
 
 ## Environment Variables
 
-当前 MVP 不读取任何 CAW secrets。真实 CAW 接入时至少需要覆盖：
+当前 MVP 代码路径使用 MockCawAdapter，不读取真实 CAW secrets。CAW 凭据已配置为 Render 环境变量，待替换 mock adapter 后生效：
 
 | 变量类别 | 用途 | 状态 |
 | --- | --- | --- |
 | LLM API key | 调用 Agent / LLM 生成 Payment Plan | 🔵 开发中，main 分支当前仍为确定性 mock planner |
-| CAW API key | 调用 Cobo Agentic Wallet | ✅ 已配置 |
-| CAW wallet id | 选择 Agent Wallet | ✅ 已配置 |
-| CAW base URL | CAW API endpoint | ✅ 已配置 |
-| Testnet config | 测试网链和 token 配置 | ✅ 已配置（SETH/Sepolia） |
+| CAW API key | 调用 Cobo Agentic Wallet | ✅ 已配置（Render 环境变量，未接入当前代码） |
+| CAW wallet id | 选择 Agent Wallet | ✅ 已配置（Render 环境变量，未接入当前代码） |
+| CAW base URL | CAW API endpoint | ✅ 已配置（Render 环境变量，未接入当前代码） |
+| Testnet config | 测试网链和 token 配置 | ✅ 已配置（SETH/Sepolia，未接入当前代码） |
 | AGENTCFO_DB_PATH | SQLite demo database path | 可选，本地默认 `agentcfo_demo.sqlite3` |
 | AGENTCFO_STORE_BACKEND | 可选切回 in-memory store | 仅本地临时 demo 使用 |
 
