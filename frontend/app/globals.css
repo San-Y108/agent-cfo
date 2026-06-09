@@ -1,0 +1,248 @@
+@import "tailwindcss";
+
+/* Manual dark mode via .dark class on <html> (Tailwind v4) */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* ============================================================
+   Semantic color tokens — single source of truth for contrast.
+   Light = default (:root), Dark = .dark.
+   Hero stays permanently dark and does NOT use these tokens.
+   ============================================================ */
+:root {
+  --bg: #f8fafc;          /* page background (slate-50) */
+  --surface: #ffffff;      /* card surface */
+  --surface-2: #f1f5f9;    /* secondary surface (slate-100) */
+  --surface-hover: #eef2f7;
+  --fg: #0f172a;           /* primary text (slate-900) */
+  --fg-muted: #475569;     /* secondary text (slate-600) — AA on light */
+  --fg-subtle: #64748b;    /* tertiary text (slate-500) */
+  --border: #e2e8f0;       /* hairline (slate-200) */
+  --border-strong: #cbd5e1;
+  --accent: #B5FF4D;       /* Ramp lime — primary brand accent */
+  --accent-fg: #0D0D0D;     /* black text on lime bg */
+  --success: #16a34a;      /* emerald-600 */
+  --danger: #dc2626;       /* red-600 */
+  --grid-line: rgba(15, 23, 42, 0.5);  /* dark lines on light bg */
+}
+
+.dark {
+  --bg: #030712;
+  --surface: #0b1120;
+  --surface-2: #111827;
+  --surface-hover: #1e293b;
+  --fg: #f8fafc;
+  --fg-muted: #a3a3a3;     /* neutral-400 */
+  --fg-subtle: #6b7280;    /* neutral-500 */
+  --border: #1f2937;       /* gray-800 */
+  --border-strong: #374151;
+  --accent: #B5FF4D;       /* Ramp lime — consistent across light/dark */
+  --accent-fg: #0D0D0D;     /* black text on lime bg */
+  --success: #34d399;      /* emerald-400 */
+  --danger: #f87171;       /* red-400 */
+  --grid-line: rgba(255, 255, 255, 0.5);  /* light lines on dark bg */
+}
+
+/* Expose tokens as Tailwind color utilities: bg-bg, text-fg, border-border-token … */
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-surface-hover: var(--surface-hover);
+  --color-fg: var(--fg);
+  --color-fg-muted: var(--fg-muted);
+  --color-fg-subtle: var(--fg-subtle);
+  --color-border-token: var(--border);
+  --color-border-strong: var(--border-strong);
+  --color-accent: var(--accent);
+  --color-accent-fg: var(--accent-fg);
+  --color-success: var(--success);
+  --color-danger: var(--danger);
+
+  --color-navy-950: #030712;
+  --color-navy-900: #0b1120;
+  --color-navy-800: #111827;
+  --color-navy-700: #1e293b;
+
+  /* Ramp lime palette */
+  --color-lime-400: #C8FF70;
+  --color-lime-500: #B5FF4D;
+  --color-lime-600: #A8F040;
+  --color-ink: #0D0D0D;
+  --color-canvas: #ffffff;
+  --color-surface-dark: #141414;
+  --color-surface-darker: #0a0a0a;
+}
+
+:root {
+  color-scheme: light;
+}
+.dark {
+  color-scheme: dark;
+}
+
+html {
+  background-color: var(--bg);
+  scroll-behavior: smooth;
+}
+
+/* Anchor offset so smooth-scrolled sections aren't flush to the top */
+section[id] {
+  scroll-margin-top: 24px;
+}
+
+body {
+  margin: 0;
+  background-color: var(--bg);
+  color: var(--fg);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Selection color — matches Ramp lime theme */
+::selection {
+  background-color: #B5FF4D;
+  color: #0D0D0D;
+}
+::-moz-selection {
+  background-color: #B5FF4D;
+  color: #0D0D0D;
+}
+
+/* Subtle animated grid background */
+@keyframes grid-pulse {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 0.5; }
+}
+
+.grid-bg {
+  background-image:
+    linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+  background-size: 64px 64px;
+  animation: grid-pulse 8s ease-in-out infinite;
+}
+
+/* Radial glow for hero */
+.radial-glow {
+  background:
+    radial-gradient(ellipse 80% 60% at 50% -10%, rgba(181, 255, 77, 0.08), transparent),
+    radial-gradient(ellipse 50% 40% at 80% 50%, rgba(59, 130, 246, 0.04), transparent);
+}
+
+/* Glass panel base */
+.glass-panel {
+  background: rgba(17, 24, 39, 0.5);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  position: relative;
+  overflow: hidden;
+}
+
+.glass-panel::before {
+  content: '';
+  position: absolute;
+  inset-x: 0;
+  top: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+}
+
+/* Metric number font */
+.font-mono-numbers {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum";
+}
+
+/* Marquee animation for transaction ticker */
+@keyframes marquee {
+  0% { transform: translateX(0%); }
+  100% { transform: translateX(-50%); }
+}
+.animate-marquee {
+  display: flex;
+  animation: marquee 30s linear infinite;
+}
+.animate-marquee:hover {
+  animation-play-state: paused;
+}
+
+/* Respect reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ============================================================
+   Demo pure-black override — forces all semantic tokens to pure
+   black values within a .demo-pure-black scope. Used on /demo.
+   ============================================================ */
+.demo-pure-black {
+  --bg: #000000;
+  --surface: #000000;
+  --surface-2: #0a0a0a;
+  --surface-hover: #111111;
+  --border: #222222;
+  --border-strong: #333333;
+  --fg: #f8fafc;
+  --fg-muted: #a3a3a3;
+  --fg-subtle: #6b7280;
+}
+
+/* ============================================================
+   Landing warm-paper palette — Black × Zapier-inspired.
+   Used by Hero-below sections only. Hero video stays untouched.
+   Token names are landing-* so they don't collide with /demo.
+   ============================================================ */
+:root {
+  --landing-bg: #0D0D0D;        /* Ramp near-black marketing canvas */
+  --landing-surface-dark: #141414;
+  --landing-surface-darker: #0a0a0a;
+  --landing-paper: #141414;     /* dark card surface (was warm cream) */
+  --landing-paper-muted: #1a1a1a;
+  --landing-ink: #f5f5f5;       /* light text on dark cards */
+  --landing-ink-mid: #a3a3a3;
+  --landing-ink-subtle: #6b7280;
+  --landing-muted: #737373;
+  --landing-lime: #B5FF4D;      /* Ramp lime accent */
+  --landing-lime-soft: rgba(181, 255, 77, 0.08);
+  --landing-border-soft: rgba(255, 255, 255, 0.08);
+  --landing-border-paper: rgba(255, 255, 255, 0.12);
+}
+
+/* Marquee animation */
+@keyframes marquee-scroll {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+
+.animate-marquee {
+  animation: marquee-scroll 25s linear infinite;
+}
+
+.animate-marquee:hover {
+  animation-play-state: paused;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border-strong);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--fg-subtle);
+}
