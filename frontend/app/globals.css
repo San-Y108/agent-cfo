@@ -167,6 +167,27 @@ body {
   --fg-subtle: #6b7280;
 }
 
+/* ============================================================
+   Landing warm-paper palette — Black × Zapier-inspired.
+   Used by Hero-below sections only. Hero video stays untouched.
+   Token names are landing-* so they don't collide with /demo.
+   ============================================================ */
+:root {
+  --landing-bg: #000000;        /* page stays pure black */
+  --landing-surface-dark: #0d0d0d;
+  --landing-surface-darker: #141414;
+  --landing-paper: #fff8f0;     /* warm cream card on black */
+  --landing-paper-muted: #eee7df;
+  --landing-ink: #211817;       /* deep coffee text inside paper cards */
+  --landing-ink-mid: #4a4138;
+  --landing-ink-subtle: #8a7f76;
+  --landing-muted: #9c948d;
+  --landing-orange: #ff4f00;    /* Zapier-inspired CTA */
+  --landing-orange-soft: rgba(255, 79, 0, 0.08);
+  --landing-border-soft: rgba(255, 255, 255, 0.08);
+  --landing-border-paper: rgba(33, 24, 23, 0.12);
+}
+
 /* Custom scrollbar */
 ::-webkit-scrollbar {
   width: 6px;
