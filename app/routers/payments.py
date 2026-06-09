@@ -19,6 +19,30 @@ from app.store import store
 router = APIRouter(prefix="/api", tags=["payments"])
 caw_adapter: CawAdapter = create_caw_adapter()
 payment_planner = create_payment_planner()
+CAW_PROVIDER_ERROR = "caw_provider_error"
+
+
+def _payment_snapshot(payment):
+    return {
+        "id": payment.id,
+        "recipient": payment.recipient,
+        "task": payment.task,
+        "wallet": payment.wallet,
+        "amount": payment.amount,
+        "token": payment.token,
+    }
+
+
+def _risk_snapshot_matches_payment_plan(payment_plan: PaymentPlan, risk_check: RiskCheckResult):
+    plan_snapshot = {
+        payment.id: _payment_snapshot(payment)
+        for payment in payment_plan.payments
+    }
+    risk_snapshot = {
+        payment.id: _payment_snapshot(payment)
+        for payment in risk_check.payments
+    }
+    return plan_snapshot == risk_snapshot
 
 
 @router.post("/payment-plan", response_model=PaymentPlan)
@@ -62,8 +86,20 @@ def execute_payment(request: ExecutePaymentRequest):
     if risk_check is None:
         raise HTTPException(status_code=400, detail="Risk check is required before execution")
 
+    if not _risk_snapshot_matches_payment_plan(payment_plan, risk_check):
+        raise HTTPException(
+            status_code=400,
+            detail="Risk check snapshot does not match payment plan",
+        )
+
     if not request.humanApproval.approved:
         raise HTTPException(status_code=400, detail="Human approval is required before execution")
+
+    if not request.approvedPaymentIds:
+        raise HTTPException(status_code=400, detail="At least one payment item must be approved")
+
+    if len(request.approvedPaymentIds) != len(set(request.approvedPaymentIds)):
+        raise HTTPException(status_code=400, detail="Duplicate approved payment ids are not allowed")
 
     payment_by_id = {payment.id: payment for payment in risk_check.payments}
     selected_payments = []
@@ -85,9 +121,9 @@ def execute_payment(request: ExecutePaymentRequest):
     for payment in selected_payments:
         try:
             executed_payments.append(caw_adapter.create_transfer(execution_id, payment))
-        except Exception as exc:
+        except Exception:
             executed_payments.append(
-                caw_adapter.failed_transfer(execution_id, payment, str(exc))
+                caw_adapter.failed_transfer(execution_id, payment, CAW_PROVIDER_ERROR)
             )
     audit_report_id = store.next_audit_report_id()
     execution = PaymentExecutionResult(

@@ -306,6 +306,97 @@ def test_execute_requires_human_approval():
     assert response.json()["detail"] == "Human approval is required before execution"
 
 
+def test_execute_rejects_empty_approved_payment_ids():
+    plan = create_plan()
+    run_risk_check(plan["paymentPlanId"])
+
+    response = client.post(
+        "/api/execute-payment",
+        json={
+            "paymentPlanId": plan["paymentPlanId"],
+            "approvedPaymentIds": [],
+            "humanApproval": {"approved": True, "approvedBy": "demo-operator"},
+        },
+    )
+
+    assert response.status_code == 400
+    assert response.json()["detail"] == "At least one payment item must be approved"
+
+
+def test_execute_rejects_duplicate_approved_payment_ids_without_adapter_call(monkeypatch):
+    adapter_calls = {"count": 0}
+
+    def count_transfer(execution_id, payment):
+        adapter_calls["count"] += 1
+        raise AssertionError("duplicate payment reached CAW adapter")
+
+    monkeypatch.setattr(payments_router.caw_adapter, "create_transfer", count_transfer)
+    plan = create_plan()
+    run_risk_check(plan["paymentPlanId"])
+
+    response = client.post(
+        "/api/execute-payment",
+        json={
+            "paymentPlanId": plan["paymentPlanId"],
+            "approvedPaymentIds": [plan["payments"][0]["id"], plan["payments"][0]["id"]],
+            "humanApproval": {"approved": True, "approvedBy": "demo-operator"},
+        },
+    )
+
+    assert response.status_code == 400
+    assert response.json()["detail"] == "Duplicate approved payment ids are not allowed"
+    assert adapter_calls["count"] == 0
+
+
+def test_execute_requires_risk_check_without_adapter_call(monkeypatch):
+    adapter_calls = {"count": 0}
+
+    def count_transfer(execution_id, payment):
+        adapter_calls["count"] += 1
+        raise AssertionError("payment without risk check reached CAW adapter")
+
+    monkeypatch.setattr(payments_router.caw_adapter, "create_transfer", count_transfer)
+    plan = create_plan()
+
+    response = client.post(
+        "/api/execute-payment",
+        json={
+            "paymentPlanId": plan["paymentPlanId"],
+            "approvedPaymentIds": [plan["payments"][0]["id"]],
+            "humanApproval": {"approved": True, "approvedBy": "demo-operator"},
+        },
+    )
+
+    assert response.status_code == 400
+    assert response.json()["detail"] == "Risk check is required before execution"
+    assert adapter_calls["count"] == 0
+
+
+def test_execute_rejects_unknown_approved_payment_id_without_adapter_call(monkeypatch):
+    adapter_calls = {"count": 0}
+
+    def count_transfer(execution_id, payment):
+        adapter_calls["count"] += 1
+        raise AssertionError("unknown payment id reached CAW adapter")
+
+    monkeypatch.setattr(payments_router.caw_adapter, "create_transfer", count_transfer)
+    plan = create_plan()
+    run_risk_check(plan["paymentPlanId"])
+
+    response = client.post(
+        "/api/execute-payment",
+        json={
+            "paymentPlanId": plan["paymentPlanId"],
+            "approvedPaymentIds": ["pay_missing"],
+            "humanApproval": {"approved": True, "approvedBy": "demo-operator"},
+        },
+    )
+
+    assert response.status_code == 404
+    assert response.json()["detail"] == "Payment item not found: pay_missing"
+    assert adapter_calls["count"] == 0
+
+
 def test_caw_status_not_found_returns_404():
     response = client.get("/api/caw-status/missing_caw_request")
 
@@ -379,9 +470,31 @@ def test_blocked_payment_is_not_sent_to_mock_caw(monkeypatch):
     assert adapter_calls["count"] == 0
 
 
+def test_execute_rejects_stale_or_mismatched_risk_snapshot(monkeypatch):
+    plan = create_plan()
+    risk = run_risk_check(plan["paymentPlanId"])
+    tampered_payment = risk["payments"][0].copy()
+    tampered_payment["amount"] = tampered_payment["amount"] + 1
+    stale_risk = risk.copy()
+    stale_risk["payments"] = [tampered_payment, *risk["payments"][1:]]
+    store.save_risk_check(payments_router.RiskCheckResult.model_validate(stale_risk))
+
+    response = client.post(
+        "/api/execute-payment",
+        json={
+            "paymentPlanId": plan["paymentPlanId"],
+            "approvedPaymentIds": [plan["payments"][0]["id"]],
+            "humanApproval": {"approved": True, "approvedBy": "demo-operator"},
+        },
+    )
+
+    assert response.status_code == 400
+    assert response.json()["detail"] == "Risk check snapshot does not match payment plan"
+
+
 def test_caw_adapter_failure_appears_in_audit_report(monkeypatch):
     def fail_transfer(execution_id, payment):
-        raise RuntimeError("mock CAW unavailable")
+        raise RuntimeError("SHOULD_NOT_LEAK_CANARY")
 
     monkeypatch.setattr(payments_router.caw_adapter, "create_transfer", fail_transfer)
     plan = create_plan()
@@ -400,7 +513,8 @@ def test_caw_adapter_failure_appears_in_audit_report(monkeypatch):
     assert execution["payments"][0]["status"] == "Failed"
     assert execution["payments"][0]["mode"] == "mock"
     assert execution["payments"][0]["txHash"] is None
-    assert execution["payments"][0]["error"] == "mock CAW unavailable"
+    assert execution["payments"][0]["error"] == "caw_provider_error"
+    assert "SHOULD_NOT_LEAK_CANARY" not in execution_response.text
 
     status_response = client.get(f"/api/caw-status/{execution['payments'][0]['cawRequestId']}")
 
@@ -409,11 +523,13 @@ def test_caw_adapter_failure_appears_in_audit_report(monkeypatch):
     assert caw_status["normalizedStatus"] == "Failed"
     assert caw_status["mode"] == "mock"
     assert caw_status["txHash"] is None
-    assert caw_status["error"] == "mock CAW unavailable"
+    assert caw_status["error"] == "caw_provider_error"
+    assert "SHOULD_NOT_LEAK_CANARY" not in status_response.text
 
     report_response = client.get(f"/api/audit-report/{execution['auditReportId']}")
 
     assert report_response.status_code == 200
     report = report_response.json()
     assert report["execution"]["payments"][0]["status"] == "Failed"
-    assert report["execution"]["payments"][0]["error"] == "mock CAW unavailable"
+    assert report["execution"]["payments"][0]["error"] == "caw_provider_error"
+    assert "SHOULD_NOT_LEAK_CANARY" not in report_response.text
