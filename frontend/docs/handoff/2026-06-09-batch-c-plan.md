@@ -10,7 +10,10 @@
 
 - **日期**：2026-06-09
 - **分支**：`feat/frontend-bootstrap`
-- **HEAD commit**：`feat(console): phase 1`（Dashboard 壳 + 4 路由 + Drawer 已落地，亮色模式已修复）
+- **HEAD commit**：`feat(console): phase 2`（Wallets 已落地，蓝色主色 + Transfer + Guardrails 拦截卡）
+- **已完成 Phase**：0（基础设施）+ 1（Dashboard 壳）+ 2（Wallets）
+- **剩余 Phase**：3（Analytics 紫色 recharts）+ 4（Policy 珊瑚红规则引擎）+ 5（Treasury GSAP 水平滚动）+ 6（清理旧 DemoFlow）
+- **关键已知问题**：Phase 2 的 HolographicCard 3D 倾斜 + Web3NodeCloud 拓扑图 创新点尚未实现（context 限制，留作后续增强）
 - **远端**：`origin/feat/frontend-bootstrap`（已同步）
 - **工作目录**：`D:\OneDrive\Desktop\threetwoa\my-competition\agent-cfo\frontend`
 - **dev server 注意**：`PORT=3100 pnpm dev`（`:3001` 有陈旧 Service Worker 会白屏；`:3000` 经常被占用，请用 `:3100`）

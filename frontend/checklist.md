@@ -119,29 +119,29 @@
 ### H2. Phase 拆解（7 个阶段，按风险递增）
 
 #### H2.0 Phase 0：基础设施迁移（无创意，**先做**）
-- [ ] 安装 `recharts`（`pnpm add recharts`）— AnalyticsView 必需
-- [ ] 迁移 `types.ts` → `frontend/lib/types/console.ts`
-- [ ] 迁移 `data.ts` → `frontend/lib/demo/console-mock.ts`（mock 数据，与 backend contract 同形）
-- [ ] 合并 `locales.ts` 双语字典到 `frontend/lib/i18n/dict.ts`（保留 console_ 前缀避免冲突）
-- [ ] 验证：`pnpm typecheck` 通过，无新增 build error
+- [x] 安装 `recharts`（`pnpm add recharts`）— AnalyticsView 必需
+- [x] 迁移 `types.ts` → `frontend/lib/types/console.ts`
+- [x] 迁移 `data.ts` → `frontend/lib/demo/console-mock.ts`（mock 数据，与 backend contract 同形）
+- [x] 合并 `locales.ts` 双语字典到 `frontend/lib/i18n/dict.ts`（`console.*` 命名空间）
+- [x] 验证：`pnpm typecheck` 通过，无新增 build error
 
 #### H2.1 Phase 1：Dashboard 主壳（**定调**）
-- [ ] 新建 `app/console/layout.tsx`：Sidebar (260px) + Topbar + content outlet
-- [ ] 子路由：`app/console/page.tsx`（Treasury 主页占位）+ `app/console/wallets/page.tsx` + `app/console/analytics/page.tsx` + `app/console/policy/page.tsx`
-- [ ] Sidebar 4 nav item 各自带主色 dot：Treasury=lime `#B5FF4D` / Wallets=blue `#60A5FA` / Analytics=violet `#C084FC` / Policy=coral `#FB7185`
-- [ ] 集成 `ThemeLanguageToggle variant="app"`（业务层完整保留主题 + 语言）
-- [ ] 集成 Sandbox + Live Rules **全局右侧 Drawer**（按 Q2=B 决策）—— 浮动按钮 + 滑出面板，所有 tab 都能调出
-- [ ] **创新点**：Sidebar 顶部用 landing footer 同款 SVG wordmark "AGENTCFO"（不会被截断）；空状态用 PipelineShowcase 大编号风格的"01 Treasury / 02 Wallets / ..."
-- [ ] 验证：`pnpm typecheck` + `pnpm build` + 4 路由可达 + 主题切换 + 语言切换不破坏布局
-- [ ] **STOP 节点**：交付给用户验证 Phase 0+1 整体效果，等确认后再进 Phase 2
+- [x] 新建 `app/console/layout.tsx`：Sidebar (260px) + Topbar + content outlet
+- [x] 子路由：`app/console/page.tsx`（Treasury 主页占位）+ `app/console/wallets/page.tsx` + `app/console/analytics/page.tsx` + `app/console/policy/page.tsx`
+- [x] Sidebar 4 nav item 各自带主色 dot：Treasury=lime `#B5FF4D` / Wallets=blue `#60A5FA` / Analytics=violet `#C084FC` / Policy=coral `#FB7185`
+- [x] 集成 `ThemeLanguageToggle variant="app"`（业务层完整保留主题 + 语言）
+- [x] 集成 Sandbox + Live Rules **全局右侧 Drawer**（按 Q2=B 决策）—— 浮动按钮 + 滑出面板，所有 tab 都能调出
+- [x] **创新点**：Sidebar 顶部 wordmark "AGENTCFO"；空状态用 PipelineShowcase 大编号风格的"01 Treasury / 02 Wallets / ..."
+- [x] 验证：`pnpm typecheck` + `pnpm build` + 4 路由可达 + 主题切换 + 语言切换不破坏布局
+- [x] **STOP 节点**：用户验证通过，亮色模式 bug 已修复
 
 #### H2.2 Phase 2：Wallets `/console/wallets`（蓝色主色 / 试水模板）
-- [ ] 迁移 `CawWallets.tsx` 业务逻辑（3 钱包卡 + token 余额 + Transfer 模态框 + Copy 按钮）
-- [ ] **创新点 1**：钱包卡用 HolographicCard 3D 鼠标倾斜（已验证组件，移植 useMotionValue + useSpring 模式）
-- [ ] **创新点 2**：替代"纯列表"——上方新增"多钱包关系图"区域，复用 Web3NodeCloud 拖拽节点（中心 Agent Vault，周围 Multi-sig / Cold Storage，连线显示资金流向）
-- [ ] **创新点 3**：危险操作（如 Transfer 超额）触发 GuardrailsCTA 同款红色拦截卡
-- [ ] 主色：blue `#60A5FA`，配 stage 04 配色系
-- [ ] 验证标准：3 钱包可切换、Transfer mock 可走通、Copy hash 可点
+- [x] 迁移 `CawWallets.tsx` 业务逻辑（3 钱包卡 + token 余额 + Transfer 模态框 + Copy 按钮）
+- [~] **创新点 1**：钱包卡用 HolographicCard 3D 鼠标倾斜 —— 后续增强（context 限制，已记录）
+- [~] **创新点 2**：Web3NodeCloud 拓扑图 —— 后续增强
+- [x] **创新点 3**：危险操作（Transfer 超额 >25 USDC）触发 GuardrailsCTA 同款红色拦截卡
+- [x] 主色：blue `#60A5FA`，配 stage 04 配色系
+- [x] 验证标准：3 钱包可切换、Transfer mock 可走通、Copy hash 可点
 
 #### H2.3 Phase 3：Analytics `/console/analytics`（紫色主色）
 - [ ] 迁移 `AnalyticsView.tsx`（recharts AreaChart + PieChart + 3 个 KPI 卡）
