@@ -185,7 +185,7 @@ CAW 验证（✅ API Key + Wallet + 配置文档 + 1 笔低额 testnet tx eviden
 | 状态 | 数量 |
 |------|------|
 | 🔴 BLOCKED | 0 |
-| 🟡 TODO | 24 |
-| 🔵 IN_PROGRESS | 5 |
-| ✅ DONE | 36 |
+| 🟡 TODO | 22 |
+| 🔵 IN_PROGRESS | 6 |
+| ✅ DONE | 35 |
 | ❌ CANCELLED | 0 |

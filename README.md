@@ -382,7 +382,7 @@ http://127.0.0.1:8000
 健康检查：
 
 ```bash
-curl.exe http://127.0.0.1:8000/health
+curl http://127.0.0.1:8000/health
 ```
 
 版本和 demo sample：
@@ -440,7 +440,7 @@ Deployed health check:
 部署后端验证：
 
 ```bash
-curl.exe https://agentcfo-backend.onrender.com/health
+curl https://agentcfo-backend.onrender.com/health
 ```
 
 Deployed smoke checks:
@@ -528,43 +528,43 @@ curl http://127.0.0.1:8000/api/demo-sample
 创建 Payment Plan：
 
 ```bash
-curl.exe -X POST http://127.0.0.1:8000/api/payment-plan -H "Content-Type: application/json" -d "{\"contributions\":[{\"name\":\"Alice\",\"role\":\"Content Contributor\",\"task\":\"Wrote event recap article\",\"wallet\":\"0xAlice\",\"amount\":20,\"token\":\"USDC\"}],\"budgetRule\":{\"monthlyBudget\":50,\"singlePaymentLimit\":25,\"allowedToken\":\"USDC\",\"whitelist\":[\"0xAlice\"],\"requiresHumanApproval\":true}}"
+curl -X POST http://127.0.0.1:8000/api/payment-plan -H "Content-Type: application/json" -d "{\"contributions\":[{\"name\":\"Alice\",\"role\":\"Content Contributor\",\"task\":\"Wrote event recap article\",\"wallet\":\"0xAlice\",\"amount\":20,\"token\":\"USDC\"}],\"budgetRule\":{\"monthlyBudget\":50,\"singlePaymentLimit\":25,\"allowedToken\":\"USDC\",\"whitelist\":[\"0xAlice\"],\"requiresHumanApproval\":true}}"
 ```
 
 执行 Risk Check：
 
 ```bash
-curl.exe -X POST http://127.0.0.1:8000/api/risk-check -H "Content-Type: application/json" -d "{\"paymentPlanId\":\"plan_demo_001\",\"budgetRule\":{\"monthlyBudget\":50,\"singlePaymentLimit\":25,\"allowedToken\":\"USDC\",\"whitelist\":[\"0xAlice\"],\"requiresHumanApproval\":true}}"
+curl -X POST http://127.0.0.1:8000/api/risk-check -H "Content-Type: application/json" -d "{\"paymentPlanId\":\"plan_demo_001\",\"budgetRule\":{\"monthlyBudget\":50,\"singlePaymentLimit\":25,\"allowedToken\":\"USDC\",\"whitelist\":[\"0xAlice\"],\"requiresHumanApproval\":true}}"
 ```
 
 执行 mock payment：
 
 ```bash
-curl.exe -X POST http://127.0.0.1:8000/api/execute-payment -H "Content-Type: application/json" -d "{\"paymentPlanId\":\"plan_demo_001\",\"approvedPaymentIds\":[\"pay_001\"],\"humanApproval\":{\"approved\":true,\"approvedBy\":\"demo-operator\"}}"
+curl -X POST http://127.0.0.1:8000/api/execute-payment -H "Content-Type: application/json" -d "{\"paymentPlanId\":\"plan_demo_001\",\"approvedPaymentIds\":[\"pay_001\"],\"humanApproval\":{\"approved\":true,\"approvedBy\":\"demo-operator\"}}"
 ```
 
 查看 Audit Report：
 
 ```bash
-curl.exe http://127.0.0.1:8000/api/audit-report/audit_demo_001
+curl http://127.0.0.1:8000/api/audit-report/audit_demo_001
 ```
 
 查看当前 CAW status：
 
 ```bash
-curl.exe http://127.0.0.1:8000/api/caw-status/mock_caw_exec_demo_001_pay_001
+curl http://127.0.0.1:8000/api/caw-status/mock_caw_exec_demo_001_pay_001
 ```
 
 刷新 latest CAW status：
 
 ```bash
-curl.exe http://127.0.0.1:8000/api/caw-status/mock_caw_exec_demo_001_pay_001/refresh
+curl http://127.0.0.1:8000/api/caw-status/mock_caw_exec_demo_001_pay_001/refresh
 ```
 
 验证部署后端：
 
 ```bash
-curl.exe https://agentcfo-backend.onrender.com/health
+curl https://agentcfo-backend.onrender.com/health
 ```
 
 默认 mock 执行结果是 `mode="mock"`，`txHash=null`。Real CAW refresh 返回真实 `txHash` 时，前端应把它展示在 latest CAW status 区域，不要改写 Audit Report 快照。
