@@ -123,7 +123,7 @@ export function DemoFlow({ data }: DemoFlowProps) {
   ];
 
   return (
-    <div className="relative min-h-screen bg-black flex flex-col">
+    <div className="demo-pure-black relative min-h-screen bg-black flex flex-col">
       <DemoBackdrop />
 
       {/* Header */}

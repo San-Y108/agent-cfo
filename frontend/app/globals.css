@@ -151,6 +151,22 @@ body {
   }
 }
 
+/* ============================================================
+   Demo pure-black override — forces all semantic tokens to pure
+   black values within a .demo-pure-black scope. Used on /demo.
+   ============================================================ */
+.demo-pure-black {
+  --bg: #000000;
+  --surface: #000000;
+  --surface-2: #0a0a0a;
+  --surface-hover: #111111;
+  --border: #222222;
+  --border-strong: #333333;
+  --fg: #f8fafc;
+  --fg-muted: #a3a3a3;
+  --fg-subtle: #6b7280;
+}
+
 /* Custom scrollbar */
 ::-webkit-scrollbar {
   width: 6px;
