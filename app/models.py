@@ -152,3 +152,11 @@ class AuditReport(BaseModel):
     humanApproval: HumanApproval
     execution: PaymentExecutionResult
     remainingBudget: float
+    auditVersion: str = "p0-evidence-v1"
+    inputSummary: dict = Field(default_factory=dict)
+    decisionTrail: list[dict] = Field(default_factory=list)
+    riskRuleEvidence: list[dict] = Field(default_factory=list)
+    humanApprovalEvidence: dict = Field(default_factory=dict)
+    cawEvidence: list[dict] = Field(default_factory=list)
+    outcomeSummary: dict = Field(default_factory=dict)
+    snapshot: dict = Field(default_factory=dict)

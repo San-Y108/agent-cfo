@@ -224,6 +224,57 @@ def test_full_mock_flow_returns_audit_report():
     assert report["mode"] == "mock"
     assert report["paymentPlan"]["paymentPlanId"] == plan["paymentPlanId"]
     assert report["remainingBudget"] == 20
+    assert report["auditVersion"] == "p0-evidence-v1"
+    assert [event["step"] for event in report["decisionTrail"]] == [
+        "payment-plan",
+        "risk-check",
+        "human-approval",
+        "caw-execution",
+        "audit-snapshot",
+    ]
+    assert report["humanApprovalEvidence"]["approvedBy"] == "demo-operator"
+    assert report["humanApprovalEvidence"]["approvedPaymentIds"] == [
+        payment["id"] for payment in plan["payments"]
+    ]
+    assert report["cawEvidence"][0]["mode"] == "mock"
+    assert report["cawEvidence"][0]["txHash"] is None
+    assert report["cawEvidence"][0]["txHashExplanation"] == "mock execution does not create a real tx hash"
+    assert report["outcomeSummary"]["executedPaymentIds"] == [
+        payment["id"] for payment in plan["payments"]
+    ]
+    assert report["snapshot"]["immutable"] is True
+
+
+def test_read_only_payment_plan_and_execution_lookup_endpoints():
+    plan = create_plan()
+    run_risk_check(plan["paymentPlanId"])
+    execution_response = client.post(
+        "/api/execute-payment",
+        json={
+            "paymentPlanId": plan["paymentPlanId"],
+            "approvedPaymentIds": [plan["payments"][0]["id"]],
+            "humanApproval": {"approved": True, "approvedBy": "demo-operator"},
+        },
+    )
+    execution = execution_response.json()
+
+    plan_response = client.get(f"/api/payment-plan/{plan['paymentPlanId']}")
+    execution_lookup_response = client.get(f"/api/execution/{execution['executionId']}")
+
+    assert plan_response.status_code == 200
+    assert plan_response.json()["paymentPlanId"] == plan["paymentPlanId"]
+    assert execution_lookup_response.status_code == 200
+    assert execution_lookup_response.json()["executionId"] == execution["executionId"]
+
+
+def test_read_only_lookup_endpoints_return_404_for_missing_records():
+    plan_response = client.get("/api/payment-plan/missing_plan")
+    execution_response = client.get("/api/execution/missing_execution")
+
+    assert plan_response.status_code == 404
+    assert plan_response.json()["detail"] == "Payment plan not found"
+    assert execution_response.status_code == 404
+    assert execution_response.json()["detail"] == "Execution not found"
 
 
 def test_non_whitelisted_wallet_is_blocked():
@@ -562,4 +613,7 @@ def test_caw_adapter_failure_appears_in_audit_report(monkeypatch):
     report = report_response.json()
     assert report["execution"]["payments"][0]["status"] == "Failed"
     assert report["execution"]["payments"][0]["error"] == "caw_provider_error"
+    assert report["outcomeSummary"]["failedPaymentIds"] == [plan["payments"][0]["id"]]
+    assert report["outcomeSummary"]["failedReasons"][plan["payments"][0]["id"]] == "caw_provider_error"
+    assert report["cawEvidence"][0]["error"] == "caw_provider_error"
     assert "SHOULD_NOT_LEAK_CANARY" not in report_response.text

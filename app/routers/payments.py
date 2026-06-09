@@ -1,3 +1,5 @@
+from datetime import UTC, datetime
+
 from fastapi import APIRouter, HTTPException
 
 from app.models import (
@@ -43,6 +45,116 @@ def _risk_snapshot_matches_payment_plan(payment_plan: PaymentPlan, risk_check: R
         for payment in risk_check.payments
     }
     return plan_snapshot == risk_snapshot
+
+
+def _build_risk_rule_evidence(risk_check: RiskCheckResult):
+    evidence = []
+    for payment in risk_check.payments:
+        if payment.risks:
+            for risk in payment.risks:
+                evidence.append(
+                    {
+                        "ruleId": risk.lower().replace(" ", "-"),
+                        "outcome": "blocked",
+                        "affectedPaymentIds": [payment.id],
+                        "reason": risk,
+                    }
+                )
+        else:
+            evidence.append(
+                {
+                    "ruleId": "risk-check-passed",
+                    "outcome": "passed",
+                    "affectedPaymentIds": [payment.id],
+                    "reason": "No deterministic risk rules were triggered.",
+                }
+            )
+    return evidence
+
+
+def _build_audit_evidence(
+    payment_plan: PaymentPlan,
+    risk_check: RiskCheckResult,
+    request: ExecutePaymentRequest,
+    execution: PaymentExecutionResult,
+):
+    blocked_payments = [
+        payment
+        for payment in risk_check.payments
+        if payment.status == PaymentStatus.BLOCKED
+    ]
+    failed_payments = [
+        payment
+        for payment in execution.payments
+        if payment.status == PaymentStatus.FAILED
+    ]
+    executed_payment_ids = [
+        payment.paymentItemId
+        for payment in execution.payments
+        if payment.status == PaymentStatus.EXECUTED
+    ]
+    return {
+        "inputSummary": {
+            "paymentPlanId": payment_plan.paymentPlanId,
+            "paymentCount": len(payment_plan.payments),
+            "totalAmount": payment_plan.totalAmount,
+            "tokens": sorted({payment.token for payment in payment_plan.payments}),
+        },
+        "decisionTrail": [
+            {"step": "payment-plan", "status": "created", "id": payment_plan.paymentPlanId},
+            {"step": "risk-check", "status": risk_check.overallStatus, "id": risk_check.paymentPlanId},
+            {
+                "step": "human-approval",
+                "status": "approved" if request.humanApproval.approved else "rejected",
+                "approvedBy": request.humanApproval.approvedBy,
+            },
+            {"step": "caw-execution", "status": "completed", "id": execution.executionId},
+            {"step": "audit-snapshot", "status": "captured", "id": execution.auditReportId},
+        ],
+        "riskRuleEvidence": _build_risk_rule_evidence(risk_check),
+        "humanApprovalEvidence": {
+            "approved": request.humanApproval.approved,
+            "approvedBy": request.humanApproval.approvedBy,
+            "approvedPaymentIds": request.approvedPaymentIds,
+            "source": "execute-payment-request",
+        },
+        "cawEvidence": [
+            {
+                "paymentItemId": payment.paymentItemId,
+                "mode": payment.mode,
+                "network": payment.network,
+                "agentWalletAddress": payment.agentWalletAddress,
+                "cawRequestId": payment.cawRequestId,
+                "txHash": payment.txHash,
+                "txHashExplanation": (
+                    "mock execution does not create a real tx hash"
+                    if payment.mode == "mock" and payment.txHash is None
+                    else "tx hash returned by CAW"
+                ),
+                "error": payment.error,
+            }
+            for payment in execution.payments
+        ],
+        "outcomeSummary": {
+            "executedPaymentIds": executed_payment_ids,
+            "blockedPaymentIds": [payment.id for payment in blocked_payments],
+            "blockedReasons": {
+                payment.id: payment.risks
+                for payment in blocked_payments
+            },
+            "failedPaymentIds": [payment.paymentItemId for payment in failed_payments],
+            "failedReasons": {
+                payment.paymentItemId: payment.error
+                for payment in failed_payments
+                if payment.error
+            },
+        },
+        "snapshot": {
+            "capturedAt": datetime.now(UTC).isoformat(),
+            "sourceExecutionId": execution.executionId,
+            "immutable": True,
+        },
+    }
 
 
 @router.post("/payment-plan", response_model=PaymentPlan)
@@ -192,9 +304,26 @@ def execute_payment(request: ExecutePaymentRequest):
         humanApproval=request.humanApproval,
         execution=execution,
         remainingBudget=risk_check.remainingBudget,
+        **_build_audit_evidence(payment_plan, risk_check, request, execution),
     )
     store.save_execution(execution)
     store.save_audit_report(audit_report)
+    return execution
+
+
+@router.get("/payment-plan/{paymentPlanId}", response_model=PaymentPlan)
+def get_payment_plan(paymentPlanId: str):
+    payment_plan = store.get_payment_plan(paymentPlanId)
+    if payment_plan is None:
+        raise HTTPException(status_code=404, detail="Payment plan not found")
+    return payment_plan
+
+
+@router.get("/execution/{executionId}", response_model=PaymentExecutionResult)
+def get_execution(executionId: str):
+    execution = store.get_execution(executionId)
+    if execution is None:
+        raise HTTPException(status_code=404, detail="Execution not found")
     return execution
 
 
