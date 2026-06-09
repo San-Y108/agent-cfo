@@ -425,6 +425,8 @@ Render environment variables:
 ```text
 PYTHON_VERSION=3.13.5
 CORS_ALLOWED_ORIGINS=https://agentcfo-frontend.vercel.app
+CAW_ADAPTER_MODE=mock
+CAW_ENABLE_TRANSFERS=false
 ```
 
 Production must set `CORS_ALLOWED_ORIGINS` to the actual frontend origin. If this variable is not set, the backend only uses local development defaults:
@@ -458,7 +460,34 @@ curl https://agentcfo-backend.onrender.com/api/demo-sample
 
 This deployment is still mock backend mode by default: no real Cobo Agentic Wallet transfer, no `.env`, and no secrets in the repository. Render should set `CAW_ADAPTER_MODE=mock` and `CAW_ENABLE_TRANSFERS=false` for P1 online verification.
 
-Current Render persistence decision: the live Render demo is treated as `mock-demo` with ephemeral SQLite storage unless a Render persistent disk is explicitly approved and attached later. It is valid for online P0 mock flow verification, but it does not preserve or prove local CAW evidence across deploys or restarts.
+### Render Persistent Disk For Demo Evidence
+
+Use SQLite on a Render persistent disk only as durable demo evidence storage. Do not treat it as a production-grade finance ledger, multi-instance database, or final accounting source of truth.
+
+Recommended Render disk settings:
+
+```text
+Mount path: /var/data
+AGENTCFO_DB_PATH=/var/data/agentcfo_demo.sqlite3
+```
+
+The backend already reads `AGENTCFO_DB_PATH` when creating the SQLite store. If the Render service does not have a persistent disk mounted at `/var/data`, this path will not provide durable evidence and may fail or lose data depending on the filesystem state.
+
+Before enabling this on Render, add a persistent disk in the Render Dashboard or through the Render API, then set `AGENTCFO_DB_PATH=/var/data/agentcfo_demo.sqlite3` and redeploy. Keep P1 online verification in mock mode:
+
+```text
+CAW_ADAPTER_MODE=mock
+CAW_ENABLE_TRANSFERS=false
+```
+
+Persistence verification checklist after the disk exists:
+
+1. Create a P0/P2 mock evidence record through the normal mock API flow.
+2. Read it back through the relevant API, such as Audit Report or CAW Status.
+3. Trigger a Render redeploy or service restart.
+4. Read the same record again and confirm the id and evidence fields are unchanged.
+
+Current Render persistence decision: do not claim durable evidence storage until the persistent disk is attached, redeployed, and the checklist above passes.
 
 ## Payment Planner Mode
 
@@ -496,7 +525,7 @@ For temporary local demos, you can force the old in-memory store:
 AGENTCFO_STORE_BACKEND=memory
 ```
 
-On Render, SQLite is only suitable for a single-instance demo. Current closeout decision: no persistent disk is configured or verified for this release, so the Render service must be treated as ephemeral/mock-only for audit evidence. To keep SQLite data across deploys or restarts, first get explicit approval, then attach a Render persistent disk and set `AGENTCFO_DB_PATH` to a path on that disk. If SQLite is stored on Render's normal ephemeral filesystem, deploys or restarts can lose the database file. For long-running audit storage, multi-instance services, or production-like usage, use Postgres in a later phase instead; do not implement Postgres without explicit approval.
+On Render, SQLite is only suitable for a single-instance demo. To keep SQLite data across deploys or restarts, first get explicit approval, then attach a Render persistent disk at `/var/data` and set `AGENTCFO_DB_PATH=/var/data/agentcfo_demo.sqlite3`. If SQLite is stored on Render's normal ephemeral filesystem, deploys or restarts can lose the database file. For long-running audit storage, multi-instance services, or production-like usage, use Postgres in a later phase instead; do not implement Postgres without explicit approval.
 
 Audit Reports are saved as execution-time snapshots. Later CAW status refreshes must not rewrite historical Audit Report content.
 
