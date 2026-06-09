@@ -84,6 +84,145 @@
 
 ---
 
+## H. 批次 C — 业务工作台 `/console` 创新迁移（重点 / 进行中）
+
+> 目标：将 AI Studio 设计稿 (`D:\OneDrive\Desktop\agentcfo.zip`) 中完整的"DAO AI 财务官工作台"迁移到本项目的业务层 `/console` 路由下，**不要 1:1 移植**，要把 landing 已经验证好的视觉精髓融入。
+> 起点 commit：`7307c77c`（landing 完整重设计 + footer 已落地 + push 到远端）。
+> 决策记录：Q1=B（PaymentFlow 用 GSAP 水平滚动重写）/ Q2=B（Sandbox + Live Rules 做成全局右侧 Drawer）/ Q3=A（Phase 0+1 完成后 stop 等用户验证再继续）。
+> 详细交接文档：`docs/handoff/2026-06-09-batch-c-plan.md`（含素材来源、规范、视觉融合策略、命令清单）。
+
+### H0. 素材来源（必读）
+
+- **AI Studio 源压缩包**：`D:\OneDrive\Desktop\agentcfo.zip`（408KB，408 KB，2026-06-09 18:41 打包）
+- **解压目录**：`D:\OneDrive\Desktop\agentcfo-extracted`
+- **源代码文件**（绝对路径）：
+  - `D:\OneDrive\Desktop\agentcfo-extracted\src\App.tsx`（54 行，state-driven SPA 入口）
+  - `D:\OneDrive\Desktop\agentcfo-extracted\src\components\Dashboard.tsx`（~11KB，Sidebar + Topbar + 4-tab outlet）
+  - `D:\OneDrive\Desktop\agentcfo-extracted\src\components\PaymentFlow.tsx`（~64KB，5-step wizard + 内嵌 Sandbox + 实时规则）
+  - `D:\OneDrive\Desktop\agentcfo-extracted\src\components\CawWallets.tsx`（~32KB，多钱包 / 余额 / Transfer / 签名者）
+  - `D:\OneDrive\Desktop\agentcfo-extracted\src\components\AnalyticsView.tsx`（~18KB，recharts 面积图 + 饼图 + KPI）
+  - `D:\OneDrive\Desktop\agentcfo-extracted\src\components\RulesPolicy.tsx`（~25KB，白名单 CRUD + 阈值配置）
+  - `D:\OneDrive\Desktop\agentcfo-extracted\src\components\Marketing.tsx`（landing 部分，**不迁，仅参考**）
+  - `D:\OneDrive\Desktop\agentcfo-extracted\src\locales.ts`（~30KB 双语字典 zh/en）
+  - `D:\OneDrive\Desktop\agentcfo-extracted\src\data.ts`（mock 数据：MOCK_RECORDS 等）
+  - `D:\OneDrive\Desktop\agentcfo-extracted\src\types.ts`（`ContributorRecord` / `PaymentPlanItem` / `BudgetRules`）
+
+### H1. 三大技术适配（每个组件都要做）
+
+| 源 | 目标 | 改造 |
+|---|---|---|
+| Vite SPA + state-driven `view` 切换 | Next.js App Router 子路由 | 把 Dashboard.tsx 拆为 `app/console/layout.tsx`（壳）+ 4 个 `app/console/[tab]/page.tsx`（叶子） |
+| `import { motion } from "motion/react"` (v12) | `import { motion } from "framer-motion"` (v11) | 全文 import 路径替换。`AnimatePresence` 等 API 完全兼容 |
+| `theme/lang` 通过 props 层层传 | `useApp()` context | 移除组件 props 中的 `theme/lang/setTheme/setLang`，直接 `const { theme, lang } = useApp()` |
+| `translations[lang][key]` 函数 | 现有 `useT()` hook + `lib/i18n/dict.ts` | 合并 locales.ts 30KB 字典到 dict.ts，统一 key 命名风格 |
+
+### H2. Phase 拆解（7 个阶段，按风险递增）
+
+#### H2.0 Phase 0：基础设施迁移（无创意，**先做**）
+- [ ] 安装 `recharts`（`pnpm add recharts`）— AnalyticsView 必需
+- [ ] 迁移 `types.ts` → `frontend/lib/types/console.ts`
+- [ ] 迁移 `data.ts` → `frontend/lib/demo/console-mock.ts`（mock 数据，与 backend contract 同形）
+- [ ] 合并 `locales.ts` 双语字典到 `frontend/lib/i18n/dict.ts`（保留 console_ 前缀避免冲突）
+- [ ] 验证：`pnpm typecheck` 通过，无新增 build error
+
+#### H2.1 Phase 1：Dashboard 主壳（**定调**）
+- [ ] 新建 `app/console/layout.tsx`：Sidebar (260px) + Topbar + content outlet
+- [ ] 子路由：`app/console/page.tsx`（Treasury 主页占位）+ `app/console/wallets/page.tsx` + `app/console/analytics/page.tsx` + `app/console/policy/page.tsx`
+- [ ] Sidebar 4 nav item 各自带主色 dot：Treasury=lime `#B5FF4D` / Wallets=blue `#60A5FA` / Analytics=violet `#C084FC` / Policy=coral `#FB7185`
+- [ ] 集成 `ThemeLanguageToggle variant="app"`（业务层完整保留主题 + 语言）
+- [ ] 集成 Sandbox + Live Rules **全局右侧 Drawer**（按 Q2=B 决策）—— 浮动按钮 + 滑出面板，所有 tab 都能调出
+- [ ] **创新点**：Sidebar 顶部用 landing footer 同款 SVG wordmark "AGENTCFO"（不会被截断）；空状态用 PipelineShowcase 大编号风格的"01 Treasury / 02 Wallets / ..."
+- [ ] 验证：`pnpm typecheck` + `pnpm build` + 4 路由可达 + 主题切换 + 语言切换不破坏布局
+- [ ] **STOP 节点**：交付给用户验证 Phase 0+1 整体效果，等确认后再进 Phase 2
+
+#### H2.2 Phase 2：Wallets `/console/wallets`（蓝色主色 / 试水模板）
+- [ ] 迁移 `CawWallets.tsx` 业务逻辑（3 钱包卡 + token 余额 + Transfer 模态框 + Copy 按钮）
+- [ ] **创新点 1**：钱包卡用 HolographicCard 3D 鼠标倾斜（已验证组件，移植 useMotionValue + useSpring 模式）
+- [ ] **创新点 2**：替代"纯列表"——上方新增"多钱包关系图"区域，复用 Web3NodeCloud 拖拽节点（中心 Agent Vault，周围 Multi-sig / Cold Storage，连线显示资金流向）
+- [ ] **创新点 3**：危险操作（如 Transfer 超额）触发 GuardrailsCTA 同款红色拦截卡
+- [ ] 主色：blue `#60A5FA`，配 stage 04 配色系
+- [ ] 验证标准：3 钱包可切换、Transfer mock 可走通、Copy hash 可点
+
+#### H2.3 Phase 3：Analytics `/console/analytics`（紫色主色）
+- [ ] 迁移 `AnalyticsView.tsx`（recharts AreaChart + PieChart + 3 个 KPI 卡）
+- [ ] 适配 recharts 主题（深色/浅色 token 切换）
+- [ ] **创新点 1**：KPI 大数字用 PipelineShowcase 同款大字号 + 渐变描边
+- [ ] **创新点 2**：饼图配色用 5 stage 主色（cyan / coral / lime / blue / violet）
+- [ ] **创新点 3**：时间范围切换器（30d / 90d / 1y）用 landing pill 风格
+- [ ] 主色：violet `#C084FC`，配 stage 05 配色系
+
+#### H2.4 Phase 4：Policy `/console/policy`（珊瑚红主色）
+- [ ] 迁移 `RulesPolicy.tsx`（白名单 CRUD + 阈值滑块 + Slack webhook）
+- [ ] **创新点 1**：5 类规则用 PipelineShowcase 大编号 01-05 排版，每条规则一行
+- [ ] **创新点 2**：白名单 CRUD 表单用 CardSplitter 同款动画（新增地址时炸裂出现）
+- [ ] **创新点 3**：阈值滑块用 lime 主色 + 实时数值闪烁反馈
+- [ ] 主色：coral `#FB7185`，配 stage 02 配色系
+
+#### H2.5 Phase 5：Treasury (Live Run) `/console`（最难，**最后做**）
+> 这是 64KB 巨型组件，**用 landing PipelineShowcase 的 GSAP 水平滚动重写**（按 Q1=B 决策）。
+- [ ] 把原 5-step wizard 改为 5 stage GSAP horizontal pin scroll（与 landing 镜像呼应）
+- [ ] 5 stage 主色：Records=cyan / Risk=coral / Approval=lime / Execution=blue / Audit=violet（与 landing 完全一致）
+- [ ] **创新点 1**：Generate Plan 触发的瞬间用 CardSplitter 炸裂动画（已验证组件）
+- [ ] **创新点 2**：Bob blocked 时戏剧化标红（红色脉冲 + 拦截卡浮出）
+- [ ] **创新点 3**：tx hash 用 TransactionMarquee 同款色调 pill
+- [ ] **创新点 4**：完成 audit 后用 Footer SVG wordmark 同款渐变文字"Settlement Sealed"
+- [ ] 业务逻辑保留：5-step 流程 / 实时规则评估 / mock tx hash 生成
+- [ ] **配合 Q2=B**：原本内嵌的 Sandbox / Live Rules 已经移到 Phase 1 的全局 Drawer，本 Phase 不再重复实现
+
+#### H2.6 Phase 6：清理旧 DemoFlow
+- [ ] 评估 `components/demo/` 下哪些组件 Phase 5 不再用
+- [ ] 删除孤儿组件（`demo-flow.tsx` / `command-center-shell.tsx` 等）
+- [ ] 保留 `components/payment/` `components/risk/` 等若 Phase 5 仍引用（多数会被吸收）
+- [ ] 删除 `lib/demo/demo-data.ts` 旧 mock（用 Phase 0 迁过来的 `console-mock.ts` 取代）
+- [ ] 最终 `pnpm build` 零 warning（关于 unused imports）
+
+### H3. 设计规范（融合 landing + AI Studio）
+
+**色彩系统（必须严格遵守）**：
+- 主背景：`#0D0D0D`（Ramp near-black，全站统一）
+- 主色 lime：`#B5FF4D`（品牌色 + Treasury tab）
+- Stage 配色：cyan `#5EEAD4` / coral `#FB7185` / lime `#B5FF4D` / blue `#60A5FA` / violet `#C084FC`
+- 文字层级：`text-white`（标题）/ `text-white/85`（正文）/ `text-white/55`（次要）/ `text-white/35`（极次要）
+- 边框：`border-white/10`（弱）/ `border-white/[0.06]`（极弱）
+
+**字体系统**：
+- Sans：`Inter, sans-serif`（标题 + 主文案）
+- Mono：`'Courier New', Courier, monospace`（labels / hash / 数据）
+- 字号 clamp 风格：`clamp(min, vw, max)`
+
+**动效层（按优先级使用）**：
+1. **GSAP ScrollTrigger** —— 仅用于 Treasury Phase 5 的水平滚动（已在 `lib/gsap.ts` 配置）
+2. **framer-motion** —— 默认动效层（reveal / hover / drag）
+3. **CSS transition** —— 简单色彩/透明度变化
+
+**已验证可复用组件（landing 已落地）**：
+- `HolographicCard`（`components/landing/holographic-card.tsx`）—— 3D 鼠标倾斜，可移植到 Wallets 主卡
+- `Web3NodeCloud`（`components/landing/web3-node-cloud.tsx`）—— 拖拽节点 + SVG 连线，可移植到 Wallets 拓扑图
+- `CardSplitter`（`components/landing/card-splitter.tsx`）—— 滚动炸裂，可移植到 Policy/Treasury
+- `TransactionMarquee`（`components/landing/transaction-marquee.tsx`）—— 6 色调 pill 系统
+- `PipelineShowcase` 排版风格（大编号 + 副色）—— 可移植到 Treasury / Policy
+
+### H4. 验证标准（每个 Phase 完成都要过）
+
+- [ ] `pnpm typecheck` 零错误
+- [ ] `pnpm build` 零错误零 warning
+- [ ] 浏览器实测 4 个路由可达：`/console`, `/console/wallets`, `/console/analytics`, `/console/policy`
+- [ ] 主题切换（暗 ↔ 亮）不破坏布局
+- [ ] 语言切换（zh ↔ en）不破坏布局
+- [ ] 响应式：≥1024px 桌面 / 640-1024px 平板 / <640px 移动
+- [ ] 至少在 Treasury / Wallets 看到与 landing 的视觉呼应（色调 + 动效）
+
+### H5. 严禁事项
+
+- 严禁 `1:1 抄 AI Studio`（这是创新失败标志）
+- 严禁动 `app/page.tsx`（landing 区已锁定）
+- 严禁动 `components/landing/` 已有组件（除非"借用"组件给 console）
+- 严禁动 backend `app/`（前端边界外）
+- 严禁发明 API endpoint / response wrapper（按 `app/models.py` contract）
+- 严禁删 `components/landing/holographic-card.tsx` 等 5 个 landing 视觉资产
+
+---
+
 ### 备注（非 frontend 范围，仅供参考，不在本清单负责内）
 - Demo 视频 / PPT / README 头图 / 路演稿：物料 & 交付同学。
 - 后端 payment-plan / risk-check / execute-payment / audit-report API：已实现（`app/`，12 tests passed）。
