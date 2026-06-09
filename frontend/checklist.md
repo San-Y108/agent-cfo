@@ -169,12 +169,12 @@
 - [x] 业务逻辑保留：5-step 流程 / 实时规则评估 / mock tx hash 生成 / 新增记录 / 重置循环
 - [x] **配合 Q2=B**：原本内嵌的 Sandbox / Live Rules 已经移到 Phase 1 的全局 Drawer，本 Phase 不再重复实现
 
-#### H2.6 Phase 6：清理旧 DemoFlow
-- [ ] 评估 `components/demo/` 下哪些组件 Phase 5 不再用
-- [ ] 删除孤儿组件（`demo-flow.tsx` / `command-center-shell.tsx` 等）
-- [ ] 保留 `components/payment/` `components/risk/` 等若 Phase 5 仍引用（多数会被吸收）
-- [ ] 删除 `lib/demo/demo-data.ts` 旧 mock（用 Phase 0 迁过来的 `console-mock.ts` 取代）
-- [ ] 最终 `pnpm build` 零 warning（关于 unused imports）
+#### H2.6 Phase 6：清理旧 DemoFlow ✅
+- [x] 评估 `components/demo/` 下哪些组件 Phase 5 不再用
+- [x] 删除孤儿组件（`demo-flow.tsx` / `command-center-shell.tsx` / `treasury-kpi-strip.tsx` / `bento-grid.tsx` / `demo-sidebar.tsx` / `stats-strip.tsx` / `demo-shell.tsx` + 5 steps）
+- [x] 删除 `components/payment/` / `components/risk/` / `components/approval/` / `components/execution/` / `components/audit/` / `components/workflow/`（全部未被 app 引用）
+- [x] 删除 `lib/demo/demo-data.ts` 旧 mock（用 Phase 0 迁过来的 `console-mock.ts` 取代）
+- [x] 最终 `pnpm build` 零错误（recharts 静态渲染警告为已知，非 build error）
 
 ### H3. 设计规范（融合 landing + AI Studio）
 
