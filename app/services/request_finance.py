@@ -160,10 +160,11 @@ class LiveRequestFinanceClient:
                 "hostedUrl",
                 "invoiceUrl",
                 "url",
+                "view",
                 fallback=request.hostedUrl,
             ),
-            view_url=_first_response_value(data, "viewUrl", "viewLink"),
-            pay_url=_first_response_value(data, "payUrl", "paymentUrl", "payLink"),
+            view_url=_first_response_value(data, "viewUrl", "viewLink", "view"),
+            pay_url=_first_response_value(data, "payUrl", "paymentUrl", "payLink", "pay"),
         )
 
     def list_invoices(self, take: int = 1, skip: int = 0):
@@ -236,9 +237,14 @@ def build_request_finance_invoice_payload(request: RequestInvoiceCreate):
         ],
         "paymentOptions": [
             {
-                "currency": request.paymentCurrency,
-                "network": request.paymentNetwork,
-                "address": request.paymentAddress,
+                "type": "wallet",
+                "value": {
+                    "currencies": [request.paymentCurrency],
+                    "paymentInformation": {
+                        "paymentAddress": request.paymentAddress,
+                        "chain": request.paymentNetwork,
+                    },
+                },
             }
         ],
         "creationDate": request.creationDate,
@@ -264,6 +270,12 @@ def _first_response_value(data: dict, *keys: str, fallback: str | None = None):
     if isinstance(links, dict):
         for key in keys:
             value = _response_value(links, key)
+            if value:
+                return value
+    invoice_links = data.get("invoiceLinks")
+    if isinstance(invoice_links, dict):
+        for key in keys:
+            value = _response_value(invoice_links, key)
             if value:
                 return value
     return fallback

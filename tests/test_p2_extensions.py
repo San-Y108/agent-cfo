@@ -373,9 +373,14 @@ def test_request_finance_live_create_payload_mapper_requires_payment_fields():
     ]
     assert payload["paymentOptions"] == [
         {
-            "currency": "USDC",
-            "network": "sepolia",
-            "address": "0xPaymentAddress",
+            "type": "wallet",
+            "value": {
+                "currencies": ["USDC"],
+                "paymentInformation": {
+                    "paymentAddress": "0xPaymentAddress",
+                    "chain": "sepolia",
+                },
+            },
         }
     ]
     assert payload["creationDate"] == "2026-06-10"
@@ -396,9 +401,10 @@ def test_request_finance_live_create_uses_fake_transport_without_onchain_convers
                 "id": "rf_live_fake_001",
                 "requestId": "request_live_fake_001",
                 "status": "created",
-                "hostedUrl": "https://example.invalid/request/rf_live_fake_001",
-                "viewUrl": "https://example.invalid/view/rf_live_fake_001",
-                "payUrl": "https://example.invalid/pay/rf_live_fake_001",
+                "invoiceLinks": {
+                    "view": "https://example.invalid/view/rf_live_fake_001",
+                    "pay": "https://example.invalid/pay/rf_live_fake_001",
+                },
             },
         )
 
@@ -439,7 +445,7 @@ def test_request_finance_live_create_uses_fake_transport_without_onchain_convers
     assert result.request_finance_invoice_id == "rf_live_fake_001"
     assert result.request_id == "request_live_fake_001"
     assert result.status == "created"
-    assert result.hosted_url == "https://example.invalid/request/rf_live_fake_001"
+    assert result.hosted_url == "https://example.invalid/view/rf_live_fake_001"
     assert result.view_url == "https://example.invalid/view/rf_live_fake_001"
     assert result.pay_url == "https://example.invalid/pay/rf_live_fake_001"
 
