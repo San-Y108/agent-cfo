@@ -19,12 +19,14 @@ import {
   Sparkles,
   Clock,
   Users,
+  Upload,
 } from "lucide-react";
 import { useApp } from "@/lib/i18n/context";
 import { MOCK_RECORDS, MOCK_RULES } from "@/lib/demo/console-mock";
 import { ContributorRecord, PaymentPlanItem } from "@/lib/types/console";
 import type { CawStatus } from "@/lib/api/types";
 import { isMockMode } from "@/lib/api/client";
+import { RecordsImport } from "@/components/console/records-import";
 
 /* =============================================================================
  * BUSINESS LOGIC HELPERS
@@ -63,6 +65,7 @@ export default function TreasuryPage() {
   const [newName, setNewName] = useState("");
   const [newWallet, setNewWallet] = useState("");
   const [newAmount, setNewAmount] = useState(10);
+  const [importOpen, setImportOpen] = useState(false);
 
   /* ─── CAW Status state (P0 refresh) ─── */
   const [cawStatuses, setCawStatuses] = useState<CawStatus[]>([]);
@@ -102,6 +105,10 @@ export default function TreasuryPage() {
     setNewName("");
     setNewWallet("");
     setNewAmount(10);
+  };
+
+  const handleImportRecords = (imported: ContributorRecord[]) => {
+    setRecords((prev) => [...prev, ...imported]);
   };
 
   const handleGenerate = () => {
@@ -270,13 +277,22 @@ export default function TreasuryPage() {
                     {records.length}
                   </span>
                 </div>
-                <button
-                  onClick={reset}
-                  className="text-[11px] text-fg-subtle hover:text-fg transition-colors flex items-center gap-1 cursor-pointer"
-                >
-                  <RefreshCw className="w-3 h-3" />
-                  {_("重置", "Reset")}
-                </button>
+                <div className="flex items-center gap-3">
+                  <button
+                    onClick={() => setImportOpen(true)}
+                    className="text-[11px] text-fg-subtle hover:text-fg transition-colors flex items-center gap-1 cursor-pointer"
+                  >
+                    <Upload className="w-3 h-3" />
+                    {_("批量导入", "Import")}
+                  </button>
+                  <button
+                    onClick={reset}
+                    className="text-[11px] text-fg-subtle hover:text-fg transition-colors flex items-center gap-1 cursor-pointer"
+                  >
+                    <RefreshCw className="w-3 h-3" />
+                    {_("重置", "Reset")}
+                  </button>
+                </div>
               </div>
 
               {/* Table */}
@@ -399,6 +415,13 @@ export default function TreasuryPage() {
           </motion.div>
         </div>
       </div>
+
+      {/* ─── Batch import modal ─── */}
+      <RecordsImport
+        open={importOpen}
+        onClose={() => setImportOpen(false)}
+        onImport={handleImportRecords}
+      />
     </div>
   );
 }
