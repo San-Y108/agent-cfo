@@ -10,6 +10,7 @@ import { useT, useApp } from "@/lib/i18n/context";
 import type { DictKey } from "@/lib/i18n/dict";
 import { ThemeLanguageToggle } from "@/components/ui/theme-language-toggle";
 import { AgentCFOBackgroundTexture } from "@/components/landing/agentcfo-background-texture";
+import { ParticleHeroTitle } from "@/components/landing/particle-hero-title";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -432,7 +433,7 @@ export function VelorixHero() {
             letterSpacing: "-0.03em",
           }}
         >
-          {t("hero.title")}
+          <ParticleHeroTitle text={t("hero.title")} />
         </h1>
 
         <p
