@@ -47,13 +47,9 @@ export function LandingSections() {
         <GuardrailsCTA />
       </section>
 
-      {/* Built-by team fan-card showcase */}
+      {/* Built-by team + build timeline merged module */}
       <section id="team" className="w-full">
         <TeamShowcase />
-      </section>
-
-      {/* Build timeline — Phase 0→3 */}
-      <section id="timeline" className="w-full">
         <BuildTimeline />
       </section>
 

@@ -219,7 +219,7 @@ export function TeamShowcase() {
 
   return (
     <section
-      className="relative w-full overflow-hidden px-6 py-24 lg:py-32"
+      className="relative w-full overflow-hidden px-6 py-16 lg:py-20"
       style={{ fontFamily: "Inter, sans-serif" }}
     >
       {/* subtle background grid */}

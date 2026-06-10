@@ -179,17 +179,7 @@ export function BuildTimeline() {
       style={{ height: `${PHASES.length * 100}vh`, fontFamily: "Inter, sans-serif" }}
     >
       <div className="sticky top-0 h-screen flex flex-col items-center justify-center px-6 py-16">
-        {/* heading */}
-        <div className="absolute top-10 left-0 right-0 text-center">
-          <h3 className="text-2xl font-extrabold tracking-tight text-white md:text-3xl">
-            {_("构建时间线", "Build Timeline")}
-          </h3>
-          <p className="mt-2 text-sm text-white/50">
-            {_("从启动到提交的完整旅程", "The full journey from kickoff to submission")}
-          </p>
-        </div>
-
-        <div className="mt-10 flex flex-col lg:flex-row items-center justify-center gap-10 lg:gap-20 w-full max-w-5xl">
+        <div className="flex flex-col lg:flex-row items-center justify-center gap-10 lg:gap-20 w-full max-w-5xl">
           {/* Left text area */}
           <div className="relative w-full lg:w-[420px] h-[160px] lg:h-[180px]">
             {PHASES.map((p, i) => (
