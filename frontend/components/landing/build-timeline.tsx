@@ -149,6 +149,31 @@ export function BuildTimeline() {
           end: `+=${frames.length * 85}%`,
           pin: true,
           scrub: 0.5,
+          invalidateOnRefresh: true,
+          onRefresh: (self) => {
+            // Force correct visibility states when ScrollTrigger refreshes
+            const progress = self.progress;
+            const activeIdx = Math.min(
+              frames.length - 1,
+              Math.floor(progress * (frames.length - 1) + 0.5)
+            );
+            frames.forEach((f, i) => {
+              gsap.set(f, {
+                opacity: i === activeIdx ? 1 : 0,
+                scale: i === activeIdx ? 1 : 0.88,
+                filter:
+                  i === activeIdx
+                    ? "brightness(1) contrast(1)"
+                    : "brightness(0.45) contrast(1.1)",
+              });
+            });
+            texts.forEach((t, i) => {
+              gsap.set(t, {
+                opacity: i === activeIdx ? 1 : 0,
+                y: i === activeIdx ? 0 : i < activeIdx ? -24 : 32,
+              });
+            });
+          },
           snap: {
             snapTo: 1 / (frames.length - 1),
             duration: { min: 0.2, max: 0.45 },
@@ -235,6 +260,7 @@ export function BuildTimeline() {
                   textRefs.current[i] = el;
                 }}
                 className="absolute inset-0 flex flex-col justify-center text-center lg:text-left"
+                style={{ opacity: i === 0 ? 1 : 0 }}
               >
                 {/* Phase label */}
                 <span
@@ -329,6 +355,7 @@ export function BuildTimeline() {
                       `,
                       border: "1px solid rgba(255,255,255,0.04)",
                       borderRadius: "1px",
+                      opacity: i === 0 ? 1 : 0,
                     }}
                   >
                     {/* Subtle inner glow at top */}
