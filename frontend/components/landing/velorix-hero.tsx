@@ -12,6 +12,82 @@ import { ThemeLanguageToggle } from "@/components/ui/theme-language-toggle";
 
 gsap.registerPlugin(ScrollTrigger);
 
+/* Highlight key words in the hero title with lime glow + GSAP entrance */
+function HighlightedTitle({ text }: { text: string }) {
+  const containerRef = useRef<HTMLSpanElement>(null);
+
+  useGSAP(() => {
+    if (!containerRef.current) return;
+    const words = containerRef.current.querySelectorAll("[data-hero-keyword]");
+    gsap.fromTo(
+      words,
+      { opacity: 0, y: 18, scale: 0.96 },
+      {
+        opacity: 1,
+        y: 0,
+        scale: 1,
+        duration: 0.7,
+        stagger: 0.12,
+        ease: "back.out(1.7)",
+        delay: 0.4,
+      }
+    );
+    gsap.to(words, {
+      textShadow: "0 0 36px rgba(181,255,77,0.7), 0 0 72px rgba(181,255,77,0.4)",
+      duration: 1.6,
+      stagger: { each: 0.12, from: "start" },
+      repeat: -1,
+      yoyo: true,
+      ease: "sine.inOut",
+      delay: 0.4,
+    });
+  }, { scope: containerRef });
+
+  const highlights = ["DAO", "treasury", "decisions", "executable", "payment flows"];
+  const parts: React.ReactNode[] = [];
+  let remaining = text;
+
+  while (remaining.length > 0) {
+    let matchIndex = -1;
+    let matchWord = "";
+    for (const word of highlights) {
+      const idx = remaining.toLowerCase().indexOf(word.toLowerCase());
+      if (idx !== -1 && (matchIndex === -1 || idx < matchIndex)) {
+        matchIndex = idx;
+        matchWord = word;
+      }
+    }
+
+    if (matchIndex === -1) {
+      parts.push(<span key={parts.length}>{remaining}</span>);
+      break;
+    }
+
+    if (matchIndex > 0) {
+      parts.push(<span key={parts.length}>{remaining.slice(0, matchIndex)}</span>);
+    }
+
+    const actualWord = remaining.slice(matchIndex, matchIndex + matchWord.length);
+    parts.push(
+      <span
+        key={parts.length}
+        data-hero-keyword
+        className="inline-block"
+        style={{
+          color: "#B5FF4D",
+          textShadow: "0 0 24px rgba(181,255,77,0.45), 0 0 48px rgba(181,255,77,0.25)",
+        }}
+      >
+        {actualWord}
+      </span>
+    );
+
+    remaining = remaining.slice(matchIndex + matchWord.length);
+  }
+
+  return <span ref={containerRef}>{parts}</span>;
+}
+
 // Background "robot + hand" cinematic visual — remote video, verbatim from Velorix IIC demo.
 const BG_VIDEO =
   "https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260508_155101_f2540600-6fe9-433e-8e48-b3f4b72f0727.mp4";
@@ -409,7 +485,7 @@ export function VelorixHero() {
 
       <Navbar />
 
-      <div ref={contentRef} className="relative z-20 flex flex-col items-center text-center px-5 sm:px-8 max-w-4xl mx-auto">
+      <div ref={contentRef} className="relative z-20 flex flex-col items-center text-center px-5 sm:px-8 max-w-4xl mx-auto -mt-24 md:-mt-32">
         {/* Eyebrow */}
         <span
           className="text-[11px] font-medium uppercase tracking-[0.18em] text-[#B5FF4D] mb-6"
@@ -426,7 +502,7 @@ export function VelorixHero() {
             letterSpacing: "-0.03em",
           }}
         >
-          {t("hero.title")}
+          <HighlightedTitle text={t("hero.title")} />
         </h1>
 
         <p
