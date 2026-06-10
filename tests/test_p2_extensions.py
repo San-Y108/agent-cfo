@@ -201,6 +201,8 @@ def test_request_invoice_live_mode_uses_fake_client_without_mutating_audit_snaps
                 request_id="request_live_fake_001",
                 status="created",
                 hosted_url="https://example.invalid/request/rf_live_fake_001",
+                view_url="https://example.invalid/view/rf_live_fake_001",
+                pay_url="https://example.invalid/pay/rf_live_fake_001",
             )
 
         def list_invoices(self, take: int = 1):
@@ -239,6 +241,13 @@ def test_request_invoice_live_mode_uses_fake_client_without_mutating_audit_snaps
     assert invoice.requestId == "request_live_fake_001"
     assert invoice.status == "created"
     assert invoice.externalReference.metadata["requestFinanceMode"] == "live"
+    assert invoice.externalReference.metadata["status"] == "created"
+    assert invoice.externalReference.metadata["viewUrl"] == (
+        "https://example.invalid/view/rf_live_fake_001"
+    )
+    assert invoice.externalReference.metadata["payUrl"] == (
+        "https://example.invalid/pay/rf_live_fake_001"
+    )
     assert audit_after == audit_before
 
 
@@ -388,6 +397,8 @@ def test_request_finance_live_create_uses_fake_transport_without_onchain_convers
                 "requestId": "request_live_fake_001",
                 "status": "created",
                 "hostedUrl": "https://example.invalid/request/rf_live_fake_001",
+                "viewUrl": "https://example.invalid/view/rf_live_fake_001",
+                "payUrl": "https://example.invalid/pay/rf_live_fake_001",
             },
         )
 
@@ -429,6 +440,8 @@ def test_request_finance_live_create_uses_fake_transport_without_onchain_convers
     assert result.request_id == "request_live_fake_001"
     assert result.status == "created"
     assert result.hosted_url == "https://example.invalid/request/rf_live_fake_001"
+    assert result.view_url == "https://example.invalid/view/rf_live_fake_001"
+    assert result.pay_url == "https://example.invalid/pay/rf_live_fake_001"
 
 
 def test_request_finance_live_create_provider_errors_fail_closed_without_secret_leak():

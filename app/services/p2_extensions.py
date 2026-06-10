@@ -129,7 +129,9 @@ class P2ExtensionService:
             "requestFinanceInvoiceId": invoice.request_finance_invoice_id,
             "requestId": invoice.request_id,
             "hostedUrl": invoice.hosted_url,
-            "txHashReference": request.txHashReference,
+            "viewUrl": invoice.view_url,
+            "payUrl": invoice.pay_url,
+            "status": invoice.status,
             "requestFinanceMode": "live",
         }
         reference = self.create_external_reference(

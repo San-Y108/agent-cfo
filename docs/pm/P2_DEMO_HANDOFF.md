@@ -257,6 +257,8 @@ curl -s "$BASE_URL/api/treasury-budget-partitions/plan_demo_001"
 - `txHashReference`: string or null
 - `externalReference`: `ExternalReference`
 - `externalReference.metadata.requestFinanceMode`: `mock`, `live-readonly`, or `live`
+- `externalReference.metadata.viewUrl`: string or null for an approved live off-chain invoice
+- `externalReference.metadata.payUrl`: string or null for an approved live off-chain invoice
 
 Optional live off-chain create input fields for a future approved test invoice:
 
@@ -331,7 +333,7 @@ Frontend repository is not present in the current backend workspace. Implement t
 - Add a `P2 Preview / Linked Evidence` section near the completed payment/audit view.
 - Keep Audit Report snapshot read-only and separate from linked P2 metadata.
 - Display badges from backend fields: `metadata-only`, `mock invoice`, `preview-only`, `reference-only`, `design-only`, `mock-budget-partition`.
-- For Request invoice records, show `requestFinanceInvoiceId`, `requestId`, `status`, `hostedUrl`, `paymentItemId`, `auditReportId`, and `cawRequestId`.
+- For Request invoice records, show `requestFinanceInvoiceId`, `requestId`, `status`, `hostedUrl`, optional metadata `viewUrl`/`payUrl`, `paymentItemId`, `auditReportId`, and `cawRequestId`.
 - If `/version.requestFinance.mode=live`, show it as "Request Finance live client configured" only.
 - If `/version.requestFinance.invoiceCreateImplemented=true`, label it as "off-chain invoice create path available but disabled/approval-gated" unless `invoiceCreateGuardEnabled=true` and a test invoice was explicitly approved and created.
 - For Sablier preview, show `streamCreated=false`, `durationDays`, `durationSeconds`, `ratePerSecond`, `recipient`, `wallet`, `amount`, and `token`.

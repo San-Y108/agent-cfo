@@ -92,6 +92,8 @@ class RequestFinanceInvoiceResult:
     request_id: str | None
     status: str
     hosted_url: str | None
+    view_url: str | None = None
+    pay_url: str | None = None
 
 
 class RequestFinanceClient(Protocol):
@@ -153,7 +155,15 @@ class LiveRequestFinanceClient:
             request_finance_invoice_id=invoice_id,
             request_id=_response_value(data, "requestId", fallback=request.requestId),
             status=_response_value(data, "status", fallback="created"),
-            hosted_url=_response_value(data, "hostedUrl", fallback=request.hostedUrl),
+            hosted_url=_first_response_value(
+                data,
+                "hostedUrl",
+                "invoiceUrl",
+                "url",
+                fallback=request.hostedUrl,
+            ),
+            view_url=_first_response_value(data, "viewUrl", "viewLink"),
+            pay_url=_first_response_value(data, "payUrl", "paymentUrl", "payLink"),
         )
 
     def list_invoices(self, take: int = 1, skip: int = 0):
@@ -243,6 +253,20 @@ def _response_value(data: dict, key: str, fallback: str | None = None):
     if value in (None, ""):
         return fallback
     return value
+
+
+def _first_response_value(data: dict, *keys: str, fallback: str | None = None):
+    for key in keys:
+        value = _response_value(data, key)
+        if value:
+            return value
+    links = data.get("links")
+    if isinstance(links, dict):
+        for key in keys:
+            value = _response_value(links, key)
+            if value:
+                return value
+    return fallback
 
 
 def create_request_finance_client(config: RequestFinanceConfig | None = None):
