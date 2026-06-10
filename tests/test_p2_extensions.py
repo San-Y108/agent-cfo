@@ -1,5 +1,6 @@
 import os
 
+import httpx
 from fastapi.testclient import TestClient
 
 os.environ["AGENTCFO_DB_PATH"] = ":memory:"
@@ -8,6 +9,7 @@ os.environ["CAW_ENABLE_TRANSFERS"] = "false"
 os.environ["REQUEST_FINANCE_MODE"] = "mock"
 os.environ.pop("REQUEST_FINANCE_API_KEY", None)
 os.environ.pop("REQUEST_FINANCE_ALLOW_INVOICE_CREATE", None)
+os.environ.pop("REQUEST_FINANCE_AUTH_SCHEME", None)
 
 from app.main import app
 from app.store import store
@@ -16,8 +18,10 @@ import app.routers.p2_extensions as p2_router_module
 from app.models import RequestInvoiceCreate
 from app.services.p2_extensions import P2ExtensionService
 from app.services.request_finance import (
+    LiveRequestFinanceClient,
     RequestFinanceConfig,
     RequestFinanceInvoiceResult,
+    RequestFinanceProviderError,
 )
 
 
@@ -322,6 +326,79 @@ def test_request_invoice_live_create_guard_reaches_blocked_live_client(monkeypat
 
     assert response.status_code == 403
     assert "payload mapping requires explicit approval" in response.json()["detail"]
+
+
+def test_request_finance_live_list_uses_api_key_auth_without_bearer():
+    captured = {}
+
+    def handler(request: httpx.Request):
+        captured["authorization"] = request.headers.get("Authorization")
+        captured["accept"] = request.headers.get("Accept")
+        captured["content_type"] = request.headers.get("Content-Type")
+        captured["url"] = str(request.url)
+        return httpx.Response(200, json={"items": []})
+
+    client_with_transport = httpx.Client(transport=httpx.MockTransport(handler))
+    request_finance_client = LiveRequestFinanceClient(
+        RequestFinanceConfig(mode="live", api_key="SECRET_CANARY"),
+        http_client=client_with_transport,
+    )
+
+    result = request_finance_client.list_invoices(take=1, skip=0)
+
+    assert result == {"items": []}
+    assert captured["authorization"] == "SECRET_CANARY"
+    assert not captured["authorization"].startswith("Bearer ")
+    assert captured["accept"] == "application/json"
+    assert captured["content_type"] == "application/json"
+    assert str(captured["url"]).endswith("/invoices?take=1&skip=0")
+
+
+def test_request_finance_oauth_bearer_is_explicitly_env_gated_design_path():
+    captured = {}
+
+    def handler(request: httpx.Request):
+        captured["authorization"] = request.headers.get("Authorization")
+        return httpx.Response(200, json={"items": []})
+
+    request_finance_client = LiveRequestFinanceClient(
+        RequestFinanceConfig(
+            mode="live",
+            api_key="SECRET_CANARY",
+            auth_scheme="oauth_bearer",
+        ),
+        http_client=httpx.Client(transport=httpx.MockTransport(handler)),
+    )
+
+    request_finance_client.list_invoices()
+
+    assert captured["authorization"] == "Bearer SECRET_CANARY"
+
+
+def test_request_finance_readonly_provider_errors_fail_closed_without_secret_leak():
+    for status_code in [400, 401, 403]:
+        request_finance_client = LiveRequestFinanceClient(
+            RequestFinanceConfig(mode="live", api_key="SECRET_CANARY"),
+            http_client=httpx.Client(
+                transport=httpx.MockTransport(
+                    lambda _request: httpx.Response(
+                        status_code,
+                        text="SECRET_CANARY provider body should not leak",
+                    )
+                )
+            ),
+        )
+
+        try:
+            request_finance_client.list_invoices(take=1, skip=0)
+        except RequestFinanceProviderError as error:
+            message = str(error)
+        else:
+            raise AssertionError("provider error should fail closed")
+
+        assert f"HTTP {status_code}" in message
+        assert "SECRET_CANARY" not in message
+        assert "provider body" not in message
 
 
 def test_sablier_stream_preview_calculates_rate_without_creating_stream():

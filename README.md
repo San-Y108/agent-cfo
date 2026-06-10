@@ -622,6 +622,7 @@ curl.exe https://agentcfo-backend.onrender.com/health
 | REQUEST_FINANCE_MODE | `mock` 或 `live`，默认 `mock` | 可选 |
 | REQUEST_FINANCE_API_BASE_URL | Request Finance API base URL，默认 `https://api.request.finance/` | 可选 |
 | REQUEST_FINANCE_API_KEY | Request Finance API key | live mode 必需，不提交 |
+| REQUEST_FINANCE_AUTH_SCHEME | `api_key` 或 `oauth_bearer`，默认 `api_key` | 可选；OAuth/Bearer 必须显式开启 |
 | REQUEST_FINANCE_ALLOW_INVOICE_CREATE | 预留的 invoice-create guard；默认 `false` | 可选，当前仍不得开启 |
 | AGENTCFO_DB_PATH | SQLite demo database path | 可选，本地默认 `agentcfo_demo.sqlite3` |
 | AGENTCFO_STORE_BACKEND | 可选切回 in-memory store | 仅本地临时 demo 使用 |
@@ -709,6 +710,7 @@ Request Finance integration is guarded by environment variables and defaults to 
 REQUEST_FINANCE_MODE=mock
 REQUEST_FINANCE_API_BASE_URL=https://api.request.finance/
 REQUEST_FINANCE_API_KEY=<Render secret env var>
+REQUEST_FINANCE_AUTH_SCHEME=api_key
 REQUEST_FINANCE_ALLOW_INVOICE_CREATE=false
 ```
 
@@ -717,9 +719,10 @@ Safety behavior:
 - `/version` exposes only non-sensitive status: mode, whether a key is configured, whether the invoice-create guard is enabled, and whether invoice creation is implemented.
 - Mock mode keeps the previous `/api/request-invoices` behavior and does not create a live client.
 - Live mode fails closed if `REQUEST_FINANCE_API_KEY` or base URL is missing.
+- API key auth uses `Authorization: <REQUEST_FINANCE_API_KEY>` with no `Bearer` prefix. `oauth_bearer` is a future explicit auth scheme and is never the default.
 - Live mode with the invoice-create guard disabled still records a demo-safe linked invoice record and marks it as `requestFinanceMode=live-readonly`.
 - Live invoice creation is not implemented in this spike and remains blocked even if the guard exists; do not enable the guard or call `POST /invoices` without explicit approval and payload mapping work.
-- Local/Render live smoke may use only `GET /invoices?take=1` for read-only validation.
+- Local/Render live smoke may use only `GET /invoices?take=1&skip=0` for read-only validation.
 - Audit Report snapshots stay immutable; Request Finance records remain linked external metadata.
 
 ## P2 Demo-safe Extension APIs

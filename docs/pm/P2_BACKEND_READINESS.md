@@ -47,6 +47,7 @@ Frontend and PM handoff for the demo-safe P2 surface is documented in [`P2_DEMO_
 6. Multi-agent budget partition is advisory and keeps `authorizationChanged=false`.
 7. Audit Report snapshots remain immutable; linked P2 metadata is stored separately.
 8. P2F Request Finance live mode fails closed if credentials are missing and blocks invoice creation unless explicitly approval-gated.
+9. Request Finance API-key auth uses the raw API key in the `Authorization` header; OAuth/Bearer is a future explicit auth-scheme path, not the default.
 
 ## Why Not Other P2 Items First
 
@@ -60,7 +61,7 @@ Frontend and PM handoff for the demo-safe P2 surface is documented in [`P2_DEMO_
 
 ## Reference Docs Checked
 
-- Request Network docs: API supports programmatic payment destinations, secure payments, payouts, and webhooks; AgentCFO currently stores mock invoice metadata and has an env-gated Request Finance client/read-only smoke path.
+- Request Network docs: API supports programmatic payment destinations, secure payments, payouts, and webhooks; AgentCFO currently stores mock invoice metadata and has an env-gated Request Finance client/read-only smoke path. API-key auth uses `Authorization: <api-key>` and read-only smoke uses `GET /invoices?take=1&skip=0`.
 - Sablier docs: Sablier is a token distribution protocol; AgentCFO currently calculates preview-only stream rates and creates no stream.
 - Safe Modules docs: modules can add automated/custom transaction logic and can execute transactions through Safe module paths; AgentCFO currently stores reference notes only and enables no module.
 

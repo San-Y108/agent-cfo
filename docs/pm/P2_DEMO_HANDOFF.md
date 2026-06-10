@@ -118,6 +118,10 @@ Expected P0 execution boundary on Render mock-demo:
 Expected Request Finance boundary:
 
 - default `REQUEST_FINANCE_MODE`: `mock`
+- default `REQUEST_FINANCE_AUTH_SCHEME`: `api_key`
+- API-key auth uses `Authorization: <REQUEST_FINANCE_API_KEY>` without a `Bearer` prefix
+- OAuth/Bearer is a future explicit auth scheme only
+- read-only live smoke uses only `GET /invoices?take=1&skip=0`
 - `/version` may expose `requestFinance.mode`, `requestFinance.apiKeyConfigured`, `requestFinance.invoiceCreateGuardEnabled`, and `requestFinance.invoiceCreateImplemented`
 - `apiKeyConfigured` is boolean only and never returns the key
 - live mode with creation disabled returns demo-safe linked invoice metadata marked `requestFinanceMode=live-readonly`

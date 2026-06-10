@@ -27,6 +27,7 @@ class RequestFinanceConfig:
     mode: str = "mock"
     api_base_url: str = DEFAULT_REQUEST_FINANCE_API_BASE_URL
     api_key: str | None = None
+    auth_scheme: str = "api_key"
     allow_invoice_create: bool = False
 
     @classmethod
@@ -37,6 +38,7 @@ class RequestFinanceConfig:
             DEFAULT_REQUEST_FINANCE_API_BASE_URL,
         ).strip()
         api_key = os.getenv("REQUEST_FINANCE_API_KEY")
+        auth_scheme = os.getenv("REQUEST_FINANCE_AUTH_SCHEME", "api_key").strip().lower()
         allow_invoice_create = (
             os.getenv("REQUEST_FINANCE_ALLOW_INVOICE_CREATE", "false").strip().lower()
             == "true"
@@ -45,6 +47,7 @@ class RequestFinanceConfig:
             mode=mode,
             api_base_url=api_base_url,
             api_key=api_key,
+            auth_scheme=auth_scheme,
             allow_invoice_create=allow_invoice_create,
         )
 
@@ -59,6 +62,10 @@ class RequestFinanceConfig:
     def require_live_config(self):
         if self.mode != "live":
             return
+        if self.auth_scheme not in {"api_key", "oauth_bearer"}:
+            raise RequestFinanceConfigurationError(
+                "REQUEST_FINANCE_AUTH_SCHEME must be api_key or oauth_bearer"
+            )
         if not self.api_base_url:
             raise RequestFinanceConfigurationError(
                 "Request Finance live mode requires REQUEST_FINANCE_API_BASE_URL"
@@ -85,7 +92,7 @@ class RequestFinanceInvoiceResult:
 
 class RequestFinanceClient(Protocol):
     def create_invoice(self, request: RequestInvoiceCreate) -> RequestFinanceInvoiceResult: ...
-    def list_invoices(self, take: int = 1) -> dict: ...
+    def list_invoices(self, take: int = 1, skip: int = 0) -> dict: ...
 
 
 class MockRequestFinanceClient:
@@ -97,14 +104,15 @@ class MockRequestFinanceClient:
             hosted_url=request.hostedUrl,
         )
 
-    def list_invoices(self, take: int = 1):
-        return {"mode": "mock", "take": take, "items": []}
+    def list_invoices(self, take: int = 1, skip: int = 0):
+        return {"mode": "mock", "take": take, "skip": skip, "items": []}
 
 
 class LiveRequestFinanceClient:
-    def __init__(self, config: RequestFinanceConfig):
+    def __init__(self, config: RequestFinanceConfig, http_client: httpx.Client | None = None):
         config.require_live_config()
         self.config = config
+        self.http_client = http_client or httpx.Client(timeout=10)
 
     def create_invoice(self, request: RequestInvoiceCreate):
         self.config.require_invoice_create_approval()
@@ -112,14 +120,13 @@ class LiveRequestFinanceClient:
             "Live Request Finance invoice payload mapping requires explicit approval before POST /invoices"
         )
 
-    def list_invoices(self, take: int = 1):
+    def list_invoices(self, take: int = 1, skip: int = 0):
         endpoint = urljoin(self.config.api_base_url.rstrip("/") + "/", "invoices")
         try:
-            response = httpx.get(
+            response = self.http_client.get(
                 endpoint,
-                params={"take": take},
-                headers={"Authorization": f"Bearer {self.config.api_key}"},
-                timeout=10,
+                params={"take": take, "skip": skip},
+                headers=self._headers(),
             )
             response.raise_for_status()
         except httpx.HTTPStatusError as error:
@@ -131,6 +138,16 @@ class LiveRequestFinanceClient:
                 "Request Finance read-only smoke failed with a transport error"
             ) from error
         return response.json()
+
+    def _headers(self):
+        authorization = self.config.api_key
+        if self.config.auth_scheme == "oauth_bearer":
+            authorization = f"Bearer {self.config.api_key}"
+        return {
+            "Accept": "application/json",
+            "Content-Type": "application/json",
+            "Authorization": authorization,
+        }
 
 
 def create_request_finance_client(config: RequestFinanceConfig | None = None):
