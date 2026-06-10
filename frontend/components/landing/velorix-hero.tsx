@@ -9,6 +9,7 @@ import { useGSAP } from "@gsap/react";
 import { useT, useApp } from "@/lib/i18n/context";
 import type { DictKey } from "@/lib/i18n/dict";
 import { ThemeLanguageToggle } from "@/components/ui/theme-language-toggle";
+import { AgentCFOBackgroundTexture } from "@/components/landing/agentcfo-background-texture";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -406,6 +407,11 @@ export function VelorixHero() {
 
       {/* Dark overlay — separate from video so it doesn't get 3D transformed */}
       <div className="absolute inset-0 z-10 bg-black/50" />
+
+      {/* Pixelated particle field — sits above overlay but below content */}
+      <div className="absolute inset-0 z-[15]">
+        <AgentCFOBackgroundTexture />
+      </div>
 
       <Navbar />
 
