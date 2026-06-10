@@ -45,10 +45,12 @@ def get_public_p2_capabilities():
         "requestFinancePreflight": True,
         "plannerExplainability": True,
         "requestFinanceLifecycleMock": True,
+        "requestFinanceWebhookReplayMockV2": True,
         "sablierPayrollSimulation": True,
         "safeGuardPolicySimulation": True,
         "multiAgentTreasurySimulation": True,
         "demoRunbookContracts": True,
+        "openApiLiteContracts": True,
         "liveExternalActionsDefaultEnabled": False,
     }
 

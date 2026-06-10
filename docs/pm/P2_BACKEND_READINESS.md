@@ -10,7 +10,7 @@ Request Network invoice records were implemented first because they are the leas
 
 Do not enable additional live Request Finance invoice creation, Sablier, Safe, multichain execution, or multi-agent authorization until explicitly approved.
 
-Frontend and PM handoff for the demo-safe P2 surface is documented in [`P2_DEMO_HANDOFF.md`](P2_DEMO_HANDOFF.md), including curl examples, frontend field contracts, UI task guidance, and approved demo wording.
+Frontend and PM handoff for the demo-safe P2 surface is documented in [`P2_DEMO_HANDOFF.md`](P2_DEMO_HANDOFF.md). Backend-owned scope is limited to machine-readable contracts, metadata, and mock/simulation endpoints; PM/frontend own scenario prose, presenter notes, storyboard UI, and forbidden-claims copy packaging.
 
 ## Current Gates
 
@@ -49,6 +49,8 @@ Frontend and PM handoff for the demo-safe P2 surface is documented in [`P2_DEMO_
 | P2-H4 Safe guard dry-run | Complete | `POST /api/p2/safe/guard-policy-dry-run` simulates threshold/module/guard policy results | No Safe enablement/deployment/execution |
 | P2-H5 Multi-agent coordination | Complete | `POST /api/p2/treasury/coordination-simulation` simulates proposals, budget caps, conflicts, approval matrix, and audit timeline | No authorization change |
 | P2-H6 Demo runbook/contracts | Complete | `/api/demo/runbook`, `/api/demo/storyboard`, `/api/demo/blocked-examples`, `/api/demo/contracts` support PM/frontend storytelling | None |
+| P2-I1 OpenAPI-lite contracts | Complete | `GET /api/demo/contracts/openapi-lite` exposes custom machine-readable P0/P2 endpoint contracts while FastAPI public docs stay disabled | None |
+| P2-I2 Request Finance webhook replay mock v2 | Complete | `POST /api/p2/request-finance/webhook-replay` records idempotent mock invoice lifecycle events linked to payment/audit/CAW ids | No provider call, email, on-chain conversion, or payment |
 
 ## Implementation Notes
 
@@ -64,6 +66,8 @@ Frontend and PM handoff for the demo-safe P2 surface is documented in [`P2_DEMO_
 10. Request Finance off-chain create maps the minimum invoice payload fields and only targets `POST /invoices`; it must not call `POST /invoices/{id}`, convert an invoice to an on-chain request, trigger CAW, or pay.
 11. P2-G1 through P2-G7 add display, simulation, preflight, and PM-export surfaces only; they do not change P0/P1 payment authorization, CAW adapter behavior, deterministic risk checks, or Audit Report snapshots.
 12. P2-H1 through P2-H6 expand storytelling breadth only: planner explainability, invoice lifecycle mock, Sablier payroll math, Safe guard dry-run, multi-agent coordination, and demo contracts.
+13. P2-I1 and P2-I2 are backend-owned demo utilities only: OpenAPI-lite contracts for frontend integration and Request Finance webhook replay mock v2 for lifecycle-event validation.
+14. PM/frontend own scenario prose, presenter notes, storyboard UI, and forbidden-claims copy packaging; these are not backend execution features.
 
 ## Why Not Other P2 Items First
 
@@ -78,6 +82,7 @@ Frontend and PM handoff for the demo-safe P2 surface is documented in [`P2_DEMO_
 ## Reference Docs Checked
 
 - Request Network docs: API supports programmatic payment destinations, secure payments, payouts, and webhooks; AgentCFO currently stores mock/live-readonly invoice metadata and has an env-gated Request Finance client/read-only smoke path. API-key auth uses `Authorization: <api-key>`, read-only smoke uses `GET /invoices?take=1&skip=0`, off-chain create uses `POST /invoices`, and on-chain conversion is a separate forbidden `POST /invoices/{id}` step.
+- FastAPI docs: the public docs UI and generated OpenAPI path remain disabled in app configuration; AgentCFO uses `GET /api/demo/contracts/openapi-lite` as a custom non-secret contract endpoint instead.
 - OpenAI docs: Structured Outputs are represented as strict `json_schema` posture; AgentCFO exposes this as planner explainability metadata only and still validates before risk checks.
 - Sablier docs: Flow concepts such as rate per second, withdrawable/accrued amount, covered/uncovered debt, and stream lifecycle vocabulary are used for simulation only; AgentCFO creates no stream.
 - Safe Modules/Guards docs: owners, threshold, modules, and guards are used for dry-run policy comparison only; AgentCFO enables no module or guard.

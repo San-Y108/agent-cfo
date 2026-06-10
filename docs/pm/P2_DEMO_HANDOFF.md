@@ -357,6 +357,26 @@ curl -s "$BASE_URL/api/demo/runbook"
 curl -s "$BASE_URL/api/demo/storyboard"
 curl -s "$BASE_URL/api/demo/blocked-examples"
 curl -s "$BASE_URL/api/demo/contracts"
+curl -s "$BASE_URL/api/demo/contracts/openapi-lite"
+```
+
+Replay a Request Finance webhook mock event:
+
+```bash
+curl -s -X POST "$BASE_URL/api/p2/request-finance/webhook-replay" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "eventId": "evt_rf_001",
+    "eventType": "invoice.created",
+    "invoiceId": "rf_webhook_demo_001",
+    "requestId": "request_webhook_demo_001",
+    "status": "created",
+    "paymentPlanId": "plan_demo_001",
+    "paymentItemId": "pay_demo_001",
+    "auditReportId": "audit_demo_001",
+    "cawRequestId": "caw_mock_001",
+    "payload": {"invoice": {"id": "rf_webhook_demo_001", "status": "created"}}
+  }'
 ```
 
 ## Frontend Field Contract
@@ -427,10 +447,12 @@ If any required live-create field is missing while `REQUEST_FINANCE_ALLOW_INVOIC
 - `p2Capabilities.requestFinancePreflight`: boolean
 - `p2Capabilities.plannerExplainability`: boolean
 - `p2Capabilities.requestFinanceLifecycleMock`: boolean
+- `p2Capabilities.requestFinanceWebhookReplayMockV2`: boolean
 - `p2Capabilities.sablierPayrollSimulation`: boolean
 - `p2Capabilities.safeGuardPolicySimulation`: boolean
 - `p2Capabilities.multiAgentTreasurySimulation`: boolean
 - `p2Capabilities.demoRunbookContracts`: boolean
+- `p2Capabilities.openApiLiteContracts`: boolean
 - `p2Capabilities.liveExternalActionsDefaultEnabled`: false
 
 `EvidenceTimeline`:
@@ -474,6 +496,33 @@ If any required live-create field is missing while `REQUEST_FINANCE_ALLOW_INVOIC
 - `onchainConversionCalled`: false
 - `paymentTriggered`: false
 - `eventLog`: mock lifecycle events
+
+`RequestFinanceWebhookReplayResult`:
+
+- `mode`: `simulation-only`
+- `replayResult`: `event_recorded` or `duplicate_ignored`
+- `acceptedEvent`: true for supported mock event types
+- `duplicateEvent`: boolean idempotency signal
+- `normalizedStatus`: `created`, `accepted`, `canceled`, `rejected`, or `paid`
+- `providerTouched`: false
+- `emailSent`: false
+- `paymentTriggered`: false
+- `onChainConversion`: false
+- `linkedIds`: payment plan, payment item, audit report, and CAW request ids
+- `eventTimeline`: idempotent mock webhook timeline; duplicate event ids are not appended
+
+`OpenApiLiteContracts`:
+
+- `mode`: `openapi-lite`
+- `openapiSource`: `custom-lite`
+- `fastapiOpenapiEnabled`: false
+- `docsUiEnabled`: false
+- `noSecrets`: true
+- `noLiveActions`: true
+- `contracts`: machine-readable P0/P2 endpoint contracts with path, method, purpose, model names, required fields, example payload, mode label, live-action boundary, safety flags, and frontend display hints
+- `globalInvariants`: non-secret safety invariants
+
+FastAPI public `/docs` and `/openapi.json` remain disabled. Use `/api/demo/contracts/openapi-lite` for frontend-readable contracts.
 
 `SablierPayrollSimulation`:
 
@@ -551,6 +600,8 @@ Frontend repository is not present in the current backend workspace. Implement t
 - Display the P2-G1/G5 evidence timeline/export as presentation aids, not as new payment evidence.
 - For risk what-if, show `simulation-only`, `createsPaymentPlan=false`, and `executesPayment=false`.
 - For Request Finance preflight, show missing fields and `wouldCallProvider=false`.
+- For Request Finance webhook replay mock v2, show `simulation-only`, `duplicateEvent`, `replayResult`, linked ids, and event timeline. Do not display it as provider evidence.
+- For OpenAPI-lite contracts, generate frontend integration hints from `contracts[]`; do not treat it as enabling public FastAPI docs.
 - For Request invoice records, show `requestFinanceInvoiceId`, `requestId`, `status`, `hostedUrl`, optional metadata `viewUrl`/`payUrl`, `paymentItemId`, `auditReportId`, and `cawRequestId`.
 - If `/version.requestFinance.mode=live`, show it as "Request Finance live client configured" only.
 - If `/version.requestFinance.invoiceCreateImplemented=true`, label it as "off-chain invoice create path available but disabled/approval-gated" unless `invoiceCreateGuardEnabled=true` and a test invoice was explicitly approved and created.
@@ -558,6 +609,8 @@ Frontend repository is not present in the current backend workspace. Implement t
 - For Safe reference, show `moduleEnabled=false`, `safeAddress`, `moduleName`, and `permissionNotes`.
 - For multichain readiness, show `liveMultichainExecutionEnabled=false` and the readiness rows.
 - For treasury budget partitions, show `authorizationChanged=false`, `totalPlannedAmount`, and partition rows.
+
+PM/frontend own scenario prose, presenter notes, storyboard UI, and forbidden-claims copy packaging. Backend owns only the metadata, contract, and mock/simulation responses listed here.
 
 ## PM And Video Wording
 
