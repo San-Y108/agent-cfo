@@ -1,7 +1,9 @@
 # AgentCFO 任务看板
 
-> 最后更新：2026年6月10日 Day 2 总控审视
+> 最后更新：2026年6月10日 Day 2 总控审视（第二轮）
 > 规则：12 号之后不新增大功能，只修复、打磨、录视频、补材料
+>
+> ⚠️ 已发现问题：README 描述 4 个贡献者（含 Data API = 50 USDC），但 `/api/demo-sample` 只返回 3 个（45 USDC）。后端需修复。
 
 ---
 
@@ -22,7 +24,7 @@
 | 岗位 | 负责人 | 进度 | 最大卡点 |
 |------|--------|------|----------|
 | 交付/总控 | San-Y108 (严硕) | ✅ repo + 文档已完成 | 物料兜底 + 路演准备 |
-| 后端/Agent | W5W8L9jlu | ✅ P0 + P1 Render + P2 spike + Phase 4C closeout | **需明确 P2 收尾范围**（见后端聚焦决策文档） |
+| 后端/Agent | W5W8L9jlu | ✅ P0 + P1 Render + P2 spike + Phase 4C closeout | **demo-sample 缺 Data API（T-076）** + P2 收尾范围已明确（见后端聚焦决策文档） |
 | 前端 | Aafff623 | ✅ Landing + Demo + Console + Vercel | PR #1 未合并；real mode 未接入 /demo |
 | 合约/CAW | gitgdut | ✅ API Key + Wallet + 1 笔 testnet tx | **仍缺至少 2 笔 tx 或需调整提交口径** |
 | 物料/设计 | Eloise-qiu | 🔴 **0 产出，已逾期 2 天** | PPT/视频/头图/Logo/截图全部缺失，**今日必须确认产能或启动兜底** |
@@ -102,6 +104,7 @@
 | T-057 | P2 demo-safe spike | 全部 P2 metadata/preview/simulation endpoints | 6月10日 | ✅ DONE |
 | T-058 | P2 demo contracts + runbook | /api/demo/runbook, /api/demo/contracts | 6月10日 | ✅ DONE |
 | T-059 | Request Finance live spike | env-gated read-only + off-chain create（guard 已关） | 6月10日 | ✅ DONE |
+| T-076 | 修复 demo-sample 数据 | 加入 Data API（5 USDC），对齐 README 4 贡献者场景 | 6月10日 | 🟡 TODO |
 
 ### 前端
 
@@ -125,7 +128,7 @@
 |----|------|--------|------|------|
 | T-071 | 验证真实 CAW adapter | Phase 4C skeleton + 1 笔 testnet evidence | 6月10日 | ✅ DONE |
 | T-072 | 和后端联调 | 本地 live transfer 已完成 | 6月10日 | ✅ DONE |
-| T-073 | 完成至少 3 笔测试网付款 | 3 个 tx hash | 6月10日 | 🟡 TODO（**今日决策：补 tx 还是调整口径**） |
+| T-073 | 补充测试网付款证据 | 2-3 个 tx hash（内部目标，非赛道硬性要求；已有 1 笔） | 6月10日 | 🟡 TODO（**今日和后端配合执行，能补就补**） |
 | T-074 | 整理 CAW 配置说明 | 配置文档 | 6月10日 | ✅ DONE |
 | T-075 | 截图脱敏补充 | 区块浏览器截图 + 脱敏处理 | 6月11日 | 🟡 TODO |
 
@@ -173,14 +176,16 @@
 后端 P0/P1/P2 API（✅ 已完成 + 已部署 Render）
     → 前端已对接 mock mode（✅ lib/api/ 层已对齐）
     → 前端 real mode 待接入（🟡 需 Render URL + CORS）
+    → ⚠️ demo-sample 缺 Data API（T-076，今天修）
 
 前端主流程（✅ Landing + Demo + Console + Vercel）
-    → PR #1 待合并
-    → real mode /demo 待接入
+    → PR #1 待合并（T-069）
+    → real mode /demo 待接入（T-070）
+    → ⚠️ /demo 用硬编码 mock 数据，未调用后端 API（短期不影响路演，需心里有数）
 
 CAW 验证（✅ 1 笔 testnet tx）
-    → 仍缺至少 2 笔或需调整提交口径（🔴 今日决策）
-    → 截图仍需脱敏补充
+    → 补充证据：和后端配合跑第 2-3 笔（T-073，内部目标非硬性要求）
+    → 截图脱敏（T-075，可独立完成）
 
 设计/物料（🔴 Eloise-qiu 0 产出，逾期 2 天）
     → PPT / 视频 / 头图 / Logo / 截图全部缺失
@@ -194,7 +199,7 @@ CAW 验证（✅ 1 笔 testnet tx）
 | 状态 | 数量 |
 |------|------|
 | 🔴 BLOCKED | 7 |
-| 🟡 TODO | 17 |
+| 🟡 TODO | 18 |
 | 🔵 IN_PROGRESS | 2 |
 | ✅ DONE | 45 |
 | ❌ CANCELLED | 0 |
