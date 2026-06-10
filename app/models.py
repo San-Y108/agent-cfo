@@ -474,6 +474,29 @@ class RequestFinanceWebhookReplayResult(BaseModel):
     safetyNotes: list[str]
 
 
+class ExternalReferenceIntegrityReport(BaseModel):
+    orphanReferences: list[dict[str, Any]]
+    duplicateInvoiceEventIds: list[dict[str, Any]]
+    missingLinkedIds: list[dict[str, Any]]
+
+
+class P2ReadinessReport(BaseModel):
+    mode: str
+    auditReportId: str
+    paymentPlanId: str
+    auditSnapshotImmutable: bool
+    linkedExternalReferences: dict[str, Any]
+    requestFinance: dict[str, Any]
+    sablier: dict[str, Any]
+    safe: dict[str, Any]
+    multichain: dict[str, Any]
+    treasury: dict[str, Any]
+    missingLinks: list[str]
+    integrity: ExternalReferenceIntegrityReport
+    safetyFlags: dict[str, bool]
+    safetyNotes: list[str]
+
+
 class SablierPayrollSimulationRequest(BaseModel):
     paymentPlanId: str
     paymentItemId: str

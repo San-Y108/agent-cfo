@@ -22,6 +22,7 @@ from app.models import (
     OpenApiLiteContracts,
     PaymentItem,
     PaymentStatus,
+    P2ReadinessReport,
     PlannerExplainability,
     PolicyGuardrailSummary,
     RequestInvoiceCreate,
@@ -748,6 +749,7 @@ class P2ExtensionService:
             request.paymentPlanId,
             request.invoiceId,
         )
+        timeline = self._request_finance_webhook_timeline(existing_events)
         duplicate = next(
             (
                 event
@@ -757,6 +759,68 @@ class P2ExtensionService:
             None,
         )
         external_reference_id = duplicate.externalReferenceId if duplicate is not None else None
+        terminal_status = next(
+            (event["status"] for event in reversed(timeline) if event["status"] in {"canceled", "rejected", "paid"}),
+            None,
+        )
+        if duplicate is None and terminal_status is not None:
+            return RequestFinanceWebhookReplayResult(
+                mode="simulation-only",
+                replayResult="terminal_state_ignored",
+                acceptedEvent=False,
+                duplicateEvent=False,
+                normalizedStatus=terminal_status,
+                externalReferenceId=timeline[-1].get("externalReferenceId") if timeline else None,
+                providerTouched=False,
+                emailSent=False,
+                paymentTriggered=False,
+                onChainConversion=False,
+                linkedIds={
+                    "paymentPlanId": request.paymentPlanId,
+                    "paymentItemId": request.paymentItemId,
+                    "auditReportId": request.auditReportId,
+                    "cawRequestId": request.cawRequestId,
+                },
+                eventTimeline=[
+                    {key: value for key, value in event.items() if key != "externalReferenceId"}
+                    for event in timeline
+                ],
+                safetyNotes=[
+                    "Webhook replay v2 is a local mock based on Request Finance invoice lifecycle event concepts.",
+                    "Terminal invoice states ignore later mock events without calling providers or payments.",
+                ],
+            )
+        if duplicate is None and not self._request_finance_transition_allowed(
+            [event["status"] for event in timeline],
+            normalized_status,
+        ):
+            last_status = timeline[-1]["status"] if timeline else "none"
+            return RequestFinanceWebhookReplayResult(
+                mode="simulation-only",
+                replayResult="invalid_transition_ignored",
+                acceptedEvent=False,
+                duplicateEvent=False,
+                normalizedStatus=last_status,
+                externalReferenceId=timeline[-1].get("externalReferenceId") if timeline else None,
+                providerTouched=False,
+                emailSent=False,
+                paymentTriggered=False,
+                onChainConversion=False,
+                linkedIds={
+                    "paymentPlanId": request.paymentPlanId,
+                    "paymentItemId": request.paymentItemId,
+                    "auditReportId": request.auditReportId,
+                    "cawRequestId": request.cawRequestId,
+                },
+                eventTimeline=[
+                    {key: value for key, value in event.items() if key != "externalReferenceId"}
+                    for event in timeline
+                ],
+                safetyNotes=[
+                    "Webhook replay v2 ignored an invalid mock lifecycle transition.",
+                    "No provider, email, on-chain conversion, or payment was triggered.",
+                ],
+            )
         if duplicate is None:
             reference = self.create_external_reference(
                 ExternalReferenceCreate(
@@ -786,23 +850,7 @@ class P2ExtensionService:
             existing_events.append(reference)
             external_reference_id = reference.externalReferenceId
 
-        timeline = [
-            {
-                "eventId": event.metadata["eventId"],
-                "eventType": event.metadata["eventType"],
-                "invoiceId": event.metadata["requestFinanceInvoiceId"],
-                "requestId": event.metadata.get("requestId"),
-                "status": event.metadata["normalizedStatus"],
-                "providerTouched": False,
-                "emailSent": False,
-                "paymentTriggered": False,
-                "onChainConversion": False,
-            }
-            for event in sorted(
-                existing_events,
-                key=lambda event: (event.createdAt, event.metadata.get("eventId", "")),
-            )
-        ]
+        timeline = self._request_finance_webhook_timeline(existing_events)
         return RequestFinanceWebhookReplayResult(
             mode="simulation-only",
             replayResult="duplicate_ignored" if duplicate is not None else "event_recorded",
@@ -820,7 +868,10 @@ class P2ExtensionService:
                 "auditReportId": request.auditReportId,
                 "cawRequestId": request.cawRequestId,
             },
-            eventTimeline=timeline,
+            eventTimeline=[
+                {key: value for key, value in event.items() if key != "externalReferenceId"}
+                for event in timeline
+            ],
             safetyNotes=[
                 "Webhook replay v2 is a local mock based on Request Finance invoice lifecycle event concepts.",
                 "It does not call Request Finance, POST /invoices/{id}, send email, convert on-chain, or pay.",
@@ -1031,6 +1082,177 @@ class P2ExtensionService:
                 "No new approval role, wallet permission, or payment authority is created.",
             ],
         )
+
+    def get_p2_readiness(self, audit_report_id: str):
+        audit_report = self.store.get_audit_report(audit_report_id)
+        if audit_report is None:
+            raise P2RecordNotFound("Audit report not found")
+        payment_plan_id = audit_report.paymentPlan.paymentPlanId
+        references = self._readiness_external_references(audit_report_id, payment_plan_id)
+        integrity = self.check_external_reference_integrity(references)
+        reference_summaries = [
+            {
+                "externalReferenceId": reference.externalReferenceId,
+                "referenceType": reference.referenceType,
+                "provider": reference.provider,
+                "status": reference.status,
+                "paymentPlanId": reference.paymentPlanId,
+                "paymentItemId": reference.paymentItemId,
+                "auditReportId": reference.auditReportId,
+                "cawRequestId": reference.cawRequestId,
+                "mode": reference.mode,
+                "liveIntegrationEnabled": reference.liveIntegrationEnabled,
+            }
+            for reference in references
+        ]
+        by_type: dict[str, list[ExternalReference]] = {}
+        for reference in references:
+            by_type.setdefault(reference.referenceType, []).append(reference)
+        request_invoice_refs = by_type.get(ExternalReferenceType.REQUEST_INVOICE, [])
+        sablier_refs = by_type.get(ExternalReferenceType.SABLIER_STREAM_PREVIEW, [])
+        safe_refs = by_type.get(ExternalReferenceType.SAFE_PERMISSION_REFERENCE, [])
+        missing_links = [
+            reference_type
+            for reference_type, items in {
+                ExternalReferenceType.REQUEST_INVOICE: request_invoice_refs,
+                ExternalReferenceType.SABLIER_STREAM_PREVIEW: sablier_refs,
+                ExternalReferenceType.SAFE_PERMISSION_REFERENCE: safe_refs,
+            }.items()
+            if not items
+        ]
+        config = self.request_finance_config
+        return P2ReadinessReport(
+            mode="demo-safe-readiness",
+            auditReportId=audit_report_id,
+            paymentPlanId=payment_plan_id,
+            auditSnapshotImmutable=True,
+            linkedExternalReferences={
+                "count": len(references),
+                "listSummary": reference_summaries,
+                "byType": {
+                    reference_type: len(items)
+                    for reference_type, items in sorted(by_type.items())
+                },
+            },
+            requestFinance={
+                "mode": config.public_mode,
+                "status": "linked" if request_invoice_refs else "missing",
+                "recordCount": len(request_invoice_refs),
+                "liveIntegrationEnabled": any(
+                    reference.liveIntegrationEnabled for reference in request_invoice_refs
+                ),
+                "invoiceCreateGuardEnabled": config.allow_invoice_create,
+                "webhookReplayMockV2": True,
+            },
+            sablier={
+                "status": "preview-linked" if sablier_refs else "missing",
+                "referenceCount": len(sablier_refs),
+                "streamCreated": False,
+                "liveEnabled": False,
+            },
+            safe={
+                "status": "reference-linked" if safe_refs else "missing",
+                "referenceCount": len(safe_refs),
+                "moduleEnabled": False,
+                "guardEnabled": False,
+            },
+            multichain={
+                "status": "design-only",
+                "liveExecutionEnabled": False,
+                "currentExecutionBoundary": "existing CAW adapter allowlist only",
+            },
+            treasury={
+                "status": "mock-ready",
+                "authorizationChanged": False,
+                "humanApprovalRequired": True,
+                "deterministicRiskStillRequired": True,
+            },
+            missingLinks=missing_links,
+            integrity=integrity,
+            safetyFlags={
+                "providerTouched": False,
+                "emailSent": False,
+                "paymentTriggered": False,
+                "onChainConversion": False,
+                "cawTransferCalled": False,
+                "sablierStreamCreated": False,
+                "safeModuleEnabled": False,
+                "multichainLiveExecution": False,
+                "auditSnapshotMutated": False,
+            },
+            safetyNotes=[
+                "Readiness is computed from existing audit and external-reference metadata only.",
+                "No provider, email, CAW transfer, Sablier, Safe, multichain, or payment action is triggered.",
+            ],
+        )
+
+    def check_external_reference_integrity(self, references: list[ExternalReference]):
+        orphan_references = []
+        missing_linked_ids = []
+        event_counts: dict[tuple[str, str], int] = {}
+        for reference in references:
+            orphan_fields = []
+            if (
+                reference.paymentPlanId is not None
+                and self.store.get_payment_plan(reference.paymentPlanId) is None
+            ):
+                orphan_fields.append("paymentPlanId")
+            if (
+                reference.auditReportId is not None
+                and self.store.get_audit_report(reference.auditReportId) is None
+            ):
+                orphan_fields.append("auditReportId")
+            if (
+                reference.cawRequestId is not None
+                and self.store.get_caw_status(reference.cawRequestId) is None
+            ):
+                orphan_fields.append("cawRequestId")
+            if reference.paymentPlanId is not None and reference.paymentItemId is not None:
+                payment_plan = self.store.get_payment_plan(reference.paymentPlanId)
+                if payment_plan is None or all(
+                    payment.id != reference.paymentItemId
+                    for payment in payment_plan.payments
+                ):
+                    orphan_fields.append("paymentItemId")
+            if orphan_fields:
+                orphan_references.append(
+                    {
+                        "externalReferenceId": reference.externalReferenceId,
+                        "orphanFields": orphan_fields,
+                    }
+                )
+            missing_fields = [
+                field
+                for field in ["paymentPlanId", "paymentItemId", "auditReportId", "cawRequestId"]
+                if getattr(reference, field) is None
+            ]
+            if missing_fields:
+                missing_linked_ids.append(
+                    {
+                        "externalReferenceId": reference.externalReferenceId,
+                        "referenceType": reference.referenceType,
+                        "missingFields": missing_fields,
+                    }
+                )
+            event_id = reference.metadata.get("eventId")
+            invoice_id = reference.metadata.get("requestFinanceInvoiceId")
+            if (
+                reference.metadata.get("webhookReplayVersion") == "v2"
+                and event_id is not None
+                and invoice_id is not None
+            ):
+                key = (invoice_id, event_id)
+                event_counts[key] = event_counts.get(key, 0) + 1
+        duplicate_invoice_event_ids = [
+            {"invoiceId": invoice_id, "eventId": event_id, "count": count}
+            for (invoice_id, event_id), count in sorted(event_counts.items())
+            if count > 1
+        ]
+        return {
+            "orphanReferences": orphan_references,
+            "duplicateInvoiceEventIds": duplicate_invoice_event_ids,
+            "missingLinkedIds": missing_linked_ids,
+        }
 
     def get_demo_runbook(self):
         return DemoRunbook(
@@ -1351,6 +1573,55 @@ class P2ExtensionService:
             and reference.metadata.get("webhookReplayVersion") == "v2"
             and reference.metadata.get("requestFinanceInvoiceId") == invoice_id
         ]
+
+    def _request_finance_webhook_timeline(self, events: list[ExternalReference]):
+        return [
+            {
+                "externalReferenceId": event.externalReferenceId,
+                "eventId": event.metadata["eventId"],
+                "eventType": event.metadata["eventType"],
+                "invoiceId": event.metadata["requestFinanceInvoiceId"],
+                "requestId": event.metadata.get("requestId"),
+                "status": event.metadata["normalizedStatus"],
+                "providerTouched": False,
+                "emailSent": False,
+                "paymentTriggered": False,
+                "onChainConversion": False,
+            }
+            for event in sorted(
+                events,
+                key=lambda event: (event.createdAt, event.metadata.get("eventId", "")),
+            )
+        ]
+
+    def _request_finance_transition_allowed(
+        self,
+        existing_statuses: list[str],
+        next_status: str,
+    ):
+        if not existing_statuses:
+            return next_status == "created"
+        current_status = existing_statuses[-1]
+        allowed_transitions = {
+            "created": {"accepted", "canceled", "rejected", "paid"},
+            "accepted": {"paid", "canceled", "rejected"},
+        }
+        return next_status in allowed_transitions.get(current_status, set())
+
+    def _readiness_external_references(
+        self,
+        audit_report_id: str,
+        payment_plan_id: str,
+    ):
+        references_by_id: dict[str, ExternalReference] = {}
+        for reference in self.store.list_external_references(audit_report_id=audit_report_id):
+            references_by_id[reference.externalReferenceId] = reference
+        for reference in self.store.list_external_references(payment_plan_id=payment_plan_id):
+            references_by_id[reference.externalReferenceId] = reference
+        return sorted(
+            references_by_id.values(),
+            key=lambda reference: reference.externalReferenceId,
+        )
 
     def _request_invoice_from_reference(self, reference: ExternalReference):
         return RequestInvoiceRecord(

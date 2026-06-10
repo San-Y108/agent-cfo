@@ -13,6 +13,7 @@ from app.models import (
     DemoStoryboard,
     MultichainReadiness,
     OpenApiLiteContracts,
+    P2ReadinessReport,
     PlannerExplainability,
     PolicyGuardrailSummary,
     RequestInvoiceCreate,
@@ -142,6 +143,14 @@ def get_treasury_budget_partition(paymentPlanId: str):
 def get_evidence_timeline(auditReportId: str):
     try:
         return _service().get_evidence_timeline(auditReportId)
+    except P2RecordNotFound as error:
+        raise HTTPException(status_code=404, detail=str(error))
+
+
+@router.get("/p2/readiness/{auditReportId}", response_model=P2ReadinessReport)
+def get_p2_readiness(auditReportId: str):
+    try:
+        return _service().get_p2_readiness(auditReportId)
     except P2RecordNotFound as error:
         raise HTTPException(status_code=404, detail=str(error))
 

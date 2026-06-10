@@ -638,6 +638,154 @@ def test_openapi_lite_contracts_are_machine_readable_and_docs_stay_disabled():
     assert "OPENAI_API_KEY" not in response.text
 
 
+def test_p2_readiness_reports_missing_links_without_mutating_audit_snapshot():
+    _plan, execution = create_p0_flow()
+    audit_id = execution["auditReportId"]
+    audit_before = client.get(f"/api/audit-report/{audit_id}").json()
+
+    response = client.get(f"/api/p2/readiness/{audit_id}")
+
+    assert response.status_code == 200
+    readiness = response.json()
+    assert readiness["mode"] == "demo-safe-readiness"
+    assert readiness["auditReportId"] == audit_id
+    assert readiness["auditSnapshotImmutable"] is True
+    assert readiness["linkedExternalReferences"]["count"] == 0
+    assert readiness["requestFinance"]["status"] == "missing"
+    assert readiness["sablier"]["status"] == "missing"
+    assert readiness["safe"]["status"] == "missing"
+    assert readiness["multichain"]["status"] == "design-only"
+    assert readiness["treasury"]["status"] == "mock-ready"
+    assert {
+        "request_invoice",
+        "sablier_stream_preview",
+        "safe_permission_reference",
+    }.issubset(set(readiness["missingLinks"]))
+    assert readiness["safetyFlags"] == {
+        "providerTouched": False,
+        "emailSent": False,
+        "paymentTriggered": False,
+        "onChainConversion": False,
+        "cawTransferCalled": False,
+        "sablierStreamCreated": False,
+        "safeModuleEnabled": False,
+        "multichainLiveExecution": False,
+        "auditSnapshotMutated": False,
+    }
+
+    audit_after = client.get(f"/api/audit-report/{audit_id}").json()
+    assert audit_after == audit_before
+
+
+def test_p2_readiness_summarizes_linked_refs_and_integrity_findings():
+    plan, execution = create_p0_flow()
+    audit_id = execution["auditReportId"]
+    payment_id = plan["payments"][0]["id"]
+    caw_request_id = execution["payments"][0]["cawRequestId"]
+    client.post(
+        "/api/request-invoices",
+        json={
+            "paymentPlanId": plan["paymentPlanId"],
+            "paymentItemId": payment_id,
+            "auditReportId": audit_id,
+            "cawRequestId": caw_request_id,
+            "requestFinanceInvoiceId": "rf_ready_001",
+            "requestId": "request_ready_001",
+            "status": "draft",
+        },
+    )
+    client.post(
+        "/api/sablier-stream-previews",
+        json={
+            "paymentPlanId": plan["paymentPlanId"],
+            "paymentItemId": payment_id,
+            "durationDays": 30,
+        },
+    )
+    client.post(
+        "/api/safe-permission-references",
+        json={
+            "paymentPlanId": plan["paymentPlanId"],
+            "safeAddress": "0xSafeDemo",
+            "moduleName": "SpendingLimitModule",
+            "permissionNotes": ["demo-only"],
+        },
+    )
+    client.post(
+        "/api/external-references",
+        json={
+            "referenceType": "request_invoice",
+            "provider": "request-finance-webhook-mock",
+            "label": "Manually duplicated webhook event",
+            "paymentPlanId": plan["paymentPlanId"],
+            "paymentItemId": payment_id,
+            "auditReportId": audit_id,
+            "cawRequestId": caw_request_id,
+            "status": "created",
+            "metadata": {
+                "webhookReplayVersion": "v2",
+                "eventId": "evt_duplicate",
+                "eventType": "invoice.created",
+                "requestFinanceInvoiceId": "rf_ready_001",
+                "normalizedStatus": "created",
+            },
+        },
+    )
+    client.post(
+        "/api/external-references",
+        json={
+            "referenceType": "request_invoice",
+            "provider": "request-finance-webhook-mock",
+            "label": "Manually duplicated webhook event again",
+            "paymentPlanId": plan["paymentPlanId"],
+            "paymentItemId": payment_id,
+            "auditReportId": audit_id,
+            "cawRequestId": caw_request_id,
+            "status": "created",
+            "metadata": {
+                "webhookReplayVersion": "v2",
+                "eventId": "evt_duplicate",
+                "eventType": "invoice.created",
+                "requestFinanceInvoiceId": "rf_ready_001",
+                "normalizedStatus": "created",
+            },
+        },
+    )
+    client.post(
+        "/api/external-references",
+        json={
+            "referenceType": "request_invoice",
+            "provider": "request-finance",
+            "label": "Missing payment links but audit-linked",
+            "auditReportId": audit_id,
+            "status": "incomplete",
+            "metadata": {"requestFinanceInvoiceId": "rf_missing_links"},
+        },
+    )
+
+    response = client.get(f"/api/p2/readiness/{audit_id}")
+
+    assert response.status_code == 200
+    readiness = response.json()
+    assert readiness["linkedExternalReferences"]["count"] == 6
+    assert readiness["requestFinance"]["status"] == "linked"
+    assert readiness["requestFinance"]["recordCount"] == 4
+    assert readiness["sablier"]["status"] == "preview-linked"
+    assert readiness["safe"]["status"] == "reference-linked"
+    assert readiness["missingLinks"] == []
+    assert readiness["integrity"]["duplicateInvoiceEventIds"] == [
+        {"invoiceId": "rf_ready_001", "eventId": "evt_duplicate", "count": 2}
+    ]
+    assert any(
+        finding["externalReferenceId"] == "ext_ref_006"
+        and {"paymentPlanId", "paymentItemId", "cawRequestId"}.issubset(
+            set(finding["missingFields"])
+        )
+        for finding in readiness["integrity"]["missingLinkedIds"]
+    )
+    assert readiness["integrity"]["orphanReferences"] == []
+
+
 def test_request_finance_webhook_replay_v2_is_idempotent_simulation_and_audit_safe():
     plan, execution = create_p0_flow()
     audit_id = execution["auditReportId"]
@@ -696,6 +844,64 @@ def test_request_finance_webhook_replay_v2_is_idempotent_simulation_and_audit_sa
 
     audit_after = client.get(f"/api/audit-report/{audit_id}").json()
     assert audit_after == audit_before
+
+
+def test_request_finance_webhook_replay_v2_ignores_events_after_terminal_state():
+    plan, execution = create_p0_flow()
+    audit_id = execution["auditReportId"]
+    base_payload = {
+        "invoiceId": "rf_webhook_terminal_001",
+        "requestId": "request_webhook_terminal_001",
+        "paymentPlanId": plan["paymentPlanId"],
+        "paymentItemId": plan["payments"][0]["id"],
+        "auditReportId": audit_id,
+        "cawRequestId": execution["payments"][0]["cawRequestId"],
+        "payload": {},
+    }
+    created = client.post(
+        "/api/p2/request-finance/webhook-replay",
+        json={
+            **base_payload,
+            "eventId": "evt_terminal_created",
+            "eventType": "invoice.created",
+            "status": "created",
+        },
+    )
+    paid = client.post(
+        "/api/p2/request-finance/webhook-replay",
+        json={
+            **base_payload,
+            "eventId": "evt_terminal_paid",
+            "eventType": "invoice.paid",
+            "status": "paid",
+        },
+    )
+    after_paid = client.post(
+        "/api/p2/request-finance/webhook-replay",
+        json={
+            **base_payload,
+            "eventId": "evt_terminal_canceled",
+            "eventType": "invoice.canceled",
+            "status": "canceled",
+        },
+    )
+
+    assert created.status_code == 200
+    assert paid.status_code == 200
+    assert after_paid.status_code == 200
+    ignored = after_paid.json()
+    assert ignored["acceptedEvent"] is False
+    assert ignored["duplicateEvent"] is False
+    assert ignored["replayResult"] == "terminal_state_ignored"
+    assert ignored["normalizedStatus"] == "paid"
+    assert [event["eventId"] for event in ignored["eventTimeline"]] == [
+        "evt_terminal_created",
+        "evt_terminal_paid",
+    ]
+    assert ignored["providerTouched"] is False
+    assert ignored["emailSent"] is False
+    assert ignored["paymentTriggered"] is False
+    assert ignored["onChainConversion"] is False
 
 
 def test_request_finance_webhook_replay_v2_rejects_unknown_event_type():

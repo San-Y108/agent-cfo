@@ -745,6 +745,7 @@ These APIs are metadata, preview, or reference only. They do not change P0/P1 pa
 | `GET /api/multichain-readiness` | Design/readiness matrix | No new chain execution |
 | `GET /api/treasury-budget-partitions/{paymentPlanId}` | Mock department-agent budget view | No new authorization role |
 | `GET /api/p2/evidence-timeline/{auditReportId}` | Aggregates Audit Report, CAW status, and linked P2 references for display | None |
+| `GET /api/p2/readiness/{auditReportId}` | Machine-readable P2 integrity/readiness summary, linked reference counts, missing links, and safety flags | None |
 | `GET /api/p2/demo-scenarios` | Deterministic judge/demo scenario pack | None |
 | `POST /api/p2/risk-what-if` | Simulation-only risk guardrail preview using deterministic rules | No plan persistence or payment execution |
 | `GET /api/p2/policy-guardrails` | Non-secret demo safety flags for CAW, Request Finance, Sablier, Safe, multichain, and audit immutability | None |
@@ -752,7 +753,7 @@ These APIs are metadata, preview, or reference only. They do not change P0/P1 pa
 | `POST /api/p2/request-finance/preflight` | Validates Request Finance create-invoice payload shape without creating a provider client | No Request Finance API call |
 | `GET /api/p2/planner-explainability` | LLM planner boundary, Structured Outputs posture, malformed-output fallback, and reason trace | No model call |
 | `POST /api/p2/request-finance/lifecycle-preview` | Mock invoice lifecycle/event log for created/accepted/canceled/rejected/paid | No provider call, no email, no on-chain conversion |
-| `POST /api/p2/request-finance/webhook-replay` | Request Finance invoice lifecycle webhook replay mock v2 with idempotent event timeline | No provider call, no email, no on-chain conversion, no payment |
+| `POST /api/p2/request-finance/webhook-replay` | Request Finance invoice lifecycle webhook replay mock v2 with idempotent event timeline and terminal-state ignore policy | No provider call, no email, no on-chain conversion, no payment |
 | `POST /api/p2/sablier/payroll-simulation` | Simulation-only payroll schedule/accrual/withdrawable/runway/insolvency guardrails | No Sablier stream or transaction |
 | `POST /api/p2/safe/guard-policy-dry-run` | Safe owner threshold, module checklist, guard policy matrix, blocked operations | No Safe module/guard enablement or execution |
 | `POST /api/p2/treasury/coordination-simulation` | Mock department-agent proposals, budget caps, conflicts, approval matrix, audit timeline | No new authorization role |
