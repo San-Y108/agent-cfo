@@ -31,7 +31,10 @@ export default function RootLayout({
   return (
     <html lang="en" className="dark" suppressHydrationWarning>
       <head>
-        <script dangerouslySetInnerHTML={{ __html: themeScript }} />
+        {/* suppressHydrationWarning: browser extensions (e.g. AdGuard) inject
+            scripts into <head> before React hydrates, shifting attribute
+            matching onto this tag. The script itself is a static constant. */}
+        <script suppressHydrationWarning dangerouslySetInnerHTML={{ __html: themeScript }} />
       </head>
       <body className="min-h-screen bg-bg text-fg antialiased">
         <AppProvider>{children}</AppProvider>
