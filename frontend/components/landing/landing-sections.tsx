@@ -58,10 +58,12 @@ export function LandingSections() {
       </section>
 
       {/* FAQ + HSM 2-column layout */}
-      <div className="w-full max-w-6xl mx-auto mt-28 border-t pt-16 grid grid-cols-1 md:grid-cols-5 gap-12 text-left border-white/10 px-6">
-        <FAQSection />
-        <HSMMonitor />
-      </div>
+      <section id="faq" className="w-full">
+        <div className="max-w-6xl mx-auto mt-28 border-t pt-16 grid grid-cols-1 md:grid-cols-5 gap-12 text-left border-white/10 px-6">
+          <FAQSection />
+          <HSMMonitor />
+        </div>
+      </section>
 
       <LandingFooter />
     </div>
