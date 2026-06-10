@@ -133,7 +133,6 @@ function Navbar() {
   const svgDotRef = useRef<SVGCircleElement>(null);
   const arcRef = useRef({ curX: 0, animRaf: null as number | null });
   const navWrapRef = useRef<HTMLElement>(null);
-  const lastScrollY = useRef(0);
 
   const HW = 14;
 
@@ -233,29 +232,13 @@ function Navbar() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Scroll detection for navbar: full → compact transition
+  // Scroll detection — transparent at top of hero, solid when scrolled (never hides)
   useEffect(() => {
-    const onScroll = () => {
-      const pastHero = window.scrollY > window.innerHeight * 0.65;
-      setScrolled(pastHero);
-      lastScrollY.current = window.scrollY;
-    };
+    const onScroll = () => setScrolled(window.scrollY > window.innerHeight * 0.5);
     window.addEventListener("scroll", onScroll, { passive: true });
-    onScroll(); // initial check
+    onScroll();
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
-
-  // GSAP entrance animation
-  useGSAP(() => {
-    if (!navWrapRef.current) return;
-    gsap.from(navWrapRef.current, {
-      y: -40,
-      opacity: 0,
-      duration: 0.8,
-      ease: "power3.out",
-      delay: 0.3,
-    });
-  }, { scope: navWrapRef });
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => e.key === "Escape" && setOpen(false);
@@ -278,16 +261,15 @@ function Navbar() {
             : "none",
         }}
       >
-        {/* Edge glow — bottom subtle green rim */}
+        {/* Edge glow */}
         <div
           className="absolute bottom-0 left-0 right-0 pointer-events-none transition-opacity duration-500"
           style={{
             height: "1px",
             background: "linear-gradient(90deg, transparent 0%, rgba(181,255,77,0.15) 20%, rgba(181,255,77,0.2) 50%, rgba(181,255,77,0.15) 80%, transparent 100%)",
-            opacity: scrolled ? 1 : 0.3,
+            opacity: scrolled ? 1 : 0,
           }}
         />
-
         {/* Logo */}
         <div className="flex items-center gap-2.5">
           <img src="/logo.svg" alt="AgentCFO" className="h-7 w-7 rounded-full" />
@@ -295,7 +277,6 @@ function Navbar() {
             AgentCFO
           </span>
         </div>
-
         {/* Nav pills */}
         <div
           ref={navRef}
@@ -335,7 +316,6 @@ function Navbar() {
             <circle ref={svgDotRef} r="2" fill="#B5FF4D" />
           </svg>
         </div>
-
         {/* Controls */}
         <div className="flex items-center gap-2">
           <div className="hidden lg:block">
@@ -428,7 +408,7 @@ export function VelorixHero() {
 
       <Navbar />
 
-      <div ref={contentRef} className="relative z-20 flex flex-col items-center text-center px-5 sm:px-8 max-w-4xl mx-auto pt-20">
+      <div ref={contentRef} className="relative z-20 flex flex-col items-center text-center px-5 sm:px-8 max-w-4xl mx-auto">
         {/* Eyebrow */}
         <span
           className="text-[11px] font-medium uppercase tracking-[0.18em] text-[#B5FF4D] mb-6"
