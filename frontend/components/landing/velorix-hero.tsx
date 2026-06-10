@@ -290,7 +290,7 @@ function Navbar() {
 
         {/* Logo */}
         <div className="flex items-center gap-2.5">
-          <img src="/logo.png" alt="AgentCFO" className="h-7 w-7 rounded-full" />
+          <img src="/logo.svg" alt="AgentCFO" className="h-7 w-7 rounded-full" />
           <span className="text-white text-xl font-semibold tracking-tight" style={{ fontFamily: "Inter, sans-serif" }}>
             AgentCFO
           </span>
