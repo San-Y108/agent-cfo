@@ -83,26 +83,75 @@ def test_health_check_returns_ok():
     assert response.json() == {"status": "ok", "service": "agent-cfo-backend"}
 
 
-def test_version_returns_non_sensitive_demo_metadata():
+def test_version_returns_non_sensitive_demo_metadata(monkeypatch):
+    monkeypatch.delenv("REQUEST_FINANCE_API_KEY", raising=False)
+    monkeypatch.delenv("REQUEST_FINANCE_ALLOW_INVOICE_CREATE", raising=False)
+
     response = client.get("/version")
 
     assert response.status_code == 200
-    assert response.json() == {
+    body = response.json()
+    assert {
+        key: body[key]
+        for key in [
+            "service",
+            "version",
+            "apiMode",
+            "docsEnabled",
+            "openapiEnabled",
+            "cawMode",
+            "requestFinance",
+        ]
+    } == {
         "service": "agent-cfo-backend",
         "version": "0.1.0",
         "apiMode": "mock-demo",
         "docsEnabled": False,
         "openapiEnabled": False,
         "cawMode": "mock",
+        "requestFinance": {
+            "mode": "mock",
+            "apiKeyConfigured": False,
+            "invoiceCreateGuardEnabled": False,
+            "invoiceCreateImplemented": True,
+        },
+    }
+    assert body["p2Capabilities"] == {
+        "evidenceTimeline": True,
+        "demoScenarioPack": True,
+        "riskWhatIf": True,
+        "policyGuardrails": True,
+        "evidenceExport": True,
+        "requestFinancePreflight": True,
+        "plannerExplainability": True,
+        "requestFinanceLifecycleMock": True,
+        "sablierPayrollSimulation": True,
+        "safeGuardPolicySimulation": True,
+        "multiAgentTreasurySimulation": True,
+        "demoRunbookContracts": True,
+        "liveExternalActionsDefaultEnabled": False,
     }
     assert "AGENTCFO_DB_PATH" not in response.text
     assert "OPENAI_API_KEY" not in response.text
+    assert "REQUEST_FINANCE_API_KEY" not in response.text
 
 
 def test_public_caw_mode_does_not_echo_unknown_env_values(monkeypatch):
     monkeypatch.setenv("CAW_ADAPTER_MODE", "SHOULD_NOT_LEAK_CANARY")
 
     assert get_public_caw_mode() == "unknown"
+
+
+def test_public_request_finance_status_does_not_echo_secret(monkeypatch):
+    monkeypatch.setenv("REQUEST_FINANCE_MODE", "SHOULD_NOT_LEAK_CANARY")
+    monkeypatch.setenv("REQUEST_FINANCE_API_KEY", "SECRET_CANARY")
+
+    response = client.get("/version")
+
+    assert response.status_code == 200
+    assert response.json()["requestFinance"]["mode"] == "unknown"
+    assert response.json()["requestFinance"]["apiKeyConfigured"] is True
+    assert "SECRET_CANARY" not in response.text
 
 
 def test_cors_preflight_allows_configured_origin():

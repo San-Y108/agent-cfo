@@ -253,6 +253,8 @@
 5. 6月12日之后不新增功能
 6. 每个任务必须有负责人、交付物、截止时间
 
+2026-06-09 update: 上述原则是 6 月 8 日排期策略。当前 backend 已完成 Phase 4C closeout；仍保留 mock fallback，但已有 1 笔低额 CAW testnet evidence，不代表 3 笔 tx 已完成。
+
 请每个人现在按这个格式回复，不要只回"收到"：
 
 【我的岗位】
@@ -305,14 +307,16 @@ ___
 
 ## 九、最终提交材料清单
 
+> 2026-06-09 Phase 4C update：本节原为 6 月 8 日历史清单。当前 backend 状态以 README 和最新 `docs/pm` 为准：P0 mock backend 已完成，P1 Render mock-demo release 已完成但不是持久 evidence storage；CAW evidence 当前只有 1 笔低额 testnet tx，不满足 3 笔 tx 列表要求。
+
 | 材料 | 负责人 | 状态 |
 |------|--------|------|
 | GitHub 仓库（public） | 总控 | ✅ 已完成 |
-| README.md 完整版 | 总控 + 物料 | 🟡 待补充 |
+| README.md 完整版 | 总控 + 物料 | ✅ backend/P0/P1/CAW evidence 口径已更新；视频/截图材料仍待补 |
 | Demo 视频 3-5 分钟 | 物料 | 🟡 待录制 |
-| CAW 关键代码/配置说明 | 合约/CAW | ✅ 配置说明已交付，真实 adapter 待替换 |
-| Agent Wallet 地址 | 合约/CAW | ✅ Wallet 已创建，公开地址待写入 README |
-| Transaction Hash 列表 | 合约/CAW | 🟡 待真实测试网付款后补充 |
+| CAW 关键代码/配置说明 | 合约/CAW | ✅ 配置说明 + opt-in testnet RealCawAdapter skeleton + read-only refresh 已交付；默认 mock/fail-closed |
+| Agent Wallet 地址 | 合约/CAW | ✅ Wallet 已创建；README 只记录 masked source，完整地址是否公开需另行确认 |
+| Transaction Hash 列表 | 合约/CAW | 🟡 已有 1 笔低额 CAW testnet txHash；仍缺至少 2 笔或需调整提交口径 |
 | 风险边界说明 | 总控 | ✅ README 已覆盖 mock/审批/风控边界 |
 | 前端演示链接 | 前端 | ✅ 已部署 Vercel |
 | PPT 7 页 | 物料 | 🟡 待制作 |

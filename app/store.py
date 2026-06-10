@@ -8,6 +8,7 @@ from pydantic import BaseModel
 from app.models import (
     AuditReport,
     CawStatus,
+    ExternalReference,
     PaymentExecutionResult,
     PaymentPlan,
     RiskCheckResult,
@@ -23,6 +24,7 @@ class PaymentRepository(Protocol):
     def next_plan_id(self): ...
     def next_execution_id(self): ...
     def next_audit_report_id(self): ...
+    def next_external_reference_id(self): ...
     def save_payment_plan(self, payment_plan: PaymentPlan): ...
     def get_payment_plan(self, payment_plan_id: str) -> PaymentPlan | None: ...
     def save_risk_check(self, risk_check: RiskCheckResult): ...
@@ -33,6 +35,14 @@ class PaymentRepository(Protocol):
     def get_audit_report(self, audit_report_id: str) -> AuditReport | None: ...
     def save_caw_status(self, caw_status: CawStatus): ...
     def get_caw_status(self, caw_request_id: str) -> CawStatus | None: ...
+    def save_external_reference(self, external_reference: ExternalReference): ...
+    def get_external_reference(self, external_reference_id: str) -> ExternalReference | None: ...
+    def list_external_references(
+        self,
+        payment_plan_id: str | None = None,
+        audit_report_id: str | None = None,
+        reference_type: str | None = None,
+    ) -> list[ExternalReference]: ...
 
 
 class InMemoryStore:
@@ -45,9 +55,11 @@ class InMemoryStore:
         self.executions: dict[str, PaymentExecutionResult] = {}
         self.audit_reports: dict[str, AuditReport] = {}
         self.caw_statuses: dict[str, CawStatus] = {}
+        self.external_references: dict[str, ExternalReference] = {}
         self._plan_counter = 0
         self._execution_counter = 0
         self._audit_counter = 0
+        self._external_reference_counter = 0
 
     def next_plan_id(self):
         self._plan_counter += 1
@@ -60,6 +72,10 @@ class InMemoryStore:
     def next_audit_report_id(self):
         self._audit_counter += 1
         return f"audit_demo_{self._audit_counter:03d}"
+
+    def next_external_reference_id(self):
+        self._external_reference_counter += 1
+        return f"ext_ref_{self._external_reference_counter:03d}"
 
     def save_payment_plan(self, payment_plan: PaymentPlan):
         self.payment_plans[payment_plan.paymentPlanId] = payment_plan
@@ -91,6 +107,26 @@ class InMemoryStore:
     def get_caw_status(self, caw_request_id: str) -> CawStatus | None:
         return self.caw_statuses.get(caw_request_id)
 
+    def save_external_reference(self, external_reference: ExternalReference):
+        self.external_references[external_reference.externalReferenceId] = external_reference
+
+    def get_external_reference(self, external_reference_id: str) -> ExternalReference | None:
+        return self.external_references.get(external_reference_id)
+
+    def list_external_references(
+        self,
+        payment_plan_id: str | None = None,
+        audit_report_id: str | None = None,
+        reference_type: str | None = None,
+    ) -> list[ExternalReference]:
+        return [
+            reference
+            for reference in self.external_references.values()
+            if (payment_plan_id is None or reference.paymentPlanId == payment_plan_id)
+            and (audit_report_id is None or reference.auditReportId == audit_report_id)
+            and (reference_type is None or reference.referenceType == reference_type)
+        ]
+
 
 class SQLiteStore:
     def __init__(self, db_path: str):
@@ -114,6 +150,7 @@ class SQLiteStore:
                 "executions",
                 "audit_reports",
                 "caw_statuses",
+                "external_references",
             ]:
                 self.connection.execute(
                     f"CREATE TABLE IF NOT EXISTS {table} (id TEXT PRIMARY KEY, payload TEXT NOT NULL)"
@@ -130,6 +167,7 @@ class SQLiteStore:
                 "executions",
                 "audit_reports",
                 "caw_statuses",
+                "external_references",
                 "counters",
             ]:
                 self.connection.execute(f"DELETE FROM {table}")
@@ -155,6 +193,9 @@ class SQLiteStore:
 
     def next_audit_report_id(self):
         return self._next_id("audit_report", "audit_demo")
+
+    def next_external_reference_id(self):
+        return self._next_id("external_reference", "ext_ref")
 
     def _save(self, table: str, record_id: str, model: BaseModel):
         with self.connection:
@@ -201,6 +242,31 @@ class SQLiteStore:
 
     def get_caw_status(self, caw_request_id: str) -> CawStatus | None:
         return self._get("caw_statuses", caw_request_id, CawStatus)
+
+    def save_external_reference(self, external_reference: ExternalReference):
+        self._save("external_references", external_reference.externalReferenceId, external_reference)
+
+    def get_external_reference(self, external_reference_id: str) -> ExternalReference | None:
+        return self._get("external_references", external_reference_id, ExternalReference)
+
+    def list_external_references(
+        self,
+        payment_plan_id: str | None = None,
+        audit_report_id: str | None = None,
+        reference_type: str | None = None,
+    ) -> list[ExternalReference]:
+        rows = self.connection.execute("SELECT payload FROM external_references ORDER BY id").fetchall()
+        references = [
+            ExternalReference.model_validate_json(row["payload"])
+            for row in rows
+        ]
+        return [
+            reference
+            for reference in references
+            if (payment_plan_id is None or reference.paymentPlanId == payment_plan_id)
+            and (audit_report_id is None or reference.auditReportId == audit_report_id)
+            and (reference_type is None or reference.referenceType == reference_type)
+        ]
 
 
 def create_store() -> PaymentRepository:

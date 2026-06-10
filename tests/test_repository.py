@@ -5,6 +5,8 @@ os.environ["AGENTCFO_DB_PATH"] = ":memory:"
 from app.models import (
     AuditReport,
     CawStatus,
+    ExternalReference,
+    ExternalReferenceType,
     HumanApproval,
     PaymentExecutionItem,
     PaymentExecutionResult,
@@ -145,3 +147,27 @@ def test_audit_report_snapshot_is_not_rewritten_by_caw_status_updates(tmp_path):
     assert saved_report.execution.payments[0].status == PaymentStatus.EXECUTED
     assert saved_status.normalizedStatus == PaymentStatus.FAILED
     assert saved_status.error == "later status refresh failed"
+
+
+def test_sqlite_repository_saves_and_lists_external_references(tmp_path):
+    repository = SQLiteStore(str(tmp_path / "agentcfo.sqlite3"))
+    reference = ExternalReference(
+        externalReferenceId=repository.next_external_reference_id(),
+        referenceType=ExternalReferenceType.REQUEST_INVOICE,
+        provider="request-finance",
+        label="demo invoice",
+        paymentPlanId="plan_demo_001",
+        paymentItemId="pay_001",
+        auditReportId="audit_demo_001",
+        cawRequestId="mock_caw_exec_demo_001_pay_001",
+        status="mock_recorded",
+        metadata={"requestFinanceInvoiceId": "rf_demo_001"},
+        createdAt="2026-06-09T00:00:00+00:00",
+    )
+
+    repository.save_external_reference(reference)
+
+    assert repository.get_external_reference("ext_ref_001") == reference
+    assert repository.list_external_references(payment_plan_id="plan_demo_001") == [reference]
+    assert repository.list_external_references(audit_report_id="audit_demo_001") == [reference]
+    assert repository.list_external_references(reference_type="request_invoice") == [reference]

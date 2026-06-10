@@ -440,6 +440,8 @@ Render environment variables:
 ```text
 PYTHON_VERSION=3.13.5
 CORS_ALLOWED_ORIGINS=https://agentcfo-frontend.vercel.app
+CAW_ADAPTER_MODE=mock
+CAW_ENABLE_TRANSFERS=false
 ```
 
 Production must set `CORS_ALLOWED_ORIGINS` to the actual frontend origin. If this variable is not set, the backend only uses local development defaults:
@@ -473,7 +475,34 @@ curl https://agentcfo-backend.onrender.com/api/demo-sample
 
 This deployment is still mock backend mode by default: no real Cobo Agentic Wallet transfer, no `.env`, and no secrets in the repository. Render should set `CAW_ADAPTER_MODE=mock` and `CAW_ENABLE_TRANSFERS=false` for P1 online verification.
 
-Current Render persistence decision: the live Render demo is treated as `mock-demo` with ephemeral SQLite storage unless a Render persistent disk is explicitly approved and attached later. It is valid for online P0 mock flow verification, but it does not preserve or prove local CAW evidence across deploys or restarts.
+### Render Persistent Disk For Demo Evidence
+
+Use SQLite on a Render persistent disk only as durable demo evidence storage. Do not treat it as a production-grade finance ledger, multi-instance database, or final accounting source of truth.
+
+Recommended Render disk settings:
+
+```text
+Mount path: /var/data
+AGENTCFO_DB_PATH=/var/data/agentcfo_demo.sqlite3
+```
+
+The backend already reads `AGENTCFO_DB_PATH` when creating the SQLite store. If the Render service does not have a persistent disk mounted at `/var/data`, this path will not provide durable evidence and may fail or lose data depending on the filesystem state.
+
+Before enabling this on Render, add a persistent disk in the Render Dashboard or through the Render API, then set `AGENTCFO_DB_PATH=/var/data/agentcfo_demo.sqlite3` and redeploy. Keep P1 online verification in mock mode:
+
+```text
+CAW_ADAPTER_MODE=mock
+CAW_ENABLE_TRANSFERS=false
+```
+
+Persistence verification checklist after the disk exists:
+
+1. Create a P0/P2 mock evidence record through the normal mock API flow.
+2. Read it back through the relevant API, such as Audit Report or CAW Status.
+3. Trigger a Render redeploy or service restart.
+4. Read the same record again and confirm the id and evidence fields are unchanged.
+
+Current Render persistence decision: do not claim durable evidence storage until the persistent disk is attached, redeployed, and the checklist above passes.
 
 ## Payment Planner Mode
 
@@ -511,7 +540,7 @@ For temporary local demos, you can force the old in-memory store:
 AGENTCFO_STORE_BACKEND=memory
 ```
 
-On Render, SQLite is only suitable for a single-instance demo. Current closeout decision: no persistent disk is configured or verified for this release, so the Render service must be treated as ephemeral/mock-only for audit evidence. To keep SQLite data across deploys or restarts, first get explicit approval, then attach a Render persistent disk and set `AGENTCFO_DB_PATH` to a path on that disk. If SQLite is stored on Render's normal ephemeral filesystem, deploys or restarts can lose the database file. For long-running audit storage, multi-instance services, or production-like usage, use Postgres in a later phase instead; do not implement Postgres without explicit approval.
+On Render, SQLite is only suitable for a single-instance demo. To keep SQLite data across deploys or restarts, first get explicit approval, then attach a Render persistent disk at `/var/data` and set `AGENTCFO_DB_PATH=/var/data/agentcfo_demo.sqlite3`. If SQLite is stored on Render's normal ephemeral filesystem, deploys or restarts can lose the database file. For long-running audit storage, multi-instance services, or production-like usage, use Postgres in a later phase instead; do not implement Postgres without explicit approval.
 
 Audit Reports are saved as execution-time snapshots. Later CAW status refreshes must not rewrite historical Audit Report content.
 
@@ -605,6 +634,11 @@ curl https://agentcfo-backend.onrender.com/health
 | CAW_ALLOWED_RECIPIENTS | recipient allowlist | real mode 必需 |
 | CAW_SOURCE_ADDRESS | 多个兼容源地址时指定扣款地址 | 可选，但 live test 推荐设置 |
 | CAW_MAX_AMOUNT | 单笔最大金额 | real mode 必需 |
+| REQUEST_FINANCE_MODE | `mock` 或 `live`，默认 `mock` | 可选 |
+| REQUEST_FINANCE_API_BASE_URL | Request Finance API base URL，默认 `https://api.request.finance/` | 可选 |
+| REQUEST_FINANCE_API_KEY | Request Finance API key | live mode 必需，不提交 |
+| REQUEST_FINANCE_AUTH_SCHEME | `api_key` 或 `oauth_bearer`，默认 `api_key` | 可选；OAuth/Bearer 必须显式开启 |
+| REQUEST_FINANCE_ALLOW_INVOICE_CREATE | 预留的 invoice-create guard；默认 `false` | 可选，当前仍不得开启 |
 | AGENTCFO_DB_PATH | SQLite demo database path | 可选，本地默认 `agentcfo_demo.sqlite3` |
 | AGENTCFO_STORE_BACKEND | 可选切回 in-memory store | 仅本地临时 demo 使用 |
 
@@ -671,11 +705,83 @@ P1:
 
 P2:
 
-- Request Network invoice records。
-- Sablier Flow payroll。
-- Safe module references。
-- Multi-agent treasury。
-- Multi-chain support。
+- P2-0 external reference / evidence foundation。✅ Demo-safe metadata-only API 已实现。
+- P2A Request Network invoice records。✅ Mock/demo-safe invoice records 已实现；不调用 Request Finance API。
+- P2B Sablier Flow payroll。✅ Preview-only stream calculation 已实现；不创建真实 stream。
+- P2C Safe module references。✅ Reference-only metadata 已实现；不启用或部署 Safe module。
+- P2D Multi-chain readiness。✅ Readiness matrix 已实现；不新增真实链执行。
+- P2E Multi-agent treasury。✅ Mock budget partition view 已实现；不改变授权系统。
+- P2F Request Finance live integration spike。✅ Env-gated client/status/read-only path 已实现；off-chain invoice create mapper/client path 已实现但默认关闭；真实 invoice creation 仍需明确人工批准。
+
+P2 live integrations are not enabled by default. Do not claim Request Finance invoice creation evidence, Sablier, Safe, multichain execution, or multi-agent authorization is live without explicit approval, credentials, and new tests.
+
+Frontend/PM handoff for the demo-safe P2 surface is in [`docs/pm/P2_DEMO_HANDOFF.md`](docs/pm/P2_DEMO_HANDOFF.md). It includes curl examples, frontend response contracts, demo UI guidance, and approved PM/video wording.
+
+## P2F Request Finance Live Spike
+
+Request Finance integration is guarded by environment variables and defaults to mock mode:
+
+```text
+REQUEST_FINANCE_MODE=mock
+REQUEST_FINANCE_API_BASE_URL=https://api.request.finance/
+REQUEST_FINANCE_API_KEY=<Render secret env var>
+REQUEST_FINANCE_AUTH_SCHEME=api_key
+REQUEST_FINANCE_ALLOW_INVOICE_CREATE=false
+```
+
+Safety behavior:
+
+- `/version` exposes only non-sensitive status: mode, whether a key is configured, whether the invoice-create guard is enabled, and whether invoice creation is implemented.
+- Mock mode keeps the previous `/api/request-invoices` behavior and does not create a live client.
+- Live mode fails closed if `REQUEST_FINANCE_API_KEY` or base URL is missing.
+- API key auth uses `Authorization: <REQUEST_FINANCE_API_KEY>` with no `Bearer` prefix. `oauth_bearer` is a future explicit auth scheme and is never the default.
+- Live mode with the invoice-create guard disabled still records a demo-safe linked invoice record and marks it as `requestFinanceMode=live-readonly`.
+- Live off-chain invoice creation is implemented but disabled unless `REQUEST_FINANCE_ALLOW_INVOICE_CREATE=true`; do not enable the guard or call `POST /invoices` without explicit approval and test invoice inputs.
+- One approved test/off-chain invoice was created through `POST /invoices` during P2F validation, then the guard was turned back off. This is invoice-record evidence only: no `POST /invoices/{id}`, no on-chain conversion, no CAW transfer, and no payment.
+- Live create validates required input/config fields and fails closed when buyer email, invoice number, invoice item, currency, payment option, creation date, or due date fields are missing.
+- Live create only targets Request Finance `POST /invoices`; it must not call `POST /invoices/{id}`, convert an invoice to an on-chain request, trigger CAW, or pay.
+- Local/Render live smoke may use only `GET /invoices?take=1&skip=0` for read-only validation.
+- Audit Report snapshots stay immutable; Request Finance records remain linked external metadata.
+
+## P2 Demo-safe Extension APIs
+
+These APIs are metadata, preview, or reference only. They do not change P0/P1 payment authorization, deterministic risk checks, CAW adapter behavior, or immutable Audit Report snapshots.
+
+| API | Status | Live external action |
+| --- | --- | --- |
+| `POST /api/external-references` | Generic external evidence metadata | None |
+| `GET /api/external-references/{externalReferenceId}` | Read external metadata | None |
+| `GET /api/external-references?paymentPlanId=...` | List linked metadata | None |
+| `POST /api/request-invoices` | Mock Request invoice record by default; live path is env-gated and approval-gated | No live invoice creation unless explicitly approved |
+| `GET /api/request-invoices/{externalReferenceId}` | Read mock Request invoice record | None |
+| `POST /api/sablier-stream-previews` | Preview duration/rate for a future stream | No Sablier stream creation |
+| `POST /api/safe-permission-references` | Reference-only Safe permission note | No Safe module enablement/deployment |
+| `GET /api/multichain-readiness` | Design/readiness matrix | No new chain execution |
+| `GET /api/treasury-budget-partitions/{paymentPlanId}` | Mock department-agent budget view | No new authorization role |
+| `GET /api/p2/evidence-timeline/{auditReportId}` | Aggregates Audit Report, CAW status, and linked P2 references for display | None |
+| `GET /api/p2/demo-scenarios` | Deterministic judge/demo scenario pack | None |
+| `POST /api/p2/risk-what-if` | Simulation-only risk guardrail preview using deterministic rules | No plan persistence or payment execution |
+| `GET /api/p2/policy-guardrails` | Non-secret demo safety flags for CAW, Request Finance, Sablier, Safe, multichain, and audit immutability | None |
+| `GET /api/p2/evidence-export/{auditReportId}` | Markdown-ready evidence package for PM/demo copy | None |
+| `POST /api/p2/request-finance/preflight` | Validates Request Finance create-invoice payload shape without creating a provider client | No Request Finance API call |
+| `GET /api/p2/planner-explainability` | LLM planner boundary, Structured Outputs posture, malformed-output fallback, and reason trace | No model call |
+| `POST /api/p2/request-finance/lifecycle-preview` | Mock invoice lifecycle/event log for created/accepted/canceled/rejected/paid | No provider call, no email, no on-chain conversion |
+| `POST /api/p2/sablier/payroll-simulation` | Simulation-only payroll schedule/accrual/withdrawable/runway/insolvency guardrails | No Sablier stream or transaction |
+| `POST /api/p2/safe/guard-policy-dry-run` | Safe owner threshold, module checklist, guard policy matrix, blocked operations | No Safe module/guard enablement or execution |
+| `POST /api/p2/treasury/coordination-simulation` | Mock department-agent proposals, budget caps, conflicts, approval matrix, audit timeline | No new authorization role |
+| `GET /api/demo/runbook` | Ordered demo steps, expected badges, forbidden claims | None |
+| `GET /api/demo/storyboard` | Presentation storyboard frames | None |
+| `GET /api/demo/blocked-examples` | Stable blocked examples for frontend/PM copy | None |
+| `GET /api/demo/contracts` | Frontend response-contract index and global invariants | None |
+
+P2 implementation references:
+
+- Request Network / Request Finance: live client/status path is env-gated; live read-only smoke is allowed with configured credentials, and off-chain invoice create is implemented but disabled by default after the approved single test/off-chain invoice run.
+- LLM planner explainability: references OpenAI Structured Outputs concepts such as `json_schema`, strict schema adherence, and fail-closed validation, but the endpoint itself performs no model call.
+- Sablier Flow: simulation uses rate-per-second, withdrawable/accrued amount, covered/uncovered debt, and lifecycle-state vocabulary for demo math only; future live payroll requires wallet/signature approval and new risk rules before stream creation.
+- Safe modules/guards: dry-run uses owner threshold, module, and guard concepts for comparison only; future Safe work requires owner approval and security review before enablement or deployment.
+- Multi-chain: current real execution boundary remains the existing CAW testnet/token allowlist.
+- Multi-agent treasury: current mock partition view is advisory only; human approval and deterministic risk checks remain the only execution gates.
 
 ## Documentation Rules
 
