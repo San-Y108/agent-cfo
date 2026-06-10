@@ -16,10 +16,10 @@ export default function ConsoleLayout({
   const [sidebarOpen, setSidebarOpen] = useState(true);
 
   return (
-    <div className="relative min-h-screen bg-[#0D0D0D]"
+    <div className="relative min-h-screen bg-surface dark:bg-[#0D0D0D]"
     >
-      {/* ─── Global background layer ─── */}
-      <div className="fixed inset-0 z-0 pointer-events-none"
+      {/* ─── Global background layer (dark mode only) ─── */}
+      <div className="fixed inset-0 z-0 pointer-events-none dark:block hidden"
       >
         <GridBackground />
         <NoiseOverlay className="opacity-[0.03]" />

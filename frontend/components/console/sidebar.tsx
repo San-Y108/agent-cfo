@@ -74,7 +74,7 @@ export function ConsoleSidebar({
     <>
       {/* Desktop Sidebar */}
       <motion.aside
-        className="fixed left-0 top-0 z-40 hidden h-screen flex-col border-r border-white/[0.06] bg-[#0D0D0D] md:flex"
+        className="fixed left-0 top-0 z-40 hidden h-screen flex-col border-r border-border-token dark:border-white/[0.06] bg-surface dark:bg-[#0D0D0D] md:flex"
         animate={{ width: open ? 260 : 72 }}
         transition={{ type: "spring", stiffness: 380, damping: 30 }}
       >
@@ -237,7 +237,7 @@ function MobileSidebar() {
   const { t } = useApp();
 
   return (
-    <div className="fixed top-0 left-0 right-0 z-40 flex h-14 items-center justify-between border-b border-white/[0.06] bg-[#0D0D0D] px-4 md:hidden"
+    <div className="fixed top-0 left-0 right-0 z-40 flex h-14 items-center justify-between border-b border-border-token dark:border-white/[0.06] bg-surface dark:bg-[#0D0D0D] px-4 md:hidden"
     >
       <span className="text-base font-bold text-fg">AgentCFO</span>
       <div className="flex items-center gap-2">
