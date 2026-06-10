@@ -13,6 +13,7 @@ import {
   ShieldCheck,
 } from "lucide-react";
 import { useApp } from "@/lib/i18n/context";
+import { HolographicButton } from "@/components/ui/holographic-button";
 
 const CORAL = "#FB7185";
 const CORAL_LIGHT = "#F43F5E";
@@ -273,13 +274,14 @@ export default function PolicyPage() {
                   {t("console.policy.whitelistDesc" as any)}
                 </p>
               </div>
-              <button
+              <HolographicButton
                 onClick={() => setIsAddingItem(true)}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold border border-border-token dark:border-white/[0.08] bg-surface-2 dark:bg-white/[0.05] hover:bg-surface-hover dark:hover:bg-white/[0.08] transition-colors text-fg cursor-pointer"
+                variant="cyan"
+                size="sm"
+                icon={<Plus className="w-3.5 h-3.5" />}
               >
-                <Plus className="w-3.5 h-3.5" />
                 {t("console.policy.registerBtn" as any)}
-              </button>
+              </HolographicButton>
             </div>
 
             <div className="overflow-x-auto">
@@ -442,15 +444,17 @@ export default function PolicyPage() {
               />
             </div>
 
-            <button
+            <HolographicButton
               type="submit"
+              variant="coral"
+              size="sm"
               disabled={isSaving}
-              className="w-full py-2.5 rounded-lg text-xs font-bold transition-all cursor-pointer bg-accent hover:brightness-95 text-accent-fg disabled:opacity-60"
+              className="w-full"
             >
               {isSaving
                 ? t("console.policy.syncing" as any)
                 : t("console.policy.confirmPolicyBtn" as any)}
-            </button>
+            </HolographicButton>
           </form>
 
           <AnimatePresence>
@@ -541,19 +545,21 @@ export default function PolicyPage() {
                 </div>
 
                 <div className="flex justify-end gap-2.5 pt-2">
-                  <button
+                  <HolographicButton
                     type="button"
                     onClick={() => setIsAddingItem(false)}
-                    className="px-4 py-2 border border-border-token dark:border-white/[0.08] text-xs font-bold rounded-lg bg-surface-2 dark:bg-white/[0.03] hover:bg-surface-hover dark:hover:bg-white/[0.06] text-fg-muted transition-colors cursor-pointer"
+                    variant="cyan"
+                    size="sm"
                   >
                     {lang === "zh" ? "取消" : "Cancel"}
-                  </button>
-                  <button
+                  </HolographicButton>
+                  <HolographicButton
                     type="submit"
-                    className="px-4 py-2 text-xs font-bold rounded-lg bg-accent hover:brightness-95 text-accent-fg transition-all cursor-pointer"
+                    variant="coral"
+                    size="sm"
                   >
                     {lang === "zh" ? "确立注册" : "Confirm Registry"}
-                  </button>
+                  </HolographicButton>
                 </div>
               </form>
             </motion.div>

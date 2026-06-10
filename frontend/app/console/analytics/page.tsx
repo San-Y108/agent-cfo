@@ -22,6 +22,7 @@ import {
   Pie,
 } from "recharts";
 import { useApp } from "@/lib/i18n/context";
+import { AnimatedNumber } from "@/components/ui/aceternity/animated-number";
 
 const VIOLET = "#C084FC";
 const VIOLET_LIGHT = "#A855F7";
@@ -71,7 +72,7 @@ function KpiCard({
   delay = 0,
 }: {
   label: string;
-  value: string;
+  value: React.ReactNode;
   sub: React.ReactNode;
   icon: React.ElementType;
   delay?: number;
@@ -176,7 +177,7 @@ export default function AnalyticsPage() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <KpiCard
           label={t("console.analytics.conducted" as any)}
-          value={`$${totalVolume.toLocaleString()}`}
+          value={<AnimatedNumber value={totalVolume} />}
           sub={lang === "zh" ? "较上期 +24%" : "+24% vs last period"}
           icon={TrendingUp}
           delay={0.05}
