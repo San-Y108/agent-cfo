@@ -22,6 +22,10 @@ class RequestFinanceProviderError(Exception):
     pass
 
 
+class RequestFinanceValidationError(Exception):
+    pass
+
+
 @dataclass(frozen=True)
 class RequestFinanceConfig:
     mode: str = "mock"
@@ -116,8 +120,40 @@ class LiveRequestFinanceClient:
 
     def create_invoice(self, request: RequestInvoiceCreate):
         self.config.require_invoice_create_approval()
-        raise RequestFinanceLiveActionNotApproved(
-            "Live Request Finance invoice payload mapping requires explicit approval before POST /invoices"
+        endpoint = urljoin(self.config.api_base_url.rstrip("/") + "/", "invoices")
+        payload = build_request_finance_invoice_payload(request)
+        try:
+            response = self.http_client.post(
+                endpoint,
+                json=payload,
+                headers=self._headers(),
+            )
+            response.raise_for_status()
+        except httpx.HTTPStatusError as error:
+            raise RequestFinanceProviderError(
+                f"Request Finance invoice create failed with HTTP {error.response.status_code}"
+            ) from error
+        except httpx.HTTPError as error:
+            raise RequestFinanceProviderError(
+                "Request Finance invoice create failed with a transport error"
+            ) from error
+
+        try:
+            data = response.json()
+        except ValueError as error:
+            raise RequestFinanceProviderError(
+                "Request Finance invoice create returned invalid JSON"
+            ) from error
+        invoice_id = _response_value(data, "id")
+        if not invoice_id:
+            raise RequestFinanceProviderError(
+                "Request Finance invoice create response missing id"
+            )
+        return RequestFinanceInvoiceResult(
+            request_finance_invoice_id=invoice_id,
+            request_id=_response_value(data, "requestId", fallback=request.requestId),
+            status=_response_value(data, "status", fallback="created"),
+            hosted_url=_response_value(data, "hostedUrl", fallback=request.hostedUrl),
         )
 
     def list_invoices(self, take: int = 1, skip: int = 0):
@@ -148,6 +184,65 @@ class LiveRequestFinanceClient:
             "Content-Type": "application/json",
             "Authorization": authorization,
         }
+
+
+def build_request_finance_invoice_payload(request: RequestInvoiceCreate):
+    invoice_number = request.invoiceNumber or request.requestFinanceInvoiceId
+    required_fields = {
+        "buyerEmail": request.buyerEmail,
+        "invoiceNumber": invoice_number,
+        "invoiceItemName": request.invoiceItemName,
+        "invoiceCurrency": request.invoiceCurrency,
+        "invoiceQuantity": request.invoiceQuantity,
+        "invoiceUnitPrice": request.invoiceUnitPrice,
+        "paymentCurrency": request.paymentCurrency,
+        "paymentNetwork": request.paymentNetwork,
+        "paymentAddress": request.paymentAddress,
+        "creationDate": request.creationDate,
+        "dueDate": request.dueDate,
+    }
+    missing = [name for name, value in required_fields.items() if value in (None, "")]
+    if missing:
+        raise RequestFinanceValidationError(
+            "Request Finance live invoice create requires: " + ", ".join(missing)
+        )
+
+    return {
+        "meta": {
+            "format": "rnf_invoice",
+            "version": "0.0.3",
+        },
+        "invoiceNumber": invoice_number,
+        "buyerInfo": {
+            "email": request.buyerEmail,
+        },
+        "invoiceItems": [
+            {
+                "currency": request.invoiceCurrency,
+                "name": request.invoiceItemName,
+                "quantity": request.invoiceQuantity,
+                "unitPrice": request.invoiceUnitPrice,
+            }
+        ],
+        "paymentOptions": [
+            {
+                "currency": request.paymentCurrency,
+                "network": request.paymentNetwork,
+                "address": request.paymentAddress,
+            }
+        ],
+        "creationDate": request.creationDate,
+        "paymentTerms": {
+            "dueDate": request.dueDate,
+        },
+    }
+
+
+def _response_value(data: dict, key: str, fallback: str | None = None):
+    value = data.get(key)
+    if value in (None, ""):
+        return fallback
+    return value
 
 
 def create_request_finance_client(config: RequestFinanceConfig | None = None):

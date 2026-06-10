@@ -31,7 +31,7 @@ def get_public_request_finance_status():
         "mode": config.public_mode,
         "apiKeyConfigured": config.api_key_configured,
         "invoiceCreateGuardEnabled": config.allow_invoice_create,
-        "invoiceCreateImplemented": False,
+        "invoiceCreateImplemented": True,
     }
 
 

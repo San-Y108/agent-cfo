@@ -18,6 +18,7 @@ from app.services.request_finance import (
     RequestFinanceConfigurationError,
     RequestFinanceLiveActionNotApproved,
     RequestFinanceProviderError,
+    RequestFinanceValidationError,
 )
 from app.store import store
 
@@ -71,6 +72,8 @@ def create_request_invoice(request: RequestInvoiceCreate):
         raise HTTPException(status_code=403, detail=str(error))
     except RequestFinanceProviderError as error:
         raise HTTPException(status_code=502, detail=str(error))
+    except RequestFinanceValidationError as error:
+        raise HTTPException(status_code=400, detail=str(error))
     except P2ValidationError as error:
         raise HTTPException(status_code=400, detail=str(error))
 

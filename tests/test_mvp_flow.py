@@ -98,7 +98,7 @@ def test_version_returns_non_sensitive_demo_metadata():
             "mode": "mock",
             "apiKeyConfigured": False,
             "invoiceCreateGuardEnabled": False,
-            "invoiceCreateImplemented": False,
+            "invoiceCreateImplemented": True,
         },
     }
     assert "AGENTCFO_DB_PATH" not in response.text

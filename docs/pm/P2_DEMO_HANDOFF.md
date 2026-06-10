@@ -2,7 +2,7 @@
 
 Date: 2026-06-09
 
-Backend status: demo-safe P2 surface is available for presentation and frontend integration. It is metadata, preview, reference, and mock by default. P2F adds an env-gated Request Finance live-client/read-only smoke path, but it does not enable live invoice creation without explicit approval. It does not enable Sablier streams, Safe modules, multichain execution, or multi-agent authorization.
+Backend status: demo-safe P2 surface is available for presentation and frontend integration. It is metadata, preview, reference, and mock by default. P2F adds an env-gated Request Finance live-client/read-only smoke path plus a disabled off-chain invoice create path, but it does not enable live invoice creation without explicit approval. It does not enable Sablier streams, Safe modules, multichain execution, or multi-agent authorization.
 
 Online backend base URL:
 
@@ -18,7 +18,8 @@ Allowed demo claims:
 
 - P2 APIs can attach external reference metadata to a payment plan item, Audit Report id, and CAW request id.
 - Request invoice records are mock/demo-safe records by default.
-- Request Finance live mode can expose non-sensitive status and read-only smoke validation when explicitly configured.
+- Request Finance live mode can expose non-sensitive status, read-only smoke validation, and live-readonly linked invoice metadata when explicitly configured.
+- Request Finance off-chain invoice create is implemented behind `REQUEST_FINANCE_ALLOW_INVOICE_CREATE=true`, but no real invoice has been created unless explicitly approved and verified.
 - Sablier payroll is preview-only and creates no stream.
 - Safe module work is reference-only and enables no module.
 - Multichain is readiness/design-only and does not add a new execution chain.
@@ -26,7 +27,7 @@ Allowed demo claims:
 
 Do not claim:
 
-- Live Request Finance invoice creation is complete.
+- A real Request Finance invoice has been created, unless a separate approved test invoice run produced evidence.
 - A real Sablier stream was created.
 - A Safe module was enabled or deployed.
 - New multichain execution is live.
@@ -125,7 +126,9 @@ Expected Request Finance boundary:
 - `/version` may expose `requestFinance.mode`, `requestFinance.apiKeyConfigured`, `requestFinance.invoiceCreateGuardEnabled`, and `requestFinance.invoiceCreateImplemented`
 - `apiKeyConfigured` is boolean only and never returns the key
 - live mode with creation disabled returns demo-safe linked invoice metadata marked `requestFinanceMode=live-readonly`
-- real invoice creation is not implemented in this spike and remains blocked unless explicitly approved in a later step
+- off-chain invoice create is implemented but disabled unless `REQUEST_FINANCE_ALLOW_INVOICE_CREATE=true`
+- off-chain invoice create only calls `POST /invoices`; it must not call `POST /invoices/{id}`, convert on-chain, trigger CAW, or pay
+- real invoice creation remains blocked unless explicitly approved in a later step
 
 ## P2 API Curl Examples
 
@@ -255,12 +258,28 @@ curl -s "$BASE_URL/api/treasury-budget-partitions/plan_demo_001"
 - `externalReference`: `ExternalReference`
 - `externalReference.metadata.requestFinanceMode`: `mock`, `live-readonly`, or `live`
 
+Optional live off-chain create input fields for a future approved test invoice:
+
+- `buyerEmail`: string
+- `invoiceNumber`: string
+- `invoiceItemName`: string
+- `invoiceCurrency`: string
+- `invoiceQuantity`: number
+- `invoiceUnitPrice`: number
+- `paymentCurrency`: string
+- `paymentNetwork`: string
+- `paymentAddress`: string
+- `creationDate`: string
+- `dueDate`: string
+
+If any required live-create field is missing while `REQUEST_FINANCE_ALLOW_INVOICE_CREATE=true`, the backend fails closed and does not call Request Finance.
+
 `/version` Request Finance status:
 
 - `requestFinance.mode`: `mock`, `live`, or `unknown`
 - `requestFinance.apiKeyConfigured`: boolean
 - `requestFinance.invoiceCreateGuardEnabled`: boolean
-- `requestFinance.invoiceCreateImplemented`: false
+- `requestFinance.invoiceCreateImplemented`: boolean; `true` means the disabled off-chain create code path exists, not that a real invoice was created
 
 `SablierStreamPreview`:
 
@@ -313,7 +332,8 @@ Frontend repository is not present in the current backend workspace. Implement t
 - Keep Audit Report snapshot read-only and separate from linked P2 metadata.
 - Display badges from backend fields: `metadata-only`, `mock invoice`, `preview-only`, `reference-only`, `design-only`, `mock-budget-partition`.
 - For Request invoice records, show `requestFinanceInvoiceId`, `requestId`, `status`, `hostedUrl`, `paymentItemId`, `auditReportId`, and `cawRequestId`.
-- If `/version.requestFinance.mode=live`, show it as "Request Finance live client configured" only; do not label invoice creation complete unless a test invoice was explicitly approved and created.
+- If `/version.requestFinance.mode=live`, show it as "Request Finance live client configured" only.
+- If `/version.requestFinance.invoiceCreateImplemented=true`, label it as "off-chain invoice create path available but disabled/approval-gated" unless `invoiceCreateGuardEnabled=true` and a test invoice was explicitly approved and created.
 - For Sablier preview, show `streamCreated=false`, `durationDays`, `durationSeconds`, `ratePerSecond`, `recipient`, `wallet`, `amount`, and `token`.
 - For Safe reference, show `moduleEnabled=false`, `safeAddress`, `moduleName`, and `permissionNotes`.
 - For multichain readiness, show `liveMultichainExecutionEnabled=false` and the readiness rows.
@@ -324,16 +344,16 @@ Frontend repository is not present in the current backend workspace. Implement t
 Recommended wording:
 
 - "P2 adds a demo-safe linked evidence layer on top of the completed P0/P1 payment flow."
-- "The Request invoice record is linked to the payment plan item, Audit Report id, and CAW request id. By default it is mock/demo-safe; P2F adds an env-gated live client and read-only smoke path."
+- "The Request invoice record is linked to the payment plan item, Audit Report id, and CAW request id. By default it is mock/demo-safe; P2F adds an env-gated live client, read-only smoke path, and disabled off-chain create path."
 - "Sablier is shown as a payroll stream preview only; no stream is created."
 - "Safe and multichain are readiness/reference surfaces only."
 - "The multi-agent treasury view is advisory and does not change payment authorization."
 - "Current real CAW evidence remains one low-value testnet transaction; Render mock-demo execution returns mock mode and no tx hash."
-- "Live Request Finance invoice creation is not claimed unless a separate approved test invoice is created."
+- "Live Request Finance invoice evidence is not claimed unless a separate approved test invoice is created."
 
 Avoid wording:
 
-- "Request Finance live invoice creation is done."
+- "Request Finance live invoice evidence is done."
 - "A Sablier stream was created."
 - "Safe module automation is enabled."
 - "Multichain execution is live."
@@ -342,7 +362,7 @@ Avoid wording:
 
 ## Human-only Blockers
 
-- Live Request Finance invoice creation requires an API key, explicit approval, and enabling the invoice-create guard.
+- Live Request Finance invoice creation requires explicit approval, enabling the invoice-create guard, and human-provided test invoice inputs: buyer email, invoice number/prefix, item name, currency, payment option/network/token/address, and maximum test amount.
 - Live Sablier streams require wallet/signature approval, new risk rules, and tests.
 - Live Safe module enablement requires owner approval and security review.
 - New multichain execution requires CAW allowlist/config approval and tests.

@@ -216,6 +216,17 @@ class RequestInvoiceCreate(BaseModel):
     status: str
     hostedUrl: str | None = None
     txHashReference: str | None = None
+    buyerEmail: str | None = None
+    invoiceNumber: str | None = None
+    invoiceItemName: str | None = None
+    invoiceCurrency: str | None = None
+    invoiceQuantity: float | None = Field(default=None, gt=0)
+    invoiceUnitPrice: float | None = Field(default=None, gt=0)
+    paymentCurrency: str | None = None
+    paymentNetwork: str | None = None
+    paymentAddress: str | None = None
+    creationDate: str | None = None
+    dueDate: str | None = None
 
 
 class RequestInvoiceRecord(BaseModel):

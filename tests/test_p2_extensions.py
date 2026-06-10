@@ -22,6 +22,7 @@ from app.services.request_finance import (
     RequestFinanceConfig,
     RequestFinanceInvoiceResult,
     RequestFinanceProviderError,
+    build_request_finance_invoice_payload,
 )
 
 
@@ -302,7 +303,7 @@ def test_request_invoice_live_readonly_mode_records_demo_safe_invoice_without_li
     assert invoice["externalReference"]["metadata"]["requestFinanceMode"] == "live-readonly"
 
 
-def test_request_invoice_live_create_guard_reaches_blocked_live_client(monkeypatch):
+def test_request_invoice_live_create_missing_payload_fields_fails_closed(monkeypatch):
     plan, execution = create_p0_flow()
 
     monkeypatch.setenv("REQUEST_FINANCE_MODE", "live")
@@ -324,8 +325,201 @@ def test_request_invoice_live_create_guard_reaches_blocked_live_client(monkeypat
         },
     )
 
-    assert response.status_code == 403
-    assert "payload mapping requires explicit approval" in response.json()["detail"]
+    assert response.status_code == 400
+    assert "buyerEmail" in response.json()["detail"]
+    assert "paymentAddress" in response.json()["detail"]
+
+
+def test_request_finance_live_create_payload_mapper_requires_payment_fields():
+    request = RequestInvoiceCreate(
+        paymentPlanId="plan_demo_001",
+        paymentItemId="pay_001",
+        requestFinanceInvoiceId="rf_demo_001",
+        status="draft",
+        buyerEmail="buyer@example.invalid",
+        invoiceNumber="AGENTCFO-001",
+        invoiceItemName="Contributor payment",
+        invoiceCurrency="USD",
+        invoiceQuantity=1,
+        invoiceUnitPrice=20,
+        paymentCurrency="USDC",
+        paymentNetwork="sepolia",
+        paymentAddress="0xPaymentAddress",
+        creationDate="2026-06-10",
+        dueDate="2026-06-17",
+    )
+
+    payload = build_request_finance_invoice_payload(request)
+
+    assert payload["meta"] == {"format": "rnf_invoice", "version": "0.0.3"}
+    assert payload["invoiceNumber"] == "AGENTCFO-001"
+    assert payload["buyerInfo"] == {"email": "buyer@example.invalid"}
+    assert payload["invoiceItems"] == [
+        {
+            "currency": "USD",
+            "name": "Contributor payment",
+            "quantity": 1,
+            "unitPrice": 20,
+        }
+    ]
+    assert payload["paymentOptions"] == [
+        {
+            "currency": "USDC",
+            "network": "sepolia",
+            "address": "0xPaymentAddress",
+        }
+    ]
+    assert payload["creationDate"] == "2026-06-10"
+    assert payload["paymentTerms"] == {"dueDate": "2026-06-17"}
+
+
+def test_request_finance_live_create_uses_fake_transport_without_onchain_conversion():
+    captured = {}
+
+    def handler(request: httpx.Request):
+        captured["method"] = request.method
+        captured["url"] = str(request.url)
+        captured["authorization"] = request.headers.get("Authorization")
+        captured["payload"] = request.read().decode()
+        return httpx.Response(
+            200,
+            json={
+                "id": "rf_live_fake_001",
+                "requestId": "request_live_fake_001",
+                "status": "created",
+                "hostedUrl": "https://example.invalid/request/rf_live_fake_001",
+            },
+        )
+
+    request_finance_client = LiveRequestFinanceClient(
+        RequestFinanceConfig(
+            mode="live",
+            api_key="SECRET_CANARY",
+            allow_invoice_create=True,
+        ),
+        http_client=httpx.Client(transport=httpx.MockTransport(handler)),
+    )
+
+    result = request_finance_client.create_invoice(
+        RequestInvoiceCreate(
+            paymentPlanId="plan_demo_001",
+            paymentItemId="pay_001",
+            requestFinanceInvoiceId="rf_demo_001",
+            status="draft",
+            buyerEmail="buyer@example.invalid",
+            invoiceNumber="AGENTCFO-001",
+            invoiceItemName="Contributor payment",
+            invoiceCurrency="USD",
+            invoiceQuantity=1,
+            invoiceUnitPrice=20,
+            paymentCurrency="USDC",
+            paymentNetwork="sepolia",
+            paymentAddress="0xPaymentAddress",
+            creationDate="2026-06-10",
+            dueDate="2026-06-17",
+        )
+    )
+
+    assert captured["method"] == "POST"
+    assert captured["authorization"] == "SECRET_CANARY"
+    assert str(captured["url"]).endswith("/invoices")
+    assert "/invoices/" not in captured["url"].removesuffix("/invoices")
+    assert "Contributor payment" in captured["payload"]
+    assert result.request_finance_invoice_id == "rf_live_fake_001"
+    assert result.request_id == "request_live_fake_001"
+    assert result.status == "created"
+    assert result.hosted_url == "https://example.invalid/request/rf_live_fake_001"
+
+
+def test_request_finance_live_create_provider_errors_fail_closed_without_secret_leak():
+    for status_code in [400, 401, 403]:
+        request_finance_client = LiveRequestFinanceClient(
+            RequestFinanceConfig(
+                mode="live",
+                api_key="SECRET_CANARY",
+                allow_invoice_create=True,
+            ),
+            http_client=httpx.Client(
+                transport=httpx.MockTransport(
+                    lambda _request: httpx.Response(
+                        status_code,
+                        text="SECRET_CANARY provider body should not leak",
+                    )
+                )
+            ),
+        )
+
+        try:
+            request_finance_client.create_invoice(
+                RequestInvoiceCreate(
+                    paymentPlanId="plan_demo_001",
+                    paymentItemId="pay_001",
+                    requestFinanceInvoiceId="rf_demo_001",
+                    status="draft",
+                    buyerEmail="buyer@example.invalid",
+                    invoiceNumber="AGENTCFO-001",
+                    invoiceItemName="Contributor payment",
+                    invoiceCurrency="USD",
+                    invoiceQuantity=1,
+                    invoiceUnitPrice=20,
+                    paymentCurrency="USDC",
+                    paymentNetwork="sepolia",
+                    paymentAddress="0xPaymentAddress",
+                    creationDate="2026-06-10",
+                    dueDate="2026-06-17",
+                )
+            )
+        except RequestFinanceProviderError as error:
+            message = str(error)
+        else:
+            raise AssertionError("provider error should fail closed")
+
+        assert f"HTTP {status_code}" in message
+        assert "SECRET_CANARY" not in message
+        assert "provider body" not in message
+
+
+def test_request_finance_live_create_requires_provider_invoice_id():
+    request_finance_client = LiveRequestFinanceClient(
+        RequestFinanceConfig(
+            mode="live",
+            api_key="SECRET_CANARY",
+            allow_invoice_create=True,
+        ),
+        http_client=httpx.Client(
+            transport=httpx.MockTransport(
+                lambda _request: httpx.Response(200, json={"status": "created"})
+            )
+        ),
+    )
+
+    try:
+        request_finance_client.create_invoice(
+            RequestInvoiceCreate(
+                paymentPlanId="plan_demo_001",
+                paymentItemId="pay_001",
+                requestFinanceInvoiceId="rf_demo_001",
+                status="draft",
+                buyerEmail="buyer@example.invalid",
+                invoiceNumber="AGENTCFO-001",
+                invoiceItemName="Contributor payment",
+                invoiceCurrency="USD",
+                invoiceQuantity=1,
+                invoiceUnitPrice=20,
+                paymentCurrency="USDC",
+                paymentNetwork="sepolia",
+                paymentAddress="0xPaymentAddress",
+                creationDate="2026-06-10",
+                dueDate="2026-06-17",
+            )
+        )
+    except RequestFinanceProviderError as error:
+        message = str(error)
+    else:
+        raise AssertionError("provider response without id should fail closed")
+
+    assert "missing id" in message
+    assert "SECRET_CANARY" not in message
 
 
 def test_request_finance_live_list_uses_api_key_auth_without_bearer():

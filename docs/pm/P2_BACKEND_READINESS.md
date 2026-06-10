@@ -4,7 +4,7 @@ Date: 2026-06-09
 
 ## Decision
 
-Backend has completed a demo-safe P2 backend spike and a P2F Request Finance live-client spike. The shipped scope remains metadata, preview, reference, and read-only live validation; live Request Finance invoice creation is still not approved.
+Backend has completed a demo-safe P2 backend spike and a P2F Request Finance live-client spike. The shipped scope remains metadata, preview, reference, read-only live validation, and an approval-gated off-chain invoice create path; live Request Finance invoice creation is implemented but still disabled by default and not approved for real use.
 
 Request Network invoice records were implemented first because they are the least disruptive P2 path: they link invoice metadata to existing payment plan items, Audit Reports, and CAW request ids without changing the CAW payment execution path, deterministic risk checks, or Audit Report immutability.
 
@@ -22,8 +22,8 @@ Frontend and PM handoff for the demo-safe P2 surface is documented in [`P2_DEMO_
 | CAW evidence | Exactly 1 low-value testnet tx; not 3 tx |
 | Live CAW transfers | Human approval required before any additional transfer |
 | P2 demo-safe backend spike | Complete |
-| P2F Request Finance live client/read-only smoke path | Complete locally; Render env must be configured before online live smoke |
-| P2 live invoice creation | Not approved |
+| P2F Request Finance live client/read-only smoke path | Complete locally and online when Render env is configured |
+| P2 live off-chain invoice creation | Implemented behind `REQUEST_FINANCE_ALLOW_INVOICE_CREATE=true`; not approved to run |
 
 ## Completed Backend Scope
 
@@ -35,7 +35,7 @@ Frontend and PM handoff for the demo-safe P2 surface is documented in [`P2_DEMO_
 | P2C Safe references | Complete | Reference-only Safe permission note | No module enablement/deployment |
 | P2D Multi-chain readiness | Complete | Readiness matrix | No new chain execution |
 | P2E Multi-agent budget partition | Complete | Mock department-agent budget view | No new authorization role |
-| P2F Request Finance live spike | Complete | Env-gated config/client/status path; read-only smoke path | No invoice creation without approval |
+| P2F Request Finance live spike | Complete | Env-gated config/client/status/read-only path; disabled off-chain create mapper/client path | No invoice creation without approval |
 
 ## Implementation Notes
 
@@ -48,12 +48,13 @@ Frontend and PM handoff for the demo-safe P2 surface is documented in [`P2_DEMO_
 7. Audit Report snapshots remain immutable; linked P2 metadata is stored separately.
 8. P2F Request Finance live mode fails closed if credentials are missing and blocks invoice creation unless explicitly approval-gated.
 9. Request Finance API-key auth uses the raw API key in the `Authorization` header; OAuth/Bearer is a future explicit auth-scheme path, not the default.
+10. Request Finance off-chain create maps the minimum invoice payload fields and only targets `POST /invoices`; it must not call `POST /invoices/{id}`, convert an invoice to an on-chain request, trigger CAW, or pay.
 
 ## Why Not Other P2 Items First
 
 | Candidate | Readiness | Reason |
 | --- | --- | --- |
-| Request Network invoice records | Demo-safe backend complete; live client/read-only path added | Needs Request Finance API key and approval before invoice creation |
+| Request Network invoice records | Demo-safe backend complete; live client/read-only path and disabled off-chain create path added | Needs explicit approval and test invoice inputs before invoice creation |
 | Sablier payroll / streams | Preview complete; live not ready | Live streams need wallet/signature approval and new risk rules |
 | Safe module references | Reference metadata complete; live not ready | Safe module enablement needs owner approval/security review |
 | Multichain | Readiness complete; live not ready | Real execution must stay inside current CAW allowlist until approved |
@@ -61,7 +62,7 @@ Frontend and PM handoff for the demo-safe P2 surface is documented in [`P2_DEMO_
 
 ## Reference Docs Checked
 
-- Request Network docs: API supports programmatic payment destinations, secure payments, payouts, and webhooks; AgentCFO currently stores mock invoice metadata and has an env-gated Request Finance client/read-only smoke path. API-key auth uses `Authorization: <api-key>` and read-only smoke uses `GET /invoices?take=1&skip=0`.
+- Request Network docs: API supports programmatic payment destinations, secure payments, payouts, and webhooks; AgentCFO currently stores mock/live-readonly invoice metadata and has an env-gated Request Finance client/read-only smoke path. API-key auth uses `Authorization: <api-key>`, read-only smoke uses `GET /invoices?take=1&skip=0`, off-chain create uses `POST /invoices`, and on-chain conversion is a separate forbidden `POST /invoices/{id}` step.
 - Sablier docs: Sablier is a token distribution protocol; AgentCFO currently calculates preview-only stream rates and creates no stream.
 - Safe Modules docs: modules can add automated/custom transaction logic and can execute transactions through Safe module paths; AgentCFO currently stores reference notes only and enables no module.
 
@@ -71,7 +72,7 @@ Frontend and PM handoff for the demo-safe P2 surface is documented in [`P2_DEMO_
 - Three real CAW tx hashes require explicit approval for at least two additional low-value testnet transfers.
 - Frontend display changes are required if the UI must split Audit Report snapshot from Latest CAW Status.
 - PM must decide whether the final submission claims 1 tx evidence or continues pursuing the 3 tx target.
-- Live Request Finance invoice creation requires a Request Finance API key, explicit approval, and enabling the invoice-create guard.
+- Live Request Finance invoice creation requires explicit approval, enabling the invoice-create guard, and human-provided test invoice inputs: buyer email, invoice number/prefix, item name, currency, payment option/network/token/address, and maximum test amount.
 - Live Sablier streams, Safe modules, new chains, and multi-agent authorization require explicit approval and additional tests.
 
 ## Remaining Risks
