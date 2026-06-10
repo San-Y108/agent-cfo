@@ -17,6 +17,8 @@ import {
 } from "lucide-react";
 import { useApp } from "@/lib/i18n/context";
 import { WalletHoloCard, WalletTopology } from "@/components/console/wallet-hologram";
+import { HolographicButton } from "@/components/ui/holographic-button";
+import { AnimatedNumber } from "@/components/ui/aceternity/animated-number";
 
 const BLUE = "#60A5FA";
 
@@ -174,13 +176,14 @@ export default function WalletsPage() {
           </h2>
           <p className="text-xs mt-1 text-fg-subtle">{t("console.wallets.desc" as any)}</p>
         </div>
-        <button
+        <HolographicButton
           onClick={() => setIsAddingWallet(true)}
-          className="flex items-center gap-2 px-4 py-2.5 rounded-lg text-xs font-bold bg-[#60A5FA] text-white hover:bg-[#3B8FE8] transition-all"
+          variant="blue"
+          size="sm"
+          icon={<Plus className="w-4 h-4" />}
         >
-          <Plus className="w-4 h-4" />
           {t("console.wallets.addBtn" as any)}
-        </button>
+        </HolographicButton>
       </div>
 
       {/* Blocked Alert (Guardrails-style) */}
@@ -436,20 +439,23 @@ export default function WalletsPage() {
                     ? "注意：划拨行为必须完全契合白名单配置，否则将中断并直接回落到多签防线。"
                     : "Note: Disbursals must conform to whitelisted destinations or trigger multi-signed holds."}
                 </p>
-                <button
+                <HolographicButton
                   type="submit"
                   disabled={isTransferring}
-                  className="px-5 py-2.5 rounded-lg text-xs font-bold bg-[#60A5FA] text-white hover:bg-[#3B8FE8] transition-all disabled:opacity-50 flex items-center gap-2"
-                >
-                  {isTransferring ? (
-                    <>
+                  variant="blue"
+                  size="sm"
+                  icon={
+                    isTransferring ? (
                       <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                      {t("console.wallets.broadcasting" as any)}
-                    </>
-                  ) : (
-                    t("console.wallets.broadcastBtn" as any)
-                  )}
-                </button>
+                    ) : (
+                      <ArrowUpRight className="w-3.5 h-3.5" />
+                    )
+                  }
+                >
+                  {isTransferring
+                    ? t("console.wallets.broadcasting" as any)
+                    : t("console.wallets.broadcastBtn" as any)}
+                </HolographicButton>
               </div>
             </form>
 
@@ -581,19 +587,21 @@ export default function WalletsPage() {
                   />
                 </div>
                 <div className="flex justify-end gap-2.5 pt-2">
-                  <button
+                  <HolographicButton
                     type="button"
                     onClick={() => setIsAddingWallet(false)}
-                    className="px-4 py-2 border border-border-token dark:border-white/[0.08] text-xs font-bold rounded-lg bg-surface-2 dark:bg-white/[0.05] text-fg-subtle hover:bg-surface-hover transition-all"
+                    variant="cyan"
+                    size="sm"
                   >
                     {t("console.wallets.dialogCancel" as any)}
-                  </button>
-                  <button
+                  </HolographicButton>
+                  <HolographicButton
                     type="submit"
-                    className="px-4 py-2 text-xs font-bold rounded-lg bg-[#60A5FA] text-white hover:bg-[#3B8FE8] transition-all"
+                    variant="blue"
+                    size="sm"
                   >
                     {t("console.wallets.dialogConfirm" as any)}
-                  </button>
+                  </HolographicButton>
                 </div>
               </form>
             </motion.div>
