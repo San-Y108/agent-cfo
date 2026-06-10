@@ -156,7 +156,7 @@ export function StatCard({
   className,
 }: {
   label: string;
-  value: string | number;
+  value: string | number | React.ReactNode;
   subtext?: string;
   icon?: React.ReactNode;
   className?: string;

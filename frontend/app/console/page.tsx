@@ -2,6 +2,7 @@
 
 import React, { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { cn } from "@/lib/utils";
 import {
   FileSpreadsheet,
   ShieldAlert,
@@ -27,6 +28,12 @@ import { ContributorRecord, PaymentPlanItem } from "@/lib/types/console";
 import type { CawStatus } from "@/lib/api/types";
 import { isMockMode } from "@/lib/api/client";
 import { RecordsImport } from "@/components/console/records-import";
+import { StatCard } from "@/components/ui/aceternity/stats-section";
+import { AnimatedNumber } from "@/components/ui/aceternity/animated-number";
+import { GradientOrb } from "@/components/ui/aceternity/background";
+import { HolographicButton } from "@/components/ui/holographic-button";
+import { FlowTimeline } from "@/components/console/flow-timeline";
+import { RiskGateAnimation } from "@/components/console/risk-gate-anim";
 
 /* =============================================================================
  * BUSINESS LOGIC HELPERS
@@ -221,36 +228,50 @@ export default function TreasuryPage() {
         </motion.div>
       </div>
 
+      {/* ─── Flow Timeline ─── */}
+      <div className="px-6 lg:px-10 pb-6">
+        <FlowTimeline
+          currentStep={step}
+          steps={[
+            { label: _("生成计划", "Generate Plan"), icon: <Sparkles className="w-4 h-4" /> },
+            { label: _("风险检查", "Risk Check"), icon: <ShieldAlert className="w-4 h-4" /> },
+            { label: _("人工确认", "Approval"), icon: <CheckCircle className="w-4 h-4" /> },
+            { label: _("执行付款", "Execution"), icon: <Send className="w-4 h-4" /> },
+            { label: _("审计报告", "Audit"), icon: <FileSpreadsheet className="w-4 h-4" /> },
+          ]}
+        />
+      </div>
+
       {/* ─── KPI Cards ─── */}
       <div className="px-6 lg:px-10 pb-8">
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-          <KpiCard
+          <StatCard
             label={_("本月预算", "Monthly Budget")}
-            value={`${totalBudget} USDC`}
+            value={<AnimatedNumber value={totalBudget} />}
+            subtext="USDC"
             icon={<Wallet className="w-4 h-4" />}
-            accent="#60A5FA"
-            delay={0}
+            className="relative overflow-hidden"
           />
-          <KpiCard
+          <StatCard
             label={_("待付款", "Pending")}
-            value={`${totalPending} USDC`}
+            value={<AnimatedNumber value={totalPending} />}
+            subtext="USDC"
             icon={<Clock className="w-4 h-4" />}
-            accent="#5EEAD4"
-            delay={0.05}
+            className="relative overflow-hidden"
           />
-          <KpiCard
+          <StatCard
             label={_("已拦截", "Blocked")}
-            value={`${totalBlocked} USDC`}
+            value={<AnimatedNumber value={totalBlocked} />}
+            subtext="USDC"
             icon={<ShieldAlert className="w-4 h-4" />}
-            accent="#FB7185"
-            delay={0.1}
+            className="relative overflow-hidden border-coral-500/20"
           />
-          <KpiCard
+          <StatCard
             label={_("预算剩余", "Remaining")}
-            value={`${budgetRemaining} USDC`}
+            value={<AnimatedNumber value={budgetRemaining} />}
+            subtext="USDC"
             icon={<TrendingUp className="w-4 h-4" />}
-            accent="#B5FF4D"
-            delay={0.15}
+            className="relative overflow-hidden"
           />
         </div>
       </div>
@@ -307,14 +328,35 @@ export default function TreasuryPage() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-border-token dark:divide-white/[0.04]">
-                    {records.map((r) => {
+                    {records.map((r, i) => {
                       const planItem = plan.find((p) => p.record.id === r.id);
                       const status = planItem?.status;
+                      const isBlocked = status === "Blocked";
+                      const isReady = status === "Ready";
+                      const isExecuted = status === "Executed";
                       return (
-                        <tr
+                        <motion.tr
                           key={r.id}
-                          className="hover:bg-surface-2/50 dark:hover:bg-white/[0.02] transition-colors"
+                          initial={{ opacity: 0, x: -8 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ delay: i * 0.03, duration: 0.3 }}
+                          className={cn(
+                            "group relative transition-colors",
+                            "hover:bg-surface-2/50 dark:hover:bg-white/[0.02]",
+                            isBlocked && "bg-[#FB7185]/[0.03]"
+                          )}
                         >
+                          {/* Left color bar on hover */}
+                          <div
+                            className={cn(
+                              "absolute left-0 top-0 bottom-0 w-[2px] opacity-0 group-hover:opacity-100 transition-opacity",
+                              isReady && "bg-[#B5FF4D]",
+                              isBlocked && "bg-[#FB7185]",
+                              isExecuted && "bg-emerald-500",
+                              !status && "bg-fg-subtle"
+                            )}
+                          />
+
                           <td className="py-3 px-5">
                             <div className="font-medium text-fg text-[13px]">{r.name}</div>
                             <div className="font-mono text-[11px] text-fg-subtle">
@@ -332,7 +374,7 @@ export default function TreasuryPage() {
                               <span className="text-[11px] text-fg-subtle">—</span>
                             )}
                           </td>
-                        </tr>
+                        </motion.tr>
                       );
                     })}
                   </tbody>
@@ -599,13 +641,15 @@ function ActionPanel({
               </div>
             </div>
 
-            <button
+            <HolographicButton
               onClick={onGenerate}
-              className="w-full py-3 rounded-lg text-sm font-bold uppercase tracking-wider flex items-center justify-center gap-2 bg-[#B5FF4D] hover:brightness-95 text-[#0D0D0D] transition-all cursor-pointer"
+              variant="lime"
+              size="lg"
+              icon={<RefreshCw className="w-4 h-4" />}
+              className="w-full"
             >
-              <RefreshCw className="w-4 h-4" />
               {_("生成付款计划", "Generate Plan")}
-            </button>
+            </HolographicButton>
 
             <div className="text-[11px] text-fg-subtle space-y-1">
               <div className="flex justify-between">
@@ -720,21 +764,26 @@ function ActionPanel({
             )}
 
             {/* Action buttons */}
-            <div className="flex gap-2 pt-2">
-              <button
+            <div className="flex gap-2 pt-2"
+            >
+              <HolographicButton
                 onClick={onReset}
-                className="flex-1 py-2.5 rounded-lg text-xs font-bold border border-border-token dark:border-white/[0.08] bg-surface dark:bg-white/[0.03] hover:bg-surface-hover text-fg transition-colors cursor-pointer"
+                variant="cyan"
+                size="sm"
+                className="flex-1"
               >
                 {_("返回", "Back")}
-              </button>
-              <button
+              </HolographicButton>
+              <HolographicButton
                 onClick={onExecute}
                 disabled={readyCount === 0}
-                className="flex-[2] py-2.5 rounded-lg text-xs font-bold bg-[#B5FF4D] hover:brightness-95 text-[#0D0D0D] transition-all cursor-pointer disabled:opacity-40 flex items-center justify-center gap-1.5"
+                variant="lime"
+                size="sm"
+                icon={<Send className="w-3.5 h-3.5" />}
+                className="flex-[2]"
               >
-                <Send className="w-3.5 h-3.5" />
                 {_("批准并执行", "Approve & Execute")} ({totalReady} USDC)
-              </button>
+              </HolographicButton>
             </div>
           </motion.div>
         )}
@@ -926,12 +975,14 @@ function ActionPanel({
               </div>
             </div>
 
-            <button
+            <HolographicButton
               onClick={onReset}
-              className="w-full py-3 rounded-xl text-xs font-bold uppercase tracking-wider bg-[#B5FF4D] hover:brightness-95 text-[#0D0D0D] transition-all cursor-pointer"
+              variant="lime"
+              size="lg"
+              className="w-full"
             >
               {_("处理下一周期", "Process next cycle")}
-            </button>
+            </HolographicButton>
           </motion.div>
         )}
       </div>
