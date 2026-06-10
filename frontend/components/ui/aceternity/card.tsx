@@ -3,6 +3,11 @@
 import { cn } from "@/lib/utils";
 import React from "react";
 
+/**
+ * Aceternity-style Card — adapted for AgentCFO dark theme.
+ * Uses CSS variables from globals.css for theme consistency.
+ */
+
 export const Card = ({
   className,
   children,
@@ -13,7 +18,7 @@ export const Card = ({
   return (
     <div
       className={cn(
-        "max-w-sm w-full mx-auto p-6 rounded-xl border border-[rgba(255,255,255,0.10)] bg-[rgba(20,20,20,0.70)] shadow-[2px_4px_16px_0px_rgba(248,248,248,0.06)_inset] group",
+        "max-w-sm w-full mx-auto p-6 rounded-xl border border-white/[0.06] bg-surface shadow-[2px_4px_16px_0px_rgba(248,248,248,0.06)_inset] group",
         className
       )}
     >
@@ -32,7 +37,7 @@ export const CardTitle = ({
   return (
     <h3
       className={cn(
-        "text-lg font-semibold text-white py-2",
+        "text-lg font-semibold text-fg py-2",
         className
       )}
     >
@@ -51,7 +56,7 @@ export const CardDescription = ({
   return (
     <p
       className={cn(
-        "text-sm font-normal text-neutral-400 max-w-sm",
+        "text-sm font-normal text-fg-subtle max-w-sm",
         className
       )}
     >
@@ -75,7 +80,7 @@ export const CardSkeletonContainer = ({
         "h-[15rem] md:h-[20rem] rounded-xl z-40",
         className,
         showGradient &&
-          "bg-neutral-900 [mask-image:radial-gradient(50%_50%_at_50%_50%,white_0%,transparent_100%)]"
+          "bg-surface-2 [mask-image:radial-gradient(50%_50%_at_50%_50%,white_0%,transparent_100%)]"
       )}
     >
       {children}
