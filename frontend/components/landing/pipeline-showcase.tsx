@@ -195,8 +195,11 @@ export function PipelineShowcase() {
   );
 
   return (
-    <div id="workflow" className="relative w-full">
-      {/* ─── Intro headline (vertical scroll-in) ────────────────────────── */}
+    <>
+      {/* Non-pinned marker for nav IntersectionObserver (GSAP pin breaks #workflow detection) */}
+      <div id="workflow-marker" className="h-px w-full" aria-hidden="true" />
+      <div id="workflow" className="relative w-full">
+        {/* ─── Intro headline (vertical scroll-in) ────────────────────────── */}
       <div className="mx-auto max-w-6xl px-5 pb-12 pt-32 text-center lg:px-10 lg:pt-40">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -319,6 +322,7 @@ export function PipelineShowcase() {
         </div>
       </section>
     </div>
+  </>
   );
 }
 

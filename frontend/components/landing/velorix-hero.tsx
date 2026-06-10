@@ -18,7 +18,7 @@ const BG_VIDEO =
 
 const NAV_ITEMS: { key: DictKey; href: string }[] = [
   { key: "nav.platform", href: "#platform" },
-  { key: "nav.workflow", href: "#workflow" },
+  { key: "nav.workflow", href: "#workflow-marker" },
   { key: "nav.guardrails", href: "#guardrails" },
   { key: "nav.faq", href: "#faq" },
   { key: "nav.team", href: "#team" },
