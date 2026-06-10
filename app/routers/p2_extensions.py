@@ -4,9 +4,16 @@ from app.models import (
     ExternalReference,
     ExternalReferenceCreate,
     ExternalReferenceList,
+    EvidenceExport,
+    EvidenceTimeline,
+    DemoScenarioPack,
     MultichainReadiness,
+    PolicyGuardrailSummary,
     RequestInvoiceCreate,
     RequestInvoiceRecord,
+    RequestFinancePreflight,
+    RiskWhatIfRequest,
+    RiskWhatIfResult,
     SablierStreamPreview,
     SablierStreamPreviewRequest,
     SafePermissionReference,
@@ -113,3 +120,39 @@ def get_treasury_budget_partition(paymentPlanId: str):
         return _service().get_treasury_budget_partition(paymentPlanId)
     except P2RecordNotFound as error:
         raise HTTPException(status_code=404, detail=str(error))
+
+
+@router.get("/p2/evidence-timeline/{auditReportId}", response_model=EvidenceTimeline)
+def get_evidence_timeline(auditReportId: str):
+    try:
+        return _service().get_evidence_timeline(auditReportId)
+    except P2RecordNotFound as error:
+        raise HTTPException(status_code=404, detail=str(error))
+
+
+@router.get("/p2/demo-scenarios", response_model=DemoScenarioPack)
+def get_demo_scenarios():
+    return _service().get_demo_scenarios()
+
+
+@router.post("/p2/risk-what-if", response_model=RiskWhatIfResult)
+def run_risk_what_if(request: RiskWhatIfRequest):
+    return _service().run_risk_what_if(request)
+
+
+@router.get("/p2/policy-guardrails", response_model=PolicyGuardrailSummary)
+def get_policy_guardrails():
+    return _service().get_policy_guardrails()
+
+
+@router.get("/p2/evidence-export/{auditReportId}", response_model=EvidenceExport)
+def get_evidence_export(auditReportId: str):
+    try:
+        return _service().get_evidence_export(auditReportId)
+    except P2RecordNotFound as error:
+        raise HTTPException(status_code=404, detail=str(error))
+
+
+@router.post("/p2/request-finance/preflight", response_model=RequestFinancePreflight)
+def preflight_request_finance_invoice(request: RequestInvoiceCreate):
+    return _service().preflight_request_finance_invoice(request)

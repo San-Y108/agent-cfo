@@ -160,6 +160,234 @@ def test_request_invoice_record_is_demo_safe_and_audit_linked():
     assert lookup.json() == invoice
 
 
+def test_evidence_timeline_aggregates_audit_caw_and_p2_references_without_mutating_snapshot():
+    plan, execution = create_p0_flow()
+    audit_before = client.get(f"/api/audit-report/{execution['auditReportId']}").json()
+
+    reference_response = client.post(
+        "/api/external-references",
+        json={
+            "referenceType": "request_invoice",
+            "provider": "request-finance",
+            "label": "Request invoice linked evidence",
+            "paymentPlanId": plan["paymentPlanId"],
+            "paymentItemId": plan["payments"][0]["id"],
+            "auditReportId": execution["auditReportId"],
+            "cawRequestId": execution["payments"][0]["cawRequestId"],
+            "status": "created",
+            "metadata": {
+                "requestFinanceInvoiceId": "rf_demo_001",
+                "requestFinanceMode": "mock",
+            },
+        },
+    )
+    assert reference_response.status_code == 200
+
+    response = client.get(f"/api/p2/evidence-timeline/{execution['auditReportId']}")
+
+    assert response.status_code == 200
+    timeline = response.json()
+    event_types = [event["eventType"] for event in timeline["events"]]
+    assert timeline["auditReportId"] == execution["auditReportId"]
+    assert timeline["mode"] == "demo-safe"
+    assert "payment_plan" in event_types
+    assert "risk_check" in event_types
+    assert "human_approval" in event_types
+    assert "execution_result" in event_types
+    assert "caw_status" in event_types
+    assert "external_reference" in event_types
+    assert "audit_report" in event_types
+    assert all("evidenceLinks" in event for event in timeline["events"])
+    assert timeline["auditSnapshotImmutable"] is True
+
+    audit_after = client.get(f"/api/audit-report/{execution['auditReportId']}").json()
+    assert audit_after == audit_before
+
+
+def test_demo_scenario_pack_contains_judge_friendly_deterministic_scenarios():
+    response = client.get("/api/p2/demo-scenarios")
+
+    assert response.status_code == 200
+    body = response.json()
+    scenario_ids = {scenario["scenarioId"] for scenario in body["scenarios"]}
+    assert body["mode"] == "demo-safe"
+    assert body["externalSystemsTouched"] is False
+    assert {
+        "standard-approved-payout",
+        "over-budget-blocked",
+        "unknown-recipient-blocked",
+        "unsupported-token-blocked",
+        "duplicate-recipient-task-warning",
+        "request-invoice-linked-evidence",
+        "sablier-preview",
+        "safe-reference",
+        "multichain-readiness",
+        "treasury-partition",
+    }.issubset(scenario_ids)
+    assert all("curlExample" in scenario for scenario in body["scenarios"])
+
+
+def test_risk_what_if_reuses_deterministic_guardrails_without_persisting_plan():
+    response = client.post(
+        "/api/p2/risk-what-if",
+        json={
+            "payments": [
+                {
+                    "recipient": "Alice",
+                    "task": "Duplicate task",
+                    "wallet": "0xAlice",
+                    "amount": 40,
+                    "token": "USDC",
+                    "reason": "what-if",
+                },
+                {
+                    "recipient": "Mallory",
+                    "task": "Duplicate task",
+                    "wallet": "0xMallory",
+                    "amount": 20,
+                    "token": "DAI",
+                    "reason": "what-if",
+                },
+            ],
+            "budgetRule": sample_budget(),
+            "humanApproval": {"approved": False},
+        },
+    )
+
+    assert response.status_code == 200
+    result = response.json()
+    assert result["createsPaymentPlan"] is False
+    assert result["executesPayment"] is False
+    assert result["overallStatus"] == "Blocked"
+    guardrail_ids = {guardrail["guardrailId"] for guardrail in result["guardrails"]}
+    assert "monthly_budget" in guardrail_ids
+    assert "single_payment_limit" in guardrail_ids
+    assert "token_allowlist" in guardrail_ids
+    assert "recipient_allowlist" in guardrail_ids
+    assert "duplicate_task" in guardrail_ids
+    assert "missing_human_approval" in guardrail_ids
+
+    assert client.get("/api/payment-plan/plan_demo_001").status_code == 404
+
+
+def test_policy_guardrails_expose_non_secret_demo_safety_flags(monkeypatch):
+    monkeypatch.setenv("CAW_ADAPTER_MODE", "mock")
+    monkeypatch.setenv("CAW_ENABLE_TRANSFERS", "false")
+    monkeypatch.setenv("REQUEST_FINANCE_MODE", "live")
+    monkeypatch.setenv("REQUEST_FINANCE_API_KEY", "fake-key")
+    monkeypatch.delenv("REQUEST_FINANCE_ALLOW_INVOICE_CREATE", raising=False)
+
+    response = client.get("/api/p2/policy-guardrails")
+
+    assert response.status_code == 200
+    summary = response.json()
+    assert summary["auditSnapshotImmutable"] is True
+    assert summary["caw"]["mode"] == "mock"
+    assert summary["caw"]["transferEnabled"] is False
+    assert summary["requestFinance"]["mode"] == "live"
+    assert summary["requestFinance"]["apiKeyConfigured"] is True
+    assert summary["requestFinance"]["invoiceCreateGuardEnabled"] is False
+    assert summary["sablier"]["liveEnabled"] is False
+    assert summary["safe"]["moduleEnabled"] is False
+    assert summary["multichain"]["liveExecutionEnabled"] is False
+    assert "fake-key" not in response.text
+
+
+def test_evidence_export_returns_markdown_ready_package_without_inventing_live_tx():
+    plan, execution = create_p0_flow()
+    client.post(
+        "/api/external-references",
+        json={
+            "referenceType": "request_invoice",
+            "provider": "request-finance",
+            "label": "Request invoice linked evidence",
+            "paymentPlanId": plan["paymentPlanId"],
+            "paymentItemId": plan["payments"][0]["id"],
+            "auditReportId": execution["auditReportId"],
+            "cawRequestId": execution["payments"][0]["cawRequestId"],
+            "status": "mock_recorded",
+            "metadata": {"requestFinanceInvoiceId": "rf_demo_001"},
+        },
+    )
+
+    response = client.get(f"/api/p2/evidence-export/{execution['auditReportId']}")
+
+    assert response.status_code == 200
+    package = response.json()
+    assert package["auditReportId"] == execution["auditReportId"]
+    assert package["paymentPlanId"] == plan["paymentPlanId"]
+    assert package["txHashState"] == "mock-no-tx-hash"
+    assert package["cawRequestIds"] == [execution["payments"][0]["cawRequestId"]]
+    assert package["externalReferenceIds"] == ["ext_ref_001"]
+    assert "Current real CAW evidence remains one low-value testnet transaction" in package[
+        "approvedDemoWording"
+    ]
+    assert "payment integration complete" in package["forbiddenWording"]
+
+
+def test_request_finance_preflight_validates_live_invoice_fields_without_provider_call(
+    monkeypatch,
+):
+    def fail_if_called(_config):
+        raise AssertionError("preflight must not create Request Finance client")
+
+    monkeypatch.setattr(p2_service_module, "create_request_finance_client", fail_if_called)
+
+    missing_response = client.post(
+        "/api/p2/request-finance/preflight",
+        json={
+            "paymentPlanId": "plan_demo_001",
+            "paymentItemId": "pay_001",
+            "requestFinanceInvoiceId": "rf_demo_001",
+            "status": "draft",
+        },
+    )
+
+    assert missing_response.status_code == 200
+    missing = missing_response.json()
+    assert missing["ready"] is False
+    assert "buyerEmail" in missing["missingFields"]
+    assert missing["wouldCallProvider"] is False
+
+    ready_response = client.post(
+        "/api/p2/request-finance/preflight",
+        json={
+            "paymentPlanId": "plan_demo_001",
+            "paymentItemId": "pay_001",
+            "requestFinanceInvoiceId": "rf_demo_001",
+            "status": "draft",
+            "buyerEmail": "buyer@example.invalid",
+            "invoiceNumber": "AGENTCFO-001",
+            "invoiceItemName": "Demo service",
+            "invoiceCurrency": "USD",
+            "invoiceQuantity": 1,
+            "invoiceUnitPrice": 100,
+            "paymentCurrency": "USDC-matic",
+            "paymentNetwork": "matic",
+            "paymentAddress": "0xPaymentAddress",
+            "creationDate": "2026-06-10T00:00:00.000Z",
+            "dueDate": "2026-06-17T00:00:00.000Z",
+        },
+    )
+
+    assert ready_response.status_code == 200
+    ready = ready_response.json()
+    assert ready["ready"] is True
+    assert ready["missingFields"] == []
+    assert ready["wouldCallProvider"] is False
+
+
+def test_version_exposes_non_secret_p2_capability_flags():
+    response = client.get("/version")
+
+    assert response.status_code == 200
+    version = response.json()
+    assert version["p2Capabilities"]["evidenceTimeline"] is True
+    assert version["p2Capabilities"]["riskWhatIf"] is True
+    assert version["p2Capabilities"]["requestFinancePreflight"] is True
+    assert "REQUEST_FINANCE_API_KEY" not in response.text
+
+
 def test_request_invoice_mock_mode_does_not_call_live_client(monkeypatch):
     plan, execution = create_p0_flow()
 

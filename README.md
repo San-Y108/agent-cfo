@@ -722,6 +722,7 @@ Safety behavior:
 - API key auth uses `Authorization: <REQUEST_FINANCE_API_KEY>` with no `Bearer` prefix. `oauth_bearer` is a future explicit auth scheme and is never the default.
 - Live mode with the invoice-create guard disabled still records a demo-safe linked invoice record and marks it as `requestFinanceMode=live-readonly`.
 - Live off-chain invoice creation is implemented but disabled unless `REQUEST_FINANCE_ALLOW_INVOICE_CREATE=true`; do not enable the guard or call `POST /invoices` without explicit approval and test invoice inputs.
+- One approved test/off-chain invoice was created through `POST /invoices` during P2F validation, then the guard was turned back off. This is invoice-record evidence only: no `POST /invoices/{id}`, no on-chain conversion, no CAW transfer, and no payment.
 - Live create validates required input/config fields and fails closed when buyer email, invoice number, invoice item, currency, payment option, creation date, or due date fields are missing.
 - Live create only targets Request Finance `POST /invoices`; it must not call `POST /invoices/{id}`, convert an invoice to an on-chain request, trigger CAW, or pay.
 - Local/Render live smoke may use only `GET /invoices?take=1&skip=0` for read-only validation.
@@ -742,10 +743,16 @@ These APIs are metadata, preview, or reference only. They do not change P0/P1 pa
 | `POST /api/safe-permission-references` | Reference-only Safe permission note | No Safe module enablement/deployment |
 | `GET /api/multichain-readiness` | Design/readiness matrix | No new chain execution |
 | `GET /api/treasury-budget-partitions/{paymentPlanId}` | Mock department-agent budget view | No new authorization role |
+| `GET /api/p2/evidence-timeline/{auditReportId}` | Aggregates Audit Report, CAW status, and linked P2 references for display | None |
+| `GET /api/p2/demo-scenarios` | Deterministic judge/demo scenario pack | None |
+| `POST /api/p2/risk-what-if` | Simulation-only risk guardrail preview using deterministic rules | No plan persistence or payment execution |
+| `GET /api/p2/policy-guardrails` | Non-secret demo safety flags for CAW, Request Finance, Sablier, Safe, multichain, and audit immutability | None |
+| `GET /api/p2/evidence-export/{auditReportId}` | Markdown-ready evidence package for PM/demo copy | None |
+| `POST /api/p2/request-finance/preflight` | Validates Request Finance create-invoice payload shape without creating a provider client | No Request Finance API call |
 
 P2 implementation references:
 
-- Request Network / Request Finance: live client/status path is env-gated; live read-only smoke is allowed with configured credentials, and off-chain invoice create is implemented but disabled pending explicit test-invoice approval.
+- Request Network / Request Finance: live client/status path is env-gated; live read-only smoke is allowed with configured credentials, and off-chain invoice create is implemented but disabled by default after the approved single test/off-chain invoice run.
 - Sablier Flow: future live payroll requires wallet/signature approval and new risk rules before stream creation.
 - Safe modules: future Safe module work requires owner approval and security review before enablement or deployment.
 - Multi-chain: current real execution boundary remains the existing CAW testnet/token allowlist.

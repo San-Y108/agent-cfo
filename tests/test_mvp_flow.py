@@ -83,11 +83,26 @@ def test_health_check_returns_ok():
     assert response.json() == {"status": "ok", "service": "agent-cfo-backend"}
 
 
-def test_version_returns_non_sensitive_demo_metadata():
+def test_version_returns_non_sensitive_demo_metadata(monkeypatch):
+    monkeypatch.delenv("REQUEST_FINANCE_API_KEY", raising=False)
+    monkeypatch.delenv("REQUEST_FINANCE_ALLOW_INVOICE_CREATE", raising=False)
+
     response = client.get("/version")
 
     assert response.status_code == 200
-    assert response.json() == {
+    body = response.json()
+    assert {
+        key: body[key]
+        for key in [
+            "service",
+            "version",
+            "apiMode",
+            "docsEnabled",
+            "openapiEnabled",
+            "cawMode",
+            "requestFinance",
+        ]
+    } == {
         "service": "agent-cfo-backend",
         "version": "0.1.0",
         "apiMode": "mock-demo",
@@ -100,6 +115,15 @@ def test_version_returns_non_sensitive_demo_metadata():
             "invoiceCreateGuardEnabled": False,
             "invoiceCreateImplemented": True,
         },
+    }
+    assert body["p2Capabilities"] == {
+        "evidenceTimeline": True,
+        "demoScenarioPack": True,
+        "riskWhatIf": True,
+        "policyGuardrails": True,
+        "evidenceExport": True,
+        "requestFinancePreflight": True,
+        "liveExternalActionsDefaultEnabled": False,
     }
     assert "AGENTCFO_DB_PATH" not in response.text
     assert "OPENAI_API_KEY" not in response.text

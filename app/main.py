@@ -35,6 +35,18 @@ def get_public_request_finance_status():
     }
 
 
+def get_public_p2_capabilities():
+    return {
+        "evidenceTimeline": True,
+        "demoScenarioPack": True,
+        "riskWhatIf": True,
+        "policyGuardrails": True,
+        "evidenceExport": True,
+        "requestFinancePreflight": True,
+        "liveExternalActionsDefaultEnabled": False,
+    }
+
+
 app = FastAPI(
     title="AgentCFO Backend MVP",
     description="Mock backend API for AgentCFO payment planning, risk checks, execution, and audit reports.",
@@ -71,4 +83,5 @@ def version():
         "openapiEnabled": False,
         "cawMode": get_public_caw_mode(),
         "requestFinance": get_public_request_finance_status(),
+        "p2Capabilities": get_public_p2_capabilities(),
     }

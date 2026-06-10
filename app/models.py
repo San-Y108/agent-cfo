@@ -297,3 +297,112 @@ class TreasuryBudgetPartition(BaseModel):
     totalPlannedAmount: float
     partitions: list[dict[str, Any]]
     safetyNotes: list[str]
+
+
+class EvidenceTimelineEvent(BaseModel):
+    eventType: str
+    label: str
+    status: str
+    mode: str
+    ids: dict[str, str | None] = Field(default_factory=dict)
+    timestamp: str | None = None
+    evidenceLinks: list[dict[str, Any]] = Field(default_factory=list)
+    safetyNotes: list[str] = Field(default_factory=list)
+
+
+class EvidenceTimeline(BaseModel):
+    mode: str
+    auditReportId: str
+    paymentPlanId: str
+    auditSnapshotImmutable: bool
+    events: list[EvidenceTimelineEvent]
+    safetyNotes: list[str]
+
+
+class DemoScenario(BaseModel):
+    scenarioId: str
+    label: str
+    category: str
+    method: str
+    endpoint: str
+    payload: dict[str, Any] | None = None
+    expectedStatus: str
+    curlExample: str
+    safetyNotes: list[str] = Field(default_factory=list)
+
+
+class DemoScenarioPack(BaseModel):
+    mode: str
+    externalSystemsTouched: bool
+    scenarios: list[DemoScenario]
+
+
+class RiskWhatIfPayment(BaseModel):
+    recipient: str
+    task: str
+    wallet: str
+    amount: float = Field(gt=0)
+    token: str
+    reason: str = "what-if"
+
+
+class RiskWhatIfRequest(BaseModel):
+    payments: list[RiskWhatIfPayment]
+    budgetRule: BudgetRule
+    humanApproval: HumanApproval | None = None
+
+
+class RiskWhatIfGuardrail(BaseModel):
+    guardrailId: str
+    label: str
+    status: str
+    affectedPaymentIds: list[str] = Field(default_factory=list)
+    reason: str
+
+
+class RiskWhatIfResult(BaseModel):
+    mode: str
+    createsPaymentPlan: bool
+    executesPayment: bool
+    overallStatus: PaymentStatus
+    riskLevel: RiskLevel
+    remainingBudget: float
+    requiresHumanApproval: bool
+    payments: list[PaymentItem]
+    guardrails: list[RiskWhatIfGuardrail]
+    safetyNotes: list[str]
+
+
+class PolicyGuardrailSummary(BaseModel):
+    mode: str
+    demoBudget: dict[str, Any]
+    caw: dict[str, Any]
+    requestFinance: dict[str, Any]
+    sablier: dict[str, Any]
+    safe: dict[str, Any]
+    multichain: dict[str, Any]
+    auditSnapshotImmutable: bool
+    safetyNotes: list[str]
+
+
+class EvidenceExport(BaseModel):
+    mode: str
+    paymentPlanId: str
+    auditReportId: str
+    cawRequestIds: list[str]
+    externalReferenceIds: list[str]
+    riskReasons: dict[str, list[str]]
+    modeLabels: list[str]
+    txHashState: str
+    safetyDisclaimers: list[str]
+    approvedDemoWording: str
+    forbiddenWording: str
+
+
+class RequestFinancePreflight(BaseModel):
+    ready: bool
+    missingFields: list[str]
+    wouldCallProvider: bool
+    requestFinanceMode: str
+    invoiceCreateGuardEnabled: bool
+    safetyNotes: list[str]
