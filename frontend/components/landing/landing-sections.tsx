@@ -29,28 +29,33 @@ export function LandingSections() {
       className="relative w-full"
       style={{ backgroundColor: "#0D0D0D", fontFamily: "Inter, sans-serif" }}
     >
-      {/* #problem — Hero-adjacent showcase row: left = AI Agent + Web3 Map, right = Budget Cards */}
-      <div id="problem" className="grid grid-cols-1 lg:grid-cols-2 gap-8 w-full max-w-7xl mx-auto px-6 pt-16 items-start">
-        <div className="flex flex-col gap-8">
-          <HolographicCard />
-          <Web3NodeCloud />
+      {/* Hero-adjacent showcase row: left = AI Agent + Web3 Map, right = Budget Cards */}
+      <section id="problem" className="w-full">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 w-full max-w-7xl mx-auto px-6 pt-16 items-start">
+          <div className="flex flex-col gap-8">
+            <HolographicCard />
+            <Web3NodeCloud />
+          </div>
+          <CardSplitter />
         </div>
-        <CardSplitter />
-      </div>
+      </section>
 
-      {/* #workflow — The 5-stage pipeline (id is inside PipelineShowcase) */}
+      {/* The 5-stage pipeline */}
       <PipelineShowcase />
 
-      {/* #risk-guardrails + #audit-trail — ids are inside GuardrailsCTA */}
-      <GuardrailsCTA />
+      <section id="risk-guardrails" className="w-full">
+        <GuardrailsCTA />
+      </section>
 
-      {/* #wallet-execution — Budget card execution showcase */}
-      <div id="wallet-execution" className="w-full max-w-7xl mx-auto px-6">
+      {/* Built-by team fan-card showcase */}
+      <section id="wallet-execution" className="w-full">
         <TeamShowcase />
-      </div>
+      </section>
 
       {/* Build timeline — Phase 0→3 */}
-      <BuildTimeline />
+      <section id="audit-trail" className="w-full">
+        <BuildTimeline />
+      </section>
 
       {/* FAQ + HSM 2-column layout */}
       <div className="w-full max-w-6xl mx-auto mt-28 border-t pt-16 grid grid-cols-1 md:grid-cols-5 gap-12 text-left border-white/10 px-6">

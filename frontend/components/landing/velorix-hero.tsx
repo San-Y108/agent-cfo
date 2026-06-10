@@ -276,7 +276,6 @@ function Navbar() {
           boxShadow: scrolled
             ? "0 1px 0 rgba(255,255,255,0.04), 0 4px 24px rgba(0,0,0,0.4), inset 0 -1px 0 rgba(181,255,77,0.06)"
             : "none",
-          justifyContent: scrolled ? "center" : "space-between",
         }}
       >
         {/* Edge glow — bottom subtle green rim */}
@@ -289,27 +288,19 @@ function Navbar() {
           }}
         />
 
-        {/* Full mode: Logo (hidden in compact) */}
-        <div
-          className={`items-center gap-2.5 transition-all duration-500 ${
-            scrolled ? "hidden" : "flex"
-          }`}
-        >
+        {/* Logo */}
+        <div className="flex items-center gap-2.5">
           <img src="/logo.png" alt="AgentCFO" className="h-7 w-7 rounded-full" />
           <span className="text-white text-xl font-semibold tracking-tight" style={{ fontFamily: "Inter, sans-serif" }}>
             AgentCFO
           </span>
         </div>
 
-        {/* Nav pills — always visible, centered in compact mode */}
+        {/* Nav pills */}
         <div
           ref={navRef}
-          className={`flex items-center gap-1 rounded-full px-2 py-1.5 relative transition-all duration-500 ${
-            scrolled ? "lg:flex" : "hidden lg:flex"
-          }`}
-          style={{
-            backgroundColor: scrolled ? "rgba(255,255,255,0.08)" : "rgba(255,255,255,0.06)",
-          }}
+          className="hidden lg:flex items-center gap-1 rounded-full px-2 py-1.5 relative"
+          style={{ backgroundColor: "rgba(255,255,255,0.06)" }}
         >
           {NAV_ITEMS.map((item, i) => (
             <a
@@ -345,15 +336,12 @@ function Navbar() {
           </svg>
         </div>
 
-        {/* Full mode: Controls (hidden in compact on desktop) */}
-        <div
-          className={`items-center gap-2 transition-all duration-500 ${
-            scrolled ? "hidden lg:hidden" : "flex"
-          }`}
-        >
+        {/* Controls */}
+        <div className="flex items-center gap-2">
           <div className="hidden lg:block">
             <ThemeLanguageToggle variant="hero" />
           </div>
+          <HamburgerButton open={open} onClick={() => setOpen((v) => !v)} />
           <Link
             href="/console"
             className="hidden lg:block text-sm font-medium px-5 py-2 rounded-full transition-all duration-300 hover:opacity-80"
@@ -361,11 +349,6 @@ function Navbar() {
           >
             {t("nav.openDemo")}
           </Link>
-        </div>
-
-        {/* Hamburger — always visible, hidden on desktop when compact */}
-        <div className={scrolled ? "lg:hidden" : ""}>
-          <HamburgerButton open={open} onClick={() => setOpen((v) => !v)} />
         </div>
       </nav>
       <MobileMenu open={open} onClose={() => setOpen(false)} />
