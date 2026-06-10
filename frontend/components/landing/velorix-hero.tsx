@@ -444,17 +444,6 @@ export function VelorixHero() {
           <ArrowRight size={15} className="group-hover:translate-x-0.5 transition-transform duration-200" />
         </Link>
 
-        {/* Trust microcopy */}
-        <div
-          className="mt-6 flex flex-wrap items-center gap-3 text-[11px] text-white/35"
-          style={{ fontFamily: "'Courier New', Courier, monospace" }}
-        >
-          <span>testnet-simulated</span>
-          <span className="text-white/15">·</span>
-          <span>Cobo Agentic Wallet</span>
-          <span className="text-white/15">·</span>
-          <span>no real funds</span>
-        </div>
       </div>
     </div>
   );
