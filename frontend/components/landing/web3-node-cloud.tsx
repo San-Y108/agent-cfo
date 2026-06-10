@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useState, useRef } from "react";
-import { motion, type PanInfo } from "framer-motion";
+import React, { useState, useRef, useEffect } from "react";
+import { motion, useReducedMotion } from "framer-motion";
 import {
   Orbit,
   ShieldCheck,
@@ -11,279 +11,214 @@ import {
   Zap,
   Sliders,
   Code,
-  Workflow,
 } from "lucide-react";
-import { useT } from "@/lib/i18n/context";
 
-const web3Integrations = [
-  {
-    name: "Cobo Agentic Wallet",
-    icon: Orbit,
-    color:
-      "bg-[#B5FF4D]/20 text-[#B5FF4D] shadow-[0_0_15px_rgba(181,255,77,0.2)]",
-    desc: "Autonomous API execution",
-    x: 0,
-    y: -100,
-    scale: 1.15,
-    isCore: true,
-  },
-  {
-    name: "Gnosis Safe",
-    icon: ShieldCheck,
-    color:
-      "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20",
-    desc: "Multi-sig protection layout",
-    x: -105,
-    y: -60,
-    scale: 1.0,
-    isCore: false,
-  },
-  {
-    name: "MetaMask SDK",
-    icon: Wallet,
-    color: "bg-amber-500/10 text-amber-400 border border-amber-500/20",
-    desc: "Instant owner cryptographic sign",
-    x: 105,
-    y: -60,
-    scale: 1.0,
-    isCore: false,
-  },
-  {
-    name: "Sepolia Testnet",
-    icon: Cpu,
-    color: "bg-blue-500/10 text-blue-400 border border-blue-500/20",
-    desc: "Isolated smart contract run",
-    x: 125,
-    y: 15,
-    scale: 1.1,
-    isCore: false,
-  },
-  {
-    name: "Drizzle ORM",
-    icon: Database,
-    color: "bg-yellow-500/10 text-yellow-400 border border-yellow-500/20",
-    desc: "Pristine database storage engine",
-    x: -125,
-    y: 15,
-    scale: 1.0,
-    isCore: false,
-  },
-  {
-    name: "Sablier Streams",
-    icon: Zap,
-    color: "bg-purple-500/10 text-purple-400 border border-purple-500/20",
-    desc: "Realtime continuous payroll",
-    x: -100,
-    y: 85,
-    scale: 1.05,
-    isCore: false,
-  },
-  {
-    name: "Framer Physics",
-    icon: Sliders,
-    color: "bg-pink-500/10 text-pink-400 border border-pink-500/20",
-    desc: "Elastic UI spring animations",
-    x: 0,
-    y: 105,
-    scale: 1.0,
-    isCore: false,
-  },
-  {
-    name: "Github Actions",
-    icon: Code,
-    color: "bg-neutral-500/10 text-neutral-300 border border-neutral-500/20",
-    desc: "Trigger continuous deliveries",
-    x: 100,
-    y: 85,
-    scale: 1.05,
-    isCore: false,
-  },
+type Node = {
+  name: string;
+  icon: React.ElementType;
+  desc: string;
+  angle: number;
+  distance: number;
+};
+
+const NODES: Node[] = [
+  { name: "Cobo Agentic", icon: Orbit, desc: "Autonomous API execution", angle: 0, distance: 110 },
+  { name: "Gnosis Safe", icon: ShieldCheck, desc: "Multi-sig protection", angle: 45, distance: 110 },
+  { name: "MetaMask SDK", icon: Wallet, desc: "Owner cryptographic sign", angle: 90, distance: 110 },
+  { name: "Sepolia", icon: Cpu, desc: "Isolated contract run", angle: 135, distance: 110 },
+  { name: "Drizzle ORM", icon: Database, desc: "Database storage", angle: 180, distance: 110 },
+  { name: "Sablier", icon: Zap, desc: "Continuous payroll", angle: 225, distance: 110 },
+  { name: "Framer", icon: Sliders, desc: "Elastic spring animations", angle: 270, distance: 110 },
+  { name: "GitHub", icon: Code, desc: "Continuous deliveries", angle: 315, distance: 110 },
 ];
 
-const DRAG_CLAMP = 40;
-const clamp = (v: number) => Math.max(-DRAG_CLAMP, Math.min(DRAG_CLAMP, v));
+function polarToCartesian(angleDeg: number, radius: number) {
+  const rad = ((angleDeg - 90) * Math.PI) / 180;
+  return { x: Math.cos(rad) * radius, y: Math.sin(rad) * radius };
+}
 
 export function Web3NodeCloud() {
-  const t = useT();
-  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
-  const [deltas, setDeltas] = useState<Record<number, { x: number; y: number }>>({});
-  const sectionRef = useRef<HTMLDivElement>(null);
-  const dragStartDeltaRef = useRef<Record<number, { x: number; y: number }>>({});
+  const reduce = useReducedMotion();
+  const [hoveredNode, setHoveredNode] = useState<number | null>(null);
+  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+  const containerRef = useRef<HTMLDivElement>(null);
 
-  const handleMouseMove = (e: React.MouseEvent) => {
-    if (!sectionRef.current) return;
-    const rect = sectionRef.current.getBoundingClientRect();
-    const x = (e.clientX - rect.left - rect.width / 2) / 25;
-    const y = (e.clientY - rect.top - rect.height / 2) / 25;
-    setMousePosition({ x, y });
-  };
+  useEffect(() => {
+    const onMove = (e: MouseEvent) => {
+      if (!containerRef.current) return;
+      const rect = containerRef.current.getBoundingClientRect();
+      setMousePos({
+        x: (e.clientX - rect.left - rect.width / 2) / 30,
+        y: (e.clientY - rect.top - rect.height / 2) / 30,
+      });
+    };
+    window.addEventListener("mousemove", onMove);
+    return () => window.removeEventListener("mousemove", onMove);
+  }, []);
 
-  const handleMouseLeave = () => {
-    setMousePosition({ x: 0, y: 0 });
-  };
-
-  const computeTarget = (
-    elem: (typeof web3Integrations)[number],
-    idx: number,
-  ) => {
-    const parallaxX =
-      mousePosition.x * (elem.isCore ? 0.3 : 1.2) * (elem.x > 0 ? 1 : -1);
-    const parallaxY =
-      mousePosition.y * (elem.isCore ? 0.3 : 1.2) * (elem.y > 0 ? 1 : -1);
-    const delta = deltas[idx] || { x: 0, y: 0 };
+  const nodeParallax = (node: Node) => {
+    const base = polarToCartesian(node.angle, node.distance);
+    if (reduce) return base;
     return {
-      x: elem.x + parallaxX + delta.x,
-      y: elem.y + parallaxY + delta.y,
+      x: base.x + mousePos.x * (base.x > 0 ? 1 : -1) * 0.8,
+      y: base.y + mousePos.y * (base.y > 0 ? 1 : -1) * 0.8,
     };
   };
 
   return (
     <section
-      id="integrations-hub"
-      ref={sectionRef}
-      onMouseMove={handleMouseMove}
-      onMouseLeave={handleMouseLeave}
-      className="w-full text-left relative border rounded-3xl bg-neutral-900/60 backdrop-blur-xl border-white/10 p-6"
+      ref={containerRef}
+      className="relative w-full rounded-3xl border border-white/[0.06] bg-white/[0.02] p-8 lg:p-10"
     >
-      <div className="grid grid-cols-1 gap-6 items-center">
-        {/* Headline */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 rounded-3xl opacity-40"
+        style={{
+          background:
+            "radial-gradient(ellipse 50% 50% at 50% 50%, rgba(181,255,77,0.03), transparent 70%)",
+        }}
+      />
+
+      <div className="relative z-10 grid grid-cols-1 gap-8 lg:grid-cols-[1fr_auto] lg:items-center lg:gap-12">
         <div className="space-y-3">
-          <div className="px-3 py-1 rounded-full border inline-flex items-center gap-1.5 text-[10px] font-mono uppercase tracking-wider bg-blue-500/10 border-blue-500/20 text-blue-400">
-            <Workflow className="w-3 h-3 text-blue-400" />
-            {t("web3Cloud.eyebrow")}
-          </div>
-          <h2 className="text-2xl md:text-3xl font-extrabold tracking-tight leading-none text-white">
-            {t("web3Cloud.title")}
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-blue-500/20 bg-blue-500/10 px-3 py-1 text-[10px] font-mono uppercase tracking-wider text-blue-400">
+            Web3 Trust Stack
+          </span>
+          <h2 className="text-2xl font-extrabold tracking-tight text-white md:text-3xl">
+            Web3 Trusted Infrastructure
           </h2>
-          <p className="text-sm font-light leading-relaxed text-white/50">
-            {t("web3Cloud.desc")}
+          <p className="text-sm leading-relaxed text-white/50">
+            AgentCFO weaves multi-sig suites, automation modules and Cobo HSM
+            into a closed-loop trusted capital allocation network.
           </p>
-          <p className="text-xs text-white/30 font-mono">{t("web3Cloud.hint")}</p>
+          <p className="text-xs text-white/30 font-mono">
+            Hover nodes to explore protocols...
+          </p>
         </div>
 
-        {/* Floating Node Grid — draggable */}
-        <div className="relative aspect-square w-full max-w-[340px] mx-auto border rounded-3xl overflow-hidden shadow-inner flex items-center justify-center bg-white/[0.01] border-white/5">
-          {/* Concentric rings */}
-          <div className="absolute w-[200px] h-[200px] rounded-full border border-dashed pointer-events-none z-0 border-white/5" />
-          <div className="absolute w-[280px] h-[280px] rounded-full border border-dashed pointer-events-none z-0 animate-[spin_40s_linear_infinite] border-[#B5FF4D]/5" />
+        <div className="relative mx-auto aspect-square w-full max-w-[360px]">
+          {[60, 100, 140].map((r, i) => (
+            <motion.div
+              key={r}
+              className="absolute left-1/2 top-1/2 rounded-full border"
+              style={{
+                width: r * 2,
+                height: r * 2,
+                marginLeft: -r,
+                marginTop: -r,
+                borderColor: i === 1 ? "rgba(181,255,77,0.08)" : "rgba(255,255,255,0.04)",
+              }}
+              animate={reduce ? {} : { scale: [1, 1.02, 1], opacity: [0.3, 0.6, 0.3] }}
+              transition={{
+                duration: 4 + i,
+                repeat: Infinity,
+                ease: "easeInOut",
+                delay: i * 0.5,
+              }}
+            />
+          ))}
 
-          {/* Center container */}
-          <div className="absolute w-[340px] h-[340px] flex items-center justify-center overflow-visible">
-            {/* SVG Connecting lines — single source of truth: deltas + parallax */}
-            <svg
-              viewBox="-200 -200 400 400"
-              className="absolute inset-0 w-full h-full pointer-events-none z-0 opacity-40"
-            >
-              <defs>
-                <linearGradient
-                  id="glow-line"
-                  x1="0%"
-                  y1="0%"
-                  x2="100%"
-                  y2="100%"
-                >
-                  <stop offset="0%" stopColor="#b5ff4d" stopOpacity="0.8" />
-                  <stop offset="100%" stopColor="#3b82f6" stopOpacity="0.2" />
-                </linearGradient>
-              </defs>
-              {web3Integrations.map((elem, idx) => {
-                const { x: targetX, y: targetY } = computeTarget(elem, idx);
-                return (
-                  <g key={idx}>
-                    <line
-                      x1="0"
-                      y1="0"
-                      x2={targetX}
-                      y2={targetY}
-                      stroke="url(#glow-line)"
-                      strokeWidth="1.2"
-                      strokeDasharray="4 4"
-                    />
-                    <line
-                      x1="0"
-                      y1="0"
-                      x2={targetX}
-                      y2={targetY}
-                      stroke="#b5ff4d"
-                      strokeWidth="0.5"
-                      className="opacity-20"
-                    />
-                  </g>
-                );
-              })}
-            </svg>
-
-            {/* Central Cobo Core */}
-            <div className="absolute z-10 w-16 h-16 bg-[#B5FF4D] rounded-full border-4 border-[#0D0D0D] flex flex-col items-center justify-center shadow-[0_0_30px_rgba(181,255,77,0.3)]">
-              <Orbit className="w-6 h-6 text-[#0D0D0D] animate-spin [animation-duration:8s]" />
-              <span className="text-[6px] font-mono font-bold uppercase text-[#0D0D0D] mt-0.5">
-                Cobo Core
-              </span>
-            </div>
-
-            {/* Floating nodes — draggable */}
-            {web3Integrations.map((elem, index) => {
-              const IconComponent = elem.icon;
-              const { x: targetX, y: targetY } = computeTarget(elem, index);
-
+          <svg viewBox="-180 -180 360 360" className="absolute inset-0 h-full w-full pointer-events-none">
+            <defs>
+              <linearGradient id="lineGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stopColor="#B5FF4D" stopOpacity="0.3" />
+                <stop offset="100%" stopColor="#B5FF4D" stopOpacity="0.05" />
+              </linearGradient>
+            </defs>
+            {NODES.map((node) => {
+              const pos = nodeParallax(node);
               return (
-                <motion.div
-                  key={index}
-                  animate={{ x: targetX, y: targetY }}
-                  transition={{ type: "spring", stiffness: 220, damping: 26 }}
-                  drag
-                  dragConstraints={{
-                    left: -DRAG_CLAMP,
-                    right: DRAG_CLAMP,
-                    top: -DRAG_CLAMP,
-                    bottom: DRAG_CLAMP,
-                  }}
-                  dragElastic={0.15}
-                  dragMomentum={false}
-                  onDragStart={() => {
-                    dragStartDeltaRef.current[index] =
-                      deltas[index] || { x: 0, y: 0 };
-                  }}
-                  onDrag={(_, info: PanInfo) => {
-                    const start =
-                      dragStartDeltaRef.current[index] || { x: 0, y: 0 };
-                    setDeltas((prev) => ({
-                      ...prev,
-                      [index]: {
-                        x: clamp(start.x + info.offset.x),
-                        y: clamp(start.y + info.offset.y),
-                      },
-                    }));
-                  }}
-                  whileDrag={{ scale: 1.15, zIndex: 50 }}
-                  style={{ scale: elem.scale }}
-                  className="absolute flex flex-col items-center cursor-grab active:cursor-grabbing group/btn z-10"
-                >
-                  {/* Node circle */}
-                  <div
-                    className={`w-9 h-9 rounded-lg flex items-center justify-center ${elem.color} hover:bg-white/20 transition-all duration-300 relative group`}
-                  >
-                    <IconComponent className="w-4 h-4 shrink-0" />
-
-                    {/* Hover tooltip */}
-                    <div className="absolute top-11 left-1/2 -translate-x-1/2 w-28 border rounded-lg p-1.5 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none text-center shadow-2xl z-30 bg-black border-white/10">
-                      <div className="text-[9px] font-bold text-white mb-0.5 leading-tight">
-                        {elem.name}
-                      </div>
-                      <div className="text-[7px] leading-tight font-mono text-white/50">
-                        {elem.desc}
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Sub-label */}
-                  <span className="text-[8px] font-mono mt-1 opacity-0 group-hover/btn:opacity-100 transition-opacity text-white/40">
-                    {elem.name.split(" ")[0]}
-                  </span>
-                </motion.div>
+                <line
+                  key={node.name}
+                  x1="0"
+                  y1="0"
+                  x2={pos.x}
+                  y2={pos.y}
+                  stroke="url(#lineGrad)"
+                  strokeWidth="1"
+                  opacity={hoveredNode !== null ? 0.8 : 0.4}
+                />
               );
             })}
-          </div>
+          </svg>
+
+          <motion.div
+            className="absolute left-1/2 top-1/2 z-20 flex h-20 w-20 -translate-x-1/2 -translate-y-1/2 flex-col items-center justify-center rounded-full"
+            style={{
+              background: "radial-gradient(circle at 35% 35%, rgba(255,255,255,0.1), rgba(255,255,255,0.02))",
+              backdropFilter: "blur(12px)",
+              boxShadow: "inset 0 1px 2px rgba(255,255,255,0.15), 0 0 40px rgba(181,255,77,0.15), inset 0 0 20px rgba(181,255,77,0.05)",
+              border: "1px solid rgba(255,255,255,0.08)",
+            }}
+            animate={reduce ? {} : { scale: [1, 1.03, 1] }}
+            transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+          >
+            <Orbit className="h-7 w-7" style={{ color: "#B5FF4D" }} strokeWidth={1.5} />
+            <span className="mt-0.5 text-[7px] font-mono font-bold uppercase tracking-wider text-[#B5FF4D]">
+              Cobo Core
+            </span>
+          </motion.div>
+
+          {NODES.map((node, i) => {
+            const pos = nodeParallax(node);
+            const Icon = node.icon;
+            const isHovered = hoveredNode === i;
+
+            return (
+              <motion.div
+                key={node.name}
+                className="absolute z-10 flex flex-col items-center"
+                style={{
+                  left: `calc(50% + ${pos.x}px)`,
+                  top: `calc(50% + ${pos.y}px)`,
+                  transform: "translate(-50%, -50%)",
+                }}
+                onMouseEnter={() => setHoveredNode(i)}
+                onMouseLeave={() => setHoveredNode(null)}
+                animate={reduce ? {} : {
+                  x: mousePos.x * (pos.x > 0 ? 0.3 : -0.3),
+                  y: mousePos.y * (pos.y > 0 ? 0.3 : -0.3),
+                }}
+                transition={{ type: "spring", stiffness: 200, damping: 25 }}
+              >
+                <motion.div
+                  className="relative flex h-10 w-10 cursor-pointer items-center justify-center rounded-full"
+                  style={{
+                    background: isHovered ? "rgba(181,255,77,0.15)" : "rgba(255,255,255,0.04)",
+                    border: `1px solid ${isHovered ? "rgba(181,255,77,0.4)" : "rgba(255,255,255,0.08)"}`,
+                    boxShadow: isHovered
+                      ? "0 0 20px rgba(181,255,77,0.3), inset 0 1px 1px rgba(255,255,255,0.1)"
+                      : "inset 0 1px 1px rgba(255,255,255,0.05)",
+                  }}
+                  whileHover={{ scale: 1.15 }}
+                  transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                >
+                  <Icon className="h-4 w-4" style={{ color: isHovered ? "#B5FF4D" : "rgba(255,255,255,0.5)" }} strokeWidth={1.5} />
+
+                  {isHovered && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 4 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="absolute top-12 left-1/2 z-30 w-28 -translate-x-1/2 rounded-lg border border-white/[0.08] bg-[#0D0D0D]/95 p-2 text-center shadow-2xl backdrop-blur-md"
+                    >
+                      <div className="text-[9px] font-bold text-white">{node.name}</div>
+                      <div className="mt-0.5 text-[7px] font-mono leading-tight text-white/50">
+                        {node.desc}
+                      </div>
+                    </motion.div>
+                  )}
+                </motion.div>
+
+                <motion.span
+                  className="mt-1.5 text-[8px] font-mono uppercase tracking-wider"
+                  animate={{ opacity: isHovered ? 1 : 0.3 }}
+                  style={{ color: isHovered ? "#B5FF4D" : "rgba(255,255,255,0.3)" }}
+                >
+                  {node.name.split(" ")[0]}
+                </motion.span>
+              </motion.div>
+            );
+          })}
         </div>
       </div>
     </section>

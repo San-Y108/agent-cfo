@@ -92,6 +92,7 @@ export function LandingFooter() {
           {/* Brand summary */}
           <div>
             <div className="flex items-baseline gap-2">
+              <img src="/logo.png" alt="AgentCFO" className="h-7 w-7 rounded-full" />
               <span
                 className="text-2xl font-bold tracking-tight text-white"
                 style={{ fontFamily: "Inter, sans-serif" }}

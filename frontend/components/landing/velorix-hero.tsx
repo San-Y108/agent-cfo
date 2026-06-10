@@ -135,9 +135,12 @@ function Navbar() {
   return (
     <>
       <nav className="absolute top-0 left-0 right-0 z-50 flex items-center justify-between px-5 py-4 lg:px-10 lg:py-6">
-        <span className="text-white text-xl font-semibold tracking-tight" style={{ fontFamily: "Inter, sans-serif" }}>
-          AgentCFO
-        </span>
+        <div className="flex items-center gap-2.5">
+          <img src="/logo.png" alt="AgentCFO" className="h-7 w-7 rounded-full" />
+          <span className="text-white text-xl font-semibold tracking-tight" style={{ fontFamily: "Inter, sans-serif" }}>
+            AgentCFO
+          </span>
+        </div>
         <div className="hidden lg:flex items-center gap-1 rounded-full px-2 py-1.5" style={{ backgroundColor: "rgba(255,255,255,0.06)" }}>
           {NAV_ITEMS.map((item) => (
             <a
