@@ -157,11 +157,11 @@ export function LandingFooter() {
         </div>
 
         {/* Giant wordmark — SVG auto-fits container width */}
-        <div className="relative mt-20 select-none pb-8 lg:mt-28 lg:pb-12">
+        <div className="relative mt-20 select-none pb-8 lg:mt-28 lg:pb-12 group">
           <svg
             viewBox="0 0 1000 140"
             preserveAspectRatio="xMidYMid meet"
-            className="block w-full"
+            className="block w-full transition-all duration-300 group-hover:opacity-[0.85]"
             aria-hidden
           >
             <defs>
@@ -171,11 +171,115 @@ export function LandingFooter() {
                 <stop offset="70%" stopColor="rgba(96,165,250,0.22)" />
                 <stop offset="100%" stopColor="rgba(192,132,252,0.22)" />
               </linearGradient>
+
+              {/* Displacement filter — subtle ripple on hover */}
+              <filter id="footer-distortion" x="-10%" y="-10%" width="120%" height="120%">
+                <feTurbulence
+                  type="fractalNoise"
+                  baseFrequency="0.005 0.02"
+                  numOctaves="2"
+                  result="noise"
+                >
+                  <animate
+                    attributeName="baseFrequency"
+                    dur="0.4s"
+                    values="0.005 0.02;0.015 0.06;0.005 0.02"
+                    repeatCount="1"
+                    begin="wordmark.mouseenter"
+                    end="wordmark.mouseleave"
+                    fill="freeze"
+                  />
+                </feTurbulence>
+                <feDisplacementMap
+                  in="SourceGraphic"
+                  in2="noise"
+                  scale="0"
+                  xChannelSelector="R"
+                  yChannelSelector="G"
+                >
+                  <animate
+                    attributeName="scale"
+                    dur="0.35s"
+                    values="0;18;8;0"
+                    repeatCount="1"
+                    begin="wordmark.mouseenter"
+                    end="wordmark.mouseleave"
+                    fill="freeze"
+                    calcMode="spline"
+                    keySplines="0.4 0 0.2 1;0.4 0 0.2 1;0.4 0 0.2 1"
+                    keyTimes="0;0.3;0.6;1"
+                  />
+                </feDisplacementMap>
+              </filter>
+
+              {/* RGB split layers */}
+              <filter id="footer-cyan" x="-10%" y="-10%" width="120%" height="120%">
+                <feColorMatrix
+                  type="matrix"
+                  values="0 0 0 0 0
+                          0 1 0 0 0.9
+                          0 0 1 0 0.9
+                          0 0 0 1 0"
+                />
+              </filter>
+              <filter id="footer-magenta" x="-10%" y="-10%" width="120%" height="120%">
+                <feColorMatrix
+                  type="matrix"
+                  values="1 0 0 0 0.98
+                          0 0 0 0 0.1
+                          0 0 1 0 0.8
+                          0 0 0 1 0"
+                />
+              </filter>
             </defs>
+
+            {/* Glitch tear layers */}
             <text
+              id="wordmark-cyan"
+              x="-2"
+              y="118"
+              fill="url(#agentcfo-wordmark)"
+              filter="url(#footer-cyan)"
+              opacity="0"
+              textLength="1000"
+              lengthAdjust="spacingAndGlyphs"
+              className="transition-opacity duration-200 group-hover:opacity-40"
+              style={{
+                fontFamily: "Inter, sans-serif",
+                fontWeight: 900,
+                fontSize: 130,
+                letterSpacing: "-6px",
+              }}
+            >
+              AGENTCFO
+            </text>
+            <text
+              id="wordmark-magenta"
+              x="2"
+              y="118"
+              fill="url(#agentcfo-wordmark)"
+              filter="url(#footer-magenta)"
+              opacity="0"
+              textLength="1000"
+              lengthAdjust="spacingAndGlyphs"
+              className="transition-opacity duration-200 group-hover:opacity-40"
+              style={{
+                fontFamily: "Inter, sans-serif",
+                fontWeight: 900,
+                fontSize: 130,
+                letterSpacing: "-6px",
+              }}
+            >
+              AGENTCFO
+            </text>
+
+            {/* Main wordmark with displacement */}
+            <text
+              id="wordmark"
               x="0"
               y="118"
               fill="url(#agentcfo-wordmark)"
+              filter="url(#footer-distortion)"
               textLength="1000"
               lengthAdjust="spacingAndGlyphs"
               style={{
