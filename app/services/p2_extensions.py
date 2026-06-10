@@ -1,5 +1,6 @@
 import os
 from datetime import UTC, datetime
+from typing import Any
 
 from app.models import (
     BudgetRule,
@@ -17,6 +18,8 @@ from app.models import (
     ExternalReferenceType,
     HumanApproval,
     MultichainReadiness,
+    OpenApiLiteContract,
+    OpenApiLiteContracts,
     PaymentItem,
     PaymentStatus,
     PlannerExplainability,
@@ -26,6 +29,8 @@ from app.models import (
     RequestFinanceLifecyclePreview,
     RequestFinanceLifecyclePreviewRequest,
     RequestFinancePreflight,
+    RequestFinanceWebhookReplayRequest,
+    RequestFinanceWebhookReplayResult,
     RiskWhatIfGuardrail,
     RiskWhatIfRequest,
     RiskWhatIfResult,
@@ -716,6 +721,112 @@ class P2ExtensionService:
             ],
         )
 
+    def replay_request_finance_webhook(
+        self, request: RequestFinanceWebhookReplayRequest
+    ):
+        self._validate_links(
+            request.paymentPlanId,
+            request.paymentItemId,
+            request.auditReportId,
+            request.cawRequestId,
+        )
+        event_statuses = {
+            "invoice.created": "created",
+            "invoice.accepted": "accepted",
+            "invoice.canceled": "canceled",
+            "invoice.rejected": "rejected",
+            "invoice.paid": "paid",
+        }
+        normalized_status = event_statuses.get(request.eventType)
+        if normalized_status is None:
+            allowed = ", ".join(event_statuses)
+            raise P2ValidationError(
+                f"Unsupported Request Finance webhook event type. Allowed event types: {allowed}"
+            )
+
+        existing_events = self._request_finance_webhook_events(
+            request.paymentPlanId,
+            request.invoiceId,
+        )
+        duplicate = next(
+            (
+                event
+                for event in existing_events
+                if event.metadata.get("eventId") == request.eventId
+            ),
+            None,
+        )
+        external_reference_id = duplicate.externalReferenceId if duplicate is not None else None
+        if duplicate is None:
+            reference = self.create_external_reference(
+                ExternalReferenceCreate(
+                    referenceType=ExternalReferenceType.REQUEST_INVOICE,
+                    provider="request-finance-webhook-mock",
+                    label=f"Request Finance webhook {request.eventType}",
+                    paymentPlanId=request.paymentPlanId,
+                    paymentItemId=request.paymentItemId,
+                    auditReportId=request.auditReportId,
+                    cawRequestId=request.cawRequestId,
+                    status=normalized_status,
+                    metadata={
+                        "webhookReplayVersion": "v2",
+                        "eventId": request.eventId,
+                        "eventType": request.eventType,
+                        "requestFinanceInvoiceId": request.invoiceId,
+                        "requestId": request.requestId,
+                        "normalizedStatus": normalized_status,
+                        "payloadShape": sorted(request.payload.keys()),
+                        "providerTouched": False,
+                        "emailSent": False,
+                        "paymentTriggered": False,
+                        "onChainConversion": False,
+                    },
+                )
+            )
+            existing_events.append(reference)
+            external_reference_id = reference.externalReferenceId
+
+        timeline = [
+            {
+                "eventId": event.metadata["eventId"],
+                "eventType": event.metadata["eventType"],
+                "invoiceId": event.metadata["requestFinanceInvoiceId"],
+                "requestId": event.metadata.get("requestId"),
+                "status": event.metadata["normalizedStatus"],
+                "providerTouched": False,
+                "emailSent": False,
+                "paymentTriggered": False,
+                "onChainConversion": False,
+            }
+            for event in sorted(
+                existing_events,
+                key=lambda event: (event.createdAt, event.metadata.get("eventId", "")),
+            )
+        ]
+        return RequestFinanceWebhookReplayResult(
+            mode="simulation-only",
+            replayResult="duplicate_ignored" if duplicate is not None else "event_recorded",
+            acceptedEvent=True,
+            duplicateEvent=duplicate is not None,
+            normalizedStatus=normalized_status,
+            externalReferenceId=external_reference_id,
+            providerTouched=False,
+            emailSent=False,
+            paymentTriggered=False,
+            onChainConversion=False,
+            linkedIds={
+                "paymentPlanId": request.paymentPlanId,
+                "paymentItemId": request.paymentItemId,
+                "auditReportId": request.auditReportId,
+                "cawRequestId": request.cawRequestId,
+            },
+            eventTimeline=timeline,
+            safetyNotes=[
+                "Webhook replay v2 is a local mock based on Request Finance invoice lifecycle event concepts.",
+                "It does not call Request Finance, POST /invoices/{id}, send email, convert on-chain, or pay.",
+            ],
+        )
+
     def simulate_sablier_payroll(self, request: SablierPayrollSimulationRequest):
         payment = self._get_payment_item(request.paymentPlanId, request.paymentItemId)
         duration_seconds = request.durationDays * 24 * 60 * 60
@@ -1009,6 +1120,237 @@ class P2ExtensionService:
                 "No CAW transfer, Sablier stream, Safe enablement, on-chain Request conversion, or payment is triggered.",
             ],
         )
+
+    def get_openapi_lite_contracts(self):
+        contracts = [
+            self._openapi_lite_contract(
+                path="/api/payment-plan",
+                method="POST",
+                purpose="Create an AI-assisted payment plan from contribution records.",
+                request_model="PaymentPlanRequest",
+                response_model="PaymentPlan",
+                required_fields=["contributions", "budgetRule"],
+                example_payload={
+                    "contributions": [
+                        {
+                            "name": "Alice",
+                            "role": "community",
+                            "task": "Community moderation",
+                            "wallet": "0xAlice",
+                            "amount": 20,
+                            "token": "USDC",
+                        }
+                    ],
+                    "budgetRule": {
+                        "monthlyBudget": 50,
+                        "singlePaymentLimit": 25,
+                        "allowedToken": "USDC",
+                        "whitelist": ["0xAlice"],
+                        "requiresHumanApproval": True,
+                    },
+                },
+                mode_label="mock/openai planner; deterministic checks still separate",
+                live_action_boundary="No payment, CAW transfer, provider call, or audit mutation.",
+                display_hints={"primaryBadge": "planner", "showAs": "plan-table"},
+            ),
+            self._openapi_lite_contract(
+                path="/api/risk-check",
+                method="POST",
+                purpose="Run deterministic budget, token, whitelist, duplicate, and approval guardrails.",
+                request_model="RiskCheckRequest",
+                response_model="RiskCheckResult",
+                required_fields=["paymentPlanId", "budgetRule"],
+                example_payload={
+                    "paymentPlanId": "plan_demo_001",
+                    "budgetRule": {
+                        "monthlyBudget": 50,
+                        "singlePaymentLimit": 25,
+                        "allowedToken": "USDC",
+                        "whitelist": ["0xAlice"],
+                        "requiresHumanApproval": True,
+                    },
+                },
+                mode_label="deterministic-risk",
+                live_action_boundary="No payment or external provider call.",
+                display_hints={"primaryBadge": "risk", "showAs": "guardrail-list"},
+            ),
+            self._openapi_lite_contract(
+                path="/api/execute-payment",
+                method="POST",
+                purpose="Execute approved, risk-checked payment items through configured CAW adapter mode.",
+                request_model="ExecutePaymentRequest",
+                response_model="PaymentExecutionResult",
+                required_fields=["paymentPlanId", "approvedPaymentIds", "humanApproval"],
+                example_payload={
+                    "paymentPlanId": "plan_demo_001",
+                    "approvedPaymentIds": ["pay_1"],
+                    "humanApproval": {"approved": True, "approvedBy": "demo-approver"},
+                },
+                mode_label="mock-caw by default",
+                live_action_boundary="Real CAW transfer requires separate credentials and approval; P2 utilities do not change this.",
+                display_hints={"primaryBadge": "execution", "showAs": "execution-result"},
+            ),
+            self._openapi_lite_contract(
+                path="/api/audit-report/{auditReportId}",
+                method="GET",
+                purpose="Read immutable audit snapshot for a completed execution.",
+                request_model=None,
+                response_model="AuditReport",
+                required_fields=["auditReportId"],
+                example_payload=None,
+                mode_label="immutable-read",
+                live_action_boundary="Read-only audit snapshot; P2 metadata does not rewrite it.",
+                display_hints={"primaryBadge": "audit", "showAs": "evidence-snapshot"},
+            ),
+            self._openapi_lite_contract(
+                path="/api/request-invoices",
+                method="POST",
+                purpose="Create linked Request Finance invoice metadata; live invoice create remains env-gated.",
+                request_model="RequestInvoiceCreate",
+                response_model="RequestInvoiceRecord",
+                required_fields=[
+                    "paymentPlanId",
+                    "paymentItemId",
+                    "requestFinanceInvoiceId",
+                    "status",
+                ],
+                example_payload={
+                    "paymentPlanId": "plan_demo_001",
+                    "paymentItemId": "pay_1",
+                    "auditReportId": "audit_demo_001",
+                    "cawRequestId": "caw_mock_001",
+                    "requestFinanceInvoiceId": "rf_demo_001",
+                    "requestId": "request_demo_001",
+                    "status": "draft",
+                    "hostedUrl": "https://example.invalid/request/rf_demo_001",
+                },
+                mode_label="mock/live-readonly metadata",
+                live_action_boundary="Default path stores metadata only; POST /invoices requires REQUEST_FINANCE_ALLOW_INVOICE_CREATE=true.",
+                display_hints={"primaryBadge": "request-finance", "showAs": "external-reference"},
+            ),
+            self._openapi_lite_contract(
+                path="/api/p2/request-finance/preflight",
+                method="POST",
+                purpose="Validate whether an off-chain Request Finance create payload is sufficiently configured.",
+                request_model="RequestInvoiceCreate",
+                response_model="RequestFinancePreflight",
+                required_fields=["paymentPlanId", "paymentItemId"],
+                example_payload={
+                    "paymentPlanId": "plan_demo_001",
+                    "paymentItemId": "pay_1",
+                    "buyerEmail": "buyer@example.invalid",
+                    "invoiceNumber": "AGENTCFO-DEMO-001",
+                    "invoiceItemName": "AgentCFO demo service",
+                    "invoiceCurrency": "USD",
+                    "invoiceQuantity": 1,
+                    "invoiceUnitPrice": 100,
+                    "paymentCurrency": "USDC-matic",
+                    "paymentNetwork": "matic",
+                    "paymentAddress": "0x0000000000000000000000000000000000000000",
+                    "status": "draft",
+                    "requestFinanceInvoiceId": "preflight-only",
+                },
+                mode_label="preflight",
+                live_action_boundary="No provider call; reports configuration/input gaps only.",
+                display_hints={"primaryBadge": "preflight", "showAs": "checklist"},
+            ),
+            self._openapi_lite_contract(
+                path="/api/p2/request-finance/webhook-replay",
+                method="POST",
+                purpose="Replay a mock Request Finance invoice lifecycle webhook event and record linked metadata.",
+                request_model="RequestFinanceWebhookReplayRequest",
+                response_model="RequestFinanceWebhookReplayResult",
+                required_fields=[
+                    "eventId",
+                    "eventType",
+                    "invoiceId",
+                    "status",
+                    "paymentPlanId",
+                    "paymentItemId",
+                ],
+                example_payload={
+                    "eventId": "evt_rf_001",
+                    "eventType": "invoice.created",
+                    "invoiceId": "rf_webhook_demo_001",
+                    "requestId": "request_webhook_demo_001",
+                    "status": "created",
+                    "paymentPlanId": "plan_demo_001",
+                    "paymentItemId": "pay_1",
+                    "auditReportId": "audit_demo_001",
+                    "cawRequestId": "caw_mock_001",
+                    "payload": {"invoice": {"id": "rf_webhook_demo_001", "status": "created"}},
+                },
+                mode_label="simulation-only",
+                live_action_boundary="No Request Finance provider call, email, on-chain conversion, or payment.",
+                display_hints={"primaryBadge": "webhook-mock", "showAs": "timeline"},
+            ),
+        ]
+        return OpenApiLiteContracts(
+            mode="openapi-lite",
+            openapiSource="custom-lite",
+            fastapiOpenapiEnabled=False,
+            docsUiEnabled=False,
+            noSecrets=True,
+            noLiveActions=True,
+            contracts=contracts,
+            globalInvariants=[
+                "FastAPI public /docs and /openapi.json stay disabled.",
+                "P0/P1 authorization, risk checks, CAW adapter behavior, and Audit Report immutability are unchanged.",
+                "No secrets, raw environment values, or private wallet credentials are exposed.",
+                "No CAW transfer, Sablier stream, Safe enablement, on-chain Request conversion, or payment is triggered.",
+            ],
+        )
+
+    def _openapi_lite_contract(
+        self,
+        path: str,
+        method: str,
+        purpose: str,
+        request_model: str | None,
+        response_model: str,
+        required_fields: list[str],
+        example_payload: dict[str, Any] | None,
+        mode_label: str,
+        live_action_boundary: str,
+        display_hints: dict[str, Any],
+    ):
+        return OpenApiLiteContract(
+            path=path,
+            method=method,
+            purpose=purpose,
+            requestModel=request_model,
+            responseModel=response_model,
+            requiredFields=required_fields,
+            examplePayload=example_payload,
+            modeLabel=mode_label,
+            liveActionBoundary=live_action_boundary,
+            safetyFlags={
+                "noSecrets": True,
+                "noCawTransfer": True,
+                "noSablierStream": True,
+                "noSafeModule": True,
+                "noOnChainRequestConversion": True,
+                "noPayment": True,
+                "auditSnapshotImmutable": True,
+            },
+            frontendDisplayHints=display_hints,
+        )
+
+    def _request_finance_webhook_events(
+        self,
+        payment_plan_id: str,
+        invoice_id: str,
+    ):
+        return [
+            reference
+            for reference in self.store.list_external_references(
+                payment_plan_id=payment_plan_id,
+                reference_type=ExternalReferenceType.REQUEST_INVOICE,
+            )
+            if reference.provider == "request-finance-webhook-mock"
+            and reference.metadata.get("webhookReplayVersion") == "v2"
+            and reference.metadata.get("requestFinanceInvoiceId") == invoice_id
+        ]
 
     def _request_invoice_from_reference(self, reference: ExternalReference):
         return RequestInvoiceRecord(

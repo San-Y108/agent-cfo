@@ -583,6 +583,143 @@ def test_demo_runbook_storyboard_blocked_examples_and_contracts_are_frontend_rea
     assert "/api/p2/request-finance/preflight" in contracts_body["endpoints"]
 
 
+def test_openapi_lite_contracts_are_machine_readable_and_docs_stay_disabled():
+    response = client.get("/api/demo/contracts/openapi-lite")
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["mode"] == "openapi-lite"
+    assert body["openapiSource"] == "custom-lite"
+    assert body["fastapiOpenapiEnabled"] is False
+    assert body["docsUiEnabled"] is False
+    assert body["noSecrets"] is True
+    assert body["noLiveActions"] is True
+    assert client.get("/openapi.json").status_code == 404
+    assert client.get("/docs").status_code == 404
+
+    contracts = {contract["path"]: contract for contract in body["contracts"]}
+    assert {
+        "/api/payment-plan",
+        "/api/risk-check",
+        "/api/execute-payment",
+        "/api/audit-report/{auditReportId}",
+        "/api/request-invoices",
+        "/api/p2/request-finance/preflight",
+        "/api/p2/request-finance/webhook-replay",
+    }.issubset(contracts)
+
+    payment_plan_contract = contracts["/api/payment-plan"]
+    assert payment_plan_contract["method"] == "POST"
+    assert payment_plan_contract["requestModel"] == "PaymentPlanRequest"
+    assert payment_plan_contract["responseModel"] == "PaymentPlan"
+    assert payment_plan_contract["requiredFields"] == ["contributions", "budgetRule"]
+    assert payment_plan_contract["examplePayload"]["budgetRule"]["allowedToken"] == "USDC"
+
+    for contract in contracts.values():
+        assert set(contract).issuperset(
+            {
+                "path",
+                "method",
+                "purpose",
+                "requestModel",
+                "responseModel",
+                "requiredFields",
+                "examplePayload",
+                "modeLabel",
+                "liveActionBoundary",
+                "safetyFlags",
+                "frontendDisplayHints",
+            }
+        )
+        assert contract["safetyFlags"]["noSecrets"] is True
+
+    assert "REQUEST_FINANCE_API_KEY" not in response.text
+    assert "AGENT_WALLET_API_KEY" not in response.text
+    assert "OPENAI_API_KEY" not in response.text
+
+
+def test_request_finance_webhook_replay_v2_is_idempotent_simulation_and_audit_safe():
+    plan, execution = create_p0_flow()
+    audit_id = execution["auditReportId"]
+    audit_before = client.get(f"/api/audit-report/{audit_id}").json()
+    payload = {
+        "eventId": "evt_rf_001",
+        "eventType": "invoice.created",
+        "invoiceId": "rf_webhook_demo_001",
+        "requestId": "request_webhook_demo_001",
+        "status": "created",
+        "paymentPlanId": plan["paymentPlanId"],
+        "paymentItemId": plan["payments"][0]["id"],
+        "auditReportId": audit_id,
+        "cawRequestId": execution["payments"][0]["cawRequestId"],
+        "payload": {"invoice": {"id": "rf_webhook_demo_001", "status": "created"}},
+    }
+
+    response = client.post("/api/p2/request-finance/webhook-replay", json=payload)
+    duplicate = client.post("/api/p2/request-finance/webhook-replay", json=payload)
+
+    assert response.status_code == 200
+    assert duplicate.status_code == 200
+    body = response.json()
+    duplicate_body = duplicate.json()
+    assert body["mode"] == "simulation-only"
+    assert body["providerTouched"] is False
+    assert body["emailSent"] is False
+    assert body["paymentTriggered"] is False
+    assert body["onChainConversion"] is False
+    assert body["acceptedEvent"] is True
+    assert body["duplicateEvent"] is False
+    assert body["replayResult"] == "event_recorded"
+    assert body["normalizedStatus"] == "created"
+    assert body["linkedIds"] == {
+        "paymentPlanId": plan["paymentPlanId"],
+        "paymentItemId": plan["payments"][0]["id"],
+        "auditReportId": audit_id,
+        "cawRequestId": execution["payments"][0]["cawRequestId"],
+    }
+    assert body["eventTimeline"] == [
+        {
+            "eventId": "evt_rf_001",
+            "eventType": "invoice.created",
+            "invoiceId": "rf_webhook_demo_001",
+            "requestId": "request_webhook_demo_001",
+            "status": "created",
+            "providerTouched": False,
+            "emailSent": False,
+            "paymentTriggered": False,
+            "onChainConversion": False,
+        }
+    ]
+    assert duplicate_body["duplicateEvent"] is True
+    assert duplicate_body["replayResult"] == "duplicate_ignored"
+    assert duplicate_body["eventTimeline"] == body["eventTimeline"]
+
+    audit_after = client.get(f"/api/audit-report/{audit_id}").json()
+    assert audit_after == audit_before
+
+
+def test_request_finance_webhook_replay_v2_rejects_unknown_event_type():
+    plan, execution = create_p0_flow()
+    response = client.post(
+        "/api/p2/request-finance/webhook-replay",
+        json={
+            "eventId": "evt_rf_bad",
+            "eventType": "invoice.refunded",
+            "invoiceId": "rf_webhook_demo_bad",
+            "requestId": "request_webhook_demo_bad",
+            "status": "refunded",
+            "paymentPlanId": plan["paymentPlanId"],
+            "paymentItemId": plan["payments"][0]["id"],
+            "auditReportId": execution["auditReportId"],
+            "cawRequestId": execution["payments"][0]["cawRequestId"],
+            "payload": {},
+        },
+    )
+
+    assert response.status_code == 400
+    assert "Unsupported Request Finance webhook event type" in response.json()["detail"]
+
+
 def test_request_invoice_mock_mode_does_not_call_live_client(monkeypatch):
     plan, execution = create_p0_flow()
 

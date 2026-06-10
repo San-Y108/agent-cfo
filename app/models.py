@@ -445,6 +445,35 @@ class RequestFinanceLifecyclePreview(BaseModel):
     safetyNotes: list[str]
 
 
+class RequestFinanceWebhookReplayRequest(BaseModel):
+    eventId: str
+    eventType: str
+    invoiceId: str
+    requestId: str | None = None
+    status: str
+    paymentPlanId: str
+    paymentItemId: str
+    auditReportId: str | None = None
+    cawRequestId: str | None = None
+    payload: dict[str, Any] = Field(default_factory=dict)
+
+
+class RequestFinanceWebhookReplayResult(BaseModel):
+    mode: str
+    replayResult: str
+    acceptedEvent: bool
+    duplicateEvent: bool
+    normalizedStatus: str
+    externalReferenceId: str | None = None
+    providerTouched: bool
+    emailSent: bool
+    paymentTriggered: bool
+    onChainConversion: bool
+    linkedIds: dict[str, str | None]
+    eventTimeline: list[dict[str, Any]]
+    safetyNotes: list[str]
+
+
 class SablierPayrollSimulationRequest(BaseModel):
     paymentPlanId: str
     paymentItemId: str
@@ -549,4 +578,29 @@ class DemoContracts(BaseModel):
     mode: str
     noLiveActions: bool
     endpoints: dict[str, dict[str, Any]]
+    globalInvariants: list[str]
+
+
+class OpenApiLiteContract(BaseModel):
+    path: str
+    method: str
+    purpose: str
+    requestModel: str | None = None
+    responseModel: str
+    requiredFields: list[str]
+    examplePayload: dict[str, Any] | None = None
+    modeLabel: str
+    liveActionBoundary: str
+    safetyFlags: dict[str, bool]
+    frontendDisplayHints: dict[str, Any]
+
+
+class OpenApiLiteContracts(BaseModel):
+    mode: str
+    openapiSource: str
+    fastapiOpenapiEnabled: bool
+    docsUiEnabled: bool
+    noSecrets: bool
+    noLiveActions: bool
+    contracts: list[OpenApiLiteContract]
     globalInvariants: list[str]

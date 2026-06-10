@@ -12,6 +12,7 @@ from app.models import (
     DemoScenarioPack,
     DemoStoryboard,
     MultichainReadiness,
+    OpenApiLiteContracts,
     PlannerExplainability,
     PolicyGuardrailSummary,
     RequestInvoiceCreate,
@@ -19,6 +20,8 @@ from app.models import (
     RequestFinanceLifecyclePreviewRequest,
     RequestInvoiceRecord,
     RequestFinancePreflight,
+    RequestFinanceWebhookReplayRequest,
+    RequestFinanceWebhookReplayResult,
     RiskWhatIfRequest,
     RiskWhatIfResult,
     SablierPayrollSimulation,
@@ -190,6 +193,19 @@ def preview_request_finance_lifecycle(request: RequestFinanceLifecyclePreviewReq
         raise HTTPException(status_code=404, detail=str(error))
 
 
+@router.post(
+    "/p2/request-finance/webhook-replay",
+    response_model=RequestFinanceWebhookReplayResult,
+)
+def replay_request_finance_webhook(request: RequestFinanceWebhookReplayRequest):
+    try:
+        return _service().replay_request_finance_webhook(request)
+    except P2RecordNotFound as error:
+        raise HTTPException(status_code=404, detail=str(error))
+    except P2ValidationError as error:
+        raise HTTPException(status_code=400, detail=str(error))
+
+
 @router.post("/p2/sablier/payroll-simulation", response_model=SablierPayrollSimulation)
 def simulate_sablier_payroll(request: SablierPayrollSimulationRequest):
     try:
@@ -232,3 +248,8 @@ def get_demo_blocked_examples():
 @router.get("/demo/contracts", response_model=DemoContracts)
 def get_demo_contracts():
     return _service().get_demo_contracts()
+
+
+@router.get("/demo/contracts/openapi-lite", response_model=OpenApiLiteContracts)
+def get_openapi_lite_contracts():
+    return _service().get_openapi_lite_contracts()

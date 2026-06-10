@@ -697,10 +697,11 @@ P2:
 - P2D Multi-chain readiness。✅ Readiness matrix 已实现；不新增真实链执行。
 - P2E Multi-agent treasury。✅ Mock budget partition view 已实现；不改变授权系统。
 - P2F Request Finance live integration spike。✅ Env-gated client/status/read-only path 已实现；off-chain invoice create mapper/client path 已实现但默认关闭；真实 invoice creation 仍需明确人工批准。
+- P2 backend-owned demo utilities。✅ OpenAPI-lite machine contract endpoint 与 Request Finance webhook replay mock v2 已实现；均不触发 provider、email、payment 或链上转换。
 
 P2 live integrations are not enabled by default. Do not claim Request Finance invoice creation evidence, Sablier, Safe, multichain execution, or multi-agent authorization is live without explicit approval, credentials, and new tests.
 
-Frontend/PM handoff for the demo-safe P2 surface is in [`docs/pm/P2_DEMO_HANDOFF.md`](docs/pm/P2_DEMO_HANDOFF.md). It includes curl examples, frontend response contracts, demo UI guidance, and approved PM/video wording.
+Frontend/PM handoff for the demo-safe P2 surface is in [`docs/pm/P2_DEMO_HANDOFF.md`](docs/pm/P2_DEMO_HANDOFF.md). Backend owns machine-readable contracts and simulation endpoints; PM/frontend own scenario prose, presenter notes, storyboard UI, and forbidden-claims copy packaging.
 
 ## P2F Request Finance Live Spike
 
@@ -751,6 +752,7 @@ These APIs are metadata, preview, or reference only. They do not change P0/P1 pa
 | `POST /api/p2/request-finance/preflight` | Validates Request Finance create-invoice payload shape without creating a provider client | No Request Finance API call |
 | `GET /api/p2/planner-explainability` | LLM planner boundary, Structured Outputs posture, malformed-output fallback, and reason trace | No model call |
 | `POST /api/p2/request-finance/lifecycle-preview` | Mock invoice lifecycle/event log for created/accepted/canceled/rejected/paid | No provider call, no email, no on-chain conversion |
+| `POST /api/p2/request-finance/webhook-replay` | Request Finance invoice lifecycle webhook replay mock v2 with idempotent event timeline | No provider call, no email, no on-chain conversion, no payment |
 | `POST /api/p2/sablier/payroll-simulation` | Simulation-only payroll schedule/accrual/withdrawable/runway/insolvency guardrails | No Sablier stream or transaction |
 | `POST /api/p2/safe/guard-policy-dry-run` | Safe owner threshold, module checklist, guard policy matrix, blocked operations | No Safe module/guard enablement or execution |
 | `POST /api/p2/treasury/coordination-simulation` | Mock department-agent proposals, budget caps, conflicts, approval matrix, audit timeline | No new authorization role |
@@ -758,6 +760,9 @@ These APIs are metadata, preview, or reference only. They do not change P0/P1 pa
 | `GET /api/demo/storyboard` | Presentation storyboard frames | None |
 | `GET /api/demo/blocked-examples` | Stable blocked examples for frontend/PM copy | None |
 | `GET /api/demo/contracts` | Frontend response-contract index and global invariants | None |
+| `GET /api/demo/contracts/openapi-lite` | Machine-readable P0/P2 endpoint contracts, required fields, examples, safety flags, and display hints | None |
+
+`GET /api/demo/contracts/openapi-lite` is a custom contract endpoint. FastAPI public `/docs` and `/openapi.json` remain disabled; this endpoint does not expose secrets, environment values, raw provider payloads, private wallet details, or live-action configuration.
 
 P2 implementation references:
 
