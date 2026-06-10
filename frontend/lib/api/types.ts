@@ -95,6 +95,7 @@ export interface PaymentExecutionItem {
   txHash: string | null;
   cawRequestId: string;
   error?: string | null;
+  diagnosticCode?: string | null;
 }
 
 export interface PaymentExecutionResult {
@@ -113,4 +114,27 @@ export interface AuditReport {
   humanApproval: HumanApproval;
   execution: PaymentExecutionResult;
   remainingBudget: number;
+  auditVersion: string;
+  inputSummary: Record<string, any>;
+  decisionTrail: Array<Record<string, any>>;
+  riskRuleEvidence: Array<Record<string, any>>;
+  humanApprovalEvidence: Record<string, any>;
+  cawEvidence: Array<Record<string, any>>;
+  outcomeSummary: Record<string, any>;
+  snapshot: Record<string, any>;
+}
+
+export interface CawStatus {
+  cawRequestId: string;
+  executionId: string;
+  paymentItemId: string;
+  providerStatus: string;
+  normalizedStatus: PaymentStatus;
+  mode: string;
+  network: string;
+  agentWalletAddress: string;
+  txHash: string | null;
+  error: string | null;
+  diagnosticCode: string | null;
+  lastCheckedAt: string;
 }
