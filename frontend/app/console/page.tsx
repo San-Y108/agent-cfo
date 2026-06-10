@@ -242,6 +242,26 @@ export default function TreasuryPage() {
         />
       </div>
 
+      {/* ─── Risk Gate Alert ─── */}
+      <AnimatePresence>
+        {totalBlocked > 0 && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            className="px-6 lg:px-10 pb-4 overflow-hidden"
+          >
+            <RiskGateAnimation
+              isBlocked={true}
+              reason={_(
+                `${blockedItems.length} 笔付款被拦截（共 ${totalBlocked} USDC）：${blockedItems[0]?.riskReason}`,
+                `${blockedItems.length} payment(s) blocked (${totalBlocked} USDC): ${blockedItems[0]?.riskReason}`
+              )}
+            />
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* ─── KPI Cards ─── */}
       <div className="px-6 lg:px-10 pb-8">
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
