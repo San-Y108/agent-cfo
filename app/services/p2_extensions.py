@@ -5,6 +5,10 @@ from app.models import (
     BudgetRule,
     DemoScenario,
     DemoScenarioPack,
+    DemoBlockedExamples,
+    DemoContracts,
+    DemoRunbook,
+    DemoStoryboard,
     EvidenceExport,
     EvidenceTimeline,
     EvidenceTimelineEvent,
@@ -15,18 +19,27 @@ from app.models import (
     MultichainReadiness,
     PaymentItem,
     PaymentStatus,
+    PlannerExplainability,
     PolicyGuardrailSummary,
     RequestInvoiceCreate,
     RequestInvoiceRecord,
+    RequestFinanceLifecyclePreview,
+    RequestFinanceLifecyclePreviewRequest,
     RequestFinancePreflight,
     RiskWhatIfGuardrail,
     RiskWhatIfRequest,
     RiskWhatIfResult,
+    SablierPayrollSimulation,
+    SablierPayrollSimulationRequest,
     SablierStreamPreview,
     SablierStreamPreviewRequest,
+    SafeGuardPolicyDryRun,
+    SafeGuardPolicyDryRunRequest,
     SafePermissionReference,
     SafePermissionReferenceRequest,
     TreasuryBudgetPartition,
+    TreasuryCoordinationSimulation,
+    TreasuryCoordinationSimulationRequest,
 )
 from app.services.request_finance import (
     RequestFinanceClient,
@@ -583,6 +596,417 @@ class P2ExtensionService:
             safetyNotes=[
                 "Preflight validates payload shape only and never calls Request Finance.",
                 "Live invoice creation still requires explicit approval.",
+            ],
+        )
+
+    def get_planner_explainability(self, payment_plan_id: str | None = None):
+        payment_plan = (
+            self._get_payment_plan(payment_plan_id)
+            if payment_plan_id is not None
+            else None
+        )
+        payments = payment_plan.payments if payment_plan else []
+        return PlannerExplainability(
+            mode="demo-safe",
+            paymentPlanId=payment_plan.paymentPlanId if payment_plan else "not-linked",
+            plannerMode=str(payment_plan.plannerMode) if payment_plan else "mock",
+            schemaValidation={
+                "source": "OpenAI Structured Outputs",
+                "responseFormat": "json_schema",
+                "strict": True,
+                "additionalProperties": False,
+                "validatedBeforeRiskCheck": True,
+                "unsafeCoercionAllowed": False,
+            },
+            allowedLlmResponsibilities=[
+                "normalize contribution records",
+                "generate payment reasons",
+                "generate a structured payment plan",
+                "explain suspicious payment items",
+            ],
+            forbiddenLlmResponsibilities=[
+                "approve payments",
+                "execute payments",
+                "invent wallet addresses",
+                "invent tx hashes",
+                "bypass deterministic risk checks",
+                "invent CAW configuration",
+            ],
+            mockVsOpenAIComparison={
+                "mockPlanner": {"deterministic": True, "externalModelCall": False},
+                "openAiPlanner": {
+                    "structuredOutputs": True,
+                    "strictSchemaExpected": True,
+                },
+                "authorizationBoundaryUnchanged": True,
+                "riskEngineUnchanged": True,
+                "auditSnapshotUnchanged": True,
+            },
+            malformedOutputFallbackDemo={
+                "example": "missing wallet or non-numeric amount",
+                "result": "validation_error",
+                "wouldPersistPlan": False,
+                "wouldExecutePayment": False,
+                "retryPolicy": "bounded-or-explicit-error",
+            },
+            reasonTrace=[
+                {
+                    "paymentItemId": payment.id,
+                    "recipient": payment.recipient,
+                    "reason": payment.reason,
+                    "plannerAuthority": "reason-generation-only",
+                    "riskAuthority": "deterministic-risk-engine",
+                    "approvalAuthority": "human-approval",
+                }
+                for payment in payments
+            ],
+            safetyNotes=[
+                "LLM output is display/planning input only.",
+                "Risk check and human approval remain mandatory before execution.",
+            ],
+        )
+
+    def preview_request_finance_lifecycle(
+        self, request: RequestFinanceLifecyclePreviewRequest
+    ):
+        self._validate_links(
+            request.paymentPlanId,
+            request.paymentItemId,
+            request.auditReportId,
+            request.cawRequestId,
+        )
+        allowed_statuses = ["created", "accepted", "canceled", "rejected", "paid"]
+        events = request.events or [request.currentStatus]
+        event_log = [
+            {
+                "eventId": f"rf_lifecycle_event_{index:03d}",
+                "status": status,
+                "acceptedStatus": status in allowed_statuses,
+                "source": "mock-webhook",
+                "providerTouched": False,
+            }
+            for index, status in enumerate(events, start=1)
+        ]
+        return RequestFinanceLifecyclePreview(
+            mode="simulation-only",
+            requestFinanceInvoiceId=request.requestFinanceInvoiceId,
+            currentStatus=request.currentStatus,
+            providerTouched=False,
+            customerEmailSent=False,
+            onchainConversionCalled=False,
+            paymentTriggered=False,
+            linkedIds={
+                "paymentPlanId": request.paymentPlanId,
+                "paymentItemId": request.paymentItemId,
+                "auditReportId": request.auditReportId,
+                "cawRequestId": request.cawRequestId,
+            },
+            statusTimeline=[
+                {
+                    "status": status,
+                    "meaning": f"Mock Request Finance invoice lifecycle status: {status}",
+                    "terminal": status in {"canceled", "rejected", "paid"},
+                }
+                for status in allowed_statuses
+            ],
+            eventLog=event_log,
+            safetyNotes=[
+                "Lifecycle preview is mock metadata only.",
+                "Does not call Request Finance, POST /invoices/{id}, send email, convert on-chain, or pay.",
+            ],
+        )
+
+    def simulate_sablier_payroll(self, request: SablierPayrollSimulationRequest):
+        payment = self._get_payment_item(request.paymentPlanId, request.paymentItemId)
+        duration_seconds = request.durationDays * 24 * 60 * 60
+        elapsed_seconds = min(request.elapsedSeconds, duration_seconds)
+        rate_per_second = payment.amount / duration_seconds
+        accrued_amount = min(payment.amount, rate_per_second * elapsed_seconds)
+        withdrawable_amount = max(0, accrued_amount - request.withdrawnAmount)
+        funding_runway_seconds = (
+            request.fundedAmount / rate_per_second if rate_per_second > 0 else None
+        )
+        uncovered_debt = max(0, accrued_amount - request.fundedAmount)
+        is_insolvent = uncovered_debt > 0
+        guardrails = [
+            {
+                "guardrailId": "stream_creation_forbidden",
+                "status": "blocked-live-action",
+                "reason": "Demo endpoint never creates a real Sablier stream.",
+            },
+            {
+                "guardrailId": "overdraw",
+                "status": "watch" if withdrawable_amount > request.fundedAmount else "clear",
+                "reason": "Withdrawable amount must not exceed available simulated funding.",
+            },
+            {
+                "guardrailId": "insolvent_stream",
+                "status": "blocked" if is_insolvent else "clear",
+                "reason": "Uncovered debt indicates simulated insolvency.",
+            },
+        ]
+        return SablierPayrollSimulation(
+            mode="simulation-only",
+            streamCreated=False,
+            paymentPlanId=request.paymentPlanId,
+            paymentItemId=request.paymentItemId,
+            lifecycleStates=["pending", "streaming", "paused", "voided"],
+            durationSeconds=duration_seconds,
+            elapsedSeconds=elapsed_seconds,
+            ratePerSecond=rate_per_second,
+            accruedAmount=accrued_amount,
+            withdrawableAmount=withdrawable_amount,
+            fundedAmount=request.fundedAmount,
+            fundingRunwaySeconds=funding_runway_seconds,
+            insolventStatePreview={
+                "isInsolvent": is_insolvent,
+                "uncoveredDebt": uncovered_debt,
+                "coveredDebt": min(accrued_amount, request.fundedAmount),
+            },
+            guardrails=guardrails,
+            safetyNotes=[
+                "Simulation uses Sablier Flow-style rate-per-second and debt concepts.",
+                "No stream, transaction, approval, or wallet action is created.",
+            ],
+        )
+
+    def dry_run_safe_guard_policy(self, request: SafeGuardPolicyDryRunRequest):
+        signer_count = len(set(request.proposedSigners).intersection(request.owners))
+        meets_threshold = signer_count >= request.threshold
+        risky_operation = request.operation.upper() in {"DELEGATECALL", "ENABLE_MODULE"}
+        would_execute = meets_threshold and not risky_operation
+        risk_matrix = [
+            {
+                "policyId": "owner_threshold",
+                "status": "pass" if meets_threshold else "blocked",
+                "reason": "Safe execution requires enough owner signatures.",
+            },
+            {
+                "policyId": "delegatecall_blocked",
+                "status": "blocked" if request.operation.upper() == "DELEGATECALL" else "clear",
+                "reason": "Delegatecall is blocked in the demo guard policy.",
+            },
+            {
+                "policyId": "module_enablement_requires_review",
+                "status": "blocked-live-action",
+                "reason": "Module enablement requires explicit owner approval and security review.",
+            },
+        ]
+        return SafeGuardPolicyDryRun(
+            mode="dry-run",
+            safeAddress=request.safeAddress,
+            moduleName=request.moduleName,
+            moduleEnabled=False,
+            guardEnabled=False,
+            wouldExecute=would_execute,
+            ownerThreshold={
+                "owners": request.owners,
+                "threshold": request.threshold,
+                "validSignerCount": signer_count,
+                "meetsThreshold": meets_threshold,
+            },
+            enablementChecklist=[
+                {"item": "owner approval", "complete": False},
+                {"item": "security review", "complete": False},
+                {"item": "test coverage", "complete": False},
+                {"item": "explicit deployment approval", "complete": False},
+            ],
+            riskMatrix=risk_matrix,
+            blockedOperationExamples=[
+                {"operation": "DELEGATECALL", "reason": "blocked by guard simulation"},
+                {"operation": "ENABLE_MODULE", "reason": "live Safe module enablement forbidden"},
+                {"operation": "EXEC_TRANSACTION_FROM_MODULE", "reason": "module execution forbidden"},
+            ],
+            safeVsCawComparison={
+                "safeConcepts": ["owners", "threshold", "modules", "guards"],
+                "cawBoundary": "All real payment execution stays behind CAW adapter.",
+                "executionAuthorityUnchanged": True,
+            },
+            safetyNotes=[
+                "Dry run only; no Safe module or guard is enabled, deployed, or executed.",
+                "Human approval and deterministic risk checks remain the execution gates.",
+            ],
+        )
+
+    def simulate_treasury_coordination(
+        self, request: TreasuryCoordinationSimulationRequest
+    ):
+        payment_plan = self._get_payment_plan(request.paymentPlanId)
+        payment_by_id = {payment.id: payment for payment in payment_plan.payments}
+        conflicts: list[dict[str, Any]] = []
+        spent_by_agent: dict[str, float] = {}
+        seen_payment_items: set[str] = set()
+        proposal_rows = []
+        for proposal in request.proposals:
+            payment = payment_by_id.get(proposal.paymentItemId)
+            if payment is None:
+                raise P2RecordNotFound("Payment item not found")
+            spent_by_agent[proposal.agentId] = (
+                spent_by_agent.get(proposal.agentId, 0) + proposal.requestedAmount
+            )
+            if proposal.paymentItemId in seen_payment_items:
+                conflicts.append(
+                    {
+                        "type": "duplicate_payment_item",
+                        "agentId": proposal.agentId,
+                        "paymentItemId": proposal.paymentItemId,
+                    }
+                )
+            seen_payment_items.add(proposal.paymentItemId)
+            proposal_rows.append(
+                {
+                    "agentId": proposal.agentId,
+                    "paymentItemId": proposal.paymentItemId,
+                    "requestedAmount": proposal.requestedAmount,
+                    "recipient": payment.recipient,
+                    "token": payment.token,
+                }
+            )
+        for agent_id, amount in spent_by_agent.items():
+            cap = request.departmentBudgets.get(agent_id)
+            if cap is not None and amount > cap:
+                conflicts.append(
+                    {
+                        "type": "budget_cap_exceeded",
+                        "agentId": agent_id,
+                        "requestedAmount": amount,
+                        "budgetCap": cap,
+                    }
+                )
+        return TreasuryCoordinationSimulation(
+            mode="simulation-only",
+            paymentPlanId=request.paymentPlanId,
+            authorizationChanged=False,
+            humanApprovalRequired=True,
+            deterministicRiskStillRequired=True,
+            proposals=proposal_rows,
+            conflicts=conflicts,
+            approvalMatrix=[
+                {
+                    "agentId": proposal["agentId"],
+                    "paymentItemId": proposal["paymentItemId"],
+                    "agentCanRecommend": True,
+                    "agentCanApprove": False,
+                    "humanApprovalRequired": True,
+                    "riskCheckRequired": True,
+                }
+                for proposal in proposal_rows
+            ],
+            responsibilitySplit=[
+                {"actor": "department-agent", "responsibility": "propose and explain"},
+                {"actor": "risk-engine", "responsibility": "deterministic guardrails"},
+                {"actor": "human-approver", "responsibility": "final approval"},
+                {"actor": "CAW-adapter", "responsibility": "only approved execution path"},
+            ],
+            auditTimeline=[
+                {
+                    "eventType": "proposal_received",
+                    "count": len(proposal_rows),
+                    "mode": "mock",
+                },
+                {
+                    "eventType": "proposal_conflict",
+                    "count": len(conflicts),
+                    "mode": "simulation-only",
+                },
+                {
+                    "eventType": "authorization_boundary",
+                    "status": "unchanged",
+                    "mode": "demo-safe",
+                },
+            ],
+            safetyNotes=[
+                "Multi-agent treasury coordination is advisory only.",
+                "No new approval role, wallet permission, or payment authority is created.",
+            ],
+        )
+
+    def get_demo_runbook(self):
+        return DemoRunbook(
+            mode="demo-safe",
+            liveActionsDefaultEnabled=False,
+            steps=[
+                {"order": 1, "endpoint": "/health", "badge": "online"},
+                {"order": 2, "endpoint": "/version", "badge": "capabilities"},
+                {"order": 3, "endpoint": "/api/demo-sample", "badge": "mock-input"},
+                {"order": 4, "endpoint": "/api/payment-plan", "badge": "planner"},
+                {"order": 5, "endpoint": "/api/risk-check", "badge": "deterministic-risk"},
+                {"order": 6, "endpoint": "/api/execute-payment", "badge": "mock-caw"},
+                {"order": 7, "endpoint": "/api/p2/evidence-timeline/{auditReportId}", "badge": "linked-evidence"},
+                {"order": 8, "endpoint": "/api/p2/planner-explainability", "badge": "llm-boundary"},
+                {"order": 9, "endpoint": "/api/p2/request-finance/lifecycle-preview", "badge": "invoice-lifecycle-mock"},
+                {"order": 10, "endpoint": "/api/p2/sablier/payroll-simulation", "badge": "stream-simulation"},
+                {"order": 11, "endpoint": "/api/p2/safe/guard-policy-dry-run", "badge": "safe-dry-run"},
+                {"order": 12, "endpoint": "/api/p2/treasury/coordination-simulation", "badge": "multi-agent-simulation"},
+            ],
+            expectedBadges=[
+                "mock-demo",
+                "demo-safe",
+                "simulation-only",
+                "reference-only",
+                "preflight",
+                "no-live-action",
+            ],
+            forbiddenClaims=[
+                "Request Finance payment integration is complete",
+                "Sablier stream was created",
+                "Safe module or guard is enabled",
+                "multi-agent authorization is live",
+                "new live chain execution is enabled",
+            ],
+            safetyNotes=["Runbook endpoints are presentation metadata only."],
+        )
+
+    def get_demo_storyboard(self):
+        return DemoStoryboard(
+            mode="demo-safe",
+            frames=[
+                {"order": 1, "title": "Load mock contribution records", "badge": "mock-demo"},
+                {"order": 2, "title": "Generate AI Payment Plan", "badge": "planner"},
+                {"order": 3, "title": "Run deterministic Risk Check", "badge": "risk-engine"},
+                {"order": 4, "title": "Capture Human Approval", "badge": "human-gate"},
+                {"order": 5, "title": "Execute through mock CAW path", "badge": "mock-caw"},
+                {"order": 6, "title": "Render immutable Audit Report", "badge": "audit-evidence"},
+                {"order": 7, "title": "Show P2 linked evidence simulations", "badge": "demo-safe"},
+            ],
+            safetyNotes=["Storyboard copy must not claim live payment integration completion."],
+        )
+
+    def get_demo_blocked_examples(self):
+        return DemoBlockedExamples(
+            mode="demo-safe",
+            examples=[
+                {"guardrailId": "non_whitelisted_wallet", "endpoint": "/api/risk-check"},
+                {"guardrailId": "missing_human_approval", "endpoint": "/api/execute-payment"},
+                {"guardrailId": "request_finance_onchain_conversion_forbidden", "endpoint": "/api/p2/request-finance/lifecycle-preview"},
+                {"guardrailId": "sablier_stream_creation_forbidden", "endpoint": "/api/p2/sablier/payroll-simulation"},
+                {"guardrailId": "safe_module_enablement_forbidden", "endpoint": "/api/p2/safe/guard-policy-dry-run"},
+                {"guardrailId": "multi_agent_authorization_forbidden", "endpoint": "/api/p2/treasury/coordination-simulation"},
+            ],
+            safetyNotes=["Blocked examples are static demo contracts and do not trigger live actions."],
+        )
+
+    def get_demo_contracts(self):
+        endpoints = {
+            "/api/p2/planner-explainability": {"mode": "demo-safe", "method": "GET"},
+            "/api/p2/request-finance/lifecycle-preview": {"mode": "simulation-only", "method": "POST"},
+            "/api/p2/sablier/payroll-simulation": {"mode": "simulation-only", "method": "POST"},
+            "/api/p2/safe/guard-policy-dry-run": {"mode": "dry-run", "method": "POST"},
+            "/api/p2/treasury/coordination-simulation": {"mode": "simulation-only", "method": "POST"},
+            "/api/p2/request-finance/preflight": {"mode": "preflight", "method": "POST"},
+            "/api/demo/runbook": {"mode": "demo-safe", "method": "GET"},
+            "/api/demo/storyboard": {"mode": "demo-safe", "method": "GET"},
+            "/api/demo/blocked-examples": {"mode": "demo-safe", "method": "GET"},
+        }
+        return DemoContracts(
+            mode="contract-reference",
+            noLiveActions=True,
+            endpoints=endpoints,
+            globalInvariants=[
+                "P0/P1 payment authorization is unchanged.",
+                "Audit Report snapshots are immutable.",
+                "No secrets are exposed.",
+                "No CAW transfer, Sablier stream, Safe enablement, on-chain Request conversion, or payment is triggered.",
             ],
         )
 

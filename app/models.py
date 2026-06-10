@@ -406,3 +406,147 @@ class RequestFinancePreflight(BaseModel):
     requestFinanceMode: str
     invoiceCreateGuardEnabled: bool
     safetyNotes: list[str]
+
+
+class PlannerExplainability(BaseModel):
+    mode: str
+    paymentPlanId: str
+    plannerMode: str
+    schemaValidation: dict[str, Any]
+    allowedLlmResponsibilities: list[str]
+    forbiddenLlmResponsibilities: list[str]
+    mockVsOpenAIComparison: dict[str, Any]
+    malformedOutputFallbackDemo: dict[str, Any]
+    reasonTrace: list[dict[str, Any]]
+    safetyNotes: list[str]
+
+
+class RequestFinanceLifecyclePreviewRequest(BaseModel):
+    paymentPlanId: str
+    paymentItemId: str
+    auditReportId: str | None = None
+    cawRequestId: str | None = None
+    requestFinanceInvoiceId: str
+    currentStatus: str
+    events: list[str] = Field(default_factory=list)
+
+
+class RequestFinanceLifecyclePreview(BaseModel):
+    mode: str
+    requestFinanceInvoiceId: str
+    currentStatus: str
+    providerTouched: bool
+    customerEmailSent: bool
+    onchainConversionCalled: bool
+    paymentTriggered: bool
+    linkedIds: dict[str, str | None]
+    statusTimeline: list[dict[str, Any]]
+    eventLog: list[dict[str, Any]]
+    safetyNotes: list[str]
+
+
+class SablierPayrollSimulationRequest(BaseModel):
+    paymentPlanId: str
+    paymentItemId: str
+    durationDays: int = Field(gt=0)
+    elapsedSeconds: int = Field(default=0, ge=0)
+    fundedAmount: float = Field(default=0, ge=0)
+    withdrawnAmount: float = Field(default=0, ge=0)
+
+
+class SablierPayrollSimulation(BaseModel):
+    mode: str
+    streamCreated: bool
+    paymentPlanId: str
+    paymentItemId: str
+    lifecycleStates: list[str]
+    durationSeconds: int
+    elapsedSeconds: int
+    ratePerSecond: float
+    accruedAmount: float
+    withdrawableAmount: float
+    fundedAmount: float
+    fundingRunwaySeconds: float | None
+    insolventStatePreview: dict[str, Any]
+    guardrails: list[dict[str, Any]]
+    safetyNotes: list[str]
+
+
+class SafeGuardPolicyDryRunRequest(BaseModel):
+    safeAddress: str
+    owners: list[str]
+    threshold: int = Field(gt=0)
+    proposedSigners: list[str] = Field(default_factory=list)
+    operation: str
+    to: str
+    value: float = Field(default=0, ge=0)
+    moduleName: str
+
+
+class SafeGuardPolicyDryRun(BaseModel):
+    mode: str
+    safeAddress: str
+    moduleName: str
+    moduleEnabled: bool
+    guardEnabled: bool
+    wouldExecute: bool
+    ownerThreshold: dict[str, Any]
+    enablementChecklist: list[dict[str, Any]]
+    riskMatrix: list[dict[str, Any]]
+    blockedOperationExamples: list[dict[str, Any]]
+    safeVsCawComparison: dict[str, Any]
+    safetyNotes: list[str]
+
+
+class TreasuryProposal(BaseModel):
+    agentId: str
+    paymentItemId: str
+    requestedAmount: float = Field(gt=0)
+
+
+class TreasuryCoordinationSimulationRequest(BaseModel):
+    paymentPlanId: str
+    departmentBudgets: dict[str, float]
+    proposals: list[TreasuryProposal]
+
+
+class TreasuryCoordinationSimulation(BaseModel):
+    mode: str
+    paymentPlanId: str
+    authorizationChanged: bool
+    humanApprovalRequired: bool
+    deterministicRiskStillRequired: bool
+    proposals: list[dict[str, Any]]
+    conflicts: list[dict[str, Any]]
+    approvalMatrix: list[dict[str, Any]]
+    responsibilitySplit: list[dict[str, Any]]
+    auditTimeline: list[dict[str, Any]]
+    safetyNotes: list[str]
+
+
+class DemoRunbook(BaseModel):
+    mode: str
+    liveActionsDefaultEnabled: bool
+    steps: list[dict[str, Any]]
+    expectedBadges: list[str]
+    forbiddenClaims: list[str]
+    safetyNotes: list[str]
+
+
+class DemoStoryboard(BaseModel):
+    mode: str
+    frames: list[dict[str, Any]]
+    safetyNotes: list[str]
+
+
+class DemoBlockedExamples(BaseModel):
+    mode: str
+    examples: list[dict[str, Any]]
+    safetyNotes: list[str]
+
+
+class DemoContracts(BaseModel):
+    mode: str
+    noLiveActions: bool
+    endpoints: dict[str, dict[str, Any]]
+    globalInvariants: list[str]

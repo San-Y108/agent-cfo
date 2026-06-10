@@ -43,6 +43,12 @@ Frontend and PM handoff for the demo-safe P2 surface is documented in [`P2_DEMO_
 | P2-G5 Evidence export | Complete | `GET /api/p2/evidence-export/{auditReportId}` returns PM-ready evidence packaging | None |
 | P2-G6 Request Finance preflight | Complete | `POST /api/p2/request-finance/preflight` validates live-create inputs without provider calls | No Request Finance API call |
 | P2-G7 Version capabilities | Complete | `/version.p2Capabilities` exposes non-secret capability flags | None |
+| P2-H1 Planner explainability | Complete | `GET /api/p2/planner-explainability` exposes LLM boundaries, Structured Outputs posture, fallback demo, and reason trace | No model call |
+| P2-H2 Request lifecycle mock | Complete | `POST /api/p2/request-finance/lifecycle-preview` returns mock invoice event log/status timeline | No provider call, email, on-chain conversion, or payment |
+| P2-H3 Sablier payroll simulation | Complete | `POST /api/p2/sablier/payroll-simulation` simulates accrual, withdrawable amount, runway, insolvency, and guardrails | No stream or transaction |
+| P2-H4 Safe guard dry-run | Complete | `POST /api/p2/safe/guard-policy-dry-run` simulates threshold/module/guard policy results | No Safe enablement/deployment/execution |
+| P2-H5 Multi-agent coordination | Complete | `POST /api/p2/treasury/coordination-simulation` simulates proposals, budget caps, conflicts, approval matrix, and audit timeline | No authorization change |
+| P2-H6 Demo runbook/contracts | Complete | `/api/demo/runbook`, `/api/demo/storyboard`, `/api/demo/blocked-examples`, `/api/demo/contracts` support PM/frontend storytelling | None |
 
 ## Implementation Notes
 
@@ -57,6 +63,7 @@ Frontend and PM handoff for the demo-safe P2 surface is documented in [`P2_DEMO_
 9. Request Finance API-key auth uses the raw API key in the `Authorization` header; OAuth/Bearer is a future explicit auth-scheme path, not the default.
 10. Request Finance off-chain create maps the minimum invoice payload fields and only targets `POST /invoices`; it must not call `POST /invoices/{id}`, convert an invoice to an on-chain request, trigger CAW, or pay.
 11. P2-G1 through P2-G7 add display, simulation, preflight, and PM-export surfaces only; they do not change P0/P1 payment authorization, CAW adapter behavior, deterministic risk checks, or Audit Report snapshots.
+12. P2-H1 through P2-H6 expand storytelling breadth only: planner explainability, invoice lifecycle mock, Sablier payroll math, Safe guard dry-run, multi-agent coordination, and demo contracts.
 
 ## Why Not Other P2 Items First
 
@@ -71,8 +78,9 @@ Frontend and PM handoff for the demo-safe P2 surface is documented in [`P2_DEMO_
 ## Reference Docs Checked
 
 - Request Network docs: API supports programmatic payment destinations, secure payments, payouts, and webhooks; AgentCFO currently stores mock/live-readonly invoice metadata and has an env-gated Request Finance client/read-only smoke path. API-key auth uses `Authorization: <api-key>`, read-only smoke uses `GET /invoices?take=1&skip=0`, off-chain create uses `POST /invoices`, and on-chain conversion is a separate forbidden `POST /invoices/{id}` step.
-- Sablier docs: Sablier is a token distribution protocol; AgentCFO currently calculates preview-only stream rates and creates no stream.
-- Safe Modules docs: modules can add automated/custom transaction logic and can execute transactions through Safe module paths; AgentCFO currently stores reference notes only and enables no module.
+- OpenAI docs: Structured Outputs are represented as strict `json_schema` posture; AgentCFO exposes this as planner explainability metadata only and still validates before risk checks.
+- Sablier docs: Flow concepts such as rate per second, withdrawable/accrued amount, covered/uncovered debt, and stream lifecycle vocabulary are used for simulation only; AgentCFO creates no stream.
+- Safe Modules/Guards docs: owners, threshold, modules, and guards are used for dry-run policy comparison only; AgentCFO enables no module or guard.
 
 ## Human-only Blockers
 

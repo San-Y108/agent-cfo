@@ -123,6 +123,12 @@ def test_version_returns_non_sensitive_demo_metadata(monkeypatch):
         "policyGuardrails": True,
         "evidenceExport": True,
         "requestFinancePreflight": True,
+        "plannerExplainability": True,
+        "requestFinanceLifecycleMock": True,
+        "sablierPayrollSimulation": True,
+        "safeGuardPolicySimulation": True,
+        "multiAgentTreasurySimulation": True,
+        "demoRunbookContracts": True,
         "liveExternalActionsDefaultEnabled": False,
     }
     assert "AGENTCFO_DB_PATH" not in response.text

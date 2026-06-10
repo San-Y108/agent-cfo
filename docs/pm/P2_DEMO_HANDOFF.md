@@ -285,6 +285,80 @@ curl -s -X POST "$BASE_URL/api/p2/request-finance/preflight" \
   }'
 ```
 
+Read planner explainability and mock-vs-OpenAI boundaries:
+
+```bash
+curl -s "$BASE_URL/api/p2/planner-explainability?paymentPlanId=plan_demo_001"
+```
+
+Preview Request Finance lifecycle events without calling the provider:
+
+```bash
+curl -s -X POST "$BASE_URL/api/p2/request-finance/lifecycle-preview" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "paymentPlanId": "plan_demo_001",
+    "paymentItemId": "pay_demo_001",
+    "auditReportId": "audit_demo_001",
+    "cawRequestId": "mock_caw_exec_demo_001_pay_001",
+    "requestFinanceInvoiceId": "rf_lifecycle_demo_001",
+    "currentStatus": "created",
+    "events": ["created", "accepted", "paid"]
+  }'
+```
+
+Simulate Sablier payroll math:
+
+```bash
+curl -s -X POST "$BASE_URL/api/p2/sablier/payroll-simulation" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "paymentPlanId": "plan_demo_001",
+    "paymentItemId": "pay_demo_001",
+    "durationDays": 30,
+    "elapsedSeconds": 86400,
+    "fundedAmount": 5,
+    "withdrawnAmount": 1
+  }'
+```
+
+Dry-run Safe guard policy and multi-agent coordination:
+
+```bash
+curl -s -X POST "$BASE_URL/api/p2/safe/guard-policy-dry-run" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "safeAddress": "0xSafeDemo",
+    "owners": ["0xOwner1", "0xOwner2", "0xOwner3"],
+    "threshold": 2,
+    "proposedSigners": ["0xOwner1"],
+    "operation": "DELEGATECALL",
+    "to": "0xUnapprovedTarget",
+    "value": 0,
+    "moduleName": "SpendingLimitModule"
+  }'
+
+curl -s -X POST "$BASE_URL/api/p2/treasury/coordination-simulation" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "paymentPlanId": "plan_demo_001",
+    "departmentBudgets": {"agent-content": 25, "agent-operations": 5},
+    "proposals": [
+      {"agentId": "agent-content", "paymentItemId": "pay_demo_001", "requestedAmount": 20},
+      {"agentId": "agent-operations", "paymentItemId": "pay_demo_002", "requestedAmount": 10}
+    ]
+  }'
+```
+
+Read demo runbook/storyboard/contracts:
+
+```bash
+curl -s "$BASE_URL/api/demo/runbook"
+curl -s "$BASE_URL/api/demo/storyboard"
+curl -s "$BASE_URL/api/demo/blocked-examples"
+curl -s "$BASE_URL/api/demo/contracts"
+```
+
 ## Frontend Field Contract
 
 `ExternalReference`:
@@ -351,6 +425,12 @@ If any required live-create field is missing while `REQUEST_FINANCE_ALLOW_INVOIC
 - `p2Capabilities.policyGuardrails`: boolean
 - `p2Capabilities.evidenceExport`: boolean
 - `p2Capabilities.requestFinancePreflight`: boolean
+- `p2Capabilities.plannerExplainability`: boolean
+- `p2Capabilities.requestFinanceLifecycleMock`: boolean
+- `p2Capabilities.sablierPayrollSimulation`: boolean
+- `p2Capabilities.safeGuardPolicySimulation`: boolean
+- `p2Capabilities.multiAgentTreasurySimulation`: boolean
+- `p2Capabilities.demoRunbookContracts`: boolean
 - `p2Capabilities.liveExternalActionsDefaultEnabled`: false
 
 `EvidenceTimeline`:
@@ -376,6 +456,47 @@ If any required live-create field is missing while `REQUEST_FINANCE_ALLOW_INVOIC
 - `wouldCallProvider`: false
 - `requestFinanceMode`: `mock`, `live`, or `unknown`
 - `invoiceCreateGuardEnabled`: boolean
+
+`PlannerExplainability`:
+
+- `mode`: `demo-safe`
+- `schemaValidation.responseFormat`: `json_schema`
+- `schemaValidation.strict`: true
+- `allowedLlmResponsibilities`: string[]
+- `forbiddenLlmResponsibilities`: string[]
+- `malformedOutputFallbackDemo.wouldExecutePayment`: false
+
+`RequestFinanceLifecyclePreview`:
+
+- `mode`: `simulation-only`
+- `providerTouched`: false
+- `customerEmailSent`: false
+- `onchainConversionCalled`: false
+- `paymentTriggered`: false
+- `eventLog`: mock lifecycle events
+
+`SablierPayrollSimulation`:
+
+- `mode`: `simulation-only`
+- `streamCreated`: false
+- `ratePerSecond`, `accruedAmount`, `withdrawableAmount`, `fundingRunwaySeconds`
+- `insolventStatePreview`: object
+
+`SafeGuardPolicyDryRun`:
+
+- `mode`: `dry-run`
+- `moduleEnabled`: false
+- `guardEnabled`: false
+- `wouldExecute`: boolean
+- `ownerThreshold`, `enablementChecklist`, `riskMatrix`, `blockedOperationExamples`
+
+`TreasuryCoordinationSimulation`:
+
+- `mode`: `simulation-only`
+- `authorizationChanged`: false
+- `humanApprovalRequired`: true
+- `deterministicRiskStillRequired`: true
+- `conflicts`, `approvalMatrix`, `responsibilitySplit`, `auditTimeline`
 
 `SablierStreamPreview`:
 

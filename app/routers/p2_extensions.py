@@ -1,24 +1,37 @@
 from fastapi import APIRouter, HTTPException
 
 from app.models import (
+    DemoBlockedExamples,
+    DemoContracts,
+    DemoRunbook,
     ExternalReference,
     ExternalReferenceCreate,
     ExternalReferenceList,
     EvidenceExport,
     EvidenceTimeline,
     DemoScenarioPack,
+    DemoStoryboard,
     MultichainReadiness,
+    PlannerExplainability,
     PolicyGuardrailSummary,
     RequestInvoiceCreate,
+    RequestFinanceLifecyclePreview,
+    RequestFinanceLifecyclePreviewRequest,
     RequestInvoiceRecord,
     RequestFinancePreflight,
     RiskWhatIfRequest,
     RiskWhatIfResult,
+    SablierPayrollSimulation,
+    SablierPayrollSimulationRequest,
     SablierStreamPreview,
     SablierStreamPreviewRequest,
+    SafeGuardPolicyDryRun,
+    SafeGuardPolicyDryRunRequest,
     SafePermissionReference,
     SafePermissionReferenceRequest,
     TreasuryBudgetPartition,
+    TreasuryCoordinationSimulation,
+    TreasuryCoordinationSimulationRequest,
 )
 from app.services.p2_extensions import P2ExtensionService, P2RecordNotFound, P2ValidationError
 from app.services.request_finance import (
@@ -156,3 +169,66 @@ def get_evidence_export(auditReportId: str):
 @router.post("/p2/request-finance/preflight", response_model=RequestFinancePreflight)
 def preflight_request_finance_invoice(request: RequestInvoiceCreate):
     return _service().preflight_request_finance_invoice(request)
+
+
+@router.get("/p2/planner-explainability", response_model=PlannerExplainability)
+def get_planner_explainability(paymentPlanId: str | None = None):
+    try:
+        return _service().get_planner_explainability(paymentPlanId)
+    except P2RecordNotFound as error:
+        raise HTTPException(status_code=404, detail=str(error))
+
+
+@router.post(
+    "/p2/request-finance/lifecycle-preview",
+    response_model=RequestFinanceLifecyclePreview,
+)
+def preview_request_finance_lifecycle(request: RequestFinanceLifecyclePreviewRequest):
+    try:
+        return _service().preview_request_finance_lifecycle(request)
+    except P2RecordNotFound as error:
+        raise HTTPException(status_code=404, detail=str(error))
+
+
+@router.post("/p2/sablier/payroll-simulation", response_model=SablierPayrollSimulation)
+def simulate_sablier_payroll(request: SablierPayrollSimulationRequest):
+    try:
+        return _service().simulate_sablier_payroll(request)
+    except P2RecordNotFound as error:
+        raise HTTPException(status_code=404, detail=str(error))
+
+
+@router.post("/p2/safe/guard-policy-dry-run", response_model=SafeGuardPolicyDryRun)
+def dry_run_safe_guard_policy(request: SafeGuardPolicyDryRunRequest):
+    return _service().dry_run_safe_guard_policy(request)
+
+
+@router.post(
+    "/p2/treasury/coordination-simulation",
+    response_model=TreasuryCoordinationSimulation,
+)
+def simulate_treasury_coordination(request: TreasuryCoordinationSimulationRequest):
+    try:
+        return _service().simulate_treasury_coordination(request)
+    except P2RecordNotFound as error:
+        raise HTTPException(status_code=404, detail=str(error))
+
+
+@router.get("/demo/runbook", response_model=DemoRunbook)
+def get_demo_runbook():
+    return _service().get_demo_runbook()
+
+
+@router.get("/demo/storyboard", response_model=DemoStoryboard)
+def get_demo_storyboard():
+    return _service().get_demo_storyboard()
+
+
+@router.get("/demo/blocked-examples", response_model=DemoBlockedExamples)
+def get_demo_blocked_examples():
+    return _service().get_demo_blocked_examples()
+
+
+@router.get("/demo/contracts", response_model=DemoContracts)
+def get_demo_contracts():
+    return _service().get_demo_contracts()

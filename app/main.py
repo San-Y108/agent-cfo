@@ -43,6 +43,12 @@ def get_public_p2_capabilities():
         "policyGuardrails": True,
         "evidenceExport": True,
         "requestFinancePreflight": True,
+        "plannerExplainability": True,
+        "requestFinanceLifecycleMock": True,
+        "sablierPayrollSimulation": True,
+        "safeGuardPolicySimulation": True,
+        "multiAgentTreasurySimulation": True,
+        "demoRunbookContracts": True,
         "liveExternalActionsDefaultEnabled": False,
     }
 

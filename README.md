@@ -749,12 +749,22 @@ These APIs are metadata, preview, or reference only. They do not change P0/P1 pa
 | `GET /api/p2/policy-guardrails` | Non-secret demo safety flags for CAW, Request Finance, Sablier, Safe, multichain, and audit immutability | None |
 | `GET /api/p2/evidence-export/{auditReportId}` | Markdown-ready evidence package for PM/demo copy | None |
 | `POST /api/p2/request-finance/preflight` | Validates Request Finance create-invoice payload shape without creating a provider client | No Request Finance API call |
+| `GET /api/p2/planner-explainability` | LLM planner boundary, Structured Outputs posture, malformed-output fallback, and reason trace | No model call |
+| `POST /api/p2/request-finance/lifecycle-preview` | Mock invoice lifecycle/event log for created/accepted/canceled/rejected/paid | No provider call, no email, no on-chain conversion |
+| `POST /api/p2/sablier/payroll-simulation` | Simulation-only payroll schedule/accrual/withdrawable/runway/insolvency guardrails | No Sablier stream or transaction |
+| `POST /api/p2/safe/guard-policy-dry-run` | Safe owner threshold, module checklist, guard policy matrix, blocked operations | No Safe module/guard enablement or execution |
+| `POST /api/p2/treasury/coordination-simulation` | Mock department-agent proposals, budget caps, conflicts, approval matrix, audit timeline | No new authorization role |
+| `GET /api/demo/runbook` | Ordered demo steps, expected badges, forbidden claims | None |
+| `GET /api/demo/storyboard` | Presentation storyboard frames | None |
+| `GET /api/demo/blocked-examples` | Stable blocked examples for frontend/PM copy | None |
+| `GET /api/demo/contracts` | Frontend response-contract index and global invariants | None |
 
 P2 implementation references:
 
 - Request Network / Request Finance: live client/status path is env-gated; live read-only smoke is allowed with configured credentials, and off-chain invoice create is implemented but disabled by default after the approved single test/off-chain invoice run.
-- Sablier Flow: future live payroll requires wallet/signature approval and new risk rules before stream creation.
-- Safe modules: future Safe module work requires owner approval and security review before enablement or deployment.
+- LLM planner explainability: references OpenAI Structured Outputs concepts such as `json_schema`, strict schema adherence, and fail-closed validation, but the endpoint itself performs no model call.
+- Sablier Flow: simulation uses rate-per-second, withdrawable/accrued amount, covered/uncovered debt, and lifecycle-state vocabulary for demo math only; future live payroll requires wallet/signature approval and new risk rules before stream creation.
+- Safe modules/guards: dry-run uses owner threshold, module, and guard concepts for comparison only; future Safe work requires owner approval and security review before enablement or deployment.
 - Multi-chain: current real execution boundary remains the existing CAW testnet/token allowlist.
 - Multi-agent treasury: current mock partition view is advisory only; human approval and deterministic risk checks remain the only execution gates.
 

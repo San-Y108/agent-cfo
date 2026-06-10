@@ -385,7 +385,202 @@ def test_version_exposes_non_secret_p2_capability_flags():
     assert version["p2Capabilities"]["evidenceTimeline"] is True
     assert version["p2Capabilities"]["riskWhatIf"] is True
     assert version["p2Capabilities"]["requestFinancePreflight"] is True
+    assert version["p2Capabilities"]["plannerExplainability"] is True
+    assert version["p2Capabilities"]["requestFinanceLifecycleMock"] is True
+    assert version["p2Capabilities"]["sablierPayrollSimulation"] is True
+    assert version["p2Capabilities"]["safeGuardPolicySimulation"] is True
+    assert version["p2Capabilities"]["multiAgentTreasurySimulation"] is True
+    assert version["p2Capabilities"]["demoRunbookContracts"] is True
     assert "REQUEST_FINANCE_API_KEY" not in response.text
+
+
+def test_planner_explainability_documents_structured_outputs_and_llm_boundaries():
+    plan, _execution = create_p0_flow()
+
+    response = client.get(f"/api/p2/planner-explainability?paymentPlanId={plan['paymentPlanId']}")
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["mode"] == "demo-safe"
+    assert body["paymentPlanId"] == plan["paymentPlanId"]
+    assert body["plannerMode"] == "mock"
+    assert body["schemaValidation"]["responseFormat"] == "json_schema"
+    assert body["schemaValidation"]["strict"] is True
+    assert body["schemaValidation"]["additionalProperties"] is False
+    assert "generate payment reasons" in body["allowedLlmResponsibilities"]
+    assert "approve payments" in body["forbiddenLlmResponsibilities"]
+    assert "invent wallet addresses" in body["forbiddenLlmResponsibilities"]
+    assert body["malformedOutputFallbackDemo"]["wouldExecutePayment"] is False
+    assert body["mockVsOpenAIComparison"]["authorizationBoundaryUnchanged"] is True
+    assert all(trace["riskAuthority"] == "deterministic-risk-engine" for trace in body["reasonTrace"])
+
+
+def test_request_finance_lifecycle_preview_is_event_log_only_and_audit_safe():
+    plan, execution = create_p0_flow()
+    audit_before = client.get(f"/api/audit-report/{execution['auditReportId']}").json()
+
+    response = client.post(
+        "/api/p2/request-finance/lifecycle-preview",
+        json={
+            "paymentPlanId": plan["paymentPlanId"],
+            "paymentItemId": plan["payments"][0]["id"],
+            "auditReportId": execution["auditReportId"],
+            "cawRequestId": execution["payments"][0]["cawRequestId"],
+            "requestFinanceInvoiceId": "rf_lifecycle_demo_001",
+            "currentStatus": "created",
+            "events": ["created", "accepted", "paid"],
+        },
+    )
+
+    assert response.status_code == 200
+    preview = response.json()
+    assert preview["mode"] == "simulation-only"
+    assert preview["providerTouched"] is False
+    assert preview["customerEmailSent"] is False
+    assert preview["onchainConversionCalled"] is False
+    assert preview["paymentTriggered"] is False
+    assert [event["status"] for event in preview["eventLog"]] == ["created", "accepted", "paid"]
+    assert preview["linkedIds"]["paymentPlanId"] == plan["paymentPlanId"]
+    assert preview["linkedIds"]["paymentItemId"] == plan["payments"][0]["id"]
+    assert preview["linkedIds"]["auditReportId"] == execution["auditReportId"]
+    assert preview["linkedIds"]["cawRequestId"] == execution["payments"][0]["cawRequestId"]
+
+    audit_after = client.get(f"/api/audit-report/{execution['auditReportId']}").json()
+    assert audit_after == audit_before
+
+
+def test_sablier_payroll_simulation_calculates_accrual_runway_and_guardrails_without_stream():
+    plan, _execution = create_p0_flow()
+
+    response = client.post(
+        "/api/p2/sablier/payroll-simulation",
+        json={
+            "paymentPlanId": plan["paymentPlanId"],
+            "paymentItemId": plan["payments"][0]["id"],
+            "durationDays": 30,
+            "elapsedSeconds": 86400,
+            "fundedAmount": 5,
+            "withdrawnAmount": 1,
+        },
+    )
+
+    assert response.status_code == 200
+    simulation = response.json()
+    assert simulation["mode"] == "simulation-only"
+    assert simulation["streamCreated"] is False
+    assert simulation["lifecycleStates"] == ["pending", "streaming", "paused", "voided"]
+    assert simulation["ratePerSecond"] > 0
+    assert simulation["accruedAmount"] > 0
+    assert simulation["withdrawableAmount"] >= 0
+    assert simulation["fundingRunwaySeconds"] > 0
+    assert simulation["insolventStatePreview"]["isInsolvent"] is False
+    assert "overdraw" in {guardrail["guardrailId"] for guardrail in simulation["guardrails"]}
+
+
+def test_safe_guard_policy_dry_run_blocks_risky_operations_without_enabling_module():
+    response = client.post(
+        "/api/p2/safe/guard-policy-dry-run",
+        json={
+            "safeAddress": "0xSafeDemo",
+            "owners": ["0xOwner1", "0xOwner2", "0xOwner3"],
+            "threshold": 2,
+            "proposedSigners": ["0xOwner1"],
+            "operation": "DELEGATECALL",
+            "to": "0xUnapprovedTarget",
+            "value": 0,
+            "moduleName": "SpendingLimitModule",
+        },
+    )
+
+    assert response.status_code == 200
+    result = response.json()
+    assert result["mode"] == "dry-run"
+    assert result["moduleEnabled"] is False
+    assert result["guardEnabled"] is False
+    assert result["wouldExecute"] is False
+    assert result["ownerThreshold"]["meetsThreshold"] is False
+    assert "delegatecall_blocked" in {entry["policyId"] for entry in result["riskMatrix"]}
+    assert any(example["operation"] == "DELEGATECALL" for example in result["blockedOperationExamples"])
+    assert result["safeVsCawComparison"]["executionAuthorityUnchanged"] is True
+
+
+def test_multi_agent_treasury_coordination_is_mock_only_and_keeps_authorization_unchanged():
+    plan, execution = create_p0_flow()
+    audit_before = client.get(f"/api/audit-report/{execution['auditReportId']}").json()
+
+    response = client.post(
+        "/api/p2/treasury/coordination-simulation",
+        json={
+            "paymentPlanId": plan["paymentPlanId"],
+            "departmentBudgets": {
+                "agent-content": 25,
+                "agent-operations": 5,
+            },
+            "proposals": [
+                {
+                    "agentId": "agent-content",
+                    "paymentItemId": plan["payments"][0]["id"],
+                    "requestedAmount": 20,
+                },
+                {
+                    "agentId": "agent-operations",
+                    "paymentItemId": plan["payments"][1]["id"],
+                    "requestedAmount": 10,
+                },
+                {
+                    "agentId": "agent-content",
+                    "paymentItemId": plan["payments"][0]["id"],
+                    "requestedAmount": 20,
+                },
+            ],
+        },
+    )
+
+    assert response.status_code == 200
+    result = response.json()
+    assert result["mode"] == "simulation-only"
+    assert result["authorizationChanged"] is False
+    assert result["humanApprovalRequired"] is True
+    assert result["deterministicRiskStillRequired"] is True
+    assert "budget_cap_exceeded" in {conflict["type"] for conflict in result["conflicts"]}
+    assert "duplicate_payment_item" in {conflict["type"] for conflict in result["conflicts"]}
+    assert len(result["approvalMatrix"]) == 3
+    assert any(event["eventType"] == "proposal_conflict" for event in result["auditTimeline"])
+
+    audit_after = client.get(f"/api/audit-report/{execution['auditReportId']}").json()
+    assert audit_after == audit_before
+
+
+def test_demo_runbook_storyboard_blocked_examples_and_contracts_are_frontend_ready():
+    runbook = client.get("/api/demo/runbook")
+    storyboard = client.get("/api/demo/storyboard")
+    blocked = client.get("/api/demo/blocked-examples")
+    contracts = client.get("/api/demo/contracts")
+
+    assert runbook.status_code == 200
+    assert storyboard.status_code == 200
+    assert blocked.status_code == 200
+    assert contracts.status_code == 200
+
+    runbook_body = runbook.json()
+    assert runbook_body["mode"] == "demo-safe"
+    assert runbook_body["liveActionsDefaultEnabled"] is False
+    assert any(step["endpoint"] == "/api/payment-plan" for step in runbook_body["steps"])
+    assert "Request Finance payment integration is complete" in runbook_body["forbiddenClaims"]
+
+    storyboard_body = storyboard.json()
+    assert storyboard_body["frames"][0]["badge"] == "mock-demo"
+    assert any("Audit Report" in frame["title"] for frame in storyboard_body["frames"])
+
+    blocked_body = blocked.json()
+    assert {example["guardrailId"] for example in blocked_body["examples"]}.issuperset(
+        {"non_whitelisted_wallet", "missing_human_approval", "sablier_stream_creation_forbidden"}
+    )
+
+    contracts_body = contracts.json()
+    assert contracts_body["mode"] == "contract-reference"
+    assert contracts_body["noLiveActions"] is True
+    assert "/api/p2/request-finance/preflight" in contracts_body["endpoints"]
 
 
 def test_request_invoice_mock_mode_does_not_call_live_client(monkeypatch):
