@@ -57,8 +57,8 @@ function initParticles(width: number, height: number, isMobile: boolean): Partic
       vy: baseVy,
       baseVx,
       baseVy,
-      size: z < 0.4 ? 1 : z < 0.75 ? 1.5 : 2,
-      alpha: z < 0.4 ? 0.06 : z < 0.75 ? 0.12 : 0.22,
+      size: z < 0.4 ? 1 : z < 0.75 ? 1.5 : 2.5,
+      alpha: z < 0.4 ? 0.12 : z < 0.75 ? 0.22 : 0.38,
       color: isEnergy ? COLORS.lime : COLORS.white,
     });
   }
@@ -149,17 +149,9 @@ export function AgentCFOBackgroundTexture() {
         p.vx += (p.baseVx - p.vx) * 0.03;
         p.vy += (p.baseVy - p.vy) * 0.03;
 
-        // Vignette mask: fade particles near center
-        const centerX = width * 0.5;
-        const centerY = height * 0.45;
-        const cdx = p.x - centerX;
-        const cdy = p.y - centerY;
-        const cDist = Math.sqrt(cdx * cdx + cdy * cdy);
-        const maxDist = Math.min(width, height) * 0.55;
-        const vignette = Math.min(1, cDist / maxDist);
-
+        // Section texture: no vignette — particles visible everywhere
         ctx.fillStyle = p.color;
-        ctx.globalAlpha = p.alpha * vignette * (p.color === COLORS.lime ? 1.2 : 1);
+        ctx.globalAlpha = p.alpha * (p.color === COLORS.lime ? 1.3 : 1);
         ctx.fillRect(p.x, p.y, p.size, p.size);
       }
 
@@ -208,7 +200,7 @@ export function AgentCFOBackgroundTexture() {
       className="pointer-events-none absolute inset-0 z-0"
       style={{
         background:
-          "radial-gradient(ellipse at 50% 45%, rgba(13,13,13,0.2) 0%, rgba(13,13,13,0.85) 60%, #0D0D0D 100%)",
+          "radial-gradient(ellipse at 50% 45%, rgba(13,13,13,0.1) 0%, rgba(13,13,13,0.6) 60%, rgba(13,13,13,0.9) 100%)",
       }}
       aria-hidden="true"
     />

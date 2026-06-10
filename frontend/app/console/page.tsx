@@ -361,23 +361,20 @@ export default function TreasuryPage() {
                           animate={{ opacity: 1, x: 0 }}
                           transition={{ delay: i * 0.03, duration: 0.3 }}
                           className={cn(
-                            "group relative transition-colors",
+                            "group transition-colors",
                             "hover:bg-surface-2/50 dark:hover:bg-white/[0.02]",
                             isBlocked && "bg-[#FB7185]/[0.03]"
                           )}
                         >
-                          {/* Left color bar on hover */}
-                          <div
+                          <td
                             className={cn(
-                              "absolute left-0 top-0 bottom-0 w-[2px] opacity-0 group-hover:opacity-100 transition-opacity",
-                              isReady && "bg-[#B5FF4D]",
-                              isBlocked && "bg-[#FB7185]",
-                              isExecuted && "bg-emerald-500",
-                              !status && "bg-fg-subtle"
+                              "py-3 px-5 border-l-[2px] border-transparent group-hover:border-l-[2px] transition-colors",
+                              isReady && "group-hover:border-[#B5FF4D]",
+                              isBlocked && "group-hover:border-[#FB7185]",
+                              isExecuted && "group-hover:border-emerald-500",
+                              !status && "group-hover:border-fg-subtle"
                             )}
-                          />
-
-                          <td className="py-3 px-5">
+                          >
                             <div className="font-medium text-fg text-[13px]">{r.name}</div>
                             <div className="font-mono text-[11px] text-fg-subtle">
                               {r.wallet.substring(0, 8)}...{r.wallet.substring(r.wallet.length - 6)}

@@ -182,19 +182,15 @@ export function ParticleHeroTitle({ text }: { text: string }) {
 
   return (
     <span ref={wrapRef} className="relative inline-block w-full">
-      {reducedRef.current ? (
-        <span className="text-white">{text}</span>
-      ) : (
-        <>
-          <canvas
-            ref={canvasRef}
-            className="block w-full"
-            style={{ imageRendering: "pixelated" }}
-          />
-          {/* Fallback plain text for SEO/accessibility */}
-          <span className="sr-only">{text}</span>
-        </>
-      )}
+      {/* Text always visible underneath — canvas particles overlay on top */}
+      <span className="text-white">{text}</span>
+
+      {/* Particle canvas overlay — absolutely positioned so text stays visible even if canvas fails */}
+      <canvas
+        ref={canvasRef}
+        className="absolute inset-0 pointer-events-auto"
+        style={{ imageRendering: "pixelated" }}
+      />
     </span>
   );
 }
