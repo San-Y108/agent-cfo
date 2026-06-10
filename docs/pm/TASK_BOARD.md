@@ -96,7 +96,7 @@
 | T-051 | 加入 LLM 生成付款计划 | payment_planner.py (OpenAI) | 6月9日 | 🔵 IN_PROGRESS |
 | T-052 | 和前端联调 | 前端能调通 5 个接口 | 6月9日 | 🔵 IN_PROGRESS |
 | T-053 | 和 CAW 联调 | 本地 live test 完成 1 笔；当前 Render mock-demo 不展示本地 evidence | 6月10日 | 🔵 IN_PROGRESS |
-| T-054 | 部署后端到公网 | https://agentcfo-backend.onrender.com | 6月10日 | ✅ DONE |
+| T-054 | 部署后端到公网 | https://agentcfo-backend.onrender.com（ephemeral SQLite，免费套餐不支持 Persistent Disk） | 6月10日 | ✅ DONE |
 | T-055 | SQLite 持久化 | store.py SQLiteStore + 测试 | 6月10日 | ✅ DONE |
 | T-056 | CAW 状态查询接口 | GET /api/caw-status/{id} | 6月10日 | ✅ DONE |
 | T-057 | CAW 状态刷新接口 | GET /api/caw-status/{id}/refresh | 6月10日 | ✅ DONE |
