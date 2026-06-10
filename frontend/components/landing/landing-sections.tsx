@@ -6,6 +6,7 @@ import { CardSplitter } from "./card-splitter";
 import { Web3NodeCloud } from "./web3-node-cloud";
 import { PipelineShowcase } from "./pipeline-showcase";
 import { GuardrailsCTA } from "./guardrails-cta";
+import { TeamShowcase } from "./team-showcase";
 import { FAQSection } from "./faq-section";
 import { HSMMonitor } from "./hsm-monitor";
 import { LandingFooter } from "./landing-footer";
@@ -40,6 +41,9 @@ export function LandingSections() {
       <PipelineShowcase />
 
       <GuardrailsCTA />
+
+      {/* Built-by team fan-card showcase */}
+      <TeamShowcase />
 
       {/* FAQ + HSM 2-column layout */}
       <div className="w-full max-w-6xl mx-auto mt-28 border-t pt-16 grid grid-cols-1 md:grid-cols-5 gap-12 text-left border-white/10 px-6">
