@@ -16,6 +16,7 @@ import {
   X,
 } from "lucide-react";
 import { useApp } from "@/lib/i18n/context";
+import { WalletHoloCard, WalletTopology } from "@/components/console/wallet-hologram";
 
 const BLUE = "#60A5FA";
 
@@ -264,6 +265,18 @@ export default function WalletsPage() {
             })}
           </div>
 
+          {/* Treasury topology — CAW core + vault nodes */}
+          <WalletTopology
+            wallets={wallets.map((w) => ({
+              id: w.id,
+              name: w.name,
+              type: w.type,
+              valueUsd: w.tokens.reduce((acc, tok) => acc + tok.valueUsd, 0),
+            }))}
+            activeId={activeWalletId}
+            onSelect={(id) => { setActiveWalletId(id); setTransferSuccess(false); setShowBlockedAlert(false); }}
+          />
+
           {/* Guide Card */}
           <div className="p-4 rounded-xl border border-border-token dark:border-white/[0.06] bg-surface-2 dark:bg-white/[0.03]">
             <div className="flex items-center gap-2 font-bold text-xs text-fg">
@@ -278,7 +291,8 @@ export default function WalletsPage() {
 
         {/* Right: Active Wallet Detail */}
         <div className="lg:col-span-2 space-y-6">
-          {/* Detail Card */}
+          {/* Detail Card — 3D tilt + cursor glare */}
+          <WalletHoloCard>
           <div className="border border-border-token dark:border-white/[0.06] rounded-xl shadow-sm p-6 space-y-6 bg-surface dark:bg-white/[0.02]">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border-token dark:border-white/[0.04] pb-5">
               <div>
@@ -360,6 +374,7 @@ export default function WalletsPage() {
               <Wallet className="w-8 h-8 text-[#60A5FA]/30 shrink-0" />
             </div>
           </div>
+          </WalletHoloCard>
 
           {/* Transfer Panel */}
           <div className="border border-border-token dark:border-white/[0.06] rounded-xl shadow-sm p-6 bg-surface dark:bg-white/[0.02]">
