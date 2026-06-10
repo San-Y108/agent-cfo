@@ -96,7 +96,7 @@ export function GuardrailsCTA() {
 
                 {/* Secondary CTA — direction-aware glow */}
                 <DirectionAwareLink
-                  href="#audit-trail"
+                  href="#workflow"
                   className="inline-flex items-center gap-2 rounded-[10px] border border-white/15 px-5 py-3 text-sm font-medium text-white/85 transition-all duration-200 hover:border-white/25 hover:text-white hover:shadow-[0_0_20px_rgba(181,255,77,0.08)]"
                   style={{ fontFamily: "Inter, sans-serif" }}
                 >

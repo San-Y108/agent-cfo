@@ -30,7 +30,7 @@ export function LandingSections() {
       style={{ backgroundColor: "#0D0D0D", fontFamily: "Inter, sans-serif" }}
     >
       {/* Hero-adjacent showcase row: left = AI Agent + Web3 Map, right = Budget Cards */}
-      <section id="problem" className="w-full">
+      <section id="platform" className="w-full">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 w-full max-w-7xl mx-auto px-6 pt-16 items-start">
           <div className="flex flex-col gap-8">
             <HolographicCard />
@@ -43,17 +43,17 @@ export function LandingSections() {
       {/* The 5-stage pipeline */}
       <PipelineShowcase />
 
-      <section id="risk-guardrails" className="w-full">
+      <section id="guardrails" className="w-full">
         <GuardrailsCTA />
       </section>
 
       {/* Built-by team fan-card showcase */}
-      <section id="wallet-execution" className="w-full">
+      <section id="team" className="w-full">
         <TeamShowcase />
       </section>
 
       {/* Build timeline — Phase 0→3 */}
-      <section id="audit-trail" className="w-full">
+      <section id="timeline" className="w-full">
         <BuildTimeline />
       </section>
 

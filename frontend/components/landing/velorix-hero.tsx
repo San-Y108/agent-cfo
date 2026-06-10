@@ -17,11 +17,11 @@ const BG_VIDEO =
   "https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260508_155101_f2540600-6fe9-433e-8e48-b3f4b72f0727.mp4";
 
 const NAV_ITEMS: { key: DictKey; href: string }[] = [
-  { key: "nav.problem", href: "#problem" },
+  { key: "nav.platform", href: "#platform" },
   { key: "nav.workflow", href: "#workflow" },
-  { key: "nav.risk", href: "#risk-guardrails" },
-  { key: "nav.wallet", href: "#wallet-execution" },
-  { key: "nav.audit", href: "#audit-trail" },
+  { key: "nav.guardrails", href: "#guardrails" },
+  { key: "nav.team", href: "#team" },
+  { key: "nav.timeline", href: "#timeline" },
 ];
 
 function HamburgerButton({ open, onClick }: { open: boolean; onClick: () => void }) {
