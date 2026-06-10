@@ -29,8 +29,8 @@ export function LandingSections() {
       className="relative w-full"
       style={{ backgroundColor: "#0D0D0D", fontFamily: "Inter, sans-serif" }}
     >
-      {/* Hero-adjacent showcase row: left = AI Agent + Web3 Map, right = Budget Cards */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 w-full max-w-7xl mx-auto px-6 pt-16 items-start">
+      {/* #problem — Hero-adjacent showcase row: left = AI Agent + Web3 Map, right = Budget Cards */}
+      <div id="problem" className="grid grid-cols-1 lg:grid-cols-2 gap-8 w-full max-w-7xl mx-auto px-6 pt-16 items-start">
         <div className="flex flex-col gap-8">
           <HolographicCard />
           <Web3NodeCloud />
@@ -38,13 +38,16 @@ export function LandingSections() {
         <CardSplitter />
       </div>
 
-      {/* The 5-stage pipeline */}
+      {/* #workflow — The 5-stage pipeline (id is inside PipelineShowcase) */}
       <PipelineShowcase />
 
+      {/* #risk-guardrails + #audit-trail — ids are inside GuardrailsCTA */}
       <GuardrailsCTA />
 
-      {/* Built-by team fan-card showcase */}
-      <TeamShowcase />
+      {/* #wallet-execution — Budget card execution showcase */}
+      <div id="wallet-execution" className="w-full max-w-7xl mx-auto px-6">
+        <TeamShowcase />
+      </div>
 
       {/* Build timeline — Phase 0→3 */}
       <BuildTimeline />

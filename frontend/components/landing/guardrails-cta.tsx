@@ -33,7 +33,7 @@ const reveal = {
 
 export function GuardrailsCTA() {
   return (
-    <section className="relative px-5 py-24 lg:px-10 lg:py-32">
+    <section id="risk-guardrails" className="relative px-5 py-24 lg:px-10 lg:py-32">
       <div className="mx-auto max-w-6xl">
         <div className="relative overflow-hidden rounded-[18px] border border-white/10 bg-[#0a0a0a]">
           {/* Subtle gradient background */}
@@ -144,7 +144,7 @@ export function GuardrailsCTA() {
 
 function BlockedReportCard() {
   return (
-    <div className="relative overflow-hidden rounded-[14px] border border-white/10 bg-[#0d0d0d]">
+    <div id="audit-trail" className="relative overflow-hidden rounded-[14px] border border-white/10 bg-[#0d0d0d]">
       {/* Header */}
       <div className="flex items-center justify-between border-b border-white/5 bg-[#0a0a0a] px-4 py-2.5">
         <div className="flex items-center gap-2">

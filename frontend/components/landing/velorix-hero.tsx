@@ -233,48 +233,28 @@ function Navbar() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // GSAP scroll-driven navbar show/hide + background transition
+  // Scroll detection for navbar: full → compact transition
+  useEffect(() => {
+    const onScroll = () => {
+      const pastHero = window.scrollY > window.innerHeight * 0.65;
+      setScrolled(pastHero);
+      lastScrollY.current = window.scrollY;
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    onScroll(); // initial check
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  // GSAP entrance animation
   useGSAP(() => {
     if (!navWrapRef.current) return;
-    const ctx = gsap.context(() => {
-      // Scroll direction detection for show/hide
-      ScrollTrigger.create({
-        trigger: document.body,
-        start: "top top",
-        end: "bottom bottom",
-        onUpdate: (self) => {
-          const y = self.scroll();
-          const goingDown = y > lastScrollY.current;
-          const pastHero = y > window.innerHeight * 0.5;
-          setScrolled(pastHero);
-
-          if (pastHero && goingDown && y > 100) {
-            gsap.to(navWrapRef.current, {
-              y: -100,
-              duration: 0.35,
-              ease: "power2.inOut",
-            });
-          } else {
-            gsap.to(navWrapRef.current, {
-              y: 0,
-              duration: 0.35,
-              ease: "power2.inOut",
-            });
-          }
-          lastScrollY.current = y;
-        },
-      });
-
-      // Entrance animation
-      gsap.from(navWrapRef.current, {
-        y: -40,
-        opacity: 0,
-        duration: 0.8,
-        ease: "power3.out",
-        delay: 0.3,
-      });
+    gsap.from(navWrapRef.current, {
+      y: -40,
+      opacity: 0,
+      duration: 0.8,
+      ease: "power3.out",
+      delay: 0.3,
     });
-    return () => ctx.revert();
   }, { scope: navWrapRef });
 
   useEffect(() => {
@@ -287,7 +267,7 @@ function Navbar() {
     <>
       <nav
         ref={navWrapRef}
-        className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-5 py-4 lg:px-10 lg:py-5 transition-colors duration-500"
+        className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-5 py-4 lg:px-10 lg:py-5 transition-all duration-500"
         style={{
           backgroundColor: scrolled ? "rgba(13,13,13,0.85)" : "transparent",
           backdropFilter: scrolled ? "blur(16px) saturate(1.2)" : "none",
@@ -296,6 +276,7 @@ function Navbar() {
           boxShadow: scrolled
             ? "0 1px 0 rgba(255,255,255,0.04), 0 4px 24px rgba(0,0,0,0.4), inset 0 -1px 0 rgba(181,255,77,0.06)"
             : "none",
+          justifyContent: scrolled ? "center" : "space-between",
         }}
       >
         {/* Edge glow — bottom subtle green rim */}
@@ -307,16 +288,28 @@ function Navbar() {
             opacity: scrolled ? 1 : 0.3,
           }}
         />
-        <div className="flex items-center gap-2.5">
+
+        {/* Full mode: Logo (hidden in compact) */}
+        <div
+          className={`items-center gap-2.5 transition-all duration-500 ${
+            scrolled ? "hidden" : "flex"
+          }`}
+        >
           <img src="/logo.png" alt="AgentCFO" className="h-7 w-7 rounded-full" />
           <span className="text-white text-xl font-semibold tracking-tight" style={{ fontFamily: "Inter, sans-serif" }}>
             AgentCFO
           </span>
         </div>
+
+        {/* Nav pills — always visible, centered in compact mode */}
         <div
           ref={navRef}
-          className="hidden lg:flex items-center gap-1 rounded-full px-2 py-1.5 relative"
-          style={{ backgroundColor: "rgba(255,255,255,0.06)" }}
+          className={`flex items-center gap-1 rounded-full px-2 py-1.5 relative transition-all duration-500 ${
+            scrolled ? "lg:flex" : "hidden lg:flex"
+          }`}
+          style={{
+            backgroundColor: scrolled ? "rgba(255,255,255,0.08)" : "rgba(255,255,255,0.06)",
+          }}
         >
           {NAV_ITEMS.map((item, i) => (
             <a
@@ -351,11 +344,16 @@ function Navbar() {
             <circle ref={svgDotRef} r="2" fill="#B5FF4D" />
           </svg>
         </div>
-        <div className="flex items-center gap-2">
+
+        {/* Full mode: Controls (hidden in compact on desktop) */}
+        <div
+          className={`items-center gap-2 transition-all duration-500 ${
+            scrolled ? "hidden lg:hidden" : "flex"
+          }`}
+        >
           <div className="hidden lg:block">
             <ThemeLanguageToggle variant="hero" />
           </div>
-          <HamburgerButton open={open} onClick={() => setOpen((v) => !v)} />
           <Link
             href="/console"
             className="hidden lg:block text-sm font-medium px-5 py-2 rounded-full transition-all duration-300 hover:opacity-80"
@@ -363,6 +361,11 @@ function Navbar() {
           >
             {t("nav.openDemo")}
           </Link>
+        </div>
+
+        {/* Hamburger — always visible, hidden on desktop when compact */}
+        <div className={scrolled ? "lg:hidden" : ""}>
+          <HamburgerButton open={open} onClick={() => setOpen((v) => !v)} />
         </div>
       </nav>
       <MobileMenu open={open} onClose={() => setOpen(false)} />
