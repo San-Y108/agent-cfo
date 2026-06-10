@@ -124,7 +124,158 @@ function MobileMenu({ open, onClose }: { open: boolean; onClose: () => void }) {
 
 function Navbar() {
   const [open, setOpen] = useState(false);
+  const [activeIdx, setActiveIdx] = useState(0);
+  const [scrolled, setScrolled] = useState(false);
   const t = useT();
+  const navRef = useRef<HTMLDivElement>(null);
+  const linkRefs = useRef<(HTMLAnchorElement | null)[]>([]);
+  const svgPathRef = useRef<SVGPathElement>(null);
+  const svgDotRef = useRef<SVGCircleElement>(null);
+  const arcRef = useRef({ curX: 0, animRaf: null as number | null });
+  const navWrapRef = useRef<HTMLElement>(null);
+  const lastScrollY = useRef(0);
+
+  const HW = 14;
+
+  const drawArc = (cx: number, arcH: number, hw: number) => {
+    if (!svgPathRef.current || !svgDotRef.current) return;
+    const x1 = cx - hw;
+    const x2 = cx + hw;
+    if (arcH < 0.5) {
+      svgPathRef.current.setAttribute("d", `M${x1},0 L${x2},0`);
+    } else {
+      svgPathRef.current.setAttribute("d", `M${x1},0 Q${cx},${-arcH} ${x2},0`);
+    }
+    svgDotRef.current.setAttribute("cx", String(cx));
+    svgDotRef.current.setAttribute("cy", String(-arcH * 0.08));
+  };
+
+  const jumpTo = (targetX: number) => {
+    const arc = arcRef.current;
+    if (arc.animRaf) cancelAnimationFrame(arc.animRaf);
+    const fromX = arc.curX;
+    const dist = Math.abs(targetX - fromX);
+    if (dist < 1) {
+      arc.curX = targetX;
+      drawArc(arc.curX, 0, HW);
+      return;
+    }
+    const maxArc = Math.min(28, dist * 0.45);
+    const dur = 300 + dist * 0.55;
+    const t0 = performance.now();
+    const easeInOut = (t: number) => (t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t);
+
+    const step = (now: number) => {
+      const t = Math.min(1, (now - t0) / dur);
+      const ease = easeInOut(t);
+      arc.curX = fromX + (targetX - fromX) * ease;
+      const arcH = maxArc * Math.sin(t * Math.PI);
+      const hw = HW + arcH * 0.15;
+      drawArc(arc.curX, arcH, hw);
+      if (t < 1) {
+        arc.animRaf = requestAnimationFrame(step);
+      } else {
+        arc.curX = targetX;
+        drawArc(arc.curX, 0, HW);
+        arc.animRaf = null;
+      }
+    };
+    arc.animRaf = requestAnimationFrame(step);
+  };
+
+  // IntersectionObserver: track which section is in view
+  useEffect(() => {
+    const sections = NAV_ITEMS.map((item) => document.querySelector(item.href)).filter((s): s is Element => s !== null);
+    if (sections.length === 0) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const visible = entries.filter((e) => e.isIntersecting);
+        if (visible.length > 0) {
+          const topmost = visible.reduce((a, b) =>
+            a.boundingClientRect.top < b.boundingClientRect.top ? a : b
+          );
+          const idx = sections.indexOf(topmost.target);
+          if (idx >= 0) setActiveIdx(idx);
+        }
+      },
+      { threshold: 0.2, rootMargin: "-80px 0px -60% 0px" }
+    );
+    sections.forEach((s) => observer.observe(s));
+    return () => observer.disconnect();
+  }, []);
+
+  // Move arc when activeIdx changes
+  useEffect(() => {
+    const link = linkRefs.current[activeIdx];
+    const container = navRef.current;
+    if (!link || !container) return;
+    const containerRect = container.getBoundingClientRect();
+    const linkRect = link.getBoundingClientRect();
+    const targetX = linkRect.left - containerRect.left + linkRect.width / 2;
+    jumpTo(targetX);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeIdx]);
+
+  // Initial position + resize handler
+  useEffect(() => {
+    const setInitial = () => {
+      const link = linkRefs.current[activeIdx];
+      const container = navRef.current;
+      if (!link || !container) return;
+      const containerRect = container.getBoundingClientRect();
+      const linkRect = link.getBoundingClientRect();
+      arcRef.current.curX = linkRect.left - containerRect.left + linkRect.width / 2;
+      drawArc(arcRef.current.curX, 0, HW);
+    };
+    requestAnimationFrame(setInitial);
+    window.addEventListener("resize", setInitial);
+    return () => window.removeEventListener("resize", setInitial);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // GSAP scroll-driven navbar show/hide + background transition
+  useGSAP(() => {
+    if (!navWrapRef.current) return;
+    const ctx = gsap.context(() => {
+      // Scroll direction detection for show/hide
+      ScrollTrigger.create({
+        trigger: document.body,
+        start: "top top",
+        end: "bottom bottom",
+        onUpdate: (self) => {
+          const y = self.scroll();
+          const goingDown = y > lastScrollY.current;
+          const pastHero = y > window.innerHeight * 0.5;
+          setScrolled(pastHero);
+
+          if (pastHero && goingDown && y > 100) {
+            gsap.to(navWrapRef.current, {
+              y: -100,
+              duration: 0.35,
+              ease: "power2.inOut",
+            });
+          } else {
+            gsap.to(navWrapRef.current, {
+              y: 0,
+              duration: 0.35,
+              ease: "power2.inOut",
+            });
+          }
+          lastScrollY.current = y;
+        },
+      });
+
+      // Entrance animation
+      gsap.from(navWrapRef.current, {
+        y: -40,
+        opacity: 0,
+        duration: 0.8,
+        ease: "power3.out",
+        delay: 0.3,
+      });
+    });
+    return () => ctx.revert();
+  }, { scope: navWrapRef });
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => e.key === "Escape" && setOpen(false);
@@ -134,24 +285,71 @@ function Navbar() {
 
   return (
     <>
-      <nav className="absolute top-0 left-0 right-0 z-50 flex items-center justify-between px-5 py-4 lg:px-10 lg:py-6">
+      <nav
+        ref={navWrapRef}
+        className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-5 py-4 lg:px-10 lg:py-5 transition-colors duration-500"
+        style={{
+          backgroundColor: scrolled ? "rgba(13,13,13,0.85)" : "transparent",
+          backdropFilter: scrolled ? "blur(16px) saturate(1.2)" : "none",
+          WebkitBackdropFilter: scrolled ? "blur(16px) saturate(1.2)" : "none",
+          borderBottom: scrolled ? "1px solid rgba(255,255,255,0.06)" : "1px solid transparent",
+          boxShadow: scrolled
+            ? "0 1px 0 rgba(255,255,255,0.04), 0 4px 24px rgba(0,0,0,0.4), inset 0 -1px 0 rgba(181,255,77,0.06)"
+            : "none",
+        }}
+      >
+        {/* Edge glow — bottom subtle green rim */}
+        <div
+          className="absolute bottom-0 left-0 right-0 pointer-events-none transition-opacity duration-500"
+          style={{
+            height: "1px",
+            background: "linear-gradient(90deg, transparent 0%, rgba(181,255,77,0.15) 20%, rgba(181,255,77,0.2) 50%, rgba(181,255,77,0.15) 80%, transparent 100%)",
+            opacity: scrolled ? 1 : 0.3,
+          }}
+        />
         <div className="flex items-center gap-2.5">
           <img src="/logo.png" alt="AgentCFO" className="h-7 w-7 rounded-full" />
           <span className="text-white text-xl font-semibold tracking-tight" style={{ fontFamily: "Inter, sans-serif" }}>
             AgentCFO
           </span>
         </div>
-        <div className="hidden lg:flex items-center gap-1 rounded-full px-2 py-1.5" style={{ backgroundColor: "rgba(255,255,255,0.06)" }}>
-          {NAV_ITEMS.map((item) => (
+        <div
+          ref={navRef}
+          className="hidden lg:flex items-center gap-1 rounded-full px-2 py-1.5 relative"
+          style={{ backgroundColor: "rgba(255,255,255,0.06)" }}
+        >
+          {NAV_ITEMS.map((item, i) => (
             <a
               key={item.key}
+              ref={(el) => { linkRefs.current[i] = el; }}
               href={item.href}
-              className="text-white/70 hover:text-white text-sm px-4 py-1.5 rounded-full hover:bg-white/10 transition-all duration-200"
+              className={`text-sm px-4 py-1.5 rounded-full transition-all duration-200 ${
+                activeIdx === i
+                  ? "text-white"
+                  : "text-white/70 hover:text-white hover:bg-white/10"
+              }`}
               style={{ fontFamily: "Inter, sans-serif" }}
+              onClick={(e) => {
+                e.preventDefault();
+                const el = document.querySelector(item.href);
+                if (el) {
+                  el.scrollIntoView({ behavior: "smooth" });
+                  setActiveIdx(i);
+                }
+              }}
             >
               {t(item.key)}
             </a>
           ))}
+          {/* Arc jump indicator */}
+          <svg
+            className="absolute bottom-0 left-0 w-full overflow-visible pointer-events-none"
+            style={{ height: "2px" }}
+            preserveAspectRatio="none"
+          >
+            <path ref={svgPathRef} fill="none" stroke="#B5FF4D" strokeWidth="1.5" strokeLinecap="round" />
+            <circle ref={svgDotRef} r="2" fill="#B5FF4D" />
+          </svg>
         </div>
         <div className="flex items-center gap-2">
           <div className="hidden lg:block">
@@ -244,7 +442,7 @@ export function VelorixHero() {
 
       <Navbar />
 
-      <div ref={contentRef} className="relative z-20 flex flex-col items-center text-center px-5 sm:px-8 max-w-4xl mx-auto">
+      <div ref={contentRef} className="relative z-20 flex flex-col items-center text-center px-5 sm:px-8 max-w-4xl mx-auto pt-20">
         {/* Eyebrow */}
         <span
           className="text-[11px] font-medium uppercase tracking-[0.18em] text-[#B5FF4D] mb-6"

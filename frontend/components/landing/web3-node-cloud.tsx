@@ -79,7 +79,7 @@ export function Web3NodeCloud() {
         }}
       />
 
-      <div className="relative z-10 grid grid-cols-1 gap-8 lg:grid-cols-[1fr_auto] lg:items-center lg:gap-12">
+      <div className="relative z-10 flex flex-col gap-8">
         <div className="space-y-3">
           <span className="inline-flex items-center gap-1.5 rounded-full border border-blue-500/20 bg-blue-500/10 px-3 py-1 text-[10px] font-mono uppercase tracking-wider text-blue-400">
             Web3 Trust Stack

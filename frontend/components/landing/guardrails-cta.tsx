@@ -1,9 +1,30 @@
 "use client";
 
-import React from "react";
+import React, { useRef, useCallback } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { ArrowRight, ShieldCheck, X } from "lucide-react";
+
+// ── Direction-aware light helper ──
+
+type Dir = "top" | "right" | "bottom" | "left";
+
+const DIR_ENTER: Record<Dir, string> = {
+  top: "translateY(-101%)", right: "translateX(101%)", bottom: "translateY(101%)", left: "translateX(-101%)",
+};
+const DIR_GRAD: Record<Dir, string> = {
+  top: "linear-gradient(to bottom, rgba(181,255,77,0.18), transparent)",
+  right: "linear-gradient(to left, rgba(181,255,77,0.18), transparent)",
+  bottom: "linear-gradient(to top, rgba(181,255,77,0.18), transparent)",
+  left: "linear-gradient(to right, rgba(181,255,77,0.18), transparent)",
+};
+
+function getDir(e: React.MouseEvent<HTMLElement>): Dir {
+  const r = e.currentTarget.getBoundingClientRect();
+  const x = e.clientX - r.left, y = e.clientY - r.top;
+  const d: [Dir, number][] = [["top", y], ["right", r.width - x], ["bottom", r.height - y], ["left", x]];
+  return d.reduce((a, b) => (a[1] < b[1] ? a : b))[0];
+}
 
 const reveal = {
   hidden: { opacity: 0, y: 20 },
@@ -57,21 +78,30 @@ export function GuardrailsCTA() {
               </p>
 
               <div className="mt-8 flex flex-wrap items-center gap-3">
+                {/* Primary CTA — direction-aware light + water ripple */}
                 <Link
                   href="/console"
-                  className="group flex items-center gap-2 rounded-[10px] bg-[#B5FF4D] px-5 py-3 text-sm font-semibold text-[#0D0D0D] transition-opacity hover:opacity-90"
+                  className="group relative inline-flex items-center gap-2 overflow-hidden rounded-[10px] bg-[#B5FF4D] px-5 py-3 text-sm font-semibold text-[#0D0D0D] transition-all duration-200 hover:shadow-[0_0_28px_rgba(181,255,77,0.25)]"
                   style={{ fontFamily: "Inter, sans-serif" }}
                 >
-                  Run demo
-                  <ArrowRight size={15} className="transition-transform duration-200 group-hover:translate-x-0.5" />
+                  {/* Water ripple on hover */}
+                  <span className="absolute inset-0 z-0 overflow-hidden rounded-[inherit] pointer-events-none">
+                    <span className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white/20 transition-all duration-600 ease-out group-hover:w-[250%] opacity-0 group-hover:opacity-100" style={{ width: "0%", aspectRatio: "1" }} />
+                  </span>
+                  <span className="relative z-10 flex items-center gap-2">
+                    Run demo
+                    <ArrowRight size={15} className="transition-transform duration-200 group-hover:translate-x-0.5" />
+                  </span>
                 </Link>
-                <a
+
+                {/* Secondary CTA — direction-aware glow */}
+                <DirectionAwareLink
                   href="#audit-trail"
-                  className="rounded-[10px] border border-white/15 px-5 py-3 text-sm font-medium text-white/85 transition-colors hover:bg-white/5"
+                  className="inline-flex items-center gap-2 rounded-[10px] border border-white/15 px-5 py-3 text-sm font-medium text-white/85 transition-all duration-200 hover:border-white/25 hover:text-white hover:shadow-[0_0_20px_rgba(181,255,77,0.08)]"
                   style={{ fontFamily: "Inter, sans-serif" }}
                 >
                   View audit report
-                </a>
+                </DirectionAwareLink>
               </div>
 
               <div
@@ -180,5 +210,59 @@ function BlockedReportCard() {
         </div>
       </div>
     </div>
+  );
+}
+
+// ── Direction-aware link (secondary CTA) ──
+
+function DirectionAwareLink({
+  href,
+  className,
+  style,
+  children,
+}: {
+  href: string;
+  className?: string;
+  style?: React.CSSProperties;
+  children: React.ReactNode;
+}) {
+  const overlayRef = useRef<HTMLSpanElement>(null);
+
+  const handleEnter = useCallback((e: React.MouseEvent<HTMLAnchorElement>) => {
+    const dir = getDir(e);
+    const el = overlayRef.current;
+    if (!el) return;
+    el.style.transition = "none";
+    el.style.transform = DIR_ENTER[dir];
+    el.style.background = DIR_GRAD[dir];
+    requestAnimationFrame(() => {
+      el.style.transition = "transform 0.4s cubic-bezier(0.16, 1, 0.3, 1)";
+      el.style.transform = "translate(0, 0)";
+    });
+  }, []);
+
+  const handleLeave = useCallback((e: React.MouseEvent<HTMLAnchorElement>) => {
+    const dir = getDir(e);
+    const el = overlayRef.current;
+    if (!el) return;
+    el.style.transition = "transform 0.35s cubic-bezier(0.16, 1, 0.3, 1)";
+    el.style.transform = DIR_ENTER[dir];
+  }, []);
+
+  return (
+    <a
+      href={href}
+      className={`group relative overflow-hidden ${className ?? ""}`}
+      style={style}
+      onMouseEnter={handleEnter}
+      onMouseLeave={handleLeave}
+    >
+      <span
+        ref={overlayRef}
+        className="pointer-events-none absolute inset-0 z-0"
+        style={{ transform: DIR_ENTER.top, background: DIR_GRAD.top }}
+      />
+      <span className="relative z-10">{children}</span>
+    </a>
   );
 }
