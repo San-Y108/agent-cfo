@@ -138,3 +138,126 @@ export interface CawStatus {
   diagnosticCode: string | null;
   lastCheckedAt: string;
 }
+
+// ---- P2 Extension Types ----
+
+export type ExternalReferenceType =
+  | "request_invoice"
+  | "sablier_stream_preview"
+  | "safe_permission_reference"
+  | "multichain_readiness"
+  | "treasury_budget_partition";
+
+export interface ExternalReference {
+  externalReferenceId: string;
+  referenceType: ExternalReferenceType;
+  provider: string;
+  label: string;
+  paymentPlanId: string | null;
+  paymentItemId: string | null;
+  auditReportId: string | null;
+  cawRequestId: string | null;
+  status: string;
+  metadata: Record<string, any>;
+  mode: string;
+  liveIntegrationEnabled: boolean;
+  createdAt: string;
+}
+
+export interface ExternalReferenceList {
+  items: ExternalReference[];
+}
+
+export interface ExternalReferenceCreate {
+  referenceType: ExternalReferenceType;
+  provider: string;
+  label: string;
+  paymentPlanId?: string | null;
+  paymentItemId?: string | null;
+  auditReportId?: string | null;
+  cawRequestId?: string | null;
+  status: string;
+  metadata?: Record<string, any>;
+}
+
+export interface RequestInvoiceRecord {
+  externalReferenceId: string;
+  paymentPlanId: string;
+  paymentItemId: string;
+  auditReportId: string | null;
+  cawRequestId: string | null;
+  requestFinanceInvoiceId: string;
+  requestId: string | null;
+  status: string;
+  hostedUrl: string | null;
+  txHashReference: string | null;
+  externalReference: ExternalReference;
+}
+
+export interface RequestInvoiceCreate {
+  paymentPlanId: string;
+  paymentItemId: string;
+  auditReportId?: string | null;
+  cawRequestId?: string | null;
+  requestFinanceInvoiceId: string;
+  requestId?: string | null;
+  status: string;
+  hostedUrl?: string | null;
+  txHashReference?: string | null;
+}
+
+export interface SablierStreamPreview {
+  externalReferenceId: string;
+  mode: string;
+  streamCreated: boolean;
+  paymentPlanId: string;
+  paymentItemId: string;
+  recipient: string;
+  wallet: string;
+  amount: number;
+  token: string;
+  durationDays: number;
+  durationSeconds: number;
+  ratePerSecond: number;
+  safetyNotes: string[];
+}
+
+export interface SablierStreamPreviewRequest {
+  paymentPlanId: string;
+  paymentItemId: string;
+  durationDays: number;
+}
+
+export interface SafePermissionReference {
+  externalReferenceId: string;
+  mode: string;
+  moduleEnabled: boolean;
+  paymentPlanId: string;
+  safeAddress: string;
+  moduleName: string;
+  permissionNotes: string[];
+  safetyNotes: string[];
+}
+
+export interface SafePermissionReferenceRequest {
+  paymentPlanId: string;
+  safeAddress: string;
+  moduleName: string;
+  permissionNotes?: string[];
+}
+
+export interface MultichainReadiness {
+  currentExecutionBoundary: Record<string, any>;
+  liveMultichainExecutionEnabled: boolean;
+  chains: Array<Record<string, any>>;
+  safetyNotes: string[];
+}
+
+export interface TreasuryBudgetPartition {
+  mode: string;
+  authorizationChanged: boolean;
+  paymentPlanId: string;
+  totalPlannedAmount: number;
+  partitions: Array<Record<string, any>>;
+  safetyNotes: string[];
+}
