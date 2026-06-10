@@ -23,6 +23,8 @@ import {
 import { useApp } from "@/lib/i18n/context";
 import { MOCK_RECORDS, MOCK_RULES } from "@/lib/demo/console-mock";
 import { ContributorRecord, PaymentPlanItem } from "@/lib/types/console";
+import type { CawStatus } from "@/lib/api/types";
+import { isMockMode } from "@/lib/api/client";
 
 /* =============================================================================
  * BUSINESS LOGIC HELPERS
@@ -61,6 +63,14 @@ export default function TreasuryPage() {
   const [newName, setNewName] = useState("");
   const [newWallet, setNewWallet] = useState("");
   const [newAmount, setNewAmount] = useState(10);
+
+  /* ─── CAW Status state (P0 refresh) ─── */
+  const [cawStatuses, setCawStatuses] = useState<CawStatus[]>([]);
+  const [cawRefreshing, setCawRefreshing] = useState(false);
+
+  /* ─── P2 Preview state ─── */
+  const [p2Visible, setP2Visible] = useState(false);
+  const [p2Loading, setP2Loading] = useState(false);
 
   /* ─── derived metrics ─── */
   const totalBudget = MOCK_RULES.monthlyBudget;
@@ -118,14 +128,51 @@ export default function TreasuryPage() {
           : item
       );
       setPlan(executed);
+      // Initialize mock CAW statuses for executed items
+      const mockCawStatuses: CawStatus[] = executed
+        .filter((i) => i.status === "Executed")
+        .map((item) => ({
+          cawRequestId: `mock_caw_${item.record.id}`,
+          executionId: `exec_${Date.now()}`,
+          paymentItemId: item.record.id,
+          providerStatus: "executed",
+          normalizedStatus: "Executed" as const,
+          mode: isMockMode() ? "mock" : "real",
+          network: "Sepolia",
+          agentWalletAddress: "0xAgentWallet...",
+          txHash: item.txHash ?? null,
+          error: null,
+          diagnosticCode: null,
+          lastCheckedAt: new Date().toISOString(),
+        }));
+      setCawStatuses(mockCawStatuses);
       setStep(4); // done
     }, 2000);
+  };
+
+  const handleRefreshCawStatus = async () => {
+    setCawRefreshing(true);
+    // In mock mode, simulate a refresh that might find a txHash
+    setTimeout(() => {
+      setCawStatuses((prev: CawStatus[]) =>
+        prev.map((status) => ({
+          ...status,
+          txHash:
+            status.txHash ??
+            `0x${Math.random().toString(16).substring(2, 14).toUpperCase()}`,
+          lastCheckedAt: new Date().toISOString(),
+        }))
+      );
+      setCawRefreshing(false);
+    }, 1500);
   };
 
   const reset = () => {
     setStep(0);
     setPlan([]);
     setIsExecuting(false);
+    setCawStatuses([]);
+    setP2Visible(false);
     setRecords(MOCK_RECORDS);
   };
 
@@ -341,6 +388,11 @@ export default function TreasuryPage() {
               onGenerate={handleGenerate}
               onExecute={handleExecute}
               onReset={reset}
+              cawStatuses={cawStatuses}
+              cawRefreshing={cawRefreshing}
+              onRefreshCaw={handleRefreshCawStatus}
+              p2Visible={p2Visible}
+              p2Loading={p2Loading}
               lang={lang}
               _={_}
             />
@@ -459,6 +511,11 @@ function ActionPanel({
   onGenerate,
   onExecute,
   onReset,
+  cawStatuses,
+  cawRefreshing,
+  onRefreshCaw,
+  p2Visible,
+  p2Loading,
   lang,
   _,
 }: {
@@ -471,6 +528,11 @@ function ActionPanel({
   onGenerate: () => void;
   onExecute: () => void;
   onReset: () => void;
+  cawStatuses: CawStatus[];
+  cawRefreshing: boolean;
+  onRefreshCaw: () => void;
+  p2Visible: boolean;
+  p2Loading: boolean;
   lang: string;
   _: (zh: string, en: string) => string;
 }) {
@@ -679,83 +741,153 @@ function ActionPanel({
           </motion.div>
         )}
 
-        {/* Step 4: Done / Audit */}
+        {/* Step 4: Done / Three-Zone Audit */}
         {step === 4 && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             className="space-y-4"
           >
-            {/* Success banner */}
-            <div className="p-5 rounded-xl border text-center"
-              style={{
-                borderColor: "rgba(192,132,252,0.2)",
-                backgroundColor: "rgba(192,132,252,0.05)",
-              }}
-            >
-              <div
-                className="w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3 border"
-                style={{
-                  backgroundColor: "rgba(192,132,252,0.15)",
-                  borderColor: "rgba(192,132,252,0.3)",
-                }}
-              >
-                <CheckCheck className="w-6 h-6" style={{ color: "#C084FC" }} />
+            {/* Zone 1: Audit Report Snapshot (immutable) */}
+            <div className="p-4 rounded-xl border border-border-token dark:border-white/[0.06] bg-surface dark:bg-white/[0.02]">
+              <div className="flex items-center gap-2 mb-3">
+                <ShieldAlert className="w-4 h-4 text-[#C084FC]" />
+                <span className="text-sm font-semibold text-fg">{_("审计报告快照", "Audit Report Snapshot")}</span>
+                <span className="text-[10px] text-fg-subtle font-mono px-2 py-0.5 rounded-full bg-[#C084FC]/10">IMMUTABLE</span>
               </div>
-              <h3
-                className="text-lg font-bold tracking-tight mb-1"
-                style={{
-                  background: "linear-gradient(135deg, #C084FC 0%, #E879F9 100%)",
-                  WebkitBackgroundClip: "text",
-                  WebkitTextFillColor: "transparent",
-                  backgroundClip: "text",
-                }}
-              >
-                {_("结算已封存", "Settlement Sealed")}
-              </h3>
-              <p className="text-xs text-fg-subtle">
+              <p className="text-[11px] text-fg-subtle mb-3">
                 {_(
-                  "付款已通过 Sepolia 测试网上的策略最终确定。",
-                  "Payments finalized through policies on Sepolia Testnet."
+                  "执行时的不可变快照。txHash 为 null 不代表最终没有 txHash，只代表执行当时尚未获取。",
+                  "Immutable snapshot at execution time. txHash=null does not mean no final txHash, only that it was not yet available."
                 )}
               </p>
-            </div>
-
-            {/* Result table */}
-            <div className="rounded-lg border border-border-token dark:border-white/[0.06] overflow-hidden">
-              <table className="w-full text-left text-[12px]">
-                <thead className="bg-surface-2 dark:bg-white/[0.03]">
-                  <tr className="border-b border-border-token dark:border-white/[0.06] text-fg-muted font-mono uppercase text-[11px]">
-                    <th className="py-2.5 px-3">{_("实体", "Entity")}</th>
-                    <th className="py-2.5 px-3">{_("操作", "Action")}</th>
-                    <th className="py-2.5 px-3">Hash</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-border-token dark:divide-white/[0.04]">
-                  {plan.map((item) => (
-                    <tr key={item.record.id}>
-                      <td className="py-2.5 px-3 font-medium text-fg text-[12px]">{item.record.name}</td>
-                      <td className="py-2.5 px-3">
-                        {item.status === "Executed" ? (
-                          <span className="text-success font-bold flex items-center gap-1 text-[11px]">
-                            <CheckCircle className="w-3 h-3" /> EXECUTED
-                          </span>
-                        ) : (
-                          <span className="text-[#FB7185] font-bold flex items-center gap-1 text-[11px]">
-                            <XCircle className="w-3 h-3" /> BLOCKED
-                          </span>
-                        )}
-                      </td>
-                      <td className="py-2.5 px-3 font-mono text-[10px] text-fg-subtle">
-                        {item.txHash || "—"}
-                      </td>
+              <div className="rounded-lg border border-border-token dark:border-white/[0.06] overflow-hidden">
+                <table className="w-full text-left text-[12px]">
+                  <thead className="bg-surface-2 dark:bg-white/[0.03]">
+                    <tr className="border-b border-border-token dark:border-white/[0.06] text-fg-muted font-mono uppercase text-[11px]">
+                      <th className="py-2 px-3">{_("实体", "Entity")}</th>
+                      <th className="py-2 px-3">{_("状态", "Status")}</th>
+                      <th className="py-2 px-3">Hash</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody className="divide-y divide-border-token dark:divide-white/[0.04]">
+                    {plan.map((item) => (
+                      <tr key={item.record.id}>
+                        <td className="py-2 px-3 font-medium text-fg text-[12px]">{item.record.name}</td>
+                        <td className="py-2 px-3">
+                          {item.status === "Executed" ? (
+                            <span className="text-success font-bold flex items-center gap-1 text-[11px]">
+                              <CheckCircle className="w-3 h-3" /> EXECUTED
+                            </span>
+                          ) : (
+                            <span className="text-[#FB7185] font-bold flex items-center gap-1 text-[11px]">
+                              <XCircle className="w-3 h-3" /> BLOCKED
+                            </span>
+                          )}
+                        </td>
+                        <td className="py-2 px-3 font-mono text-[10px] text-fg-subtle">
+                          {item.txHash || "—"}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
 
-            {/* Stats */}
+            {/* Zone 2: Latest CAW Status (refreshable) */}
+            <div className="p-4 rounded-xl border border-border-token dark:border-white/[0.06] bg-surface dark:bg-white/[0.02]">
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-2">
+                  <RefreshCw className={`w-4 h-4 text-[#60A5FA] ${cawRefreshing ? "animate-spin" : ""}`} />
+                  <span className="text-sm font-semibold text-fg">{_("最新 CAW 状态", "Latest CAW Status")}</span>
+                </div>
+                <button
+                  onClick={onRefreshCaw}
+                  disabled={cawRefreshing}
+                  className="text-[11px] px-3 py-1.5 rounded-lg border border-border-token dark:border-white/[0.08] bg-surface-2 dark:bg-white/[0.03] hover:bg-surface-hover text-fg transition-colors cursor-pointer disabled:opacity-50 flex items-center gap-1"
+                >
+                  <RefreshCw className={`w-3 h-3 ${cawRefreshing ? "animate-spin" : ""}`} />
+                  {cawRefreshing ? _("刷新中...", "Refreshing...") : _("刷新", "Refresh")}
+                </button>
+              </div>
+              {cawStatuses.length === 0 ? (
+                <p className="text-[11px] text-fg-subtle">{_("暂无 CAW 状态", "No CAW status available")}</p>
+              ) : (
+                <div className="space-y-2">
+                  {cawStatuses.map((status) => (
+                    <div
+                      key={status.cawRequestId}
+                      className="p-3 rounded-lg border border-border-token dark:border-white/[0.06] bg-surface-2/30 dark:bg-white/[0.01]"
+                    >
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="text-[12px] font-medium text-fg">{status.paymentItemId}</span>
+                        <span className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded-full ${
+                          status.normalizedStatus === "Executed"
+                            ? "bg-success/10 text-success"
+                            : status.normalizedStatus === "Failed"
+                            ? "bg-[#FB7185]/10 text-[#FB7185]"
+                            : "bg-amber-500/10 text-amber-500"
+                        }`}>
+                          {status.normalizedStatus}
+                        </span>
+                      </div>
+                      <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-[11px]">
+                        <div className="text-fg-subtle">Provider: <span className="text-fg font-mono">{status.providerStatus}</span></div>
+                        <div className="text-fg-subtle">Network: <span className="text-fg font-mono">{status.network}</span></div>
+                        <div className="text-fg-subtle col-span-2">
+                          txHash:{" "}
+                          {status.txHash ? (
+                            <span className="text-[#60A5FA] font-mono">{status.txHash}</span>
+                          ) : (
+                            <span className="text-fg-subtle">{_("等待刷新...", "Pending refresh...")}</span>
+                          )}
+                        </div>
+                        <div className="text-fg-subtle col-span-2">Last checked: <span className="text-fg">{new Date(status.lastCheckedAt).toLocaleString()}</span></div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Zone 3: P2 Preview / Linked Evidence */}
+            {p2Visible && (
+              <div className="p-4 rounded-xl border border-dashed border-border-token dark:border-white/[0.08] bg-surface-2/20 dark:bg-white/[0.01]">
+                <div className="flex items-center gap-2 mb-3">
+                  <Sparkles className="w-4 h-4 text-[#5EEAD4]" />
+                  <span className="text-sm font-semibold text-fg">{_("P2 Preview / Linked Evidence", "P2 Preview / Linked Evidence")}</span>
+                  <span className="text-[10px] text-fg-subtle font-mono px-2 py-0.5 rounded-full bg-[#5EEAD4]/10">METADATA-ONLY</span>
+                </div>
+                {p2Loading ? (
+                  <div className="py-4 text-center">
+                    <RefreshCw className="w-5 h-5 text-fg-subtle animate-spin mx-auto mb-2" />
+                    <p className="text-[11px] text-fg-subtle">{_("加载 P2 数据...", "Loading P2 data...")}</p>
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    <div className="p-3 rounded-lg border border-border-token dark:border-white/[0.06] bg-surface dark:bg-white/[0.02]">
+                      <div className="text-[12px] font-medium text-fg">{_("Request Invoice Record", "Request Invoice Record")}</div>
+                      <p className="text-[10px] text-fg-subtle">{_("演示安全模式，不创建真实发票", "Demo-safe mode, no real invoice created")}</p>
+                    </div>
+                    <div className="p-3 rounded-lg border border-border-token dark:border-white/[0.06] bg-surface dark:bg-white/[0.02]">
+                      <div className="text-[12px] font-medium text-fg">{_("Sablier Stream Preview", "Sablier Stream Preview")}</div>
+                      <p className="text-[10px] text-fg-subtle">{_("演示安全模式，不创建真实流", "Demo-safe mode, no real stream created")}</p>
+                    </div>
+                    <div className="p-3 rounded-lg border border-border-token dark:border-white/[0.06] bg-surface dark:bg-white/[0.02]">
+                      <div className="text-[12px] font-medium text-fg">{_("Safe Permission Reference", "Safe Permission Reference")}</div>
+                      <p className="text-[10px] text-fg-subtle">{_("演示安全模式，不启用 Safe 模块", "Demo-safe mode, Safe module not enabled")}</p>
+                    </div>
+                    <div className="p-3 rounded-lg border border-border-token dark:border-white/[0.06] bg-surface dark:bg-white/[0.02]">
+                      <div className="text-[12px] font-medium text-fg">{_("Multichain Readiness", "Multichain Readiness")}</div>
+                      <p className="text-[10px] text-fg-subtle">{_("演示安全模式，不支持真实多链执行", "Demo-safe mode, multichain not enabled")}</p>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Stats summary */}
             <div className="grid grid-cols-3 gap-2 text-center">
               <div className="p-2 rounded-lg bg-surface-2 dark:bg-white/[0.03]">
                 <div className="text-sm font-bold text-success">{executedCount}</div>
