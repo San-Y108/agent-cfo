@@ -6,6 +6,12 @@ import { useReducedMotion } from "framer-motion";
 
 const SCRAMBLE_CHARS = "!@#$%^&*()_+-=[]{}|;:,.<>?/~`";
 
+interface WordStyle {
+  match: string[];
+  className?: string;
+  style?: React.CSSProperties;
+}
+
 interface DecodeHeadlineProps {
   text: string;
   accent?: string;
@@ -15,6 +21,7 @@ interface DecodeHeadlineProps {
   scrollTriggerStart?: string;
   scrambleDelay?: number;
   charStagger?: number;
+  specialWords?: WordStyle[];
 }
 
 export function DecodeHeadline({
@@ -26,6 +33,7 @@ export function DecodeHeadline({
   scrollTriggerStart = "top 85%",
   scrambleDelay = 0.2,
   charStagger = 0.035,
+  specialWords,
 }: DecodeHeadlineProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const prefersReducedMotion = useReducedMotion();
@@ -198,10 +206,24 @@ export function DecodeHeadline({
         >
           {line.split(" ").map((word, wordIdx) => {
             const wordKey = `${lineIdx}-w${wordIdx}`;
+            const matchedStyle = specialWords?.find((ws) =>
+              ws.match.some((m) => m.toLowerCase() === word.toLowerCase())
+            );
+            const isSpecial = !!matchedStyle;
+            const wordLower = word.toLowerCase();
+
+            // Gradient colors for special words: lime → cyan → violet
+            const specialColors = ["#B5FF4D", "#7DED8A", "#5EEAD4", "#7EC8E3", "#C084FC"];
+
             return (
               <span
                 key={wordKey}
-                style={{ display: "inline-block", whiteSpace: "nowrap" }}
+                className={matchedStyle?.className || ""}
+                style={{
+                  display: "inline-block",
+                  whiteSpace: "nowrap",
+                  ...matchedStyle?.style,
+                }}
               >
                 {word.split("").map((char, charIdx) => {
                   const key = `${lineIdx}-${wordIdx}-${charIdx}`;
@@ -209,6 +231,16 @@ export function DecodeHeadline({
                     char === " "
                       ? " "
                       : SCRAMBLE_CHARS[(key.length + charIdx + wordIdx) % SCRAMBLE_CHARS.length];
+
+                  // Special word: gradient color per char + glow
+                  // Normal word: white color
+                  const charColor = isSpecial
+                    ? specialColors[charIdx % specialColors.length]
+                    : accent;
+                  const glowShadow = isSpecial
+                    ? `0 0 12px ${specialColors[charIdx % specialColors.length]}60, 0 0 28px ${specialColors[charIdx % specialColors.length]}30`
+                    : undefined;
+
                   return (
                     <span
                       key={key}
@@ -216,9 +248,10 @@ export function DecodeHeadline({
                       data-char={char}
                       data-key={key}
                       style={{
-                        color: accent,
+                        color: charColor,
                         opacity: isClient ? 0 : 1,
                         minWidth: char === " " ? "0.25em" : undefined,
+                        textShadow: glowShadow,
                       }}
                     >
                       {isClient ? fallbackChar : char}

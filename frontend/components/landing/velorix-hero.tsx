@@ -497,13 +497,15 @@ export function VelorixHero() {
           accent="#B5FF4D"
           className="text-white font-bold leading-[1.05] tracking-tight max-w-3xl"
           style={{
-            fontFamily: "Inter, sans-serif",
             fontSize: "clamp(2.5rem, 6vw, 4rem)",
             letterSpacing: "-0.03em",
           }}
           scrollTriggerStart="top 120%"
           scrambleDelay={0.1}
           charStagger={0.025}
+          specialWords={[
+            { match: ["DAO", "executable", "可执行的"] },
+          ]}
         />
 
         <p
