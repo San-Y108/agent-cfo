@@ -353,7 +353,7 @@ export function BuildTimeline() {
               </div>
 
               {/* Film frames — stacked absolutely, only active frame visible */}
-              <div className="absolute inset-x-[28px] inset-y-3 relative">
+              <div className="absolute inset-x-[28px] inset-y-3">
                 {PHASES.map((p, i) => (
                   <div
                     key={p.phase}
@@ -375,11 +375,21 @@ export function BuildTimeline() {
                       src={p.img}
                       alt={_(p.titleZh, p.titleEn)}
                       className="absolute inset-0 w-full h-full object-cover"
-                      style={{ opacity: 0.5 }}
+                      style={{ opacity: 0.75 }}
                       loading="eager"
                     />
-                    {/* Dark overlay for text readability */}
-                    <div className="absolute inset-0 bg-black/45" />
+                    {/* Edge vignette: fades image into black background */}
+                    <div
+                      className="absolute inset-0 pointer-events-none z-[2]"
+                      style={{
+                        background: `
+                          radial-gradient(ellipse 75% 65% at 50% 45%, transparent 40%, rgba(0,0,0,0.55) 75%, rgba(0,0,0,0.95) 100%)
+                        `,
+                      }}
+                      aria-hidden="true"
+                    />
+                    {/* Subtle dark overlay for text readability */}
+                    <div className="absolute inset-0 bg-black/20 z-[3]" />
 
                     {/* Content layer above image */}
                     <div className="relative z-10 flex flex-col items-center justify-center">
