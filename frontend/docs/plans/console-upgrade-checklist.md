@@ -13,11 +13,11 @@
 |-------|------|--------|---------|--------|------|
 | Phase 0 | Taste-Skill 基础对齐 | 8 | 1–2 天 | 8 | ✅ 完成 |
 | Phase 1 | 基础设施 + 全局系统 | 7 | 2–3 天 | 7 | ✅ 完成 |
-| Phase 2 | Treasury — Flow State | 10 | 3–4 天 | 0 | ⏳ 未开始 |
+| Phase 2 | Treasury — Flow State | 10 | 3–4 天 | 9 | ✅ 完成 |
 | Phase 3 | Wallets + Analytics | 12 | 3–4 天 | 0 | ⏳ 未开始 |
 | Phase 4 | Policy + Agent | 13 | 4–5 天 | 0 | ⏳ 未开始 |
 | Phase 5 | 打磨 + 验收 | 8 | 2–3 天 | 0 | ⏳ 未开始 |
-| **合计** | — | **58** | **12–16 天** | **28** | **48%** |
+| **合计** | — | **58** | **12–16 天** | **31** | **53%** |
 
 ---
 
@@ -126,13 +126,14 @@
 - [x] **2.7** Action Panel Step 3：全屏 overlay + `ShootingStars` + 旋转环 + shimmer 进度条
   - 文件：同上
   - 验收：✅ 双层旋转环 + grid overlay + blue orb + shimmer 进度条
-- [ ] **2.8** Action Panel Step 4：`StatsSection` Tab 切换 + `GradientText` txHash
+- [x] **2.8** Action Panel Step 4：`StatsSection` Tab 切换 + `GradientText` txHash
   - 文件：同上
-  - 验收：三面板 Tab 切换（Step 4 内容已存在，txHash 需 GradientText）
-- [ ] **2.9** Risk Gate：Framer Motion shake + `ScrambleText` 拦截原因解码
-  - 文件：同上
-  - 验收：RiskGateAnimation 已有 shake，ScrambleText 解码待加
-- [ ] **2.10** 创新特效：Chromatic aberration（色差故障）风险态
+  - 验收：✅ Audit 区 + CAW 区 txHash 均用 GradientText 高亮
+- [x] **2.9** Risk Gate：Framer Motion shake + `ScrambleText` 拦截原因解码
+  - 文件：`components/console/risk-gate-anim.tsx`
+  - 验收：✅ reason 用 ScrambleValue 解码（1s duration, 0.3s delay）
+- [ ] **2.10** 创新特效：Chromatic aberration（色差故障）风险态 ⏭️ 跳过
+  - 说明：Phase 2 核心视觉升级已完成，2.10 作为可选增强项延后
   - 文件：`lib/effects/chromatic-aberration.ts`
   - 验收：Blocked 时屏幕边缘 RGB 分离
 
@@ -359,7 +360,8 @@
 | | | Phase 1：全局背景层( GridBackground+NoiseOverlay)、GradientOrb扩展(coral/violet)、5页面氛围色、Sidebar折叠(bb35f3a5已有)、HolographicButton、AnimatedNumber、GSAP文字特效(SlamText+ScrambleValue+FadeInText fallback) |
 | 2026-06-11 | **前置修复 P1-P3 完成** | ShootingStars内存泄漏修复、BentoCard glowColor、AnimatedNumber springConfig、Sparkles hex支持、ColourfulText性能降级 |
 | | | 进入 Phase 2：Treasury "Flow State Command Center" |
-| 2026-06-11 | **Phase 2 部分完成** | 2.1 Header GradientText+Sparkles、2.2 KPI stagger+hover glow、2.3 Records stagger+pulse、2.4-2.7 Action Panel 各步骤视觉升级（HolographicButton+Sparkles、ColourfulText扫描、双层旋转环+shimmer进度条） |
+| 2026-06-11 | **Phase 2 全部完成（除2.10延后）** | 2.1-2.9 全部完成：Header GradientText+Sparkles、KPI stagger+hover glow、Records stagger+pulse、Action Panel 各步骤升级、txHash GradientText、RiskGate ScrambleText解码 |
+| 2026-06-11 | **进入 Phase 3** | Wallets + Analytics "Holographic Vault System" + "Living Data Organism" |
 
 ---
 
