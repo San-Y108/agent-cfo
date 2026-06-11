@@ -1,8 +1,9 @@
 # AgentCFO 任务看板
 
-> 最后更新：2026年6月10日 实盘核查（统计修正）
+> 最后更新：2026年6月10日 Day 2 总控审视（第二轮）
 > 规则：12 号之后不新增大功能，只修复、打磨、录视频、补材料
-> 核查方式：逐文件检查代码/文档/部署状态，不凭记忆
+>
+> ⚠️ 已发现问题：README 描述 4 个贡献者（含 Data API = 50 USDC），但 `/api/demo-sample` 只返回 3 个（45 USDC）。后端需修复。
 
 ---
 
@@ -13,7 +14,7 @@
 | 🔴 BLOCKED | 卡住了，需要别人介入 |
 | 🟡 TODO | 待开始 |
 | 🔵 IN_PROGRESS | 进行中 |
-| ✅ DONE | 完成，已验证 |
+| ✅ DONE | 完成，已验收 |
 | ❌ CANCELLED | 明确不做 |
 
 ---
@@ -22,15 +23,15 @@
 
 | 岗位 | 负责人 | 进度 | 最大卡点 |
 |------|--------|------|----------|
-| 交付/总控 | San-Y108 (严硕) | ✅ repo + 文档已完成 | 路演讲稿、PPT、视频仍缺 |
-| 后端/Agent | W5W8L9jlu | ✅ P0 + P2 全完成，126 tests pass，Render 已部署 | Render 为 ephemeral/mock-demo；real mode 联调需等 CAW live transfer |
-| 前端 | Aafff623 | ✅ Landing + Demo + Console + Vercel 全完成 | real mode 未在页面切换；截图/demo视频未产出 |
-| 合约/CAW | gitgdut | 🔵 1笔testnet tx已记录 | 仍缺至少2笔tx；需后端发起live transfer后做测试 |
-| 物料/设计 | Eloise-qiu | 🟡 确认加入repo | PPT/视频/截图/Logo/头图全部未产出 |
+| 交付/总控 | San-Y108 (严硕) | ✅ repo + 文档已完成 | 物料兜底 + 路演准备 |
+| 后端/Agent | W5W8L9jlu | ✅ P0 + P1 Render + P2 spike + Phase 4C closeout | **demo-sample 缺 Data API（T-076）** + P2 收尾范围已明确（见后端聚焦决策文档） |
+| 前端 | Aafff623 | ✅ Landing + Demo + Console + Vercel | PR #1 未合并；real mode 未接入 /demo |
+| 合约/CAW | gitgdut | ✅ API Key + Wallet + 1 笔 testnet tx | **仍缺至少 2 笔 tx 或需调整提交口径** |
+| 物料/设计 | Eloise-qiu | 🔴 **0 产出，已逾期 2 天** | PPT/视频/头图/Logo/截图全部缺失，**今日必须确认产能或启动兜底** |
 
 ---
 
-## Phase 0：启动对齐（6月8日）
+## Phase 0：启动对齐（6月8日）✅ 全部完成
 
 ### 总控（严硕）
 
@@ -55,7 +56,7 @@
 | T-014 | GET /api/audit-report/{id} | 可调用接口 | 6月8日 | ✅ DONE |
 | T-015 | 风险检查引擎 6 条规则 | budget/whitelist/limit/token/duplicate wallet/duplicate task | 6月8日 | ✅ DONE |
 | T-016 | mock CAW 适配器 | caw_adapter.py (mock) | 6月8日 | ✅ DONE |
-| T-017 | 测试用例 | test_mvp_flow.py → 当前 126 tests pass | 6月8日 | ✅ DONE |
+| T-017 | 测试用例 | test_mvp_flow.py | 6月8日 | ✅ DONE |
 
 ### 前端（Aafff623）
 
@@ -63,7 +64,7 @@
 |----|------|--------|------|------|
 | T-020 | 确认技术栈 | Next.js + TypeScript + Tailwind | 6月8日 18:00 | ✅ DONE |
 | T-021 | 脚手架跑通 | pnpm-lock + 完整组件结构 | 6月8日 22:00 | ✅ DONE |
-| T-022 | 对接后端 mock API | lib/api/ 层已对齐 5 个接口 | 6月9日 | ✅ DONE |
+| T-022 | 对接后端 mock API | 能调用 5 个接口（含 caw-status） | 6月9日 | ✅ DONE |
 
 ### 合约/CAW（gitgdut）
 
@@ -74,16 +75,16 @@
 | T-032 | 搞懂 Cobo 权限模型 | 三层权限 + 双层风控方案 | 6月9日 | ✅ DONE |
 | T-033 | 创建 Agent Wallet | Wallet 地址 | 6月9日 | ✅ DONE |
 | T-034 | 准备测试网资金 | ETH 或 USDC 余额截图 | 6月9日 | ✅ DONE |
-| T-035 | 第一笔测试网付款 | 1 个 tx hash 已写入 README；区块浏览器链接/截图待补 | 6月10日 | ✅ DONE |
+| T-035 | 第一笔测试网付款 | 1 个 tx hash 已写入 README | 6月10日 | ✅ DONE |
 
 ### 物料/设计（Eloise-qiu）
 
 | ID | 任务 | 交付物 | 截止 | 状态 |
 |----|------|--------|------|------|
-| T-040 | Logo 初稿 | 项目名已确定为 AgentCFO；Logo 未产出 | 6月8日 22:00 | ❌ 未产出 |
-| T-041 | PPT 7 页大纲 | 初版 PPT 文件 | 6月9日 | ❌ 未产出 |
-| T-042 | Demo 视频脚本 | 逐段台词 + 画面描述 | 6月9日 | ❌ 未产出 |
-| T-043 | 赛道匹配说明文案 | 中英文各一版 | 6月9日 | ❌ 未产出 |
+| T-040 | 项目名 + Logo 初稿 | 草图或方向 | 6月8日 22:00 | 🔴 BLOCKED（逾期 2 天，0 产出） |
+| T-041 | PPT 7 页大纲 | 初版 PPT 文件 | 6月9日 | 🔴 BLOCKED（逾期 1 天） |
+| T-042 | Demo 视频脚本 | 逐段台词 + 画面描述 | 6月9日 | 🔴 BLOCKED（逾期 1 天） |
+| T-043 | 赛道匹配说明文案 | 中英文各一版 | 6月9日 | 🔴 BLOCKED（逾期 1 天） |
 
 ---
 
@@ -94,45 +95,50 @@
 | ID | 任务 | 交付物 | 截止 | 状态 |
 |----|------|--------|------|------|
 | T-050 | 启用/验证真实 CAW mode | opt-in testnet RealCawAdapter skeleton + 1 笔 tx evidence | 6月10日 | ✅ DONE |
-| T-051 | 加入 LLM 生成付款计划 | payment_planner.py (OpenAI) | 6月9日 | ✅ DONE（mock+OpenAI双模式） |
-| T-052 | 和前端联调 | 前端 lib/api/ 已对齐后端；real mode 页面切换待做 | 6月9日 | ✅ DONE（adapter层完成） |
-| T-053 | 和 CAW 联调 | 本地 live test 1 笔完成；Render 上为 mock-demo | 6月10日 | 🔵 等CAW补tx |
+| T-051 | 加入 LLM 生成付款计划 | payment_planner.py (OpenAI) | 6月9日 | ✅ DONE（已实现 OpenAI Structured Outputs） |
+| T-052 | 和前端联调 | 前端能调通 5 个接口 | 6月9日 | 🔵 IN_PROGRESS（线上 real mode 待验证） |
+| T-053 | 和 CAW 联调 | 本地 live test 完成 1 笔 | 6月10日 | ✅ DONE（1 笔 testnet evidence） |
 | T-054 | 部署后端到公网 | https://agentcfo-backend.onrender.com | 6月10日 | ✅ DONE |
 | T-055 | SQLite 持久化 | store.py SQLiteStore + 测试 | 6月10日 | ✅ DONE |
-| T-056 | CAW 状态查询接口 | GET /api/caw-status/{id} + /refresh | 6月10日 | ✅ DONE |
-| T-057 | P2 demo-safe spike | 20+ 个 P2 端点（evidence timeline, demo scenarios, risk what-if, policy guardrails, evidence export, Request Finance preflight/lifecycle/webhook, Sablier payroll sim, Safe guard dry-run, multi-agent coordination, demo runbook/contracts, openapi-lite） | 6月9日 | ✅ DONE |
+| T-056 | CAW 状态查询接口 | GET /api/caw-status/{id} | 6月10日 | ✅ DONE |
+| T-057 | P2 demo-safe spike | 全部 P2 metadata/preview/simulation endpoints | 6月10日 | ✅ DONE |
+| T-058 | P2 demo contracts + runbook | /api/demo/runbook, /api/demo/contracts | 6月10日 | ✅ DONE |
+| T-059 | Request Finance live spike | env-gated read-only + off-chain create（guard 已关） | 6月10日 | ✅ DONE |
+| T-076 | 修复 demo-sample 数据 | 加入 Data API（5 USDC），对齐 README 4 贡献者场景 | 6月10日 | 🟡 TODO |
 
 ### 前端
 
 | ID | 任务 | 交付物 | 截止 | 状态 |
 |----|------|--------|------|------|
-| T-060 | 主流程页面 4 步 | demo/page.tsx + 分步揭示工作流 | 6月9日 | ✅ DONE |
-| T-061 | Bob 标红展示 | Bob blocked 标红 + 警告提示 | 6月9日 | ✅ DONE |
-| T-062 | 人工确认按钮 | Approve & Execute 真实交互 | 6月9日 | ✅ DONE |
-| T-063 | tx hash 展示 | copyable-hash 组件 | 6月10日 | ✅ DONE |
-| T-064 | 审计报告页 | audit-report 组件 | 6月10日 | ✅ DONE |
-| T-065 | Mock 模式兜底 | lib/mock/ + demo-data 完整 mock 层 | 6月10日 | ✅ DONE |
+| T-060 | 主流程页面 4 步 | demo/page.tsx + 4 个组件 | 6月9日 | ✅ DONE |
+| T-061 | Bob 标红展示 | risk-gate.tsx Blocked 状态 | 6月9日 | ✅ DONE |
+| T-062 | 人工确认按钮 | human-approval.tsx | 6月9日 | ✅ DONE |
+| T-063 | tx hash 展示 | copyable-hash.tsx 组件 | 6月10日 | ✅ DONE |
+| T-064 | 审计报告页 | audit-report.tsx | 6月10日 | ✅ DONE |
+| T-065 | Mock 模式兜底 | lib/mock/ 完整 mock 层 | 6月10日 | ✅ DONE |
 | T-066 | 部署前端到公网 | https://agentcfo-frontend.vercel.app | 6月10日 | ✅ DONE |
-| T-067 | Landing 重设计 | Velorix Hero + scroll sections（Problem/Workflow/Risk/Wallet/Audit） | 6月9日 | ✅ DONE |
-| T-068 | 业务工作台 /console | Treasury/Wallets/Analytics/Policy 四页完整迁移 | 6月9日 | ✅ DONE |
-| T-069 | 主题+双语 | 暗亮模式 + 中英文切换 | 6月9日 | ✅ DONE |
+| T-067 | Landing 重设计 | Velorix Hero + scroll sections | 6月9日 | ✅ DONE |
+| T-068 | Console 工作台 | /console 4 tab（Treasury/Wallets/Analytics/Policy） | 6月9日 | ✅ DONE |
+| T-069 | PR #1 合并或同步 main | feat/frontend-bootstrap → main | 6月10日 | 🔵 IN_PROGRESS |
+| T-070 | Real mode 接入 /demo | 调用 runDemoFlow + loading/error 态 | 6月11日 | 🟡 TODO |
 
 ### 合约/CAW
 
 | ID | 任务 | 交付物 | 截止 | 状态 |
 |----|------|--------|------|------|
-| T-070 | 验证真实 CAW adapter | Phase 4C skeleton + 1 笔 testnet evidence | 6月10日 | ✅ DONE |
-| T-071 | 和后端联调 | 本地 live transfer 1 笔完成 | 6月10日 | ✅ DONE |
-| T-072 | 完成至少 3 笔测试网付款 | 3 个 tx hash | 6月10日 | 🔵 已有1笔，等后端发起live transfer后补2笔 |
-| T-073 | 整理 CAW 配置说明 | 518行配置文档已交付 | 6月10日 | ✅ DONE |
+| T-071 | 验证真实 CAW adapter | Phase 4C skeleton + 1 笔 testnet evidence | 6月10日 | ✅ DONE |
+| T-072 | 和后端联调 | 本地 live transfer 已完成 | 6月10日 | ✅ DONE |
+| T-073 | 补充测试网付款证据 | 2-3 个 tx hash（内部目标，非赛道硬性要求；已有 1 笔） | 6月10日 | 🟡 TODO（**今日和后端配合执行，能补就补**） |
+| T-074 | 整理 CAW 配置说明 | 配置文档 | 6月10日 | ✅ DONE |
+| T-075 | 截图脱敏补充 | 区块浏览器截图 + 脱敏处理 | 6月11日 | 🟡 TODO |
 
 ### 物料/设计
 
 | ID | 任务 | 交付物 | 截止 | 状态 |
 |----|------|--------|------|------|
-| T-080 | README 头图 16:9 | poster.png | 6月10日 | ❌ 未产出 |
-| T-081 | PPT 初版 | 7 页完整 PPT | 6月10日 | ❌ 未产出 |
-| T-082 | Demo 视频脚本终版 | 逐段台词定稿 | 6月10日 | ❌ 未产出 |
+| T-080 | README 头图 16:9 | poster.png | 6月10日 | 🔴 BLOCKED |
+| T-081 | PPT 初版 | 7 页完整 PPT | 6月10日 | 🔴 BLOCKED |
+| T-082 | Demo 视频脚本终版 | 逐段台词定稿 | 6月10日 | 🔴 BLOCKED |
 
 ---
 
@@ -164,59 +170,36 @@
 
 ---
 
-## 关键依赖关系（6月10日 实盘核查版）
+## 关键依赖关系
 
 ```
-后端 P0 mock API（✅ 已完成 + 已部署 Render）
-    → 前端已对接（✅ lib/api/ 层已对齐）
-    → 前端 Landing + Demo + Console 全部完成（✅ Vercel 部署）
+后端 P0/P1/P2 API（✅ 已完成 + 已部署 Render）
+    → 前端已对接 mock mode（✅ lib/api/ 层已对齐）
+    → 前端 real mode 待接入（🟡 需 Render URL + CORS）
+    → ⚠️ demo-sample 缺 Data API（T-076，今天修）
 
-后端 P2 demo-safe spike（✅ 20+ 端点已实现）
-    → 前端暂未接入 P2 展示
+前端主流程（✅ Landing + Demo + Console + Vercel）
+    → PR #1 待合并（T-069）
+    → real mode /demo 待接入（T-070）
+    → ⚠️ /demo 用硬编码 mock 数据，未调用后端 API（短期不影响路演，需心里有数）
 
-CAW 验证（✅ API Key + Wallet + 配置文档 + 1 笔低额 testnet tx）
-    → 仍缺至少 2 笔 tx
-    → 需后端发起 live transfer，CAW 同学执行 + 记录
-    → 截图仍需脱敏补充
+CAW 验证（✅ 1 笔 testnet tx）
+    → 补充证据：和后端配合跑第 2-3 笔（T-073，内部目标非硬性要求）
+    → 截图脱敏（T-075，可独立完成）
 
-设计/物料（❌ 全部未产出）
-    → PPT / 视频 / 截图 / Logo / 头图 / 视频脚本
-    → 这是当前最大风险：距离提交仅剩 3 天
+设计/物料（🔴 Eloise-qiu 0 产出，逾期 2 天）
+    → PPT / 视频 / 头图 / Logo / 截图全部缺失
+    → 今日必须确认产能或启动兜底
 ```
 
 ---
 
-## 合约同学可支援事项
-
-基于 gitgdut 同学"手头活不多，愿意帮忙"的表态，以下是可以支援的方向：
-
-| 优先级 | 任务 | 说明 | 前置条件 |
-|--------|------|------|----------|
-| 🔴 高 | 补 2 笔 testnet tx | 和后端配合，等后端在 Render 上发起 live transfer，执行并记录 tx hash | 后端同学配置 Render 环境变量 + 发起 transfer |
-| 🔴 高 | 截图脱敏 | 把已有 CAW 截图中的 API Key / raw provider response 脱敏 | 无 |
-| 🟡 中 | 协助前端 P2 展示 | 如果前端需要接入 P2 preview 区域，CAW 同学可以协助理解 Request Finance / Sablier / Safe 的接口含义 | 前端同学确认是否需要 |
-| 🟢 低 | 协助物料同学 | 帮物料同学理解 CAW 技术细节，写入 PPT/视频脚本 | 物料同学启动后 |
-
----
-
-## 任务统计（6月10日 核查）
+## 任务统计
 
 | 状态 | 数量 |
 |------|------|
-| 🔴 BLOCKED | 0 |
-| 🟡 TODO | 14 |
+| 🔴 BLOCKED | 7 |
+| 🟡 TODO | 18 |
 | 🔵 IN_PROGRESS | 2 |
-| ✅ DONE | 44 |
-| ❌ 未产出 | 7（物料 T-040~T-043, T-080~T-082） |
-| **总计** | **67** |
-
----
-
-## 最大风险清单（6月10日）
-
-| 风险 | 等级 | 说明 |
-|------|------|------|
-| 物料全部未产出 | 🔴 P0 | PPT/视频/截图/Logo 全缺，距离提交仅3天 |
-| CAW 缺 2 笔 tx | 🟡 P2 | 需后端+CAW配合发起 live transfer |
-| Render 为 ephemeral | 🟡 P2 | 免费套餐不支持 persistent disk |
-| 前端 real mode 未切换 | 🟢 P3 | mock mode 足够演示；real 为加分项 |
+| ✅ DONE | 45 |
+| ❌ CANCELLED | 0 |
