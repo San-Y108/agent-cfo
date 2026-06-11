@@ -1,7 +1,6 @@
 "use client";
 
 import React from "react";
-import { AgentCFOBackgroundTexture } from "@/components/landing/agentcfo-background-texture";
 import { HolographicCard } from "./holographic-card";
 import { CardSplitter } from "./card-splitter";
 import { Web3NodeCloud } from "./web3-node-cloud";
@@ -17,6 +16,9 @@ import { LandingFooter } from "./landing-footer";
  * LandingSections — modules rendered below the Ramp-style hero.
  * All sections live on a Ramp near-black (#0D0D0D) background.
  *
+ * The global particle background (GlobalParticleBackground) is rendered
+ * at the page level in page.tsx as a fixed layer behind all content.
+ *
  * Flow (top → bottom):
  *   HolographicCard + Web3NodeCloud  |  CardSplitter
  *   PipelineShowcase (5 stages, GSAP horizontal pin scroll)
@@ -30,47 +32,39 @@ export function LandingSections() {
       className="relative w-full"
       style={{ backgroundColor: "#0D0D0D", fontFamily: "Inter, sans-serif" }}
     >
-      {/* Pixelated particle field — background texture for all sections below Hero */}
-      <div className="absolute inset-0 z-0 pointer-events-none">
-        <AgentCFOBackgroundTexture />
-      </div>
-
-      {/* Content sits above particle texture */}
-      <div className="relative z-10">
-        {/* Hero-adjacent showcase row: left = AI Agent + Web3 Map, right = Budget Cards */}
-        <section id="platform" className="w-full">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 w-full max-w-7xl mx-auto px-6 pt-16 items-start">
-            <div className="flex flex-col gap-8">
-              <HolographicCard />
-              <Web3NodeCloud />
-            </div>
-            <CardSplitter />
+      {/* Hero-adjacent showcase row: left = AI Agent + Web3 Map, right = Budget Cards */}
+      <section id="platform" className="w-full">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 w-full max-w-7xl mx-auto px-6 pt-16 items-start">
+          <div className="flex flex-col gap-8">
+            <HolographicCard />
+            <Web3NodeCloud />
           </div>
-        </section>
+          <CardSplitter />
+        </div>
+      </section>
 
-        {/* The 5-stage pipeline */}
-        <PipelineShowcase />
+      {/* The 5-stage pipeline */}
+      <PipelineShowcase />
 
-        <section id="guardrails" className="w-full">
-          <GuardrailsCTA />
-        </section>
+      <section id="guardrails" className="w-full">
+        <GuardrailsCTA />
+      </section>
 
-        {/* Built-by team + build timeline merged module */}
-        <section id="team" className="w-full">
-          <TeamShowcase />
-          <BuildTimeline />
-        </section>
+      {/* Built-by team + build timeline merged module */}
+      <section id="team" className="w-full">
+        <TeamShowcase />
+        <BuildTimeline />
+      </section>
 
-        {/* FAQ + HSM 2-column layout */}
-        <section id="faq" className="w-full">
-          <div className="max-w-6xl mx-auto mt-28 border-t pt-16 grid grid-cols-1 md:grid-cols-5 gap-12 text-left border-white/10 px-6">
-            <FAQSection />
-            <HSMMonitor />
-          </div>
-        </section>
+      {/* FAQ + HSM 2-column layout */}
+      <section id="faq" className="w-full">
+        <div className="max-w-6xl mx-auto mt-28 border-t pt-16 grid grid-cols-1 md:grid-cols-5 gap-12 text-left border-white/10 px-6">
+          <FAQSection />
+          <HSMMonitor />
+        </div>
+      </section>
 
-        <LandingFooter />
-      </div>
+      <LandingFooter />
     </div>
   );
 }

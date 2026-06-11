@@ -125,19 +125,20 @@ export function BuildTimeline() {
       const texts = textRefs.current.filter(Boolean) as HTMLDivElement[];
       if (frames.length === 0 || texts.length === 0) return;
 
-      // Initial states — first frame active, rest dimmed
+      // Initial states — first frame/text active, rest hidden
       frames.forEach((frame, i) => {
         gsap.set(frame, {
-          scale: i === 0 ? 1 : 0.88,
-          opacity: i === 0 ? 1 : 0.3,
-          filter: i === 0 ? "brightness(1) contrast(1)" : "brightness(0.45) contrast(1.1)",
+          scale: i === 0 ? 1 : 0.9,
+          opacity: i === 0 ? 1 : 0,
+          y: i === 0 ? 0 : 30,
+          filter: i === 0 ? "brightness(1) contrast(1)" : "brightness(0.5) contrast(1.1)",
         });
       });
 
       texts.forEach((text, i) => {
         gsap.set(text, {
           opacity: i === 0 ? 1 : 0,
-          y: i === 0 ? 0 : 32,
+          y: i === 0 ? 0 : 30,
         });
       });
 
@@ -160,17 +161,18 @@ export function BuildTimeline() {
             frames.forEach((f, i) => {
               gsap.set(f, {
                 opacity: i === activeIdx ? 1 : 0,
-                scale: i === activeIdx ? 1 : 0.88,
+                scale: i === activeIdx ? 1 : 0.9,
+                y: i === activeIdx ? 0 : i < activeIdx ? -30 : 30,
                 filter:
                   i === activeIdx
                     ? "brightness(1) contrast(1)"
-                    : "brightness(0.45) contrast(1.1)",
+                    : "brightness(0.5) contrast(1.1)",
               });
             });
             texts.forEach((t, i) => {
               gsap.set(t, {
                 opacity: i === activeIdx ? 1 : 0,
-                y: i === activeIdx ? 0 : i < activeIdx ? -24 : 32,
+                y: i === activeIdx ? 0 : i < activeIdx ? -30 : 30,
               });
             });
           },
@@ -186,55 +188,60 @@ export function BuildTimeline() {
       for (let i = 0; i < frames.length - 1; i++) {
         const slot = (i + 1) / (frames.length - 1);
 
-        // Deactivate current frame
+        // ── Frame transition: snap-like with minimal overlap ─────────────
+        // Old frame exits quickly
         tl.to(
           frames[i],
           {
-            scale: 0.88,
-            opacity: 0.3,
-            filter: "brightness(0.45) contrast(1.1)",
-            duration: 0.3,
-            ease: "power2.out",
+            scale: 0.9,
+            opacity: 0,
+            y: -30,
+            filter: "brightness(0.5) contrast(1.1)",
+            duration: 0.12,
+            ease: "power1.in",
           },
-          slot - 0.14
+          slot - 0.06
         );
 
-        // Activate next frame
-        tl.to(
+        // New frame enters immediately after
+        tl.fromTo(
           frames[i + 1],
+          { scale: 0.9, opacity: 0, y: 30, filter: "brightness(0.5) contrast(1.1)" },
           {
             scale: 1,
             opacity: 1,
+            y: 0,
             filter: "brightness(1) contrast(1)",
-            duration: 0.3,
-            ease: "power2.out",
+            duration: 0.15,
+            ease: "power1.out",
           },
-          slot - 0.14
+          slot - 0.04
         );
 
-        // Hide current text
+        // ── Text transition: snap-like with minimal overlap ──────────────
+        // Old text exits quickly
         tl.to(
           texts[i],
           {
             opacity: 0,
-            y: -24,
-            duration: 0.22,
-            ease: "power2.in",
+            y: -30,
+            duration: 0.1,
+            ease: "power1.in",
           },
-          slot - 0.12
+          slot - 0.05
         );
 
-        // Show next text
+        // New text enters immediately after
         tl.fromTo(
           texts[i + 1],
-          { opacity: 0, y: 32 },
+          { opacity: 0, y: 30 },
           {
             opacity: 1,
             y: 0,
-            duration: 0.28,
-            ease: "power2.out",
+            duration: 0.12,
+            ease: "power1.out",
           },
-          slot - 0.08
+          slot - 0.03
         );
       }
     },
@@ -340,15 +347,15 @@ export function BuildTimeline() {
                 <SprocketStrip />
               </div>
 
-              {/* Film frames */}
-              <div className="absolute inset-x-[28px] inset-y-3 flex flex-col gap-2">
+              {/* Film frames — stacked absolutely, only active frame visible */}
+              <div className="absolute inset-x-[28px] inset-y-3 relative">
                 {PHASES.map((p, i) => (
                   <div
                     key={p.phase}
                     ref={(el) => {
                       frameRefs.current[i] = el;
                     }}
-                    className="relative flex-1 flex flex-col items-center justify-center"
+                    className="absolute inset-0 flex flex-col items-center justify-center"
                     style={{
                       background: `
                         linear-gradient(135deg, ${p.accentMuted} 0%, rgba(255,255,255,0.01) 60%, rgba(0,0,0,0.15) 100%)
