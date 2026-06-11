@@ -171,7 +171,7 @@ export function DecodeHeadline({
     return (
       <Tag ref={containerRef as any} className={className} style={style}>
         {lines.map((line, i) => (
-          <div key={i} className="font-medium text-white" style={style}>
+          <div key={i} className="font-medium text-white" style={{ ...style, whiteSpace: "nowrap" }}>
             {line}
           </div>
         ))}
@@ -194,6 +194,7 @@ export function DecodeHeadline({
             fontSize: style?.fontSize,
             letterSpacing: style?.letterSpacing || "-0.022em",
             lineHeight: style?.lineHeight || 1.08,
+            whiteSpace: "nowrap",
           }}
         >
           {line.split("").map((char, charIdx) => {

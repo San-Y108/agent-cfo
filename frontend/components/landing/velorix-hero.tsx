@@ -506,21 +506,17 @@ export function VelorixHero() {
           charStagger={0.025}
         />
 
-        <DecodeHeadline
-          as="p"
-          text={t("hero.subtitle")}
-          accent="rgba(255,255,255,0.5)"
-          className="mt-6 text-white/90 text-sm md:text-base leading-relaxed max-w-lg"
+        <p
+          className="mt-6 text-white/90 text-sm md:text-base leading-relaxed max-w-lg italic"
           style={{
             fontFamily: "Inter, sans-serif",
             letterSpacing: "-0.01em",
             fontSize: "clamp(0.875rem, 1.2vw, 1rem)",
             lineHeight: 1.6,
           }}
-          scrollTriggerStart="top 120%"
-          scrambleDelay={0.8}
-          charStagger={0.015}
-        />
+        >
+          {t("hero.subtitle")}
+        </p>
 
         <Link
           href="/console"
