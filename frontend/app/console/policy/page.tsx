@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { useApp } from "@/lib/i18n/context";
 import { HolographicButton } from "@/components/ui/holographic-button";
+import { GradientOrb } from "@/components/ui/aceternity/background";
 
 const CORAL = "#FB7185";
 const CORAL_LIGHT = "#F43F5E";
@@ -205,7 +206,10 @@ export default function PolicyPage() {
   };
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-6 space-y-6 relative">
+      {/* ─── Ambient orb: Policy = coral ─── */}
+      <GradientOrb color="coral" className="-top-32 -right-32" />
+
       {/* ── Header ── */}
       <motion.div
         initial={{ opacity: 0, y: 12 }}

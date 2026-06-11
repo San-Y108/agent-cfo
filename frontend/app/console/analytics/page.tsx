@@ -23,6 +23,7 @@ import {
 } from "recharts";
 import { useApp } from "@/lib/i18n/context";
 import { AnimatedNumber } from "@/components/ui/aceternity/animated-number";
+import { GradientOrb } from "@/components/ui/aceternity/background";
 
 const VIOLET = "#C084FC";
 const VIOLET_LIGHT = "#A855F7";
@@ -151,7 +152,10 @@ export default function AnalyticsPage() {
   const totalTxCount = MONTHLY_VOLUME_DATA.reduce((a, d) => a + d.transactions, 0);
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-6 space-y-6 relative">
+      {/* ─── Ambient orb: Analytics = violet ─── */}
+      <GradientOrb color="violet" className="-top-32 -right-32" />
+
       {/* ── Header + range toggle ── */}
       <motion.div
         initial={{ opacity: 0, y: 12 }}

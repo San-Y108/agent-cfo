@@ -18,6 +18,7 @@ import {
 import { useApp } from "@/lib/i18n/context";
 import { WalletHoloCard, WalletTopology } from "@/components/console/wallet-hologram";
 import { HolographicButton } from "@/components/ui/holographic-button";
+import { GradientOrb } from "@/components/ui/aceternity/background";
 import { AnimatedNumber } from "@/components/ui/aceternity/animated-number";
 
 const BLUE = "#60A5FA";
@@ -167,7 +168,10 @@ export default function WalletsPage() {
   const totalWalletValue = activeWallet.tokens.reduce((acc, tok) => acc + tok.valueUsd, 0);
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-6 space-y-6 relative">
+      {/* ─── Ambient orb: Wallets = blue ─── */}
+      <GradientOrb color="blue" className="-top-32 -right-32" />
+
       {/* Header */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 p-5 rounded-xl border border-border-token dark:border-white/[0.06] bg-surface-2 dark:bg-white/[0.03]">
         <div>

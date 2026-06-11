@@ -195,6 +195,9 @@ export default function TreasuryPage() {
 
   return (
     <div className="relative w-full min-h-full">
+      {/* ─── Ambient orb: Treasury = lime ─── */}
+      <GradientOrb color="lime" className="-top-32 -right-32" />
+
       {/* ─── Header ─── */}
       <div className="px-6 py-8 lg:px-10 lg:py-10">
         <motion.div

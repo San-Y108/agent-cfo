@@ -75,7 +75,7 @@ export function GradientOrb({
   color = "blue",
 }: {
   className?: string;
-  color?: "blue" | "purple" | "cyan" | "amber" | "emerald" | "lime";
+  color?: "blue" | "purple" | "cyan" | "amber" | "emerald" | "lime" | "coral" | "violet";
 }) {
   const colorMap = {
     blue: "bg-blue-500/20",
@@ -84,6 +84,8 @@ export function GradientOrb({
     amber: "bg-amber-500/20",
     emerald: "bg-emerald-500/20",
     lime: "bg-[#B5FF4D]/20",
+    coral: "bg-[#FB7185]/20",
+    violet: "bg-[#C084FC]/20",
   };
 
   return (
