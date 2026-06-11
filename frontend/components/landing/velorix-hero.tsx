@@ -474,6 +474,7 @@ export function VelorixHero() {
           loop
           muted
           playsInline
+          suppressHydrationWarning
         />
       </div>
 
