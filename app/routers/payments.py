@@ -184,7 +184,7 @@ def get_demo_sample():
         "externalSystemTouched": False,
         "notes": [
             "Use this payload with POST /api/payment-plan.",
-            "Alice and Charlie are whitelisted; Bob is intentionally not whitelisted.",
+            "Alice, Charlie, and Data API are whitelisted; Bob is intentionally not whitelisted.",
             "This endpoint does not create plans, execute payments, or seed storage.",
         ],
         "paymentPlanRequest": {
@@ -226,7 +226,7 @@ def get_demo_sample():
                 "monthlyBudget": 50,
                 "singlePaymentLimit": 25,
                 "allowedToken": "USDC",
-                "whitelist": ["0xAlice", "0xCharlie"],
+                "whitelist": ["0xAlice", "0xCharlie", "0xDataAPI"],
                 "requiresHumanApproval": True,
             },
         },
