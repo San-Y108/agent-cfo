@@ -130,12 +130,15 @@ export function BuildTimeline() {
       const texts = textRefs.current.filter(Boolean) as HTMLDivElement[];
       if (frames.length === 0 || texts.length === 0) return;
 
-      // Initial states — first frame active, rest rolled below viewport
+      const viewport = sectionRef.current?.querySelector(".timeline-viewport") as HTMLElement | null;
+      if (!viewport) return;
+
+      // Use yPercent (CSS translateY %) — avoids GSAP pixel-calc issues during hydration
       frames.forEach((frame, i) => {
         gsap.set(frame, {
           opacity: i === 0 ? 1 : 0,
-          y: i === 0 ? 0 : "105%",
-          rotateX: i === 0 ? 0 : -20,
+          yPercent: i === 0 ? 0 : 110,
+          rotateX: i === 0 ? 0 : -18,
           transformOrigin: "center bottom",
           filter: i === 0 ? "brightness(1) contrast(1)" : "brightness(0.6) contrast(1.1)",
         });
@@ -148,44 +151,32 @@ export function BuildTimeline() {
         });
       });
 
-      // Build scroll-driven timeline with roll-in/roll-out (scroll-reel) transitions
       const tl = gsap.timeline({
         scrollTrigger: {
           trigger: sectionRef.current,
           start: "top top",
-          end: `+=${frames.length * 85}%`,
-          pin: true,
-          scrub: 0.5,
-          invalidateOnRefresh: true,
-          onRefresh: (self) => {
-            // Force correct visibility states when ScrollTrigger refreshes
-            const progress = self.progress;
-            const activeIdx = Math.min(
-              frames.length - 1,
-              Math.floor(progress * (frames.length - 1) + 0.5)
-            );
-            frames.forEach((f, i) => {
+          end: "bottom bottom",
+          pin: viewport,
+          scrub: 0.6,
+          onLeave: () => {
+            frames.forEach((f) => gsap.set(f, { opacity: 0 }));
+            texts.forEach((t) => gsap.set(t, { opacity: 0 }));
+          },
+          onLeaveBack: () => {
+            frames.forEach((f, i) =>
               gsap.set(f, {
-                opacity: i === activeIdx ? 1 : 0,
-                y: i === activeIdx ? 0 : i < activeIdx ? "-105%" : "105%",
-                rotateX: i === activeIdx ? 0 : i < activeIdx ? 20 : -20,
-                transformOrigin: i < activeIdx ? "center top" : "center bottom",
-                filter:
-                  i === activeIdx
-                    ? "brightness(1) contrast(1)"
-                    : "brightness(0.6) contrast(1.1)",
-              });
-            });
-            texts.forEach((t, i) => {
-              gsap.set(t, {
-                opacity: i === activeIdx ? 1 : 0,
-                y: i === activeIdx ? 0 : i < activeIdx ? -20 : 20,
-              });
-            });
+                opacity: i === 0 ? 1 : 0,
+                yPercent: i === 0 ? 0 : 110,
+                rotateX: i === 0 ? 0 : -18,
+              })
+            );
+            texts.forEach((t, i) =>
+              gsap.set(t, { opacity: i === 0 ? 1 : 0, y: i === 0 ? 0 : 20 })
+            );
           },
           snap: {
             snapTo: 1 / (frames.length - 1),
-            duration: { min: 0.2, max: 0.45 },
+            duration: { min: 0.2, max: 0.4 },
             delay: 0,
             ease: "power2.out",
           },
@@ -195,64 +186,53 @@ export function BuildTimeline() {
       for (let i = 0; i < frames.length - 1; i++) {
         const slot = (i + 1) / (frames.length - 1);
 
-        // ── Frame roll-out: old frame rolls UP and away like a reel ──────
+        // Frame roll-out: old frame rolls UP and away
         tl.to(
           frames[i],
           {
-            y: "-105%",
-            rotateX: 20,
+            yPercent: -110,
+            rotateX: 18,
             transformOrigin: "center top",
             opacity: 0,
             filter: "brightness(0.5) contrast(1.1)",
-            duration: 0.14,
+            duration: 0.15,
             ease: "power2.in",
           },
           slot - 0.07
         );
 
-        // ── Frame roll-in: new frame rolls UP from below like a reel ─────
+        // Frame roll-in: new frame rolls UP from below
         tl.fromTo(
           frames[i + 1],
           {
-            y: "105%",
-            rotateX: -20,
+            yPercent: 110,
+            rotateX: -18,
             transformOrigin: "center bottom",
             opacity: 0,
             filter: "brightness(0.5) contrast(1.1)",
           },
           {
-            y: 0,
+            yPercent: 0,
             rotateX: 0,
             transformOrigin: "center center",
             opacity: 1,
             filter: "brightness(1) contrast(1)",
-            duration: 0.16,
+            duration: 0.17,
             ease: "power2.out",
           },
           slot - 0.04
         );
 
-        // ── Text transition: slide with fade ─────────────────────────────
+        // Text transition
         tl.to(
           texts[i],
-          {
-            opacity: 0,
-            y: -20,
-            duration: 0.1,
-            ease: "power1.in",
-          },
+          { opacity: 0, y: -20, duration: 0.1, ease: "power1.in" },
           slot - 0.05
         );
-
         tl.fromTo(
           texts[i + 1],
           { opacity: 0, y: 20 },
-          {
-            opacity: 1,
-            y: 0,
-            duration: 0.12,
-            ease: "power1.out",
-          },
+          { opacity: 1, y: 0, duration: 0.12, ease: "power1.out" },
           slot - 0.03
         );
       }
@@ -267,8 +247,8 @@ export function BuildTimeline() {
       className="relative w-full"
       style={{ height: `${PHASES.length * 100}vh`, fontFamily: "Inter, sans-serif" }}
     >
-      {/* ─── Main cinematic viewport (sticky) ─────────────────────────── */}
-      <div className="sticky top-0 h-screen flex items-center justify-center px-6 md:px-12 lg:px-20">
+      {/* ─── Main cinematic viewport (pinned by ScrollTrigger) ───────── */}
+      <div className="timeline-viewport h-screen w-full flex items-center justify-center px-6 md:px-12 lg:px-20">
         <div className="flex flex-col lg:flex-row items-center justify-center gap-12 lg:gap-24 xl:gap-32 w-full max-w-7xl">
           {/* ─── Left: Editorial copy ─────────────────────────────────── */}
           <div className="relative w-full lg:w-[440px] xl:w-[480px] h-[200px] lg:h-[260px]">
@@ -360,7 +340,7 @@ export function BuildTimeline() {
               </div>
 
               {/* Film frames — stacked absolutely, only active frame visible */}
-              <div className="absolute inset-x-[28px] inset-y-3" style={{ perspective: 900 }}>
+              <div className="absolute inset-x-[28px] inset-y-3" style={{ perspective: 900, transformStyle: "preserve-3d" }}>
                 {PHASES.map((p, i) => (
                   <div
                     key={p.phase}
