@@ -31,6 +31,8 @@ import { RecordsImport } from "@/components/console/records-import";
 import { StatCard } from "@/components/ui/aceternity/stats-section";
 import { AnimatedNumber } from "@/components/ui/aceternity/animated-number";
 import { GradientOrb } from "@/components/ui/aceternity/background";
+import { GradientText } from "@/components/ui/aceternity/colourful-text";
+import { Sparkles as SparklesFX } from "@/components/ui/aceternity/sparkles";
 import { HolographicButton } from "@/components/ui/holographic-button";
 import { FlowTimeline } from "@/components/console/flow-timeline";
 import { RiskGateAnimation } from "@/components/console/risk-gate-anim";
@@ -215,11 +217,17 @@ export default function TreasuryPage() {
               {_("付款执行中心", "Payment Execution Center")}
             </span>
           </div>
-          <h1
-            className="text-2xl font-semibold text-fg leading-tight tracking-tight"
-          >
-            {_("统筹月度贡献结算", "Monthly Contribution Settlement")}
-          </h1>
+          <div className="relative inline-block">
+            <GradientText className="text-2xl font-semibold leading-tight tracking-tight"
+            >
+              {_("统筹月度贡献结算", "Monthly Contribution Settlement")}
+            </GradientText>
+            <SparklesFX
+              count={8}
+              className="absolute -right-8 -top-2 w-16 h-16"
+              color="#B5FF4D"
+            />
+          </div>
           <p className="mt-2 text-sm text-fg-subtle max-w-xl">
             {_(
               "管理贡献记录、运行风险检查、批准执行付款，并在 Sepolia 测试网上完成可审计的结算闭环。",
@@ -266,34 +274,69 @@ export default function TreasuryPage() {
       {/* ─── KPI Cards ─── */}
       <div className="px-6 lg:px-10 pb-8">
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-          <StatCard
-            label={_("本月预算", "Monthly Budget")}
-            value={<AnimatedNumber value={totalBudget} />}
-            subtext="USDC"
-            icon={<Wallet className="w-4 h-4" />}
-            className="relative overflow-hidden"
-          />
-          <StatCard
-            label={_("待付款", "Pending")}
-            value={<AnimatedNumber value={totalPending} />}
-            subtext="USDC"
-            icon={<Clock className="w-4 h-4" />}
-            className="relative overflow-hidden"
-          />
-          <StatCard
-            label={_("已拦截", "Blocked")}
-            value={<AnimatedNumber value={totalBlocked} />}
-            subtext="USDC"
-            icon={<ShieldAlert className="w-4 h-4" />}
-            className="relative overflow-hidden border-coral-500/20"
-          />
-          <StatCard
-            label={_("预算剩余", "Remaining")}
-            value={<AnimatedNumber value={budgetRemaining} />}
-            subtext="USDC"
-            icon={<TrendingUp className="w-4 h-4" />}
-            className="relative overflow-hidden"
-          />
+          {[
+            {
+              label: _("本月预算", "Monthly Budget"),
+              value: <AnimatedNumber value={totalBudget} />,
+              subtext: "USDC",
+              icon: <Wallet className="w-4 h-4" />,
+              accent: "#B5FF4D",
+            },
+            {
+              label: _("待付款", "Pending"),
+              value: <AnimatedNumber value={totalPending} />,
+              subtext: "USDC",
+              icon: <Clock className="w-4 h-4" />,
+              accent: "#5EEAD4",
+            },
+            {
+              label: _("已拦截", "Blocked"),
+              value: <AnimatedNumber value={totalBlocked} />,
+              subtext: "USDC",
+              icon: <ShieldAlert className="w-4 h-4" />,
+              accent: "#FB7185",
+              isBlocked: true,
+            },
+            {
+              label: _("预算剩余", "Remaining"),
+              value: <AnimatedNumber value={budgetRemaining} />,
+              subtext: "USDC",
+              icon: <TrendingUp className="w-4 h-4" />,
+              accent: "#60A5FA",
+            },
+          ].map((card, i) => (
+            <motion.div
+              key={card.label}
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: i * 0.08, ease: [0.16, 1, 0.3, 1] }}
+              className={cn(
+                "group relative rounded-2xl border bg-surface p-5 overflow-hidden",
+                "hover:border-white/[0.12] transition-colors duration-300",
+                card.isBlocked
+                  ? "border-[#FB7185]/20 shadow-[0_0_20px_rgba(251,113,133,0.06)]"
+                  : "border-white/[0.06]"
+              )}
+            >
+              {/* Hover glow */}
+              <div
+                className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
+                style={{
+                  background: `radial-gradient(circle at 50% 0%, ${card.accent}08, transparent 70%)`,
+                }}
+              />
+              <div className="relative z-10 flex items-center justify-between">
+                <span className="text-[11px] uppercase tracking-wider text-fg-subtle font-mono">
+                  {card.label}
+                </span>
+                <div style={{ color: card.accent }}>{card.icon}</div>
+              </div>
+              <div className="relative z-10 mt-3 text-2xl font-bold font-mono tabular-nums" style={{ color: card.accent }}>
+                {card.value}
+              </div>
+              <div className="relative z-10 mt-1 text-[11px] text-fg-subtle font-mono">{card.subtext}</div>
+            </motion.div>
+          ))}
         </div>
       </div>
 
@@ -358,13 +401,13 @@ export default function TreasuryPage() {
                       return (
                         <motion.tr
                           key={r.id}
-                          initial={{ opacity: 0, x: -8 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          transition={{ delay: i * 0.03, duration: 0.3 }}
+                          initial={{ opacity: 0, y: -10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: i * 0.03, duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
                           className={cn(
                             "group transition-colors",
                             "hover:bg-surface-2/50 dark:hover:bg-white/[0.02]",
-                            isBlocked && "bg-[#FB7185]/[0.03]"
+                            isBlocked && "bg-[#FB7185]/[0.03] animate-pulse-slow"
                           )}
                         >
                           <td

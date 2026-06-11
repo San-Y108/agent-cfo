@@ -159,6 +159,15 @@ body {
   font-feature-settings: "tnum";
 }
 
+/* Slow pulse for blocked rows in records table */
+@keyframes pulse-slow {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.85; }
+}
+.animate-pulse-slow {
+  animation: pulse-slow 3s ease-in-out infinite;
+}
+
 /* Marquee animation for transaction ticker */
 @keyframes marquee {
   0% { transform: translateX(0%); }
