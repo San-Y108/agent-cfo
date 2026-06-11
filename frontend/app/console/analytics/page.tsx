@@ -24,6 +24,8 @@ import {
 import { useApp } from "@/lib/i18n/context";
 import { AnimatedNumber } from "@/components/ui/aceternity/animated-number";
 import { GradientOrb } from "@/components/ui/aceternity/background";
+import { GradientText } from "@/components/ui/aceternity/colourful-text";
+import { Sparkles as SparklesFX } from "@/components/ui/aceternity/sparkles";
 
 const VIOLET = "#C084FC";
 const VIOLET_LIGHT = "#A855F7";
@@ -163,11 +165,16 @@ export default function AnalyticsPage() {
         className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 p-5 rounded-xl border border-border-token dark:border-white/[0.06] bg-surface-2 dark:bg-white/[0.03]"
       >
         <div>
-          <h2
-            className="text-xl font-bold tracking-tight text-fg"
-          >
-            {t("console.analytics.title" as any)}
-          </h2>
+          <div className="relative inline-block">
+            <GradientText className="text-xl font-bold tracking-tight">
+              {t("console.analytics.title" as any)}
+            </GradientText>
+            <SparklesFX
+              count={6}
+              className="absolute -right-6 -top-1 w-12 h-12"
+              color="#C084FC"
+            />
+          </div>
           <p className="text-xs mt-1 text-fg-subtle">
             {t("console.analytics.desc" as any)}
           </p>

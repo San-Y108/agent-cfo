@@ -19,6 +19,8 @@ import { useApp } from "@/lib/i18n/context";
 import { WalletHoloCard, WalletTopology } from "@/components/console/wallet-hologram";
 import { HolographicButton } from "@/components/ui/holographic-button";
 import { GradientOrb } from "@/components/ui/aceternity/background";
+import { GradientText } from "@/components/ui/aceternity/colourful-text";
+import { Sparkles as SparklesFX } from "@/components/ui/aceternity/sparkles";
 import { AnimatedNumber } from "@/components/ui/aceternity/animated-number";
 
 const BLUE = "#60A5FA";
@@ -174,10 +176,20 @@ export default function WalletsPage() {
 
       {/* Header */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 p-5 rounded-xl border border-border-token dark:border-white/[0.06] bg-surface-2 dark:bg-white/[0.03]">
-        <div>
-          <h2 className="text-xl font-bold tracking-tight text-fg">
-            {t("console.wallets.title" as any)}
-          </h2>
+        <div className="relative"
+        >
+          <div className="relative inline-block"
+          >
+            <GradientText className="text-xl font-bold tracking-tight"
+            >
+              {t("console.wallets.title" as any)}
+            </GradientText>
+            <SparklesFX
+              count={6}
+              className="absolute -right-6 -top-1 w-12 h-12"
+              color="#60A5FA"
+            />
+          </div>
           <p className="text-xs mt-1 text-fg-subtle">{t("console.wallets.desc" as any)}</p>
         </div>
         <HolographicButton
