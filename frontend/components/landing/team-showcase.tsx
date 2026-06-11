@@ -102,14 +102,14 @@ const MENTOR: Member = {
   isMentor: true,
 };
 
-/* Pentagon vertex coordinates (radius = 160, starting from top) */
-const PENTAGON_R = 160;
+/* Pentagon vertex coordinates (radius = 210, starting from top) */
+const PENTAGON_R = 210;
 const PENTAGON_COORDS = [
   { x: 0, y: -PENTAGON_R },           // Top: Cap (PM)
-  { x: 152, y: -50 },                 // Top-right: Node (Backend)
-  { x: 94, y: 130 },                  // Bottom-right: Pixel (Frontend)
-  { x: -94, y: 130 },                 // Bottom-left: Vault (Contract)
-  { x: -152, y: -50 },                // Top-left: Ink (Design)
+  { x: 200, y: -65 },                 // Top-right: Node (Backend)
+  { x: 123, y: 170 },                 // Bottom-right: Pixel (Frontend)
+  { x: -123, y: 170 },                // Bottom-left: Vault (Contract)
+  { x: -200, y: -65 },                // Top-left: Ink (Design)
 ];
 
 /* ── Avatar with rotating ring ───────────────────────────────────────── */
@@ -184,7 +184,7 @@ function ConnectionLines({
     <svg
       className="absolute inset-0 pointer-events-none"
       style={{ width: "100%", height: "100%", zIndex: 1 }}
-      viewBox="-220 -220 440 440"
+      viewBox="-280 -280 560 560"
       preserveAspectRatio="xMidYMid meet"
     >
       {PENTAGON_COORDS.map((coord, i) => {
@@ -197,7 +197,7 @@ function ConnectionLines({
             y1={0}
             x2={coord.x}
             y2={coord.y}
-            stroke={isActive ? member.accent : "rgba(255,255,255,0.04)"}
+            stroke={isActive ? member.accent : "rgba(255,255,255,0.10)"}
             strokeWidth={isActive ? 1.5 : 1}
             strokeDasharray={isActive ? "none" : "4 6"}
             opacity={isActive ? 0.7 : 0.3}
@@ -229,8 +229,10 @@ function MemberCard({
   const _ = (zh: string, en: string) => (lang === "zh" ? zh : en);
   const coord = PENTAGON_COORDS[index];
 
-  const opacity = anyHovered ? (isHovered ? 1 : 0.35) : 1;
-  const scale = isHovered ? 1.12 : 1;
+  const distFromCenter = Math.sqrt(coord.x ** 2 + coord.y ** 2) / PENTAGON_R;
+  const baseOpacity = 1 - distFromCenter * 0.35;
+  const opacity = anyHovered ? (isHovered ? 1 : 0.45) : baseOpacity;
+  const scale = isHovered ? 1.05 : 1;
 
   return (
     <motion.div
@@ -238,8 +240,8 @@ function MemberCard({
       style={{
         left: "50%",
         top: "50%",
-        marginLeft: -80,
-        marginTop: -110,
+        marginLeft: -70,
+        marginTop: -100,
         zIndex: isHovered ? 50 : 10,
       }}
       initial={{ opacity: 0, scale: 0.3, x: 0, y: 0 }}
@@ -253,9 +255,9 @@ function MemberCard({
       onMouseLeave={onLeave}
     >
       <div
-        className="relative flex h-[220px] w-[160px] flex-col items-center overflow-hidden rounded-xl border p-4 text-center transition-all duration-500"
+        className="relative flex h-[200px] w-[140px] flex-col items-center overflow-hidden rounded-xl border p-4 text-center transition-all duration-500"
         style={{
-          borderColor: isHovered ? `${member.accent}50` : "rgba(255,255,255,0.06)",
+          borderColor: isHovered ? `${member.accent}50` : "rgba(255,255,255,0.12)",
           background: isHovered
             ? `linear-gradient(135deg, ${member.accent}12, rgba(255,255,255,0.02) 60%, rgba(0,0,0,0.2))`
             : `linear-gradient(135deg, ${member.accent}08, rgba(255,255,255,0.01) 60%, rgba(0,0,0,0.1))`,
@@ -304,7 +306,7 @@ function MemberCard({
 
         {/* Description (visible on hover) */}
         <div
-          className="mt-3 text-[10px] leading-relaxed text-white/50 transition-all duration-500"
+          className="mt-3 text-[10px] leading-relaxed text-white/90 transition-all duration-500"
           style={{
             opacity: isHovered ? 1 : 0,
             transform: isHovered ? "translateY(0)" : "translateY(6px)",
@@ -333,7 +335,7 @@ function MentorCard({
   const _ = (zh: string, en: string) => (lang === "zh" ? zh : en);
 
   const opacity = anyHovered ? (isHovered ? 1 : 0.5) : 1;
-  const scale = isHovered ? 1.08 : 1;
+  const scale = isHovered ? 1.04 : 1;
 
   return (
     <motion.div
@@ -341,8 +343,8 @@ function MentorCard({
       style={{
         left: "50%",
         top: "50%",
-        marginLeft: -100,
-        marginTop: -140,
+        marginLeft: -90,
+        marginTop: -125,
         zIndex: isHovered ? 60 : 20,
       }}
       initial={{ opacity: 0, scale: 0.5 }}
@@ -356,11 +358,11 @@ function MentorCard({
       onMouseLeave={onLeave}
     >
       <div
-        className="relative flex h-[280px] w-[200px] flex-col items-center overflow-hidden rounded-xl border p-5 text-center transition-all duration-500"
+        className="relative flex h-[250px] w-[180px] flex-col items-center overflow-hidden rounded-xl border p-5 text-center transition-all duration-500"
         style={{
-          borderColor: isHovered ? "rgba(255,215,0,0.5)" : "rgba(255,255,255,0.08)",
+          borderColor: isHovered ? "rgba(255,215,0,0.5)" : "rgba(255,255,255,0.15)",
           background: isHovered
-            ? "linear-gradient(135deg, rgba(255,215,0,0.12), rgba(255,255,255,0.03) 60%, rgba(0,0,0,0.25))"
+            ? "linear-gradient(135deg, rgba(255,215,0,0.12), rgba(255,255,255,0.03) 60%, rgba(0,0,0,0.15))"
             : "linear-gradient(135deg, rgba(255,215,0,0.06), rgba(255,255,255,0.01) 60%, rgba(0,0,0,0.15))",
           boxShadow: isHovered
             ? "0 0 40px rgba(255,215,0,0.2), inset 0 1px 0 rgba(255,215,0,0.3)"
@@ -405,7 +407,7 @@ function MentorCard({
         />
 
         {/* Description */}
-        <p className="mt-3 text-[11px] leading-relaxed text-white/55">
+        <p className="mt-3 text-[11px] leading-relaxed text-white/80">
           {_(MENTOR.contribZh, MENTOR.contribEn)}
         </p>
       </div>
@@ -433,7 +435,7 @@ function MobileCard({
       transition={{ duration: 0.5, delay: index * 0.08 }}
       className="flex items-center gap-4 rounded-xl border p-4"
       style={{
-        borderColor: member.isMentor ? "rgba(255,215,0,0.2)" : "rgba(255,255,255,0.06)",
+        borderColor: member.isMentor ? "rgba(255,215,0,0.2)" : "rgba(255,255,255,0.12)",
         background: member.isMentor
           ? "linear-gradient(135deg, rgba(255,215,0,0.08), rgba(255,255,255,0.01))"
           : "rgba(255,255,255,0.02)",
@@ -477,7 +479,7 @@ function MobileCard({
           )}
         </div>
         <div className="text-sm font-bold text-white">{member.handle}</div>
-        <p className="mt-0.5 text-[11px] leading-relaxed text-white/50">
+        <p className="mt-0.5 text-[11px] leading-relaxed text-white/75">
           {_(member.contribZh, member.contribEn)}
         </p>
       </div>
@@ -504,7 +506,7 @@ export function TeamShowcase() {
       {/* Background grid */}
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-0 opacity-[0.03]"
+        className="pointer-events-none absolute inset-0 opacity-[0.06]"
         style={{
           backgroundImage:
             "linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)",
@@ -524,7 +526,7 @@ export function TeamShowcase() {
           <h2 className="text-3xl font-extrabold tracking-tight text-white md:text-4xl">
             {_("由这支团队打造", "Built by the team")}
           </h2>
-          <p className="mt-4 text-sm text-white/50 md:text-base">
+          <p className="mt-4 text-sm text-white/90 md:text-base">
             {_("五个角色，一位导师，一条受控的资金流水线。", "Five roles, one mentor, one controlled money pipeline.")}
           </p>
         </motion.div>
@@ -533,7 +535,7 @@ export function TeamShowcase() {
         <div className="hidden lg:block">
           <div
             className="relative mx-auto"
-            style={{ width: 480, height: 480 }}
+            style={{ width: 560, height: 560 }}
           >
             {/* Connection lines */}
             <ConnectionLines activeIndex={hoveredIdx} mentorActive={mentorHovered} />

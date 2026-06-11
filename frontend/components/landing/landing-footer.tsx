@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useCallback, useRef, useEffect, useState } from "react";
 import Link from "next/link";
 import { ExternalLink, ArrowUpRight } from "lucide-react";
 
@@ -74,15 +74,59 @@ const COLUMNS: FooterColumn[] = [
 ];
 
 export function LandingFooter() {
+  const lastWave = useRef(0);
+  const wordmarkRef = useRef<HTMLDivElement | null>(null);
+  const svgRef = useRef<SVGSVGElement | null>(null);
+  const [mousePos, setMousePos] = useState({ x: 0.5, y: 0.5 });
+  const [isHovering, setIsHovering] = useState(false);
+
+  // Throttled ripple trigger — every 200ms max
+  const triggerWave = useCallback(() => {
+    const now = Date.now();
+    if (now - lastWave.current < 180) return;
+    lastWave.current = now;
+
+    const svg = svgRef.current;
+    const anims = svg?.querySelectorAll("animate");
+    const bf = Array.from(anims || []).find(
+      (a) => a.getAttribute("attributeName") === "baseFrequency"
+    ) as SVGAnimateElement | null;
+    const sc = Array.from(anims || []).find(
+      (a) => a.getAttribute("attributeName") === "scale"
+    ) as SVGAnimateElement | null;
+
+    if (bf && typeof bf.beginElement === "function") {
+      try { bf.endElement(); } catch { }
+      bf.beginElement();
+    }
+    if (sc && typeof sc.beginElement === "function") {
+      try { sc.endElement(); } catch { }
+      sc.beginElement();
+    }
+  }, []);
+
+  // 3D tilt follow
+  const handleMouseMove = useCallback((e: React.MouseEvent) => {
+    const rect = wordmarkRef.current?.getBoundingClientRect();
+    if (!rect) return;
+    const x = (e.clientX - rect.left) / rect.width;
+    const y = (e.clientY - rect.top) / rect.height;
+    setMousePos({ x, y });
+    triggerWave();
+  }, [triggerWave]);
+
+  const tiltX = (mousePos.y - 0.5) * 12;
+  const tiltY = (mousePos.x - 0.5) * -8;
+
   return (
-    <footer className="relative mt-24 w-full overflow-hidden border-t border-white/[0.06] bg-[#080808]">
+    <footer className="relative mt-24 w-full overflow-hidden border-t border-white/[0.12] bg-[#0a0a0a]">
       {/* Top gradient hairline echoing pipeline accents */}
       <div
         className="absolute left-0 right-0 top-0 h-px"
         style={{
           background:
             "linear-gradient(to right, transparent, #5EEAD4, #B5FF4D, #60A5FA, #C084FC, transparent)",
-          opacity: 0.4,
+          opacity: 0.6,
         }}
       />
 
@@ -92,10 +136,13 @@ export function LandingFooter() {
           {/* Brand summary */}
           <div>
             <div className="flex items-baseline gap-2">
-              <img src="/logo.svg" alt="AgentCFO" className="h-7 w-7 rounded-full" />
+              <img src="/logo.png" alt="AgentCFO" className="h-9 w-9" style={{ filter: "drop-shadow(0 0 6px rgba(181,255,77,0.5))" }} />
               <span
-                className="text-2xl font-bold tracking-tight text-white"
-                style={{ fontFamily: "Inter, sans-serif" }}
+                className="text-2xl font-black tracking-tight bg-gradient-to-r from-lime-400 via-cyan-400 to-violet-400 bg-clip-text text-transparent"
+                style={{
+                  fontFamily: "Inter, sans-serif",
+                  filter: "drop-shadow(0 0 10px rgba(181,255,77,0.5)) drop-shadow(0 0 20px rgba(94,234,212,0.3))",
+                }}
               >
                 AgentCFO
               </span>
@@ -107,7 +154,7 @@ export function LandingFooter() {
               </span>
             </div>
             <p
-              className="mt-4 max-w-sm text-sm leading-relaxed text-white/55"
+              className="mt-4 max-w-sm text-sm leading-relaxed text-white/80"
               style={{ fontFamily: "Inter, sans-serif" }}
             >
               DAO AI Treasury Officer — risk-checked payouts, human approval, audit-grade settlement, built on Cobo Agentic Wallet.
@@ -127,7 +174,7 @@ export function LandingFooter() {
                 href="https://github.com/San-Y108/agent-cfo"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-1.5 rounded-full border border-white/15 px-4 py-2 text-xs font-medium text-white/80 transition-colors hover:bg-white/5 hover:text-white"
+                className="inline-flex items-center gap-1.5 rounded-full border border-white/25 px-4 py-2 text-xs font-medium text-white transition-colors hover:bg-white/5 hover:text-white"
                 style={{ fontFamily: "Inter, sans-serif" }}
               >
                 <GithubIcon className="h-3 w-3" />
@@ -156,23 +203,54 @@ export function LandingFooter() {
           </div>
         </div>
 
-        {/* Giant wordmark — SVG auto-fits container width */}
-        <div className="relative mt-20 select-none pb-8 lg:mt-28 lg:pb-12 group">
+        {/* Giant wordmark — Holographic Neon 3D */}
+        <div
+          ref={wordmarkRef}
+          className="relative mt-20 select-none pb-8 lg:mt-28 lg:pb-12"
+          style={{ perspective: 1200 }}
+          onMouseMove={handleMouseMove}
+          onMouseEnter={() => setIsHovering(true)}
+          onMouseLeave={() => setIsHovering(false)}
+        >
+          {/* Ambient glow behind text */}
+          <div
+            className="pointer-events-none absolute inset-0 transition-opacity duration-700"
+            style={{
+              opacity: isHovering ? 1 : 0.3,
+              background: `radial-gradient(ellipse 60% 50% at ${mousePos.x * 100}% ${mousePos.y * 100}%, rgba(181,255,77,0.12) 0%, rgba(96,165,250,0.08) 40%, transparent 70%)`,
+            }}
+          />
+
           <svg
+            ref={svgRef}
             viewBox="0 0 1000 140"
             preserveAspectRatio="xMidYMid meet"
-            className="block w-full transition-all duration-300 group-hover:opacity-[0.85]"
+            className="relative z-10 block w-full"
+            style={{
+              transform: `rotateX(${tiltX}deg) rotateY(${tiltY}deg)`,
+              transition: isHovering ? 'transform 0.15s ease-out' : 'transform 0.6s ease-out',
+              transformStyle: 'preserve-3d',
+            }}
             aria-hidden
           >
             <defs>
+              {/* Neon gradient — pure fluorescent, max saturation */}
               <linearGradient id="agentcfo-wordmark" x1="0%" y1="0%" x2="100%" y2="0%">
-                <stop offset="0%" stopColor="rgba(94,234,212,0.22)" />
-                <stop offset="35%" stopColor="rgba(181,255,77,0.28)" />
-                <stop offset="70%" stopColor="rgba(96,165,250,0.22)" />
-                <stop offset="100%" stopColor="rgba(192,132,252,0.22)" />
+                <stop offset="0%" stopColor="#00FFD1" />
+                <stop offset="30%" stopColor="#CCFF00" />
+                <stop offset="60%" stopColor="#00B8FF" />
+                <stop offset="100%" stopColor="#E040FB" />
               </linearGradient>
 
-              {/* Displacement filter — subtle ripple on hover */}
+              {/* Outer glow — blurred text only, no source merge */}
+              <filter id="neon-glow-lg" x="-20%" y="-20%" width="140%" height="140%">
+                <feGaussianBlur stdDeviation="16" result="blur" />
+              </filter>
+              <filter id="neon-glow-md" x="-20%" y="-20%" width="140%" height="140%">
+                <feGaussianBlur stdDeviation="6" result="blur" />
+              </filter>
+
+              {/* Displacement filter — ripple on mouse move */}
               <filter id="footer-distortion" x="-10%" y="-10%" width="120%" height="120%">
                 <feTurbulence
                   type="fractalNoise"
@@ -185,8 +263,7 @@ export function LandingFooter() {
                     dur="0.4s"
                     values="0.005 0.02;0.015 0.06;0.005 0.02"
                     repeatCount="1"
-                    begin="wordmark.mouseenter"
-                    end="wordmark.mouseleave"
+                    begin="indefinite"
                     fill="freeze"
                   />
                 </feTurbulence>
@@ -200,10 +277,9 @@ export function LandingFooter() {
                   <animate
                     attributeName="scale"
                     dur="0.35s"
-                    values="0;18;8;0"
+                    values="0;22;10;0"
                     repeatCount="1"
-                    begin="wordmark.mouseenter"
-                    end="wordmark.mouseleave"
+                    begin="indefinite"
                     fill="freeze"
                     calcMode="spline"
                     keySplines="0.4 0 0.2 1;0.4 0 0.2 1;0.4 0 0.2 1"
@@ -212,70 +288,119 @@ export function LandingFooter() {
                 </feDisplacementMap>
               </filter>
 
-              {/* RGB split layers */}
-              <filter id="footer-cyan" x="-10%" y="-10%" width="120%" height="120%">
-                <feColorMatrix
-                  type="matrix"
-                  values="0 0 0 0 0
-                          0 1 0 0 0.9
-                          0 0 1 0 0.9
-                          0 0 0 1 0"
-                />
-              </filter>
-              <filter id="footer-magenta" x="-10%" y="-10%" width="120%" height="120%">
-                <feColorMatrix
-                  type="matrix"
-                  values="1 0 0 0 0.98
-                          0 0 0 0 0.1
-                          0 0 1 0 0.8
-                          0 0 0 1 0"
-                />
-              </filter>
+              {/* Scanline beam gradient */}
+              <linearGradient id="scanline-grad" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stopColor="transparent" />
+                <stop offset="40%" stopColor="rgba(181,255,77,0.6)" />
+                <stop offset="50%" stopColor="rgba(255,255,255,0.9)" />
+                <stop offset="60%" stopColor="rgba(96,165,250,0.6)" />
+                <stop offset="100%" stopColor="transparent" />
+              </linearGradient>
             </defs>
 
-            {/* Glitch tear layers */}
+            {/* Layer 1: Deep outer glow — strong halo */}
             <text
-              id="wordmark-cyan"
-              x="-2"
+              x="0"
               y="118"
               fill="url(#agentcfo-wordmark)"
-              filter="url(#footer-cyan)"
-              opacity="0"
+              filter="url(#neon-glow-lg)"
+              opacity={isHovering ? 0.95 : 0.65}
               textLength="1000"
               lengthAdjust="spacingAndGlyphs"
-              className="transition-opacity duration-200 group-hover:opacity-40"
               style={{
                 fontFamily: "Inter, sans-serif",
                 fontWeight: 900,
                 fontSize: 130,
                 letterSpacing: "-6px",
-              }}
-            >
-              AGENTCFO
-            </text>
-            <text
-              id="wordmark-magenta"
-              x="2"
-              y="118"
-              fill="url(#agentcfo-wordmark)"
-              filter="url(#footer-magenta)"
-              opacity="0"
-              textLength="1000"
-              lengthAdjust="spacingAndGlyphs"
-              className="transition-opacity duration-200 group-hover:opacity-40"
-              style={{
-                fontFamily: "Inter, sans-serif",
-                fontWeight: 900,
-                fontSize: 130,
-                letterSpacing: "-6px",
+                transition: "opacity 0.5s ease",
               }}
             >
               AGENTCFO
             </text>
 
-            {/* Main wordmark with displacement */}
+            {/* Layer 2: Medium glow — tight edge halo */}
             <text
-              id="wordmark"
+              x="0"
+              y="118"
+              fill="url(#agentcfo-wordmark)"
+              filter="url(#neon-glow-md)"
+              opacity={isHovering ? 0.95 : 0.7}
+              textLength="1000"
+              lengthAdjust="spacingAndGlyphs"
+              style={{
+                fontFamily: "Inter, sans-serif",
+                fontWeight: 900,
+                fontSize: 130,
+                letterSpacing: "-6px",
+                transition: "opacity 0.5s ease",
+              }}
+            >
+              AGENTCFO
+            </text>
+
+            {/* Layer 3: Cyan edge stroke (RGB split) */}
+            <text
+              x="-2"
+              y="118"
+              fill="none"
+              stroke="#00FFD1"
+              strokeWidth="2"
+              opacity={isHovering ? 0.7 : 0.3}
+              textLength="1000"
+              lengthAdjust="spacingAndGlyphs"
+              style={{
+                fontFamily: "Inter, sans-serif",
+                fontWeight: 900,
+                fontSize: 130,
+                letterSpacing: "-6px",
+                transition: "opacity 0.3s ease",
+              }}
+            >
+              AGENTCFO
+            </text>
+
+            {/* Layer 4: Magenta edge stroke (RGB split) */}
+            <text
+              x="2"
+              y="118"
+              fill="none"
+              stroke="#FF2E8C"
+              strokeWidth="2"
+              opacity={isHovering ? 0.7 : 0.3}
+              textLength="1000"
+              lengthAdjust="spacingAndGlyphs"
+              style={{
+                fontFamily: "Inter, sans-serif",
+                fontWeight: 900,
+                fontSize: 130,
+                letterSpacing: "-6px",
+                transition: "opacity 0.3s ease",
+              }}
+            >
+              AGENTCFO
+            </text>
+
+            {/* Layer 5: Bright white inner glow */}
+            <text
+              x="0"
+              y="118"
+              fill="white"
+              opacity={isHovering ? 0.4 : 0.28}
+              textLength="1000"
+              lengthAdjust="spacingAndGlyphs"
+              style={{
+                fontFamily: "Inter, sans-serif",
+                fontWeight: 900,
+                fontSize: 130,
+                letterSpacing: "-6px",
+                transition: "opacity 0.5s ease",
+              }}
+            >
+              AGENTCFO
+            </text>
+
+            {/* Layer 6: Solid core — pure neon, no blur, full opacity */}
+            <text
               x="0"
               y="118"
               fill="url(#agentcfo-wordmark)"
@@ -291,12 +416,42 @@ export function LandingFooter() {
             >
               AGENTCFO
             </text>
+
+            {/* Layer 6: Scanline beam */}
+            <rect
+              x="0"
+              y="0"
+              width="1000"
+              height="6"
+              fill="url(#scanline-grad)"
+              opacity={isHovering ? 0.7 : 0}
+              style={{ mixBlendMode: 'screen' }}
+            >
+              <animate
+                attributeName="y"
+                dur="2.5s"
+                values="0;132;0"
+                repeatCount="indefinite"
+                calcMode="spline"
+                keySplines="0.45 0 0.55 1;0.45 0 0.55 1"
+                keyTimes="0;0.5;1"
+              />
+              <animate
+                attributeName="opacity"
+                dur="2.5s"
+                values="0;0.8;0"
+                repeatCount="indefinite"
+                calcMode="spline"
+                keySplines="0.45 0 0.55 1;0.45 0 0.55 1"
+                keyTimes="0;0.5;1"
+              />
+            </rect>
           </svg>
           <span className="sr-only">AgentCFO</span>
         </div>
 
         {/* Bottom info row */}
-        <div className="flex flex-col items-center justify-between gap-3 border-t border-white/[0.05] py-6 sm:flex-row">
+        <div className="flex flex-col items-center justify-between gap-3 border-t border-white/[0.10] py-6 sm:flex-row">
           <div
             className="flex flex-wrap items-center gap-2 text-[11px] text-white/40"
             style={{ fontFamily: "'Courier New', Courier, monospace" }}
@@ -355,7 +510,7 @@ function FooterColumnView({ col }: { col: FooterColumn }) {
                   href={l.href}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="group block text-sm text-white/65 transition-colors hover:text-white"
+                  className="group block text-sm text-white/85 transition-colors hover:text-white"
                   style={{ fontFamily: "Inter, sans-serif" }}
                 >
                   {inner}
@@ -363,7 +518,7 @@ function FooterColumnView({ col }: { col: FooterColumn }) {
               ) : (
                 <Link
                   href={l.href}
-                  className="group block text-sm text-white/65 transition-colors hover:text-white"
+                  className="group block text-sm text-white/85 transition-colors hover:text-white"
                   style={{ fontFamily: "Inter, sans-serif" }}
                 >
                   {inner}

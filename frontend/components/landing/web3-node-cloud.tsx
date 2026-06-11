@@ -200,7 +200,7 @@ function CoboCoreCenter({ isHovered }: { isHovered: boolean }) {
           boxShadow: `
             0 0 24px rgba(74,155,255,0.25),
             inset 0 0 16px rgba(74,155,255,0.08),
-            inset 0 1px 1px rgba(255,255,255,0.08)
+            inset 0 1px 1px rgba(255,255,255,0.15)
           `,
         }}
       >
@@ -273,8 +273,8 @@ function NetworkNode({
             : `radial-gradient(circle at 35% 35%, ${node.color}15, ${node.color}03)`,
           border: `1.5px solid ${isHovered ? node.color : `${node.color}35`}`,
           boxShadow: isHovered
-            ? `0 0 ${glowSize}px ${node.color}40, inset 0 1px 1px rgba(255,255,255,0.08)`
-            : `inset 0 1px 1px rgba(255,255,255,0.04)`,
+            ? `0 0 ${glowSize}px ${node.color}40, inset 0 1px 1px rgba(255,255,255,0.15)`
+            : `inset 0 1px 1px rgba(255,255,255,0.10)`,
           opacity: isDimmed ? 0.2 : 1,
         }}
         whileHover={{ scale: 1.15 }}
@@ -364,26 +364,26 @@ export function Web3NodeCloud() {
   return (
     <section
       ref={containerRef}
-      className="relative w-full overflow-hidden rounded-2xl border border-white/15 p-6 lg:p-8 backdrop-blur-md shadow-2xl"
+      className="relative w-full overflow-hidden rounded-2xl border border-white/25 p-6 lg:p-8 backdrop-blur-md shadow-2xl"
       style={{
-        background: "linear-gradient(180deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.01) 50%, rgba(255,255,255,0.02) 100%)",
+        background: "linear-gradient(180deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.01) 50%, rgba(255,255,255,0.02) 100%)",
       }}
     >
       {/* Glossy overlay — matches HolographicCard */}
       <div
-        className="absolute inset-0 rounded-2xl bg-gradient-to-tr from-transparent via-[#B5FF4D]/[0.03] to-transparent pointer-events-none opacity-60"
+        className="absolute inset-0 rounded-2xl bg-gradient-to-tr from-transparent via-[#B5FF4D]/[0.06] to-transparent pointer-events-none opacity-60"
         aria-hidden="true"
       />
 
       {/* Background corner glows — matches CardSplitter */}
       <div
         aria-hidden
-        className="pointer-events-none absolute -top-20 -right-20 w-64 h-64 rounded-full opacity-20"
+        className="pointer-events-none absolute -top-20 -right-20 w-64 h-64 rounded-full opacity-35"
         style={{ background: "radial-gradient(circle, rgba(74,155,142,0.15), transparent 70%)" }}
       />
       <div
         aria-hidden
-        className="pointer-events-none absolute -bottom-16 -left-16 w-48 h-48 rounded-full opacity-15"
+        className="pointer-events-none absolute -bottom-16 -left-16 w-48 h-48 rounded-full opacity-30"
         style={{ background: "radial-gradient(circle, rgba(0,86,210,0.12), transparent 70%)" }}
       />
 
@@ -396,7 +396,7 @@ export function Web3NodeCloud() {
           viewport={{ once: true, amount: 0.5 }}
           transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
         >
-          <span className="inline-flex items-center gap-1.5 rounded-full border border-white/[0.08] bg-white/[0.03] px-3 py-1 text-[10px] font-mono uppercase tracking-wider text-white/40">
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-white/[0.08] bg-white/[0.07] px-3 py-1 text-[10px] font-mono uppercase tracking-wider text-white/40">
             Web3 Trust Stack
           </span>
           <h2 className="text-xl font-extrabold tracking-tight text-white md:text-2xl">
@@ -406,7 +406,7 @@ export function Web3NodeCloud() {
             AgentCFO weaves multi-sig suites, automation modules and Cobo HSM
             into a closed-loop trusted capital allocation network.
           </p>
-          <p className="text-[9px] text-white/25 font-mono">
+          <p className="text-[9px] text-white/50 font-mono">
             Hover nodes to explore protocols…
           </p>
         </motion.div>

@@ -56,7 +56,7 @@ export function TransactionMarquee() {
   const allItems = [...marqueeItems, ...marqueeItems];
 
   return (
-    <div className="w-full border-y py-4 overflow-hidden relative mb-24 border-white/5 bg-white/[0.02]">
+    <div className="w-full border-y py-4 overflow-hidden relative mb-24 border-white/12 bg-white/[0.05]">
       {/* Fade edges */}
       <div className="absolute left-0 top-0 bottom-0 w-32 z-10 pointer-events-none bg-gradient-to-r from-[#0D0D0D] to-transparent" />
       <div className="absolute right-0 top-0 bottom-0 w-32 z-10 pointer-events-none bg-gradient-to-l from-[#0D0D0D] to-transparent" />
@@ -66,8 +66,8 @@ export function TransactionMarquee() {
           const s = STATUS_STYLE[item.status];
           return (
             <div key={idx} className="inline-flex items-center gap-3">
-              <span className={`text-xs border px-2 py-1 rounded font-mono font-semibold bg-white/5 border-white/10 ${s.text}`}>
-                <span className="text-white/45 font-normal">{item.sender}</span>
+              <span className={`text-xs border px-2 py-1 rounded font-mono font-semibold bg-white/5 border-white/18 ${s.text}`}>
+                <span className="text-white/90 font-normal">{item.sender}</span>
               </span>
               <span className="text-xs font-mono font-medium text-white/75">
                 {item.action}

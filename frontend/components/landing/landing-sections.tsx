@@ -62,7 +62,7 @@ export function LandingSections() {
 
       {/* FAQ + HSM 2-column layout — flush against timeline, no gap */}
       <section id="faq" className="w-full">
-        <div className="max-w-6xl mx-auto border-t pt-16 grid grid-cols-1 md:grid-cols-5 gap-12 text-left border-white/10 px-6">
+        <div className="max-w-6xl mx-auto border-t pt-16 grid grid-cols-1 md:grid-cols-5 gap-12 text-left border-white/18 px-6">
           <FAQSection />
           <HSMMonitor />
         </div>

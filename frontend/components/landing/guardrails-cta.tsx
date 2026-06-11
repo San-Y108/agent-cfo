@@ -42,7 +42,7 @@ export function GuardrailsCTA() {
   return (
     <section className="relative px-5 py-24 lg:px-10 lg:py-32">
       <div className="mx-auto max-w-6xl">
-        <div className="relative overflow-hidden rounded-[18px] border border-white/10 bg-[#0a0a0a]">
+        <div className="relative overflow-hidden rounded-[18px] border border-white/18 bg-[#0a0a0a]">
           {/* Subtle gradient background */}
           <div
             className="pointer-events-none absolute inset-0"
@@ -77,7 +77,7 @@ export function GuardrailsCTA() {
                 Every payout is checked, approved, and reported.
               </h2>
               <p
-                className="mt-5 max-w-xl text-sm leading-relaxed text-white/55 md:text-base"
+                className="mt-5 max-w-xl text-sm leading-relaxed text-white md:text-base"
                 style={{ fontFamily: "Inter, sans-serif" }}
               >
                 AgentCFO turns messy contribution records into payout plans, blocks risky transfers,
@@ -104,7 +104,7 @@ export function GuardrailsCTA() {
                 {/* Secondary CTA — direction-aware glow */}
                 <DirectionAwareLink
                   href="#workflow"
-                  className="inline-flex items-center gap-2 rounded-[10px] border border-white/15 px-5 py-3 text-sm font-medium text-white/85 transition-all duration-200 hover:border-white/25 hover:text-white hover:shadow-[0_0_20px_rgba(181,255,77,0.08)]"
+                  className="inline-flex items-center gap-2 rounded-[10px] border border-white/25 px-5 py-3 text-sm font-medium text-white transition-all duration-200 hover:border-white/25 hover:text-white hover:shadow-[0_0_20px_rgba(181,255,77,0.08)]"
                   style={{ fontFamily: "Inter, sans-serif" }}
                 >
                   View audit report
@@ -137,8 +137,8 @@ export function GuardrailsCTA() {
           </div>
 
           {/* Footer */}
-          <div className="relative border-t border-white/5 px-8 py-6 lg:px-16">
-            <div className="flex flex-col items-center justify-between gap-3 text-[11px] text-white/40 sm:flex-row" style={{ fontFamily: "'Courier New', Courier, monospace" }}>
+          <div className="relative border-t border-white/12 px-8 py-6 lg:px-16">
+            <div className="flex flex-col items-center justify-between gap-3 text-[11px] text-white/65 sm:flex-row" style={{ fontFamily: "'Courier New', Courier, monospace" }}>
               <p>AgentCFO · DAO AI Treasury Officer · Cobo Agentic Commerce · Mock demo, no real transactions</p>
               <p>v0.1 · 2026</p>
             </div>
@@ -155,9 +155,9 @@ function DemoVideoCard() {
   return (
     <div className="relative">
       {/* Terminal window frame */}
-      <div className="relative overflow-hidden rounded-[14px] border border-white/10 bg-[#0d0d0d] shadow-[0_24px_80px_rgba(0,0,0,0.5)]">
+      <div className="relative overflow-hidden rounded-[14px] border border-white/18 bg-[#0d0d0d] shadow-[0_24px_80px_rgba(0,0,0,0.5)]">
         {/* Title bar */}
-        <div className="flex items-center justify-between border-b border-white/5 bg-[#0a0a0a] px-4 py-2.5">
+        <div className="flex items-center justify-between border-b border-white/12 bg-[#0a0a0a] px-4 py-2.5">
           <div className="flex items-center gap-2">
             <span className="flex gap-1.5">
               <span className="h-2.5 w-2.5 rounded-full bg-[#FB7185]/70" />
@@ -181,7 +181,7 @@ function DemoVideoCard() {
         </div>
 
         {/* Video viewport — 16:9 */}
-        <div className="relative aspect-video bg-[#080808]">
+        <div className="relative aspect-video bg-[#0a0a0a]">
           {hasVideo ? (
             <video
               className="absolute inset-0 h-full w-full object-cover"
@@ -244,7 +244,7 @@ function DemoVideoCard() {
 
         {/* Status bar */}
         <div
-          className="flex items-center justify-between border-t border-white/5 bg-[#0a0a0a] px-4 py-2.5 text-[10px] text-white/35"
+          className="flex items-center justify-between border-t border-white/12 bg-[#0a0a0a] px-4 py-2.5 text-[10px] text-white/35"
           style={{ fontFamily: "'Courier New', Courier, monospace" }}
         >
           <span>records → plan → risk → approve → execute → audit</span>

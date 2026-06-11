@@ -80,7 +80,7 @@ const PHASES: Phase[] = [
 function FilmGrainOverlay() {
   return (
     <div
-      className="absolute inset-0 pointer-events-none opacity-[0.035] z-10 mix-blend-overlay"
+      className="absolute inset-0 pointer-events-none opacity-[0.05] z-10 mix-blend-overlay"
       style={{
         backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E")`,
         backgroundRepeat: "repeat",
@@ -106,7 +106,7 @@ function SprocketStrip() {
           className="w-[7px] h-[9px] rounded-[1px]"
           style={{
             backgroundColor: "rgba(0,0,0,0.65)",
-            boxShadow: "inset 0 0 2px rgba(0,0,0,0.8), 0 0 0 1px rgba(255,255,255,0.04)",
+            boxShadow: "inset 0 0 2px rgba(0,0,0,0.8), 0 0 0 1px rgba(255,255,255,0.10)",
           }}
         />
       ))}
@@ -278,7 +278,7 @@ export function BuildTimeline() {
                 </h4>
 
                 {/* Description */}
-                <p className="mt-4 text-sm md:text-[15px] leading-relaxed text-white/50 max-w-md">
+                <p className="mt-4 text-sm md:text-[15px] leading-relaxed text-white/90 max-w-md">
                   {_(p.descZh, p.descEn)}
                 </p>
 
@@ -306,7 +306,7 @@ export function BuildTimeline() {
                 background: `
                   linear-gradient(180deg, rgba(13,13,13,0.98) 0%, rgba(18,18,18,0.98) 100%)
                 `,
-                border: "1px solid rgba(255,255,255,0.06)",
+                border: "1px solid rgba(255,255,255,0.12)",
                 borderRadius: "2px",
                 boxShadow: `
                   0 0 80px rgba(0,0,0,0.6),
@@ -352,7 +352,7 @@ export function BuildTimeline() {
                       background: `
                         linear-gradient(135deg, ${p.accentMuted} 0%, rgba(255,255,255,0.01) 60%, rgba(0,0,0,0.15) 100%)
                       `,
-                      border: "1px solid rgba(255,255,255,0.04)",
+                      border: "1px solid rgba(255,255,255,0.10)",
                       borderRadius: "1px",
                       opacity: i === 0 ? 1 : 0,
                     }}
@@ -374,7 +374,7 @@ export function BuildTimeline() {
                       className="absolute inset-0 pointer-events-none z-[2]"
                       style={{
                         background: `
-                          radial-gradient(ellipse 70% 65% at 50% 50%, transparent 50%, rgba(0,0,0,0.35) 80%, rgba(0,0,0,0.75) 100%)
+                          radial-gradient(ellipse 70% 65% at 50% 50%, transparent 50%, rgba(0,0,0,0.15) 80%, rgba(0,0,0,0.55) 100%)
                         `,
                       }}
                       aria-hidden="true"
@@ -385,7 +385,7 @@ export function BuildTimeline() {
                       className="absolute inset-0 pointer-events-none z-[3]"
                       style={{
                         background: `
-                          radial-gradient(ellipse 45% 40% at 50% 50%, rgba(0,0,0,0.25) 0%, transparent 65%)
+                          radial-gradient(ellipse 45% 40% at 50% 50%, rgba(0,0,0,0.15) 0%, transparent 65%)
                         `,
                       }}
                       aria-hidden="true"
@@ -466,7 +466,7 @@ export function BuildTimeline() {
             <div
               className="absolute -bottom-[2px] left-0 right-0 h-[1px]"
               style={{
-                background: "linear-gradient(90deg, transparent 5%, rgba(255,255,255,0.06) 50%, transparent 95%)",
+                background: "linear-gradient(90deg, transparent 5%, rgba(255,255,255,0.12) 50%, transparent 95%)",
               }}
               aria-hidden="true"
             />
@@ -488,7 +488,7 @@ export function BuildTimeline() {
                 className="relative overflow-hidden"
                 style={{
                   background: `linear-gradient(135deg, ${p.accentMuted} 0%, rgba(255,255,255,0.01) 100%)`,
-                  border: "1px solid rgba(255,255,255,0.05)",
+                  border: "1px solid rgba(255,255,255,0.12)",
                   borderRadius: "2px",
                   padding: "28px 24px",
                 }}
@@ -522,7 +522,7 @@ export function BuildTimeline() {
                   {_(p.titleZh, p.titleEn)}
                 </h4>
 
-                <p className="text-[13px] leading-relaxed text-white/50">
+                <p className="text-[13px] leading-relaxed text-white/75">
                   {_(p.descZh, p.descEn)}
                 </p>
               </motion.div>

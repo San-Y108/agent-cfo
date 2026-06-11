@@ -73,7 +73,7 @@ function MobileMenu({ open, onClose }: { open: boolean; onClose: () => void }) {
       >
         <div
           className="pt-20 pb-6 px-5"
-          style={{ backgroundColor: "rgba(13,13,13,0.97)", borderBottom: "1px solid rgba(255,255,255,0.08)" }}
+          style={{ backgroundColor: "rgba(13,13,13,0.97)", borderBottom: "1px solid rgba(255,255,255,0.15)" }}
         >
           <div className="flex flex-col gap-1">
             {NAV_ITEMS.map((item, i) => (
@@ -81,7 +81,7 @@ function MobileMenu({ open, onClose }: { open: boolean; onClose: () => void }) {
                 key={item.key}
                 href={item.href}
                 onClick={onClose}
-                className="text-white/70 hover:text-white text-base py-3 px-3 rounded-xl hover:bg-white/5 transition-all duration-200 flex items-center justify-between group"
+                className="text-white/90 hover:text-white text-base py-3 px-3 rounded-xl hover:bg-white/5 transition-all duration-200 flex items-center justify-between group"
                 style={{
                   fontFamily: "Inter, sans-serif",
                   transitionDelay: open ? `${i * 50 + 80}ms` : "0ms",
@@ -262,9 +262,9 @@ function Navbar() {
           backgroundColor: scrolled ? "rgba(13,13,13,0.85)" : "transparent",
           backdropFilter: scrolled ? "blur(16px) saturate(1.2)" : "none",
           WebkitBackdropFilter: scrolled ? "blur(16px) saturate(1.2)" : "none",
-          borderBottom: scrolled ? "1px solid rgba(255,255,255,0.06)" : "1px solid transparent",
+          borderBottom: scrolled ? "1px solid rgba(255,255,255,0.12)" : "1px solid transparent",
           boxShadow: scrolled
-            ? "0 1px 0 rgba(255,255,255,0.04), 0 4px 24px rgba(0,0,0,0.4), inset 0 -1px 0 rgba(181,255,77,0.06)"
+            ? "0 1px 0 rgba(255,255,255,0.10), 0 4px 24px rgba(0,0,0,0.4), inset 0 -1px 0 rgba(181,255,77,0.06)"
             : "none",
         }}
       >
@@ -279,8 +279,14 @@ function Navbar() {
         />
         {/* Logo */}
         <div className="flex items-center gap-2.5">
-          <img src="/logo.svg" alt="AgentCFO" className="h-7 w-7 rounded-full" />
-          <span className="text-white text-xl font-semibold tracking-tight" style={{ fontFamily: "Inter, sans-serif" }}>
+          <img src="/logo.png" alt="AgentCFO" className="h-9 w-9" style={{ filter: "drop-shadow(0 0 6px rgba(181,255,77,0.5))" }} />
+          <span
+            className="text-xl font-bold tracking-tight bg-gradient-to-r from-lime-400 via-cyan-400 to-violet-400 bg-clip-text text-transparent"
+            style={{
+              fontFamily: "Inter, sans-serif",
+              filter: "drop-shadow(0 0 8px rgba(181,255,77,0.45)) drop-shadow(0 0 16px rgba(94,234,212,0.25))",
+            }}
+          >
             AgentCFO
           </span>
         </div>
@@ -288,7 +294,7 @@ function Navbar() {
         <div
           ref={navRef}
           className="hidden lg:flex items-center gap-1 rounded-full px-2 py-1.5 relative"
-          style={{ backgroundColor: "rgba(255,255,255,0.06)" }}
+          style={{ backgroundColor: "rgba(255,255,255,0.12)" }}
         >
           {NAV_ITEMS.map((item, i) => (
             <a
@@ -298,7 +304,7 @@ function Navbar() {
               className={`text-sm px-4 py-1.5 rounded-full transition-all duration-200 ${
                 activeIdx === i
                   ? "text-white"
-                  : "text-white/70 hover:text-white hover:bg-white/10"
+                  : "text-white/90 hover:text-white hover:bg-white/10"
               }`}
               style={{ fontFamily: "Inter, sans-serif" }}
               onClick={(e) => {
@@ -329,6 +335,17 @@ function Navbar() {
           <div className="hidden lg:block">
             <ThemeLanguageToggle variant="hero" />
           </div>
+          <a
+            href="https://github.com/San-Y108/agent-cfo"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hidden lg:inline-flex items-center justify-center h-9 w-9 rounded-full border border-white/25 text-white/90 transition-all duration-300 hover:bg-white/10 hover:text-white hover:border-white/30"
+            aria-label="GitHub"
+          >
+            <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+              <path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12" />
+            </svg>
+          </a>
           <HamburgerButton open={open} onClick={() => setOpen((v) => !v)} />
           <Link
             href="/console"
@@ -412,7 +429,7 @@ export function VelorixHero() {
       </div>
 
       {/* Dark overlay — separate from video so it doesn't get 3D transformed */}
-      <div className="absolute inset-0 z-10 bg-black/50" />
+      <div className="absolute inset-0 z-10 bg-black/40" />
 
       <Navbar />
 
@@ -437,7 +454,7 @@ export function VelorixHero() {
         </h1>
 
         <p
-          className="mt-6 text-white/50 text-sm md:text-base leading-relaxed max-w-lg"
+          className="mt-6 text-white/90 text-sm md:text-base leading-relaxed max-w-lg"
           style={{ fontFamily: "Inter, sans-serif", letterSpacing: "-0.01em" }}
         >
           {t("hero.subtitle")}
