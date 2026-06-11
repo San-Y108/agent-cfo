@@ -25,7 +25,7 @@
 |------|--------|------|----------|
 | 交付/总控 | San-Y108 (严硕) | ✅ repo + 文档已完成 | 物料兜底 + 路演准备 |
 | 后端/Agent | W5W8L9jlu | ✅ P0 + P1 Render + P2 spike + Phase 4C closeout | **🔴 今日生病，T-076/edge case/P0 验证暂由 CAW 代做** |
-| 前端 | Aafff623 | ✅ Landing + Demo + Console + Vercel | PR #1 未合并；real mode 未接入 /demo |
+| 前端 | Aafff623 | ✅ Landing + Demo + Console + Vercel + **PR #1 已合并** | 明日专注 Console 适配 + 效果升级 |
 | 合约/CAW | gitgdut | ✅ API Key + Wallet + **3 笔 testnet tx** + demo-sample 修复 + P0 验证 | 截图待上传到仓库；Demo 话术稿待写 |
 | 物料/设计 | Eloise-qiu | 🔴 **0 产出，已逾期 2 天** | PPT/视频/头图/Logo/截图全部缺失，**今日必须确认产能或启动兜底** |
 
@@ -119,8 +119,9 @@
 | T-066 | 部署前端到公网 | https://agentcfo-frontend.vercel.app | 6月10日 | ✅ DONE |
 | T-067 | Landing 重设计 | Velorix Hero + scroll sections | 6月9日 | ✅ DONE |
 | T-068 | Console 工作台 | /console 4 tab（Treasury/Wallets/Analytics/Policy） | 6月9日 | ✅ DONE |
-| T-069 | PR #1 合并或同步 main | feat/frontend-bootstrap → main | 6月10日 | 🔵 IN_PROGRESS |
-| T-070 | Real mode 接入 /demo | 调用 runDemoFlow + loading/error 态 | 6月11日 | 🟡 TODO |
+| T-069 | PR #1 合并或同步 main | feat/frontend-bootstrap → main ✅ 已合并 | 6月10日 | ✅ DONE |
+| T-070 | Console 适配 + 效果升级 | 前端同学明日专注业务台打磨 | 6月11日 | 🔵 IN_PROGRESS（前端已确认计划） |
+| T-070b | Real mode 接入 /demo | 调用 runDemoFlow + loading/error 态 | 6月12日 | 🟡 TODO（优先级低于 console 打磨） |
 
 ### 合约/CAW
 
@@ -204,5 +205,5 @@ CAW 验证（✅ 1 笔 testnet tx）
 | 🔴 BLOCKED | 8 |
 | 🟡 TODO | 18 |
 | 🔵 IN_PROGRESS | 2 |
-| ✅ DONE | 47 |
+| ✅ DONE | 48 |
 | ❌ CANCELLED | 0 |
