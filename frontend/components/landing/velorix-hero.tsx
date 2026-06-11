@@ -9,7 +9,9 @@ import { useGSAP } from "@gsap/react";
 import { useT, useApp } from "@/lib/i18n/context";
 import type { DictKey } from "@/lib/i18n/dict";
 import { ThemeLanguageToggle } from "@/components/ui/theme-language-toggle";
+import { motion } from "framer-motion";
 import { ParticleHeroTitle } from "@/components/landing/particle-hero-title";
+import { DecodeHeadline } from "@/components/landing/decode-headline";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -261,16 +263,19 @@ function Navbar() {
     return () => window.removeEventListener("keydown", onKey);
   }, []);
 
+  const navTransition = {
+    duration: 0.45,
+    ease: [0.23, 1, 0.32, 1] as [number, number, number, number],
+  };
+
   return (
     <>
       <nav
         ref={navWrapRef}
-        className={`fixed top-4 z-50 flex items-center transition-all duration-500 ${
-          pastHero
-            ? "left-1/2 -translate-x-1/2 px-4 py-2.5 rounded-full border-0 justify-center"
-            : "left-0 right-0 px-5 py-4 lg:px-10 lg:py-5 justify-between"
-        }`}
+        className="fixed top-4 left-0 right-0 z-50 flex items-center justify-center"
         style={{
+          padding: pastHero ? "10px 16px" : "16px 40px",
+          borderRadius: pastHero ? "9999px" : "0px",
           backgroundColor: pastHero
             ? "rgba(13,13,13,0.75)"
             : scrolled
@@ -284,28 +289,33 @@ function Navbar() {
             : scrolled
               ? "0 1px 0 rgba(255,255,255,0.10), 0 4px 24px rgba(0,0,0,0.4), inset 0 -1px 0 rgba(181,255,77,0.06)"
               : "none",
+          transition: "background-color 0.5s ease, backdrop-filter 0.5s ease, box-shadow 0.5s ease, border-color 0.5s ease, padding 0.45s cubic-bezier(0.23, 1, 0.32, 1), border-radius 0.45s cubic-bezier(0.23, 1, 0.32, 1)",
+          willChange: "background-color, backdrop-filter, box-shadow",
         }}
       >
         {/* Edge glow — hidden when compact */}
         {!pastHero && (
           <div
-            className="absolute bottom-0 left-0 right-0 pointer-events-none transition-opacity duration-500"
+            className="absolute bottom-0 left-0 right-0 pointer-events-none"
             style={{
               height: "1px",
               background: "linear-gradient(90deg, transparent 0%, rgba(181,255,77,0.15) 20%, rgba(181,255,77,0.2) 50%, rgba(181,255,77,0.15) 80%, transparent 100%)",
               opacity: scrolled ? 1 : 0,
+              transition: "opacity 0.5s ease",
             }}
           />
         )}
-        {/* Logo — hidden when scrolled past hero */}
-        <div
-          className="flex items-center gap-2.5 transition-all duration-500"
-          style={{
+
+        {/* Logo — absolute left, exits with transform + opacity */}
+        <motion.div
+          className="flex items-center gap-2.5 absolute left-5 lg:left-10"
+          animate={{
             opacity: pastHero ? 0 : 1,
-            visibility: pastHero ? "hidden" : "visible",
-            width: pastHero ? 0 : "auto",
-            overflow: "hidden",
+            x: pastHero ? -16 : 0,
+            scale: pastHero ? 0.92 : 1,
           }}
+          transition={navTransition}
+          style={{ pointerEvents: pastHero ? "none" : "auto" }}
         >
           <img src="/logo.png" alt="AgentCFO" className="h-9 w-9" style={{ filter: "drop-shadow(0 0 6px rgba(181,255,77,0.5))" }} />
           <span
@@ -317,8 +327,9 @@ function Navbar() {
           >
             AgentCFO
           </span>
-        </div>
-        {/* Nav pills */}
+        </motion.div>
+
+        {/* Nav pills — always centered */}
         <div
           ref={navRef}
           className="hidden lg:flex items-center gap-1 rounded-full px-2 py-1.5 relative"
@@ -358,15 +369,17 @@ function Navbar() {
             <circle ref={svgDotRef} r="2" fill="#B5FF4D" />
           </svg>
         </div>
-        {/* Controls — hidden when scrolled past hero */}
-        <div
-          className="flex items-center gap-2 transition-all duration-500"
-          style={{
+
+        {/* Controls — absolute right, exits with transform + opacity */}
+        <motion.div
+          className="flex items-center gap-2 absolute right-5 lg:right-10"
+          animate={{
             opacity: pastHero ? 0 : 1,
-            visibility: pastHero ? "hidden" : "visible",
-            width: pastHero ? 0 : "auto",
-            overflow: "hidden",
+            x: pastHero ? 16 : 0,
+            scale: pastHero ? 0.92 : 1,
           }}
+          transition={navTransition}
+          style={{ pointerEvents: pastHero ? "none" : "auto" }}
         >
           <div className="hidden lg:block">
             <ThemeLanguageToggle variant="hero" />
@@ -390,7 +403,7 @@ function Navbar() {
           >
             {t("nav.openDemo")}
           </Link>
-        </div>
+        </motion.div>
       </nav>
       <MobileMenu open={open} onClose={() => setOpen(false)} />
     </>
@@ -478,23 +491,36 @@ export function VelorixHero() {
           DAO AI Treasury Officer
         </span>
 
-        <h1
+        <DecodeHeadline
+          as="h1"
+          text={t("hero.title")}
+          accent="#B5FF4D"
           className="text-white font-bold leading-[1.05] tracking-tight max-w-3xl"
           style={{
             fontFamily: "Inter, sans-serif",
             fontSize: "clamp(2.5rem, 6vw, 4rem)",
             letterSpacing: "-0.03em",
           }}
-        >
-          <ParticleHeroTitle text={t("hero.title")} />
-        </h1>
+          scrollTriggerStart="top 120%"
+          scrambleDelay={0.1}
+          charStagger={0.025}
+        />
 
-        <p
+        <DecodeHeadline
+          as="p"
+          text={t("hero.subtitle")}
+          accent="rgba(255,255,255,0.5)"
           className="mt-6 text-white/90 text-sm md:text-base leading-relaxed max-w-lg"
-          style={{ fontFamily: "Inter, sans-serif", letterSpacing: "-0.01em" }}
-        >
-          {t("hero.subtitle")}
-        </p>
+          style={{
+            fontFamily: "Inter, sans-serif",
+            letterSpacing: "-0.01em",
+            fontSize: "clamp(0.875rem, 1.2vw, 1rem)",
+            lineHeight: 1.6,
+          }}
+          scrollTriggerStart="top 120%"
+          scrambleDelay={0.8}
+          charStagger={0.015}
+        />
 
         <Link
           href="/console"

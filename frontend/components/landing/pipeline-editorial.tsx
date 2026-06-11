@@ -27,6 +27,7 @@ import {
 } from "lucide-react";
 import { STAGES, type Stage, type Capability } from "./pipeline-stage-data";
 import { DataSnippet } from "./pipeline-data-snippets";
+import { DecodeHeadline } from "./decode-headline";
 
 /* =============================================================================
  * ICON MAPPING
@@ -54,129 +55,6 @@ const ICON_MAP: Record<string, LucideIcon> = {
   Shield,
   GitCommit,
 };
-
-const SCRAMBLE_CHARS = "!@#$%^&*()_+-=[]{}|;:,.<>?/~`";
-
-/* =============================================================================
- * CHARACTER DECODE HEADLINE — SSR-safe
- * ===========================================================================*/
-
-function DecodeHeadline({ text, accent }: { text: string; accent: string }) {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const prefersReducedMotion = useReducedMotion();
-  const lines = text.split("\n");
-  const [isClient, setIsClient] = useState(false);
-
-  useEffect(() => {
-    setIsClient(true);
-  }, []);
-
-  useGSAP(
-    () => {
-      if (!containerRef.current || prefersReducedMotion || !isClient) return;
-      const chars = containerRef.current.querySelectorAll(".decode-char");
-      chars.forEach((char, i) => {
-        const el = char as HTMLElement;
-        const targetChar = el.dataset.char!;
-        if (targetChar === " ") {
-          el.textContent = " ";
-          el.style.opacity = "1";
-          return;
-        }
-        gsap.fromTo(
-          el,
-          { opacity: 0 },
-          {
-            opacity: 1,
-            duration: 0.05,
-            delay: 0.2 + i * 0.035,
-            ease: "none",
-            scrollTrigger: {
-              trigger: containerRef.current,
-              start: "top 85%",
-              toggleActions: "play none none none",
-            },
-            onStart: () => {
-              let count = 0;
-              const maxScrambles = 6;
-              const interval = setInterval(() => {
-                el.textContent =
-                  SCRAMBLE_CHARS[Math.floor(Math.random() * SCRAMBLE_CHARS.length)];
-                count++;
-                if (count >= maxScrambles) {
-                  clearInterval(interval);
-                  el.textContent = targetChar;
-                  el.style.color = "white";
-                }
-              }, 35);
-            },
-          }
-        );
-      });
-    },
-    { scope: containerRef, dependencies: [text, accent, prefersReducedMotion, isClient] }
-  );
-
-  if (prefersReducedMotion) {
-    return (
-      <div ref={containerRef}>
-        {lines.map((line, i) => (
-          <div
-            key={i}
-            className="font-medium text-white"
-            style={{
-              fontFamily: "Inter, sans-serif",
-              fontSize: "clamp(1.75rem, 3.5vw, 2.8rem)",
-              letterSpacing: "-0.022em",
-              lineHeight: 1.08,
-            }}
-          >
-            {line}
-          </div>
-        ))}
-      </div>
-    );
-  }
-
-  return (
-    <div ref={containerRef}>
-      {lines.map((line, lineIdx) => (
-        <div
-          key={lineIdx}
-          className="font-medium"
-          style={{
-            fontFamily: "Inter, sans-serif",
-            fontSize: "clamp(1.75rem, 3.5vw, 2.8rem)",
-            letterSpacing: "-0.022em",
-            lineHeight: 1.08,
-          }}
-        >
-          {line.split("").map((char, charIdx) => {
-            const key = `${lineIdx}-${charIdx}`;
-            const fallbackChar =
-              char === " "
-                ? " "
-                : SCRAMBLE_CHARS[(key.length + charIdx + lineIdx) % SCRAMBLE_CHARS.length];
-            return (
-              <span
-                key={key}
-                className="decode-char inline-block"
-                data-char={char}
-                style={{
-                  color: accent,
-                  opacity: isClient ? 0 : 1,
-                  minWidth: char === " " ? "0.25em" : undefined,
-                }}
-              >
-                {isClient ? fallbackChar : char}
-              </span>
-            );
-          })}
-        </div>
-      ))}
-    </div>
-  );
-}
 
 /* =============================================================================
  * CAPABILITY ITEM
@@ -312,7 +190,7 @@ function PipelineStage({
         {stage.paragraphs.map((para, i) => (
           <div
             key={i}
-            className="animate-in mt-4 text-sm leading-relaxed text-white/55 sm:text-base"
+            className="animate-in mt-4 text-sm leading-relaxed text-white/55 sm:text-base italic"
             style={{ fontFamily: "Inter, sans-serif" }}
           >
             {para}
