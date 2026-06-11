@@ -966,8 +966,12 @@ function ActionPanel({
                             </span>
                           )}
                         </td>
-                        <td className="py-2 px-3 font-mono text-[10px] text-fg-subtle">
-                          {item.txHash || "—"}
+                        <td className="py-2 px-3 font-mono text-[10px]">
+                          {item.txHash ? (
+                            <GradientText>{item.txHash}</GradientText>
+                          ) : (
+                            <span className="text-fg-subtle">—</span>
+                          )}
                         </td>
                       </tr>
                     ))}
@@ -1019,7 +1023,7 @@ function ActionPanel({
                         <div className="text-fg-subtle col-span-2">
                           txHash:{" "}
                           {status.txHash ? (
-                            <span className="text-[#60A5FA] font-mono">{status.txHash}</span>
+                            <GradientText className="font-mono">{status.txHash}</GradientText>
                           ) : (
                             <span className="text-fg-subtle">{_("等待刷新...", "Pending refresh...")}</span>
                           )}

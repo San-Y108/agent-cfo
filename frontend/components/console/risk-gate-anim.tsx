@@ -4,6 +4,7 @@ import React from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ShieldAlert } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { ScrambleValue } from "@/components/ui/gsap-text-effects";
 
 /* =============================================================================
  * RISK GATE ANIMATION — Animated blocked payment indicator.
@@ -77,10 +78,10 @@ export function RiskGateAnimation({ isBlocked, reason }: RiskGateAnimationProps)
             </span>
             {reason && (
               <span
-                className="text-xs"
+                className="text-xs font-mono"
                 style={{ color: `${CORAL}cc` }}
               >
-                {reason}
+                <ScrambleValue value={reason} delay={0.3} duration={1} />
               </span>
             )}
           </div>
