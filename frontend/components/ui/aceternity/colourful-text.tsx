@@ -28,6 +28,10 @@ export function ColourfulText({
   colors?: string[];
   interval?: number;
 }) {
+  /* Performance guard: long text degrades to GradientText */
+  if (text.length > 50) {
+    return <GradientText className={className}>{text}</GradientText>;
+  }
   const [currentColors, setCurrentColors] = useState(colors);
   const [count, setCount] = useState(0);
 

@@ -48,6 +48,11 @@ export function BentoGrid({
   );
 }
 
+interface BentoCardProps extends BentoItem {
+  index: number;
+  glowColor?: string;
+}
+
 function BentoCard({
   title,
   description,
@@ -55,7 +60,8 @@ function BentoCard({
   icon,
   children,
   index,
-}: BentoItem & { index: number }) {
+  glowColor = "#B5FF4D",
+}: BentoCardProps) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -75,7 +81,12 @@ function BentoCard({
     >
       {/* Hover glow effect */}
       <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
-        <div className="absolute inset-0 bg-gradient-to-br from-lime-500/[0.03] to-transparent" />
+        <div
+          className="absolute inset-0 bg-gradient-to-br to-transparent"
+          style={{
+            background: `linear-gradient(to bottom right, ${glowColor}08, transparent)`,
+          }}
+        />
       </div>
 
       {/* Content */}
