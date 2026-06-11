@@ -251,7 +251,7 @@ export function PipelineShowcase() {
           </div>
 
           {/* Scroll cue */}
-          <div className="mt-10 flex flex-col items-center gap-2 text-white/35">
+          <div className="mt-10 flex flex-col items-center gap-2 text-white/60">
             <span
               className="text-[10px] uppercase tracking-[0.25em]"
               style={{ fontFamily: "'Courier New', Courier, monospace" }}
@@ -484,7 +484,7 @@ function RecordsMock({ stage }: { stage: Stage }) {
             Payment plan · 4 entries
           </span>
           <span
-            className="text-[10px] text-white/40"
+            className="text-[10px] text-white/65"
             style={{ fontFamily: "'Courier New', Courier, monospace" }}
           >
             50 USDC budget
@@ -500,7 +500,7 @@ function RecordsMock({ stage }: { stage: Stage }) {
           >
             <div className="min-w-0 flex-1 truncate">
               <span className="text-white/85">{r.name}</span>
-              <span className="text-white/35"> — {r.reason}</span>
+              <span className="text-white/60"> — {r.reason}</span>
             </div>
             <span className="ml-3 font-semibold" style={{ color: stage.accent }}>
               {r.amount}
@@ -529,7 +529,7 @@ function RiskMock({ stage }: { stage: Stage }) {
     <div className="grid gap-3">
       <div className="flex items-center justify-between">
         <div
-          className="text-[10px] font-semibold uppercase tracking-[0.18em] text-white/45"
+          className="text-[10px] font-semibold uppercase tracking-[0.18em] text-white/70"
           style={{ fontFamily: "'Courier New', Courier, monospace" }}
         >
           5 gates · 4 pass · 1 block
@@ -567,7 +567,7 @@ function RiskMock({ stage }: { stage: Stage }) {
                 >
                   {g.name}
                 </span>
-                <span className="text-[10px] text-white/40">{g.detail}</span>
+                <span className="text-[10px] text-white/65">{g.detail}</span>
               </div>
               <div
                 className="flex h-6 w-6 items-center justify-center rounded-full"
@@ -649,7 +649,7 @@ function ApprovalMock({ stage }: { stage: Stage }) {
               <span className="text-white/80">15 USDC</span>
             </div>
             <div
-              className="mt-1 text-[10px] text-white/35"
+              className="mt-1 text-[10px] text-white/60"
               style={{ fontFamily: "'Courier New', Courier, monospace" }}
             >
               reason: not in whitelist
@@ -672,7 +672,7 @@ function ApprovalMock({ stage }: { stage: Stage }) {
       </button>
 
       <p
-        className="text-center text-[10px] text-white/35"
+        className="text-center text-[10px] text-white/60"
         style={{ fontFamily: "'Courier New', Courier, monospace" }}
       >
         human-in-the-loop · no autonomous transfers
@@ -730,11 +730,11 @@ function WalletMock({ stage }: { stage: Stage }) {
             style={{ fontFamily: "'Courier New', Courier, monospace" }}
           >
             <div className="flex items-center gap-3">
-              <Hash className="h-3 w-3 text-white/35" />
+              <Hash className="h-3 w-3 text-white/60" />
               <span className="text-xs font-semibold text-white/90">{t.hash}</span>
             </div>
             <div className="flex items-center gap-3">
-              <span className="text-[11px] text-white/45">→ {t.to}</span>
+              <span className="text-[11px] text-white/70">→ {t.to}</span>
               <span
                 className="rounded-md border px-2 py-0.5 text-[10px] font-bold"
                 style={{
@@ -751,7 +751,7 @@ function WalletMock({ stage }: { stage: Stage }) {
       </div>
 
       <div
-        className="border-t border-white/[0.10] px-5 py-2.5 text-center text-[9px] text-white/35"
+        className="border-t border-white/[0.10] px-5 py-2.5 text-center text-[9px] text-white/60"
         style={{ fontFamily: "'Courier New', Courier, monospace" }}
       >
         AI does not hold keys · policy boundary enforced by Cobo CAW
@@ -781,7 +781,7 @@ function AuditMock({ stage }: { stage: Stage }) {
           </span>
         </div>
         <span
-          className="text-[10px] text-white/40"
+          className="text-[10px] text-white/65"
           style={{ fontFamily: "'Courier New', Courier, monospace" }}
         >
           audit-2026-06-09
@@ -797,7 +797,7 @@ function AuditMock({ stage }: { stage: Stage }) {
 
         <div className="rounded-[10px] border border-white/[0.12] bg-[#141414]">
           <div
-            className="border-b border-white/[0.10] px-3.5 py-2 text-[10px] font-bold uppercase tracking-[0.16em] text-white/45"
+            className="border-b border-white/[0.10] px-3.5 py-2 text-[10px] font-bold uppercase tracking-[0.16em] text-white/70"
             style={{ fontFamily: "'Courier New', Courier, monospace" }}
           >
             On-chain proof
@@ -809,7 +809,7 @@ function AuditMock({ stage }: { stage: Stage }) {
                 className="flex items-center justify-between py-1 text-[11px]"
                 style={{ fontFamily: "'Courier New', Courier, monospace" }}
               >
-                <span className="text-white/75">{h}</span>
+                <span className="text-white/90">{h}</span>
                 <span style={{ color: "#5EEAD4" }}>✓</span>
               </div>
             ))}
@@ -818,11 +818,11 @@ function AuditMock({ stage }: { stage: Stage }) {
 
         <div className="grid grid-cols-2 gap-2 text-[11px]" style={{ fontFamily: "'Courier New', Courier, monospace" }}>
           <div className="rounded-md border border-white/[0.12] bg-[#141414] px-3 py-2">
-            <span className="text-white/40">risk </span>
+            <span className="text-white/65">risk </span>
             <span className="text-white/90">4 pass · 1 block</span>
           </div>
           <div className="rounded-md border border-white/[0.12] bg-[#141414] px-3 py-2">
-            <span className="text-white/40">approver </span>
+            <span className="text-white/65">approver </span>
             <span className="text-white/90">human</span>
           </div>
         </div>
@@ -848,7 +848,7 @@ function KPI({ label, value, color }: { label: string; value: string; color: str
   return (
     <div className="rounded-[10px] border border-white/[0.12] bg-[#141414] px-3 py-2.5">
       <div
-        className="text-[9px] font-bold uppercase tracking-[0.18em] text-white/40"
+        className="text-[9px] font-bold uppercase tracking-[0.18em] text-white/65"
         style={{ fontFamily: "'Courier New', Courier, monospace" }}
       >
         {label}

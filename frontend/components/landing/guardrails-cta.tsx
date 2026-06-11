@@ -112,13 +112,13 @@ export function GuardrailsCTA() {
               </div>
 
               <div
-                className="mt-6 flex flex-wrap items-center gap-4 text-[11px] text-white/45"
+                className="mt-6 flex flex-wrap items-center gap-4 text-[11px] text-white/70"
                 style={{ fontFamily: "'Courier New', Courier, monospace" }}
               >
                 <span>testnet-simulated</span>
-                <span className="text-white/20">·</span>
+                <span className="text-white/40">·</span>
                 <span>no real funds</span>
-                <span className="text-white/20">·</span>
+                <span className="text-white/40">·</span>
                 <span>deterministic demo</span>
               </div>
             </motion.div>
@@ -138,7 +138,7 @@ export function GuardrailsCTA() {
 
           {/* Footer */}
           <div className="relative border-t border-white/12 px-8 py-6 lg:px-16">
-            <div className="flex flex-col items-center justify-between gap-3 text-[11px] text-white/65 sm:flex-row" style={{ fontFamily: "'Courier New', Courier, monospace" }}>
+            <div className="flex flex-col items-center justify-between gap-3 text-[11px] text-white/85 sm:flex-row" style={{ fontFamily: "'Courier New', Courier, monospace" }}>
               <p>AgentCFO · DAO AI Treasury Officer · Cobo Agentic Commerce · Mock demo, no real transactions</p>
               <p>v0.1 · 2026</p>
             </div>
@@ -165,7 +165,7 @@ function DemoVideoCard() {
               <span className="h-2.5 w-2.5 rounded-full bg-[#B5FF4D]/70" />
             </span>
             <span
-              className="ml-2 text-[10px] text-white/45"
+              className="ml-2 text-[10px] text-white/70"
               style={{ fontFamily: "'Courier New', Courier, monospace" }}
             >
               agentcfo — demo.mp4
@@ -225,7 +225,7 @@ function DemoVideoCard() {
                     Demo video
                   </p>
                   <p
-                    className="mt-1 text-[10px] uppercase tracking-[0.16em] text-white/35"
+                    className="mt-1 text-[10px] uppercase tracking-[0.16em] text-white/60"
                     style={{ fontFamily: "'Courier New', Courier, monospace" }}
                   >
                     3–5 min walkthrough · coming soon
@@ -244,11 +244,11 @@ function DemoVideoCard() {
 
         {/* Status bar */}
         <div
-          className="flex items-center justify-between border-t border-white/12 bg-[#0a0a0a] px-4 py-2.5 text-[10px] text-white/35"
+          className="flex items-center justify-between border-t border-white/12 bg-[#0a0a0a] px-4 py-2.5 text-[10px] text-white/60"
           style={{ fontFamily: "'Courier New', Courier, monospace" }}
         >
           <span>records → plan → risk → approve → execute → audit</span>
-          <span className="text-white/25">mock · testnet</span>
+          <span className="text-white/50">mock · testnet</span>
         </div>
       </div>
 

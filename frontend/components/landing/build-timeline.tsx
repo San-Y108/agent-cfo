@@ -522,7 +522,7 @@ export function BuildTimeline() {
                   {_(p.titleZh, p.titleEn)}
                 </h4>
 
-                <p className="text-[13px] leading-relaxed text-white/75">
+                <p className="text-[13px] leading-relaxed text-white/90">
                   {_(p.descZh, p.descEn)}
                 </p>
               </motion.div>
