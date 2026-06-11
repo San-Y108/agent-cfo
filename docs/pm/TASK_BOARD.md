@@ -131,6 +131,9 @@
 | T-073 | 补充测试网付款证据 | 2-3 个 tx hash（内部目标，非赛道硬性要求；已有 1 笔） | 6月10日 | 🟡 TODO（**今日和后端配合执行，能补就补**） |
 | T-074 | 整理 CAW 配置说明 | 配置文档 | 6月10日 | ✅ DONE |
 | T-075 | 截图脱敏补充 | 区块浏览器截图 + 脱敏处理 | 6月11日 | 🟡 TODO |
+| T-077 | CAW Demo 话术稿 | 1 分钟 CAW 讲解稿（介绍 CAW、展示真实 tx、解释 mock fallback） | 6月11日 | 🟡 TODO |
+| T-078 | 确认 Agent Wallet 地址公开口径 | masked 还是完整地址，对照赛道要求确认 | 6月10日 | 🟡 TODO |
+| T-079 | Demo day CAW 准备清单 | env vars 配置、mock/real 切换、余额检查、备用方案 | 6月12日 | 🟡 TODO |
 
 ### 物料/设计
 
@@ -199,7 +202,7 @@ CAW 验证（✅ 1 笔 testnet tx）
 | 状态 | 数量 |
 |------|------|
 | 🔴 BLOCKED | 7 |
-| 🟡 TODO | 18 |
+| 🟡 TODO | 21 |
 | 🔵 IN_PROGRESS | 2 |
 | ✅ DONE | 45 |
 | ❌ CANCELLED | 0 |
