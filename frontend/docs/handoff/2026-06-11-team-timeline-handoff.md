@@ -1,8 +1,8 @@
-# Handoff — Team Showcase & Timeline Redesign
+# Handoff — Landing Redesign Batch (Team + Timeline + Web3)
 
 > 生成时间：2026-06-11  
 > 分支：`feat/console-aceternity-upgrade`  
-> 提交：`060daeb`
+> 提交链：`060daeb` → `e6bd006` → `e3e31b4`
 
 ---
 
@@ -37,11 +37,33 @@
   - Phase 1 (02): `/timeline/phase-02-integration.png`
   - Phase 2 (03): `/timeline/phase-03-polish.png`
   - Phase 3 (04): `/timeline/phase-04-submit.png`
-- 图片 opacity 0.5 + `bg-black/45` 暗色遮罩确保文字可读
+- 图片 opacity `0.75` + `bg-black/20` 轻量遮罩 + vignette 边缘渐变
 - 胶片颗粒、齿孔、暗角效果保留
 - ScrollTrigger snap 驱动的帧切换动画正常
 
-### 3. 素材就位 ✅
+**⚠️ 已知修复（commit `e6bd006`）：**
+- 根因：`absolute inset-x-[28px] inset-y-3 relative` 中 `relative` 覆盖了 `absolute`，导致容器高度为 1px
+- 修复：移除 `relative`，容器高度恢复 ~460px，图片正常显示
+
+### 3. Web3 Trusted Infrastructure — 星座网络重构 ✅
+
+**文件：** `frontend/components/landing/web3-node-cloud.tsx`（commit `e3e31b4`）
+
+- **有机分布**（非等距圆环）：
+  - 内圈核心：Cobo（80px）、Gnosis（80px）
+  - 中圈：MetaMask（145px）、Sepolia（140px）、Sablier（150px）
+  - 外圈工具：Drizzle（210px）、Framer（205px）、GitHub（215px）
+- **品牌色**：每个节点用真实品牌主色（Cobo `#0056D2`、MetaMask `#F6851B`、Sepolia `#627EEA` 等）
+- **节点大小分级**：core 48px / mid 34px / tool 26px
+- **连线系统**：
+  - 平时：细线 + SMIL 呼吸脉冲动画
+  - Hover：连线发光 + drop-shadow，其他连线 dim 到 0.08
+- **Cobo Core 中心**：双环脉冲扩散动画 + 径向 glow
+- **背景**：20 个 nebula 粒子缓慢呼吸 + vignette 暗角
+- **Hover 信息卡**：圆角卡片，品牌色边框 + 分隔线 + 描述
+- **鼠标视差**：整个星座随鼠标轻微偏移
+
+### 4. 素材就位 ✅
 
 | 类型 | 数量 | 路径 |
 |---|---|---|
@@ -57,10 +79,12 @@
 | `pnpm typecheck` | ✅ 通过 |
 | `pnpm build` | ✅ 通过 |
 | Console 无报错 | ✅ 干净 |
-| Desktop Team 截图 | ✅ 已取（根目录 `screenshot-team.png`）|
-| Desktop Timeline 截图 | ✅ 已取（根目录 `screenshot-timeline.png`）|
-| Mobile Team 截图 | ✅ 已取（根目录 `screenshot-team-mobile.png`）|
-| Mobile Timeline 截图 | ✅ 已取（根目录 `screenshot-timeline-mobile.png`）|
+| Desktop Team 截图 | ✅ `screenshot-team.png` |
+| Desktop Timeline 截图 | ✅ `screenshot-timeline.png` |
+| Mobile Team 截图 | ✅ `screenshot-team-mobile.png` |
+| Mobile Timeline 截图 | ✅ `screenshot-timeline-mobile.png` |
+| Desktop Web3 初始态 | ✅ `screenshot-web3-constellation.png` |
+| Desktop Web3 Hover 态 | ✅ `screenshot-web3-hover.png` |
 
 ---
 
@@ -78,10 +102,10 @@
 
 | 优先级 | 事项 | 说明 |
 |---|---|---|
-| P1 | 截图审查 | 查看 4 张截图，确认视觉效果是否满意 |
-| P2 | 文案微调 | 如需调整导师描述或角色标签 |
-| P3 | 部署到 Vercel | `vercel --prod` 更新生产环境 |
-| P4 | 继续 Landing 其他 section | Hero 下方 scroll 板块（Problem / Workflow / …）|
+| P1 | 截图审查 | Team / Timeline / Web3 三张 desktop 截图，确认视觉效果 |
+| P2 | 部署到 Vercel | `vercel --prod` 更新生产环境 |
+| P3 | 继续 Landing 其他 section | Hero 下方 scroll 板块、Problem、Workflow 等 |
+| P4 | 文案微调 | 导师描述、节点描述等按需调整 |
 
 ---
 

@@ -370,45 +370,65 @@ export function BuildTimeline() {
                       opacity: i === 0 ? 1 : 0,
                     }}
                   >
-                    {/* Phase image background */}
+                    {/* Phase image background — full brightness */}
                     <img
                       src={p.img}
                       alt={_(p.titleZh, p.titleEn)}
                       className="absolute inset-0 w-full h-full object-cover"
-                      style={{ opacity: 0.75 }}
+                      style={{ opacity: 1 }}
                       loading="eager"
                     />
-                    {/* Edge vignette: fades image into black background */}
+
+                    {/* Center dark mask: only dims the center text area, leaves edges bright */}
                     <div
                       className="absolute inset-0 pointer-events-none z-[2]"
                       style={{
                         background: `
-                          radial-gradient(ellipse 75% 65% at 50% 45%, transparent 40%, rgba(0,0,0,0.55) 75%, rgba(0,0,0,0.95) 100%)
+                          radial-gradient(ellipse 55% 50% at 50% 50%, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.15) 45%, transparent 70%)
                         `,
                       }}
                       aria-hidden="true"
                     />
-                    {/* Subtle dark overlay for text readability */}
-                    <div className="absolute inset-0 bg-black/20 z-[3]" />
+
+                    {/* Edge glow: accent color bleeding into the black background */}
+                    <div
+                      className="absolute inset-0 pointer-events-none z-[3]"
+                      style={{
+                        background: `
+                          radial-gradient(ellipse 80% 70% at 50% 50%, transparent 55%, ${p.accent}18 75%, ${p.accent}08 100%)
+                        `,
+                      }}
+                      aria-hidden="true"
+                    />
+
+                    {/* Frame border glow */}
+                    <div
+                      className="absolute inset-0 pointer-events-none z-[4]"
+                      style={{
+                        boxShadow: `inset 0 0 40px ${p.accent}15, inset 0 0 80px ${p.accent}05`,
+                      }}
+                      aria-hidden="true"
+                    />
 
                     {/* Content layer above image */}
                     <div className="relative z-10 flex flex-col items-center justify-center">
-                      {/* Subtle inner glow at top */}
+                      {/* Accent glow line at top */}
                       <div
                         className="absolute -top-4 left-0 right-0 h-[1px]"
                         style={{
-                          background: `linear-gradient(90deg, transparent 10%, ${p.accent}50 50%, transparent 90%)`,
+                          background: `linear-gradient(90deg, transparent 5%, ${p.accent}80 50%, transparent 95%)`,
+                          boxShadow: `0 0 12px ${p.accent}60`,
                         }}
                         aria-hidden="true"
                       />
 
-                      {/* Large phase number */}
+                      {/* Large phase number — accent color with glow */}
                       <span
-                        className="text-[56px] md:text-[64px] font-bold leading-none tracking-tighter drop-shadow-lg"
+                        className="text-[56px] md:text-[64px] font-bold leading-none tracking-tighter"
                         style={{
-                          color: "transparent",
-                          WebkitTextStroke: `1.5px ${p.accent}70`,
-                          opacity: 0.75,
+                          color: p.accent,
+                          textShadow: `0 0 30px ${p.accent}60, 0 0 60px ${p.accent}30, 0 0 100px ${p.accent}15`,
+                          opacity: 0.9,
                         }}
                       >
                         {p.number}
@@ -416,14 +436,22 @@ export function BuildTimeline() {
 
                       {/* Phase label */}
                       <span
-                        className="mt-3 text-[10px] font-mono uppercase tracking-[0.2em] text-white/40 drop-shadow"
+                        className="mt-3 text-[10px] font-mono uppercase tracking-[0.2em] drop-shadow"
+                        style={{
+                          color: `${p.accent}90`,
+                          textShadow: `0 0 8px ${p.accent}40`,
+                        }}
                       >
                         {p.phase}
                       </span>
 
-                      {/* Phase title */}
+                      {/* Phase title — accent color glow */}
                       <span
-                        className="mt-1 text-sm font-semibold text-white/80 drop-shadow"
+                        className="mt-1 text-sm font-bold drop-shadow"
+                        style={{
+                          color: p.accent,
+                          textShadow: `0 0 16px ${p.accent}50, 0 0 32px ${p.accent}25`,
+                        }}
                       >
                         {_(p.titleZh, p.titleEn)}
                       </span>
