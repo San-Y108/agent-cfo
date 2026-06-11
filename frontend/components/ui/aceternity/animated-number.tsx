@@ -11,12 +11,17 @@ export function AnimatedNumber({
   value,
   decimals = 0,
   className,
+  springConfig,
 }: {
   value: number;
   decimals?: number;
   className?: string;
+  springConfig?: { stiffness?: number; damping?: number };
 }) {
-  const spring = useSpring(0, { stiffness: 90, damping: 28 });
+  const spring = useSpring(0, {
+    stiffness: springConfig?.stiffness ?? 90,
+    damping: springConfig?.damping ?? 28,
+  });
   const display = useTransform(spring, (v) =>
     decimals ? v.toFixed(decimals) : Math.round(v).toLocaleString()
   );

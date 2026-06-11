@@ -9,11 +9,12 @@ export type Lang = "en" | "zh";
 export const dict = {
   en: {
     // ---- nav ----
-    "nav.problem": "Problem",
+    "nav.platform": "Platform",
     "nav.workflow": "Workflow",
-    "nav.risk": "Risk Guardrails",
-    "nav.wallet": "Wallet Execution",
-    "nav.audit": "Audit Trail",
+    "nav.guardrails": "Guardrails",
+    "nav.faq": "FAQ",
+    "nav.team": "Team",
+    "nav.timeline": "Timeline",
     "nav.openDemo": "Open Console",
 
     // ---- hero ----
@@ -275,6 +276,7 @@ export const dict = {
     "console.tab.wallets": "CWD Wallet Console",
     "console.tab.analytics": "Performance & Gas",
     "console.tab.policy": "Security Guards",
+    "console.tab.agent": "AI Agent",
     "console.treasury.welcome": "AI Payout Verification Desk",
     "console.treasury.welcomeDesc": "Payment execution center. Generate plans, run risk checks, approve payouts, and track settlement status.",
     "console.treasury.totalBudget": "DAO Monthly Budget remaining",
@@ -416,11 +418,12 @@ export const dict = {
 
   zh: {
     // ---- nav ----
-    "nav.problem": "痛点",
+    "nav.platform": "平台",
     "nav.workflow": "工作流",
-    "nav.risk": "风险护栏",
-    "nav.wallet": "钱包执行",
-    "nav.audit": "审计追溯",
+    "nav.guardrails": "风险护栏",
+    "nav.faq": "常见问题",
+    "nav.team": "团队",
+    "nav.timeline": "时间线",
     "nav.openDemo": "进入 Console",
 
     // ---- hero ----
@@ -680,6 +683,7 @@ export const dict = {
     "console.tab.wallets": "CWD 钱包控制台",
     "console.tab.analytics": "Gas 与效益分析",
     "console.tab.policy": "智能规则与策略防护",
+    "console.tab.agent": "AI 助手",
     "console.exitConsole": "安全关闭控制台",
     "console.treasury.welcome": "AI 财务审核台",
     "console.treasury.welcomeDesc": "付款执行中心。生成付款计划、运行风险检查、批准付款并追踪结算状态。",

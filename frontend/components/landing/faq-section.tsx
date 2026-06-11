@@ -29,7 +29,7 @@ export function FAQSection() {
       <h3 className="text-2xl md:text-3xl font-black tracking-tight mb-2 text-white">
         {t("faq.title")}
       </h3>
-      <p className="text-sm mb-8 max-w-md font-normal leading-relaxed text-white/60">
+      <p className="text-sm mb-8 max-w-md font-normal leading-relaxed text-white/85">
         {t("faq.subtitle")}
       </p>
 
@@ -37,7 +37,7 @@ export function FAQSection() {
         {faqItems.map((item, idx) => (
           <div
             key={idx}
-            className="p-5 border rounded-xl transition-colors relative group border-white/5 bg-white/[0.01] hover:bg-white/[0.03]"
+            className="p-5 border rounded-xl transition-colors relative group border-white/12 bg-white/[0.04] hover:bg-white/[0.07]"
           >
             <h4 className="text-sm font-bold flex items-center justify-between gap-4 text-white">
               <span>{t(item.question)}</span>
@@ -45,7 +45,7 @@ export function FAQSection() {
                 {item.pill}
               </span>
             </h4>
-            <p className="text-xs mt-3 leading-relaxed font-normal text-white/60">
+            <p className="text-xs mt-3 leading-relaxed font-normal text-white/85">
               {t(item.answer)}
             </p>
           </div>

@@ -22,6 +22,10 @@ import {
   Pie,
 } from "recharts";
 import { useApp } from "@/lib/i18n/context";
+import { AnimatedNumber } from "@/components/ui/aceternity/animated-number";
+import { GradientOrb } from "@/components/ui/aceternity/background";
+import { GradientText } from "@/components/ui/aceternity/colourful-text";
+import { Sparkles as SparklesFX } from "@/components/ui/aceternity/sparkles";
 
 const VIOLET = "#C084FC";
 const VIOLET_LIGHT = "#A855F7";
@@ -71,7 +75,7 @@ function KpiCard({
   delay = 0,
 }: {
   label: string;
-  value: string;
+  value: React.ReactNode;
   sub: React.ReactNode;
   icon: React.ElementType;
   delay?: number;
@@ -81,15 +85,21 @@ function KpiCard({
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, delay }}
-      className="p-5 rounded-xl border border-border-token dark:border-white/[0.06] bg-surface dark:bg-white/[0.03] space-y-2"
+      className="group relative p-5 rounded-xl border border-border-token dark:border-white/[0.06] bg-surface dark:bg-white/[0.03] space-y-2 overflow-hidden transition-colors hover:border-white/[0.12]"
     >
-      <span className="text-[10px] font-mono font-bold uppercase text-fg-muted tracking-wider">
+      {/* Hover glow */}
+      <div
+        className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
+        style={{
+          background: `radial-gradient(circle at 50% 0%, ${VIOLET}08, transparent 70%)`,
+        }}
+      />
+      <span className="relative z-10 text-[10px] font-mono font-bold uppercase text-fg-muted tracking-wider">
         {label}
       </span>
       <div
-        className="text-3xl font-extrabold tracking-tight tabular-nums"
+        className="relative z-10 text-3xl font-extrabold tracking-tight tabular-nums"
         style={{
-          fontFamily: "Inter, sans-serif",
           background: `linear-gradient(135deg, ${VIOLET} 0%, ${VIOLET_LIGHT} 100%)`,
           WebkitBackgroundClip: "text",
           WebkitTextFillColor: "transparent",
@@ -98,7 +108,7 @@ function KpiCard({
       >
         {value}
       </div>
-      <div className="flex items-center gap-1.5 text-xs text-success font-semibold font-mono">
+      <div className="relative z-10 flex items-center gap-1.5 text-xs text-success font-semibold font-mono">
         <Icon className="w-3.5 h-3.5" />
         {sub}
       </div>
@@ -151,7 +161,10 @@ export default function AnalyticsPage() {
   const totalTxCount = MONTHLY_VOLUME_DATA.reduce((a, d) => a + d.transactions, 0);
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-6 space-y-6 relative">
+      {/* ─── Ambient orb: Analytics = violet ─── */}
+      <GradientOrb color="violet" className="-top-32 -right-32" />
+
       {/* ── Header + range toggle ── */}
       <motion.div
         initial={{ opacity: 0, y: 12 }}
@@ -159,12 +172,16 @@ export default function AnalyticsPage() {
         className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 p-5 rounded-xl border border-border-token dark:border-white/[0.06] bg-surface-2 dark:bg-white/[0.03]"
       >
         <div>
-          <h2
-            className="text-xl font-bold tracking-tight text-fg"
-            style={{ fontFamily: "Inter, sans-serif" }}
-          >
-            {t("console.analytics.title" as any)}
-          </h2>
+          <div className="relative inline-block">
+            <GradientText className="text-xl font-bold tracking-tight">
+              {t("console.analytics.title" as any)}
+            </GradientText>
+            <SparklesFX
+              count={6}
+              className="absolute -right-6 -top-1 w-12 h-12"
+              color="#C084FC"
+            />
+          </div>
           <p className="text-xs mt-1 text-fg-subtle">
             {t("console.analytics.desc" as any)}
           </p>
@@ -176,7 +193,7 @@ export default function AnalyticsPage() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <KpiCard
           label={t("console.analytics.conducted" as any)}
-          value={`$${totalVolume.toLocaleString()}`}
+          value={<AnimatedNumber value={totalVolume} />}
           sub={lang === "zh" ? "较上期 +24%" : "+24% vs last period"}
           icon={TrendingUp}
           delay={0.05}

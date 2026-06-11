@@ -1,0 +1,344 @@
+"use client";
+
+import React, { useRef, useState } from "react";
+import {
+  motion,
+  useMotionValue,
+  useSpring,
+  useTransform,
+  useReducedMotion,
+} from "framer-motion";
+import { Orbit, Bot, ShieldCheck, Snowflake } from "lucide-react";
+import { useApp } from "@/lib/i18n/context";
+
+/* =============================================================================
+ * WALLET HOLOGRAM — console-side enhanced takes on two landing visuals.
+ * Landing originals stay untouched (components/landing/ is locked); these are
+ * blue-accent (#60A5FA) rebuilds with extra motion:
+ *   WalletHoloCard  — 3D tilt + cursor-tracked glare + hover lift/glow
+ *                     (landing HolographicCard has static gloss, no glare).
+ *   WalletTopology  — CAW-core node map with animated data packets and
+ *                     click-to-switch vaults (landing cloud is hover-only).
+ * ===========================================================================*/
+
+const BLUE = "#60A5FA";
+const SPRING = { stiffness: 200, damping: 20, mass: 0.8 } as const;
+
+/* ── 3D tilt wrapper ── */
+
+export function WalletHoloCard({ children }: { children: React.ReactNode }) {
+  const reduce = useReducedMotion();
+  const rawX = useMotionValue(0);
+  const rawY = useMotionValue(0);
+  const glareX = useMotionValue(50);
+  const glareY = useMotionValue(50);
+
+  const springX = useSpring(rawX, SPRING);
+  const springY = useSpring(rawY, SPRING);
+
+  // Slightly stronger tilt than the landing card (/12 vs /15)
+  const rotateX = useTransform(springY, (v) => -v / 12);
+  const rotateY = useTransform(springX, (v) => v / 12);
+
+  const glare = useTransform(
+    [glareX, glareY],
+    (values) => {
+      const [gx, gy] = values as [number, number];
+      return `radial-gradient(circle at ${gx}% ${gy}%, rgba(96,165,250,0.14), rgba(255,255,255,0.04) 32%, transparent 62%)`;
+    }
+  );
+
+  const onMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (reduce) return;
+    const box = e.currentTarget.getBoundingClientRect();
+    rawX.set(e.clientX - box.left - box.width / 2);
+    rawY.set(e.clientY - box.top - box.height / 2);
+    glareX.set(((e.clientX - box.left) / box.width) * 100);
+    glareY.set(((e.clientY - box.top) / box.height) * 100);
+  };
+
+  const onLeave = () => {
+    rawX.set(0);
+    rawY.set(0);
+    glareX.set(50);
+    glareY.set(50);
+  };
+
+  return (
+    <div style={{ perspective: "1400px" }}>
+      <motion.div
+        onMouseMove={onMove}
+        onMouseLeave={onLeave}
+        whileHover={reduce ? undefined : { scale: 1.008 }}
+        style={{
+          rotateX: reduce ? 0 : rotateX,
+          rotateY: reduce ? 0 : rotateY,
+          transformStyle: "preserve-3d",
+        }}
+        className="relative will-change-transform rounded-xl transition-shadow duration-500 hover:shadow-[0_18px_60px_rgba(96,165,250,0.14)]"
+      >
+        {children}
+        {/* Cursor-tracked glare — sits above content, never blocks input */}
+        <motion.div
+          aria-hidden
+          className="pointer-events-none absolute inset-0 rounded-xl opacity-0 hover:opacity-100 transition-opacity duration-300"
+          style={{ background: glare, opacity: reduce ? 0 : undefined }}
+        />
+      </motion.div>
+    </div>
+  );
+}
+
+/* ── Treasury topology ── */
+
+export interface TopologyWallet {
+  id: string;
+  name: string;
+  type: string;
+  valueUsd: number;
+}
+
+const TYPE_ICON: Record<string, React.ElementType> = {
+  "Agent Vault": Bot,
+  "Multi-sig": ShieldCheck,
+  "Cold Storage": Snowflake,
+};
+
+function polar(angleDeg: number, radius: number) {
+  const rad = ((angleDeg - 90) * Math.PI) / 180;
+  return { x: Math.cos(rad) * radius, y: Math.sin(rad) * radius };
+}
+
+function fmtUsd(v: number) {
+  return v >= 1000 ? `$${(v / 1000).toFixed(v >= 10000 ? 0 : 1)}k` : `$${v.toFixed(0)}`;
+}
+
+export function WalletTopology({
+  wallets,
+  activeId,
+  onSelect,
+}: {
+  wallets: TopologyWallet[];
+  activeId: string;
+  onSelect: (id: string) => void;
+}) {
+  const { lang } = useApp();
+  const _ = (zh: string, en: string) => (lang === "zh" ? zh : en);
+  const reduce = useReducedMotion();
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [mouse, setMouse] = useState({ x: 0, y: 0 });
+  const [hovered, setHovered] = useState<string | null>(null);
+
+  // Container-local parallax (landing version listens on window — heavier)
+  const onMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (reduce || !containerRef.current) return;
+    const rect = containerRef.current.getBoundingClientRect();
+    setMouse({
+      x: (e.clientX - rect.left - rect.width / 2) / 25,
+      y: (e.clientY - rect.top - rect.height / 2) / 25,
+    });
+  };
+
+  const nodes = wallets.map((w, i) => {
+    const angle = (360 / wallets.length) * i;
+    const base = polar(angle, 105);
+    const pos = reduce
+      ? base
+      : {
+          x: base.x + mouse.x * (base.x > 0 ? 1 : -1) * 0.8,
+          y: base.y + mouse.y * (base.y > 0 ? 1 : -1) * 0.8,
+        };
+    return { wallet: w, pos };
+  });
+
+  return (
+    <div
+      className="rounded-xl border border-border-token dark:border-white/[0.06] overflow-hidden"
+      onMouseMove={onMove}
+      onMouseLeave={() => setMouse({ x: 0, y: 0 })}
+      ref={containerRef}
+    >
+      {/* Header */}
+      <div className="px-4 py-3 border-b border-border-token dark:border-white/[0.06] bg-surface dark:bg-white/[0.02]">
+        <div className="flex items-center gap-2">
+          <Orbit className="w-3.5 h-3.5" style={{ color: BLUE }} />
+          <span className="text-xs font-bold text-fg">
+            {_("资金拓扑", "Treasury Topology")}
+          </span>
+        </div>
+        <p className="text-[10px] text-fg-subtle mt-0.5 font-mono">
+          {_("点击节点切换金库", "Click a node to switch vaults")}
+        </p>
+      </div>
+
+      {/* Dark radar viewport — intentionally dark in both themes */}
+      <div className="relative bg-[#0A0F18]">
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0 opacity-50"
+          style={{
+            background:
+              "radial-gradient(ellipse 60% 60% at 50% 50%, rgba(96,165,250,0.07), transparent 70%)",
+          }}
+        />
+
+        <div className="relative mx-auto aspect-square w-full max-w-[320px] p-4">
+          {/* Concentric pulse rings */}
+          {[55, 85, 120].map((r, i) => (
+            <motion.div
+              key={r}
+              className="absolute left-1/2 top-1/2 rounded-full border"
+              style={{
+                width: r * 2,
+                height: r * 2,
+                marginLeft: -r,
+                marginTop: -r,
+                borderColor:
+                  i === 1 ? "rgba(96,165,250,0.12)" : "rgba(255,255,255,0.05)",
+              }}
+              animate={reduce ? {} : { scale: [1, 1.02, 1], opacity: [0.35, 0.7, 0.35] }}
+              transition={{ duration: 4 + i, repeat: Infinity, ease: "easeInOut", delay: i * 0.5 }}
+            />
+          ))}
+
+          {/* Connection lines + animated data packets */}
+          <svg viewBox="-160 -160 320 320" className="absolute inset-0 h-full w-full pointer-events-none">
+            <defs>
+              <linearGradient id="walletLineGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stopColor={BLUE} stopOpacity="0.35" />
+                <stop offset="100%" stopColor={BLUE} stopOpacity="0.06" />
+              </linearGradient>
+            </defs>
+            {nodes.map(({ wallet, pos }) => (
+              <g key={wallet.id}>
+                <line
+                  x1="0"
+                  y1="0"
+                  x2={pos.x}
+                  y2={pos.y}
+                  stroke="url(#walletLineGrad)"
+                  strokeWidth={wallet.id === activeId ? 1.6 : 1}
+                  opacity={wallet.id === activeId || hovered === wallet.id ? 0.9 : 0.4}
+                />
+                {/* Data packet: core → vault, loops forever */}
+                {!reduce && (
+                  <motion.circle
+                    r={wallet.id === activeId ? 2.6 : 1.8}
+                    fill={BLUE}
+                    initial={false}
+                    animate={{
+                      cx: [0, pos.x],
+                      cy: [0, pos.y],
+                      opacity: [0, 0.9, 0],
+                    }}
+                    transition={{
+                      duration: 1.8,
+                      repeat: Infinity,
+                      ease: "easeIn",
+                      delay: nodes.findIndex((n) => n.wallet.id === wallet.id) * 0.6,
+                      repeatDelay: 0.6,
+                    }}
+                  />
+                )}
+              </g>
+            ))}
+          </svg>
+
+          {/* Core */}
+          <motion.div
+            className="absolute left-1/2 top-1/2 z-20 flex h-16 w-16 -translate-x-1/2 -translate-y-1/2 flex-col items-center justify-center rounded-full"
+            style={{
+              background:
+                "radial-gradient(circle at 35% 35%, rgba(255,255,255,0.1), rgba(255,255,255,0.02))",
+              backdropFilter: "blur(12px)",
+              boxShadow:
+                "inset 0 1px 2px rgba(255,255,255,0.15), 0 0 36px rgba(96,165,250,0.22), inset 0 0 18px rgba(96,165,250,0.08)",
+              border: "1px solid rgba(255,255,255,0.1)",
+            }}
+            animate={reduce ? {} : { scale: [1, 1.04, 1] }}
+            transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+          >
+            <Orbit className="h-5 w-5" style={{ color: BLUE }} strokeWidth={1.5} />
+            <span className="mt-0.5 text-[6px] font-mono font-bold uppercase tracking-wider" style={{ color: BLUE }}>
+              CAW Core
+            </span>
+          </motion.div>
+
+          {/* Wallet nodes */}
+          {nodes.map(({ wallet, pos }) => {
+            const Icon = TYPE_ICON[wallet.type] ?? ShieldCheck;
+            const isActive = wallet.id === activeId;
+            const isHovered = hovered === wallet.id;
+            const lit = isActive || isHovered;
+
+            return (
+              <div
+                key={wallet.id}
+                className="absolute z-10 flex flex-col items-center"
+                style={{
+                  left: `calc(50% + ${pos.x}px)`,
+                  top: `calc(50% + ${pos.y}px)`,
+                  transform: "translate(-50%, -50%)",
+                }}
+              >
+                <motion.button
+                  type="button"
+                  onClick={() => onSelect(wallet.id)}
+                  onMouseEnter={() => setHovered(wallet.id)}
+                  onMouseLeave={() => setHovered(null)}
+                  className="relative flex h-11 w-11 cursor-pointer items-center justify-center rounded-full outline-none"
+                  style={{
+                    background: lit ? "rgba(96,165,250,0.16)" : "rgba(255,255,255,0.05)",
+                    border: `1px solid ${lit ? "rgba(96,165,250,0.5)" : "rgba(255,255,255,0.1)"}`,
+                    boxShadow: lit
+                      ? "0 0 22px rgba(96,165,250,0.35), inset 0 1px 1px rgba(255,255,255,0.1)"
+                      : "inset 0 1px 1px rgba(255,255,255,0.05)",
+                  }}
+                  whileHover={{ scale: 1.18 }}
+                  whileTap={{ scale: 0.95 }}
+                  transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                  aria-label={wallet.name}
+                  aria-pressed={isActive}
+                >
+                  {/* Active halo */}
+                  {isActive && !reduce && (
+                    <span
+                      className="absolute inset-0 animate-ping rounded-full"
+                      style={{ backgroundColor: "rgba(96,165,250,0.18)", animationDuration: "2.2s" }}
+                    />
+                  )}
+                  <Icon
+                    className="h-4 w-4 relative"
+                    style={{ color: lit ? BLUE : "rgba(255,255,255,0.55)" }}
+                    strokeWidth={1.5}
+                  />
+
+                  {isHovered && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 4 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="absolute top-12 left-1/2 z-30 w-32 -translate-x-1/2 rounded-lg border border-white/[0.1] bg-[#0A0F18]/95 p-2 text-center shadow-2xl backdrop-blur-md"
+                    >
+                      <div className="text-[9px] font-bold text-white">{wallet.name}</div>
+                      <div className="mt-0.5 text-[7px] font-mono leading-tight text-white/55">
+                        {wallet.type} · {fmtUsd(wallet.valueUsd)}
+                      </div>
+                    </motion.div>
+                  )}
+                </motion.button>
+
+                <motion.span
+                  className="mt-1.5 text-[8px] font-mono uppercase tracking-wider whitespace-nowrap"
+                  animate={{ opacity: lit ? 1 : 0.4 }}
+                  style={{ color: lit ? BLUE : "rgba(255,255,255,0.4)" }}
+                >
+                  {wallet.name.split(" ")[0]} · {fmtUsd(wallet.valueUsd)}
+                </motion.span>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+}

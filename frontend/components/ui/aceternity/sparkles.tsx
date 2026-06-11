@@ -15,7 +15,7 @@ export function Sparkles({
 }: {
   count?: number;
   className?: string;
-  color?: string;
+  color?: string; // Tailwind class (e.g. "bg-blue-300") or hex (e.g. "#B5FF4D")
 }) {
   const particles = React.useMemo(
     () =>
@@ -30,17 +30,20 @@ export function Sparkles({
     [count]
   );
 
+  const isHex = color.startsWith("#");
+
   return (
     <div className={cn("pointer-events-none absolute inset-0 overflow-hidden", className)}>
       {particles.map((p) => (
         <motion.span
           key={p.id}
-          className={cn("absolute rounded-full", color)}
+          className={cn("absolute rounded-full", !isHex && color)}
           style={{
             top: `${p.top}%`,
             left: `${p.left}%`,
             width: `${p.size}px`,
             height: `${p.size}px`,
+            backgroundColor: isHex ? color : undefined,
           }}
           animate={{
             opacity: [0, 1, 0],
