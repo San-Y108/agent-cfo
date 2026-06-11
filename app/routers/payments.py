@@ -213,6 +213,14 @@ def get_demo_sample():
                     "amount": 10,
                     "token": "USDC",
                 },
+                {
+                    "name": "Data API",
+                    "role": "Tool Subscription",
+                    "task": "Monthly data service subscription",
+                    "wallet": "0xDataAPI",
+                    "amount": 5,
+                    "token": "USDC",
+                },
             ],
             "budgetRule": {
                 "monthlyBudget": 50,
