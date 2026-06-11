@@ -1,21 +1,21 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
-import { motion, useReducedMotion, AnimatePresence } from "framer-motion";
-import { Rocket, Server, Layout, Wallet, Palette } from "lucide-react";
+import React, { useState, useCallback } from "react";
+import { motion, useReducedMotion } from "framer-motion";
+import { Rocket, Server, Layout, Wallet, Palette, Crown } from "lucide-react";
 import { useApp } from "@/lib/i18n/context";
 
 /* ========================================================================
- * TeamShowcase — "Built by" fan-card section (taste-skill polished)
+ * TeamShowcase — Constellation Pentagon Layout
  * ========================================================================
- * Good-idea 05a essence: directional fan-focus on hover.
- * taste-skill upgrades:
- *   - glassmorphism card shells with liquid-glass edge refraction
- *   - conic-gradient rotating avatar rings (each member gets a unique spin)
- *   - glowing connection lines between cards (team = connected)
- *   - text-scramble decode on handle reveal
- *   - dramatic stagger entrance from centre outward
- *   - hovered card flies forward; neighbours dim + recede
+ * Design: 5 core members orbit around a central mentor card.
+ * Metaphor: The mentor is the gravitational center; team members are
+ * connected nodes forming a complete system.
+ *
+ * Layout:
+ *   - Desktop (lg+): Pentagon constellation with SVG connection lines
+ *   - Tablet (md): 3x2 grid, mentor spans 2 columns
+ *   - Mobile (sm): Single column, mentor first
  */
 
 type Member = {
@@ -26,7 +26,9 @@ type Member = {
   contribEn: string;
   accent: string;
   icon: React.ElementType;
-  ringSpeed: number; // seconds per rotation (unique per card)
+  ringSpeed: number;
+  avatar: string;
+  isMentor?: boolean;
 };
 
 const MEMBERS: Member[] = [
@@ -39,6 +41,7 @@ const MEMBERS: Member[] = [
     accent: "#B5FF4D",
     icon: Rocket,
     ringSpeed: 4,
+    avatar: "/team/avatar-san-y108.jpg",
   },
   {
     roleZh: "后端 / Agent",
@@ -49,6 +52,7 @@ const MEMBERS: Member[] = [
     accent: "#5EEAD4",
     icon: Server,
     ringSpeed: 5,
+    avatar: "/team/avatar-w5w8l9jlu.jpg",
   },
   {
     roleZh: "前端",
@@ -59,6 +63,7 @@ const MEMBERS: Member[] = [
     accent: "#60A5FA",
     icon: Layout,
     ringSpeed: 6,
+    avatar: "/team/avatar-aafff623.jpg",
   },
   {
     roleZh: "合约 / CAW",
@@ -69,6 +74,7 @@ const MEMBERS: Member[] = [
     accent: "#C084FC",
     icon: Wallet,
     ringSpeed: 7,
+    avatar: "/team/avatar-gitgdut.jpg",
   },
   {
     roleZh: "物料 / 设计",
@@ -79,150 +85,423 @@ const MEMBERS: Member[] = [
     accent: "#FB7185",
     icon: Palette,
     ringSpeed: 8,
+    avatar: "/team/avatar-eloise-qiu.jpg",
   },
 ];
 
-/* ── Text Scramble Hook ─────────────────────────────────────────────── */
-const CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_-";
+const MENTOR: Member = {
+  roleZh: "导师",
+  roleEn: "Mentor",
+  handle: "ZanyK",
+  contribZh: "去年 Hackathon 参赛者，指导团队度过混沌",
+  contribEn: "Last year's hackathon veteran, guiding the team through the chaos",
+  accent: "#FFD700",
+  icon: Crown,
+  ringSpeed: 3,
+  avatar: "/team/avatar-mentor-zanyk.jpg",
+  isMentor: true,
+};
 
-function useScramble(target: string, trigger: boolean, duration = 800) {
-  const [display, setDisplay] = useState(target);
+/* Pentagon vertex coordinates (radius = 160, starting from top) */
+const PENTAGON_R = 160;
+const PENTAGON_COORDS = [
+  { x: 0, y: -PENTAGON_R },           // Top: Cap (PM)
+  { x: 152, y: -50 },                 // Top-right: Node (Backend)
+  { x: 94, y: 130 },                  // Bottom-right: Pixel (Frontend)
+  { x: -94, y: 130 },                 // Bottom-left: Vault (Contract)
+  { x: -152, y: -50 },                // Top-left: Ink (Design)
+];
 
-  useEffect(() => {
-    if (!trigger) { setDisplay(target); return; }
-    const start = performance.now();
-    let raf: number;
-
-    const tick = (now: number) => {
-      const elapsed = now - start;
-      const progress = Math.min(elapsed / duration, 1);
-      const revealed = Math.floor(progress * target.length);
-
-      let s = "";
-      for (let i = 0; i < target.length; i++) {
-        if (i < revealed) {
-          s += target[i];
-        } else {
-          s += CHARS[Math.floor(Math.random() * CHARS.length)];
-        }
-      }
-      setDisplay(s);
-
-      if (progress < 1) raf = requestAnimationFrame(tick);
-    };
-
-    raf = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(raf);
-  }, [trigger, target, duration]);
-
-  return display;
-}
-
-/* ── Rotating Ring Avatar ───────────────────────────────────────────── */
+/* ── Avatar with rotating ring ───────────────────────────────────────── */
 function AvatarRing({
   accent,
+  avatar,
   icon: Icon,
   speed,
   active,
+  size = 56,
 }: {
   accent: string;
+  avatar: string;
   icon: React.ElementType;
   speed: number;
   active: boolean;
+  size?: number;
 }) {
   return (
-    <div className="relative flex items-center justify-center">
-      {/* rotating conic ring */}
+    <div className="relative flex items-center justify-center" style={{ width: size, height: size }}>
+      {/* Rotating conic ring */}
       <motion.div
-        className="absolute inset-0 rounded-full"
+        className="absolute inset-[-3px] rounded-full"
         animate={{ rotate: 360 }}
-        transition={{
-          duration: speed,
-          repeat: Infinity,
-          ease: "linear",
-        }}
+        transition={{ duration: speed, repeat: Infinity, ease: "linear" }}
         style={{
-          background: `conic-gradient(from 0deg, ${accent}00, ${accent}60, ${accent}, ${accent}60, ${accent}00)`,
-          filter: active ? "blur(1px)" : "blur(0.5px)",
-          opacity: active ? 1 : 0.5,
+          background: `conic-gradient(from 0deg, ${accent}00, ${accent}70, ${accent}, ${accent}70, ${accent}00)`,
+          filter: active ? "blur(1.5px)" : "blur(0.8px)",
+          opacity: active ? 1 : 0.6,
         }}
       />
-      {/* inner glass disc */}
+      {/* Avatar image */}
       <div
-        className="relative z-10 flex h-16 w-16 items-center justify-center rounded-full"
+        className="relative z-10 overflow-hidden rounded-full"
         style={{
-          background: `radial-gradient(circle at 30% 30%, rgba(255,255,255,0.08), rgba(255,255,255,0.02))`,
-          backdropFilter: "blur(8px)",
-          boxShadow: `inset 0 1px 1px rgba(255,255,255,0.1), 0 0 20px ${accent}30`,
+          width: size,
+          height: size,
+          boxShadow: `inset 0 1px 2px rgba(255,255,255,0.15), 0 0 16px ${accent}40`,
         }}
       >
-        <Icon className="h-6 w-6" style={{ color: accent }} strokeWidth={1.5} />
+        <img
+          src={avatar}
+          alt=""
+          className="h-full w-full object-cover"
+          onError={(e) => {
+            // Fallback to icon if image fails
+            const target = e.currentTarget;
+            target.style.display = "none";
+            const parent = target.parentElement;
+            if (parent) {
+              const fallback = document.createElement("div");
+              fallback.className = "h-full w-full flex items-center justify-center";
+              fallback.style.background = `radial-gradient(circle at 30% 30%, rgba(255,255,255,0.1), rgba(255,255,255,0.02))`;
+              parent.appendChild(fallback);
+            }
+          }}
+        />
       </div>
     </div>
   );
 }
 
-/* ── Connection Line between cards ──────────────────────────────────── */
-function ConnectionLine({
-  active,
-  accent,
+/* ── Connection Lines (SVG) ─────────────────────────────────────────── */
+function ConnectionLines({
+  activeIndex,
+  mentorActive,
 }: {
-  active: boolean;
-  accent: string;
+  activeIndex: number | null;
+  mentorActive: boolean;
 }) {
   return (
+    <svg
+      className="absolute inset-0 pointer-events-none"
+      style={{ width: "100%", height: "100%", zIndex: 1 }}
+      viewBox="-220 -220 440 440"
+      preserveAspectRatio="xMidYMid meet"
+    >
+      {PENTAGON_COORDS.map((coord, i) => {
+        const isActive = mentorActive || activeIndex === i;
+        const member = MEMBERS[i];
+        return (
+          <line
+            key={i}
+            x1={0}
+            y1={0}
+            x2={coord.x}
+            y2={coord.y}
+            stroke={isActive ? member.accent : "rgba(255,255,255,0.04)"}
+            strokeWidth={isActive ? 1.5 : 1}
+            strokeDasharray={isActive ? "none" : "4 6"}
+            opacity={isActive ? 0.7 : 0.3}
+            style={{ transition: "all 0.4s ease" }}
+          />
+        );
+      })}
+    </svg>
+  );
+}
+
+/* ── Member Card (outer pentagon) ───────────────────────────────────── */
+function MemberCard({
+  member,
+  index,
+  isHovered,
+  anyHovered,
+  onHover,
+  onLeave,
+}: {
+  member: Member;
+  index: number;
+  isHovered: boolean;
+  anyHovered: boolean;
+  onHover: () => void;
+  onLeave: () => void;
+}) {
+  const { lang } = useApp();
+  const _ = (zh: string, en: string) => (lang === "zh" ? zh : en);
+  const coord = PENTAGON_COORDS[index];
+
+  const opacity = anyHovered ? (isHovered ? 1 : 0.35) : 1;
+  const scale = isHovered ? 1.12 : 1;
+
+  return (
     <motion.div
-      className="pointer-events-none absolute left-1/2 top-[60px] h-px w-8 -translate-x-1/2"
+      className="absolute"
       style={{
-        background: active
-          ? `linear-gradient(90deg, transparent, ${accent}, transparent)`
-          : `linear-gradient(90deg, transparent, rgba(255,255,255,0.06), transparent)`,
+        left: "50%",
+        top: "50%",
+        marginLeft: -80,
+        marginTop: -110,
+        zIndex: isHovered ? 50 : 10,
       }}
-      animate={{ opacity: active ? 1 : 0.3 }}
-      transition={{ duration: 0.4 }}
-    />
+      initial={{ opacity: 0, scale: 0.3, x: 0, y: 0 }}
+      animate={{ opacity, scale, x: coord.x, y: coord.y }}
+      transition={{
+        duration: 0.8,
+        delay: 0.3 + index * 0.12,
+        ease: [0.16, 1, 0.3, 1],
+      }}
+      onMouseEnter={onHover}
+      onMouseLeave={onLeave}
+    >
+      <div
+        className="relative flex h-[220px] w-[160px] flex-col items-center overflow-hidden rounded-xl border p-4 text-center transition-all duration-500"
+        style={{
+          borderColor: isHovered ? `${member.accent}50` : "rgba(255,255,255,0.06)",
+          background: isHovered
+            ? `linear-gradient(135deg, ${member.accent}12, rgba(255,255,255,0.02) 60%, rgba(0,0,0,0.2))`
+            : `linear-gradient(135deg, ${member.accent}08, rgba(255,255,255,0.01) 60%, rgba(0,0,0,0.1))`,
+          boxShadow: isHovered
+            ? `0 0 30px ${member.accent}25, inset 0 1px 0 ${member.accent}30`
+            : "none",
+          transform: `scale(${scale})`,
+          opacity,
+        }}
+      >
+        {/* Avatar */}
+        <AvatarRing
+          accent={member.accent}
+          avatar={member.avatar}
+          icon={member.icon}
+          speed={member.ringSpeed}
+          active={isHovered}
+          size={56}
+        />
+
+        {/* Role label */}
+        <div
+          className="mt-4 text-[9px] font-bold uppercase tracking-[0.18em]"
+          style={{
+            fontFamily: "'Courier New', Courier, monospace",
+            color: member.accent,
+          }}
+        >
+          {_(member.roleZh, member.roleEn)}
+        </div>
+
+        {/* Handle */}
+        <div className="mt-1.5 font-mono text-sm font-bold text-white">
+          {member.handle}
+        </div>
+
+        {/* Divider */}
+        <div
+          className="mt-3 h-[2px] w-8 rounded-full transition-all duration-500"
+          style={{
+            backgroundColor: member.accent,
+            opacity: isHovered ? 1 : 0.4,
+            transform: isHovered ? "scaleX(1.5)" : "scaleX(1)",
+          }}
+        />
+
+        {/* Description (visible on hover) */}
+        <div
+          className="mt-3 text-[10px] leading-relaxed text-white/50 transition-all duration-500"
+          style={{
+            opacity: isHovered ? 1 : 0,
+            transform: isHovered ? "translateY(0)" : "translateY(6px)",
+          }}
+        >
+          {_(member.contribZh, member.contribEn)}
+        </div>
+      </div>
+    </motion.div>
+  );
+}
+
+/* ── Mentor Card (center) ───────────────────────────────────────────── */
+function MentorCard({
+  isHovered,
+  anyHovered,
+  onHover,
+  onLeave,
+}: {
+  isHovered: boolean;
+  anyHovered: boolean;
+  onHover: () => void;
+  onLeave: () => void;
+}) {
+  const { lang } = useApp();
+  const _ = (zh: string, en: string) => (lang === "zh" ? zh : en);
+
+  const opacity = anyHovered ? (isHovered ? 1 : 0.5) : 1;
+  const scale = isHovered ? 1.08 : 1;
+
+  return (
+    <motion.div
+      className="absolute"
+      style={{
+        left: "50%",
+        top: "50%",
+        marginLeft: -100,
+        marginTop: -140,
+        zIndex: isHovered ? 60 : 20,
+      }}
+      initial={{ opacity: 0, scale: 0.5 }}
+      animate={{ opacity, scale: scale }}
+      transition={{
+        duration: 0.9,
+        delay: 0.1,
+        ease: [0.34, 1.56, 0.64, 1], // Spring-like
+      }}
+      onMouseEnter={onHover}
+      onMouseLeave={onLeave}
+    >
+      <div
+        className="relative flex h-[280px] w-[200px] flex-col items-center overflow-hidden rounded-xl border p-5 text-center transition-all duration-500"
+        style={{
+          borderColor: isHovered ? "rgba(255,215,0,0.5)" : "rgba(255,255,255,0.08)",
+          background: isHovered
+            ? "linear-gradient(135deg, rgba(255,215,0,0.12), rgba(255,255,255,0.03) 60%, rgba(0,0,0,0.25))"
+            : "linear-gradient(135deg, rgba(255,215,0,0.06), rgba(255,255,255,0.01) 60%, rgba(0,0,0,0.15))",
+          boxShadow: isHovered
+            ? "0 0 40px rgba(255,215,0,0.2), inset 0 1px 0 rgba(255,215,0,0.3)"
+            : "0 0 20px rgba(255,215,0,0.05)",
+        }}
+      >
+        {/* Mentor badge */}
+        <div
+          className="absolute top-3 right-3 text-[8px] font-bold uppercase tracking-[0.2em] px-2 py-0.5 rounded-full"
+          style={{
+            backgroundColor: "rgba(255,215,0,0.15)",
+            color: "#FFD700",
+            border: "1px solid rgba(255,215,0,0.3)",
+          }}
+        >
+          ✦ {_(MENTOR.roleZh, MENTOR.roleEn)}
+        </div>
+
+        {/* Avatar */}
+        <AvatarRing
+          accent={MENTOR.accent}
+          avatar={MENTOR.avatar}
+          icon={MENTOR.icon}
+          speed={MENTOR.ringSpeed}
+          active={isHovered}
+          size={72}
+        />
+
+        {/* Handle */}
+        <div className="mt-4 font-mono text-lg font-bold text-white">
+          {MENTOR.handle}
+        </div>
+
+        {/* Divider */}
+        <div
+          className="mt-3 h-[2px] w-10 rounded-full transition-all duration-500"
+          style={{
+            backgroundColor: "#FFD700",
+            opacity: isHovered ? 1 : 0.5,
+            transform: isHovered ? "scaleX(1.8)" : "scaleX(1)",
+          }}
+        />
+
+        {/* Description */}
+        <p className="mt-3 text-[11px] leading-relaxed text-white/55">
+          {_(MENTOR.contribZh, MENTOR.contribEn)}
+        </p>
+      </div>
+    </motion.div>
+  );
+}
+
+/* ── Mobile Grid Card ───────────────────────────────────────────────── */
+function MobileCard({
+  member,
+  index,
+}: {
+  member: Member;
+  index: number;
+}) {
+  const { lang } = useApp();
+  const _ = (zh: string, en: string) => (lang === "zh" ? zh : en);
+  const reduce = useReducedMotion();
+
+  return (
+    <motion.div
+      initial={reduce ? false : { opacity: 0, y: 20 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, amount: 0.4 }}
+      transition={{ duration: 0.5, delay: index * 0.08 }}
+      className="flex items-center gap-4 rounded-xl border p-4"
+      style={{
+        borderColor: member.isMentor ? "rgba(255,215,0,0.2)" : "rgba(255,255,255,0.06)",
+        background: member.isMentor
+          ? "linear-gradient(135deg, rgba(255,215,0,0.08), rgba(255,255,255,0.01))"
+          : "rgba(255,255,255,0.02)",
+      }}
+    >
+      {/* Avatar */}
+      <div className="relative shrink-0" style={{ width: 48, height: 48 }}>
+        <div
+          className="absolute inset-[-2px] rounded-full"
+          style={{
+            background: `conic-gradient(from 0deg, ${member.accent}00, ${member.accent}60, ${member.accent}, ${member.accent}60, ${member.accent}00)`,
+            opacity: 0.7,
+          }}
+        />
+        <div className="relative h-12 w-12 overflow-hidden rounded-full">
+          <img src={member.avatar} alt="" className="h-full w-full object-cover" />
+        </div>
+      </div>
+
+      <div className="min-w-0">
+        <div className="flex items-center gap-2">
+          <div
+            className="text-[9px] font-bold uppercase tracking-[0.16em]"
+            style={{
+              fontFamily: "'Courier New', Courier, monospace",
+              color: member.accent,
+            }}
+          >
+            {_(member.roleZh, member.roleEn)}
+          </div>
+          {member.isMentor && (
+            <span
+              className="text-[8px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full"
+              style={{
+                backgroundColor: "rgba(255,215,0,0.15)",
+                color: "#FFD700",
+              }}
+            >
+              ✦
+            </span>
+          )}
+        </div>
+        <div className="text-sm font-bold text-white">{member.handle}</div>
+        <p className="mt-0.5 text-[11px] leading-relaxed text-white/50">
+          {_(member.contribZh, member.contribEn)}
+        </p>
+      </div>
+    </motion.div>
   );
 }
 
 /* ── Main Component ─────────────────────────────────────────────────── */
 export function TeamShowcase() {
   const { lang } = useApp();
-  const _ = useCallback(
-    (zh: string, en: string) => (lang === "zh" ? zh : en),
-    [lang]
-  );
+  const _ = useCallback((zh: string, en: string) => (lang === "zh" ? zh : en), [lang]);
   const reduce = useReducedMotion();
-  const [hovered, setHovered] = useState<number | null>(null);
+  const [hoveredIdx, setHoveredIdx] = useState<number | null>(null);
+  const [mentorHovered, setMentorHovered] = useState(false);
 
-  // Default fan spread: cards open like a hand fan
-  //   outer → inner: 22° → 10° → 0° → -10° → -22°
-  const DEFAULT_ROTATIONS = [22, 10, 0, -10, -22];
-
-  const rotationFor = (i: number) => {
-    if (reduce) return 0;
-    if (hovered === null) return DEFAULT_ROTATIONS[i] ?? 0;
-    if (i === hovered) return 0;
-    return i < hovered ? 12 : -12;
-  };
-
-  const translateZFor = (i: number) => {
-    if (reduce || hovered === null) return 0;
-    if (i === hovered) return 100;
-    return -40;
-  };
-
-  const opacityFor = (i: number) => {
-    if (reduce || hovered === null) return 1;
-    if (i === hovered) return 1;
-    return 0.45;
-  };
+  const anyHovered = hoveredIdx !== null || mentorHovered;
 
   return (
     <section
-      className="relative w-full overflow-hidden px-6 py-16 lg:py-20"
+      id="team"
+      className="relative w-full overflow-hidden px-6 py-16 lg:py-24"
       style={{ fontFamily: "Inter, sans-serif" }}
     >
-      {/* subtle background grid */}
+      {/* Background grid */}
       <div
         aria-hidden
         className="pointer-events-none absolute inset-0 opacity-[0.03]"
@@ -236,7 +515,7 @@ export function TeamShowcase() {
       <div className="relative z-10 mx-auto max-w-7xl">
         {/* Heading */}
         <motion.div
-          className="mx-auto mb-16 max-w-2xl text-center lg:mb-20"
+          className="mx-auto mb-16 max-w-2xl text-center lg:mb-24"
           initial={reduce ? false : { opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, amount: 0.5 }}
@@ -246,181 +525,58 @@ export function TeamShowcase() {
             {_("由这支团队打造", "Built by the team")}
           </h2>
           <p className="mt-4 text-sm text-white/50 md:text-base">
-            {_(
-              "五个角色，一条受控的资金流水线。",
-              "Five roles, one controlled money pipeline."
-            )}
+            {_("五个角色，一位导师，一条受控的资金流水线。", "Five roles, one mentor, one controlled money pipeline.")}
           </p>
         </motion.div>
 
-        {/* ── Desktop Fan Row ── */}
-        <div
-          className="hidden md:flex md:items-stretch md:justify-center md:gap-5"
-          style={{ perspective: 1600 }}
-          onMouseLeave={() => setHovered(null)}
-        >
-          {MEMBERS.map((m, i) => {
-            const active = hovered === i;
-            const scrambleHandle = useScramble(m.handle, active);
+        {/* ── Desktop: Constellation Pentagon ── */}
+        <div className="hidden lg:block">
+          <div
+            className="relative mx-auto"
+            style={{ width: 480, height: 480 }}
+          >
+            {/* Connection lines */}
+            <ConnectionLines activeIndex={hoveredIdx} mentorActive={mentorHovered} />
 
-            return (
-              <motion.article
+            {/* Mentor (center) */}
+            <MentorCard
+              isHovered={mentorHovered}
+              anyHovered={anyHovered}
+              onHover={() => setMentorHovered(true)}
+              onLeave={() => setMentorHovered(false)}
+            />
+
+            {/* 5 outer members */}
+            {MEMBERS.map((m, i) => (
+              <MemberCard
                 key={m.handle}
-                onMouseEnter={() => setHovered(i)}
-                initial={reduce ? false : { opacity: 0, y: 50, rotateY: DEFAULT_ROTATIONS[i] * 1.5 }}
-                whileInView={{ opacity: 1, y: 0, rotateY: DEFAULT_ROTATIONS[i] }}
-                viewport={{ once: true, amount: 0.3 }}
-                transition={{
-                  duration: 0.8,
-                  delay: i * 0.12,
-                  ease: [0.16, 1, 0.3, 1],
-                }}
-                animate={{
-                  rotateY: rotationFor(i),
-                  scale: active ? 1.08 : 1,
-                  z: translateZFor(i),
-                  opacity: opacityFor(i),
-                }}
-                style={{
-                  transformStyle: "preserve-3d",
-                  willChange: "transform",
-                }}
-                className="relative flex h-[380px] w-[190px] flex-col overflow-hidden rounded-2xl border border-white/[0.06] bg-white/[0.02] p-5 text-left"
-              >
-                {/* liquid-glass edge refraction */}
-                <span
-                  aria-hidden
-                  className="pointer-events-none absolute inset-0 rounded-2xl"
-                  style={{
-                    background: active
-                      ? `linear-gradient(135deg, ${m.accent}08, transparent 60%)`
-                      : "transparent",
-                    boxShadow: active
-                      ? `inset 0 1px 0 ${m.accent}40, inset 0 -1px 0 ${m.accent}15, 0 20px 60px -15px ${m.accent}35`
-                      : "inset 0 1px 0 rgba(255,255,255,0.04)",
-                    transition: "all 0.5s cubic-bezier(0.16, 1, 0.3, 1)",
-                  }}
-                />
-
-                {/* connection line to next card */}
-                {i < MEMBERS.length - 1 && (
-                  <ConnectionLine active={active} accent={m.accent} />
-                )}
-
-                {/* Avatar with rotating ring */}
-                <div className="relative z-10">
-                  <AvatarRing
-                    accent={m.accent}
-                    icon={m.icon}
-                    speed={m.ringSpeed}
-                    active={active}
-                  />
-                </div>
-
-                {/* Role + Handle (scrambled on hover) */}
-                <div className="relative z-10 mt-6">
-                  <div
-                    className="text-[10px] font-bold uppercase tracking-[0.18em]"
-                    style={{
-                      fontFamily: "'Courier New', Courier, monospace",
-                      color: m.accent,
-                    }}
-                  >
-                    {_(m.roleZh, m.roleEn)}
-                  </div>
-                  <div
-                    className="mt-2 font-mono text-base font-bold text-white"
-                    style={{ minHeight: "1.5rem" }}
-                  >
-                    <AnimatePresence mode="wait">
-                      <motion.span
-                        key={active ? "scramble" : "plain"}
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        transition={{ duration: 0.2 }}
-                      >
-                        {active ? scrambleHandle : m.handle}
-                      </motion.span>
-                    </AnimatePresence>
-                  </div>
-                </div>
-
-                {/* Contribution — slides up on hover */}
-                <div className="relative z-10 mt-auto">
-                  <motion.div
-                    animate={{
-                      opacity: active ? 1 : 0.35,
-                      y: active ? 0 : 10,
-                    }}
-                    transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-                  >
-                    <span
-                      className="mb-2 block h-px w-10 origin-left"
-                      style={{
-                        backgroundColor: m.accent,
-                        transform: active ? "scaleX(2.5)" : "scaleX(1)",
-                        transition: "transform 0.5s cubic-bezier(0.16,1,0.3,1)",
-                      }}
-                    />
-                    <p className="text-[11px] leading-relaxed text-white/60">
-                      {_(m.contribZh, m.contribEn)}
-                    </p>
-                  </motion.div>
-                </div>
-              </motion.article>
-            );
-          })}
+                member={m}
+                index={i}
+                isHovered={hoveredIdx === i}
+                anyHovered={anyHovered}
+                onHover={() => setHoveredIdx(i)}
+                onLeave={() => setHoveredIdx(null)}
+              />
+            ))}
+          </div>
         </div>
 
-        {/* ── Mobile Stacked ── */}
-        <div className="flex flex-col gap-3 md:hidden">
+        {/* ── Tablet: 3x2 Grid ── */}
+        <div className="hidden md:grid md:grid-cols-3 md:gap-4 lg:hidden max-w-3xl mx-auto">
+          {/* Mentor spans 2 columns in center */}
+          <div className="col-span-3 flex justify-center mb-4">
+            <MobileCard member={MENTOR} index={0} />
+          </div>
           {MEMBERS.map((m, i) => (
-            <motion.article
-              key={m.handle}
-              initial={reduce ? false : { opacity: 0, x: -20 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true, amount: 0.4 }}
-              transition={{ duration: 0.5, delay: i * 0.08 }}
-              className="flex items-center gap-4 rounded-2xl border border-white/[0.06] bg-white/[0.02] p-4"
-            >
-              <div className="relative flex h-12 w-12 shrink-0 items-center justify-center">
-                <div
-                  className="absolute inset-0 rounded-full"
-                  style={{
-                    background: `conic-gradient(from 0deg, ${m.accent}00, ${m.accent}50, ${m.accent}, ${m.accent}50, ${m.accent}00)`,
-                    opacity: 0.6,
-                  }}
-                />
-                <div
-                  className="relative z-10 flex h-10 w-10 items-center justify-center rounded-full"
-                  style={{
-                    background: `radial-gradient(circle at 30% 30%, rgba(255,255,255,0.1), rgba(255,255,255,0.02))`,
-                  }}
-                >
-                  <m.icon
-                    className="h-5 w-5"
-                    style={{ color: m.accent }}
-                    strokeWidth={1.5}
-                  />
-                </div>
-              </div>
-              <div className="min-w-0">
-                <div
-                  className="text-[10px] font-bold uppercase tracking-[0.16em]"
-                  style={{
-                    fontFamily: "'Courier New', Courier, monospace",
-                    color: m.accent,
-                  }}
-                >
-                  {_(m.roleZh, m.roleEn)}
-                </div>
-                <div className="text-sm font-bold text-white">{m.handle}</div>
-                <p className="mt-0.5 text-[12px] leading-relaxed text-white/55">
-                  {_(m.contribZh, m.contribEn)}
-                </p>
-              </div>
-            </motion.article>
+            <MobileCard key={m.handle} member={m} index={i + 1} />
+          ))}
+        </div>
+
+        {/* ── Mobile: Single column ── */}
+        <div className="flex flex-col gap-3 md:hidden max-w-md mx-auto">
+          <MobileCard member={MENTOR} index={0} />
+          {MEMBERS.map((m, i) => (
+            <MobileCard key={m.handle} member={m} index={i + 1} />
           ))}
         </div>
       </div>

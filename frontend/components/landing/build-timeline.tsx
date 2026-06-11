@@ -19,6 +19,7 @@ type Phase = {
   accent: string;
   accentMuted: string;
   number: string;
+  img: string;
 };
 
 const PHASES: Phase[] = [
@@ -32,6 +33,7 @@ const PHASES: Phase[] = [
     accent: "#4A9B8E",
     accentMuted: "rgba(74,155,142,0.15)",
     number: "01",
+    img: "/timeline/phase-01-kickoff.png",
   },
   {
     date: "2026-06-09",
@@ -43,6 +45,7 @@ const PHASES: Phase[] = [
     accent: "#5A8FC4",
     accentMuted: "rgba(90,143,196,0.15)",
     number: "02",
+    img: "/timeline/phase-02-integration.png",
   },
   {
     date: "2026-06-10",
@@ -54,6 +57,7 @@ const PHASES: Phase[] = [
     accent: "#8BA85C",
     accentMuted: "rgba(139,168,92,0.15)",
     number: "03",
+    img: "/timeline/phase-03-polish.png",
   },
   {
     date: "2026-06-12",
@@ -65,6 +69,7 @@ const PHASES: Phase[] = [
     accent: "#9B7BB8",
     accentMuted: "rgba(155,123,184,0.15)",
     number: "04",
+    img: "/timeline/phase-04-submit.png",
   },
 ];
 
@@ -355,7 +360,7 @@ export function BuildTimeline() {
                     ref={(el) => {
                       frameRefs.current[i] = el;
                     }}
-                    className="absolute inset-0 flex flex-col items-center justify-center"
+                    className="absolute inset-0 flex flex-col items-center justify-center overflow-hidden"
                     style={{
                       background: `
                         linear-gradient(135deg, ${p.accentMuted} 0%, rgba(255,255,255,0.01) 60%, rgba(0,0,0,0.15) 100%)
@@ -365,40 +370,54 @@ export function BuildTimeline() {
                       opacity: i === 0 ? 1 : 0,
                     }}
                   >
-                    {/* Subtle inner glow at top */}
-                    <div
-                      className="absolute top-0 left-0 right-0 h-[1px]"
-                      style={{
-                        background: `linear-gradient(90deg, transparent 10%, ${p.accent}40 50%, transparent 90%)`,
-                      }}
-                      aria-hidden="true"
+                    {/* Phase image background */}
+                    <img
+                      src={p.img}
+                      alt={_(p.titleZh, p.titleEn)}
+                      className="absolute inset-0 w-full h-full object-cover"
+                      style={{ opacity: 0.5 }}
+                      loading="eager"
                     />
+                    {/* Dark overlay for text readability */}
+                    <div className="absolute inset-0 bg-black/45" />
 
-                    {/* Large phase number */}
-                    <span
-                      className="text-[56px] md:text-[64px] font-bold leading-none tracking-tighter"
-                      style={{
-                        color: "transparent",
-                        WebkitTextStroke: `1px ${p.accent}50`,
-                        opacity: 0.6,
-                      }}
-                    >
-                      {p.number}
-                    </span>
+                    {/* Content layer above image */}
+                    <div className="relative z-10 flex flex-col items-center justify-center">
+                      {/* Subtle inner glow at top */}
+                      <div
+                        className="absolute -top-4 left-0 right-0 h-[1px]"
+                        style={{
+                          background: `linear-gradient(90deg, transparent 10%, ${p.accent}50 50%, transparent 90%)`,
+                        }}
+                        aria-hidden="true"
+                      />
 
-                    {/* Phase label */}
-                    <span
-                      className="mt-3 text-[10px] font-mono uppercase tracking-[0.2em] text-white/30"
-                    >
-                      {p.phase}
-                    </span>
+                      {/* Large phase number */}
+                      <span
+                        className="text-[56px] md:text-[64px] font-bold leading-none tracking-tighter drop-shadow-lg"
+                        style={{
+                          color: "transparent",
+                          WebkitTextStroke: `1.5px ${p.accent}70`,
+                          opacity: 0.75,
+                        }}
+                      >
+                        {p.number}
+                      </span>
 
-                    {/* Phase title */}
-                    <span
-                      className="mt-1 text-sm font-semibold text-white/70"
-                    >
-                      {_(p.titleZh, p.titleEn)}
-                    </span>
+                      {/* Phase label */}
+                      <span
+                        className="mt-3 text-[10px] font-mono uppercase tracking-[0.2em] text-white/40 drop-shadow"
+                      >
+                        {p.phase}
+                      </span>
+
+                      {/* Phase title */}
+                      <span
+                        className="mt-1 text-sm font-semibold text-white/80 drop-shadow"
+                      >
+                        {_(p.titleZh, p.titleEn)}
+                      </span>
+                    </div>
                   </div>
                 ))}
               </div>
