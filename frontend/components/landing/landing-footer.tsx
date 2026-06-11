@@ -135,17 +135,8 @@ export function LandingFooter() {
         <div className="grid gap-12 lg:grid-cols-[1.2fr_2fr] lg:gap-20">
           {/* Brand summary */}
           <div>
-            <div className="flex items-baseline gap-2">
-              <img src="/logo.png" alt="AgentCFO" className="h-9 w-9" style={{ filter: "drop-shadow(0 0 6px rgba(181,255,77,0.5))" }} />
-              <span
-                className="text-2xl font-black tracking-tight bg-gradient-to-r from-lime-400 via-cyan-400 to-violet-400 bg-clip-text text-transparent"
-                style={{
-                  fontFamily: "Inter, sans-serif",
-                  filter: "drop-shadow(0 0 10px rgba(181,255,77,0.5)) drop-shadow(0 0 20px rgba(94,234,212,0.3))",
-                }}
-              >
-                AgentCFO
-              </span>
+            <div className="flex items-center gap-3">
+              <img src="/logo.png" alt="AgentCFO" className="h-10 w-10" style={{ filter: "drop-shadow(0 0 8px rgba(181,255,77,0.6))" }} />
               <span
                 className="text-[10px] font-mono uppercase tracking-[0.2em] text-white/40"
                 style={{ fontFamily: "'Courier New', Courier, monospace" }}
@@ -223,7 +214,7 @@ export function LandingFooter() {
 
           <svg
             ref={svgRef}
-            viewBox="0 0 1000 140"
+            viewBox="0 0 1000 160"
             preserveAspectRatio="xMidYMid meet"
             className="relative z-10 block w-full"
             style={{
@@ -234,21 +225,11 @@ export function LandingFooter() {
             aria-hidden
           >
             <defs>
-              {/* Neon gradient — pure fluorescent, max saturation */}
-              <linearGradient id="agentcfo-wordmark" x1="0%" y1="0%" x2="100%" y2="0%">
-                <stop offset="0%" stopColor="#00FFD1" />
-                <stop offset="30%" stopColor="#CCFF00" />
-                <stop offset="60%" stopColor="#00B8FF" />
-                <stop offset="100%" stopColor="#E040FB" />
+              {/* Acid green clip — stark, no blur */}
+              <linearGradient id="acid-clip" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stopColor="#B5FF4D" />
+                <stop offset="100%" stopColor="#CCFF00" />
               </linearGradient>
-
-              {/* Outer glow — blurred text only, no source merge */}
-              <filter id="neon-glow-lg" x="-20%" y="-20%" width="140%" height="140%">
-                <feGaussianBlur stdDeviation="16" result="blur" />
-              </filter>
-              <filter id="neon-glow-md" x="-20%" y="-20%" width="140%" height="140%">
-                <feGaussianBlur stdDeviation="6" result="blur" />
-              </filter>
 
               {/* Displacement filter — ripple on mouse move */}
               <filter id="footer-distortion" x="-10%" y="-10%" width="120%" height="120%">
@@ -288,23 +269,34 @@ export function LandingFooter() {
                 </feDisplacementMap>
               </filter>
 
-              {/* Scanline beam gradient */}
-              <linearGradient id="scanline-grad" x1="0%" y1="0%" x2="0%" y2="100%">
-                <stop offset="0%" stopColor="transparent" />
-                <stop offset="40%" stopColor="rgba(181,255,77,0.6)" />
-                <stop offset="50%" stopColor="rgba(255,255,255,0.9)" />
-                <stop offset="60%" stopColor="rgba(96,165,250,0.6)" />
-                <stop offset="100%" stopColor="transparent" />
-              </linearGradient>
+              {/* Data corruption mask — horizontal slice */}
+              <mask id="slice-mask">
+                <rect x="0" y="0" width="1000" height="160" fill="white" />
+                <rect x="0" y="45" width="1000" height="8" fill="black" />
+                <rect x="0" y="88" width="1000" height="5" fill="black" />
+                <rect x="0" y="115" width="1000" height="6" fill="black" />
+              </mask>
+
+              {/* Glitch slice clips */}
+              <clipPath id="slice-1">
+                <rect x="0" y="45" width="1000" height="8" />
+              </clipPath>
+              <clipPath id="slice-2">
+                <rect x="0" y="88" width="1000" height="5" />
+              </clipPath>
             </defs>
 
-            {/* Layer 1: Deep outer glow — strong halo */}
+            {/* === GLITCH OUTLINE STYLE === */}
+            {/* No glow. No blur. No gradient fill. */}
+
+            {/* Ghost layer 1: shifted right, dim acid */}
             <text
-              x="0"
-              y="118"
-              fill="url(#agentcfo-wordmark)"
-              filter="url(#neon-glow-lg)"
-              opacity={isHovering ? 0.95 : 0.65}
+              x="4"
+              y="125"
+              fill="none"
+              stroke="#B5FF4D"
+              strokeWidth="1.5"
+              opacity={isHovering ? 0.35 : 0.15}
               textLength="1000"
               lengthAdjust="spacingAndGlyphs"
               style={{
@@ -312,40 +304,20 @@ export function LandingFooter() {
                 fontWeight: 900,
                 fontSize: 130,
                 letterSpacing: "-6px",
-                transition: "opacity 0.5s ease",
+                transition: "opacity 0.3s ease",
               }}
             >
               AGENTCFO
             </text>
 
-            {/* Layer 2: Medium glow — tight edge halo */}
+            {/* Ghost layer 2: shifted left, cyan tint */}
             <text
-              x="0"
-              y="118"
-              fill="url(#agentcfo-wordmark)"
-              filter="url(#neon-glow-md)"
-              opacity={isHovering ? 0.95 : 0.7}
-              textLength="1000"
-              lengthAdjust="spacingAndGlyphs"
-              style={{
-                fontFamily: "Inter, sans-serif",
-                fontWeight: 900,
-                fontSize: 130,
-                letterSpacing: "-6px",
-                transition: "opacity 0.5s ease",
-              }}
-            >
-              AGENTCFO
-            </text>
-
-            {/* Layer 3: Cyan edge stroke (RGB split) */}
-            <text
-              x="-2"
-              y="118"
+              x="-3"
+              y="125"
               fill="none"
               stroke="#00FFD1"
-              strokeWidth="2"
-              opacity={isHovering ? 0.7 : 0.3}
+              strokeWidth="1"
+              opacity={isHovering ? 0.25 : 0.1}
               textLength="1000"
               lengthAdjust="spacingAndGlyphs"
               style={{
@@ -359,51 +331,14 @@ export function LandingFooter() {
               AGENTCFO
             </text>
 
-            {/* Layer 4: Magenta edge stroke (RGB split) */}
+            {/* Main outline: thick acid stroke, sharp */}
             <text
-              x="2"
-              y="118"
+              x="0"
+              y="125"
               fill="none"
-              stroke="#FF2E8C"
-              strokeWidth="2"
-              opacity={isHovering ? 0.7 : 0.3}
-              textLength="1000"
-              lengthAdjust="spacingAndGlyphs"
-              style={{
-                fontFamily: "Inter, sans-serif",
-                fontWeight: 900,
-                fontSize: 130,
-                letterSpacing: "-6px",
-                transition: "opacity 0.3s ease",
-              }}
-            >
-              AGENTCFO
-            </text>
-
-            {/* Layer 5: Bright white inner glow */}
-            <text
-              x="0"
-              y="118"
-              fill="white"
-              opacity={isHovering ? 0.4 : 0.28}
-              textLength="1000"
-              lengthAdjust="spacingAndGlyphs"
-              style={{
-                fontFamily: "Inter, sans-serif",
-                fontWeight: 900,
-                fontSize: 130,
-                letterSpacing: "-6px",
-                transition: "opacity 0.5s ease",
-              }}
-            >
-              AGENTCFO
-            </text>
-
-            {/* Layer 6: Solid core — pure neon, no blur, full opacity */}
-            <text
-              x="0"
-              y="118"
-              fill="url(#agentcfo-wordmark)"
+              stroke="url(#acid-clip)"
+              strokeWidth="2.5"
+              mask="url(#slice-mask)"
               filter="url(#footer-distortion)"
               textLength="1000"
               lengthAdjust="spacingAndGlyphs"
@@ -417,35 +352,87 @@ export function LandingFooter() {
               AGENTCFO
             </text>
 
-            {/* Layer 6: Scanline beam */}
+            {/* Slice fragments — offset copies for glitch effect */}
+            <text
+              x="8"
+              y="125"
+              fill="none"
+              stroke="#B5FF4D"
+              strokeWidth="2"
+              opacity={isHovering ? 0.6 : 0.3}
+              clipPath="url(#slice-1)"
+              textLength="1000"
+              lengthAdjust="spacingAndGlyphs"
+              style={{
+                fontFamily: "Inter, sans-serif",
+                fontWeight: 900,
+                fontSize: 130,
+                letterSpacing: "-6px",
+                transition: "opacity 0.3s ease",
+              }}
+            >
+              AGENTCFO
+            </text>
+
+            <text
+              x="-6"
+              y="125"
+              fill="none"
+              stroke="#CCFF00"
+              strokeWidth="1.5"
+              opacity={isHovering ? 0.5 : 0.2}
+              clipPath="url(#slice-2)"
+              textLength="1000"
+              lengthAdjust="spacingAndGlyphs"
+              style={{
+                fontFamily: "Inter, sans-serif",
+                fontWeight: 900,
+                fontSize: 130,
+                letterSpacing: "-6px",
+                transition: "opacity 0.3s ease",
+              }}
+            >
+              AGENTCFO
+            </text>
+
+            {/* Inner ghost fill — barely visible acid tint */}
+            <text
+              x="0"
+              y="125"
+              fill="#B5FF4D"
+              fillOpacity="0.06"
+              stroke="none"
+              textLength="1000"
+              lengthAdjust="spacingAndGlyphs"
+              style={{
+                fontFamily: "Inter, sans-serif",
+                fontWeight: 900,
+                fontSize: 130,
+                letterSpacing: "-6px",
+              }}
+            >
+              AGENTCFO
+            </text>
+
+            {/* Horizontal scan slice — static bar cutting through */}
             <rect
               x="0"
-              y="0"
+              y="52"
               width="1000"
-              height="6"
-              fill="url(#scanline-grad)"
-              opacity={isHovering ? 0.7 : 0}
-              style={{ mixBlendMode: 'screen' }}
-            >
-              <animate
-                attributeName="y"
-                dur="2.5s"
-                values="0;132;0"
-                repeatCount="indefinite"
-                calcMode="spline"
-                keySplines="0.45 0 0.55 1;0.45 0 0.55 1"
-                keyTimes="0;0.5;1"
-              />
-              <animate
-                attributeName="opacity"
-                dur="2.5s"
-                values="0;0.8;0"
-                repeatCount="indefinite"
-                calcMode="spline"
-                keySplines="0.45 0 0.55 1;0.45 0 0.55 1"
-                keyTimes="0;0.5;1"
-              />
-            </rect>
+              height="2"
+              fill="#B5FF4D"
+              opacity={isHovering ? 0.5 : 0.2}
+              style={{ mixBlendMode: 'screen', transition: 'opacity 0.3s ease' }}
+            />
+            <rect
+              x="0"
+              y="92"
+              width="1000"
+              height="1.5"
+              fill="#CCFF00"
+              opacity={isHovering ? 0.4 : 0.15}
+              style={{ mixBlendMode: 'screen', transition: 'opacity 0.3s ease' }}
+            />
           </svg>
           <span className="sr-only">AgentCFO</span>
         </div>
