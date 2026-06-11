@@ -19,11 +19,11 @@ const BG_VIDEO =
 
 const NAV_ITEMS: { key: DictKey; href: string }[] = [
   { key: "nav.platform", href: "#platform" },
-  { key: "nav.workflow", href: "#workflow-marker" },
+  { key: "nav.workflow", href: "#workflow" },
   { key: "nav.guardrails", href: "#guardrails" },
-  { key: "nav.faq", href: "#faq" },
   { key: "nav.team", href: "#team" },
   { key: "nav.timeline", href: "#timeline" },
+  { key: "nav.faq", href: "#faq" },
 ];
 
 function HamburgerButton({ open, onClick }: { open: boolean; onClick: () => void }) {
@@ -135,6 +135,7 @@ function Navbar() {
   const svgDotRef = useRef<SVGCircleElement>(null);
   const arcRef = useRef({ curX: 0, animRaf: null as number | null });
   const navWrapRef = useRef<HTMLElement>(null);
+  const clickCooldown = useRef(0);
 
   const HW = 14;
 
@@ -184,25 +185,29 @@ function Navbar() {
     arc.animRaf = requestAnimationFrame(step);
   };
 
-  // IntersectionObserver: track which section is in view
+  // Scroll-based active section detection — more reliable than IntersectionObserver
+  // for pinned/sticky sections and overlapping layouts.
   useEffect(() => {
-    const sections = NAV_ITEMS.map((item) => document.querySelector(item.href)).filter((s): s is Element => s !== null);
-    if (sections.length === 0) return;
-    const observer = new IntersectionObserver(
-      (entries) => {
-        const visible = entries.filter((e) => e.isIntersecting);
-        if (visible.length > 0) {
-          const topmost = visible.reduce((a, b) =>
-            a.boundingClientRect.top < b.boundingClientRect.top ? a : b
-          );
-          const idx = sections.indexOf(topmost.target);
-          if (idx >= 0) setActiveIdx(idx);
+    const OFFSET = 200; // navbar + buffer
+    const getActiveIdx = () => {
+      if (Date.now() < clickCooldown.current) return; // respect click cooldown
+      const y = window.scrollY + OFFSET;
+      let bestIdx = 0;
+      let bestTop = -Infinity;
+      NAV_ITEMS.forEach((item, i) => {
+        const el = document.querySelector(item.href) as HTMLElement | null;
+        if (!el) return;
+        const top = el.offsetTop;
+        if (top <= y && top > bestTop) {
+          bestTop = top;
+          bestIdx = i;
         }
-      },
-      { threshold: 0.2, rootMargin: "-80px 0px -60% 0px" }
-    );
-    sections.forEach((s) => observer.observe(s));
-    return () => observer.disconnect();
+      });
+      setActiveIdx(bestIdx);
+    };
+    window.addEventListener("scroll", getActiveIdx, { passive: true });
+    getActiveIdx();
+    return () => window.removeEventListener("scroll", getActiveIdx);
   }, []);
 
   // Move arc when activeIdx changes
@@ -300,8 +305,9 @@ function Navbar() {
                 e.preventDefault();
                 const el = document.querySelector(item.href);
                 if (el) {
-                  el.scrollIntoView({ behavior: "smooth" });
+                  clickCooldown.current = Date.now() + 1200;
                   setActiveIdx(i);
+                  el.scrollIntoView({ behavior: "smooth" });
                 }
               }}
             >

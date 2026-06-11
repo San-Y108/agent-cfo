@@ -130,24 +130,25 @@ export function BuildTimeline() {
       const texts = textRefs.current.filter(Boolean) as HTMLDivElement[];
       if (frames.length === 0 || texts.length === 0) return;
 
-      // Initial states — first frame/text active, rest hidden
+      // Initial states — first frame active, rest rolled below viewport
       frames.forEach((frame, i) => {
         gsap.set(frame, {
-          scale: i === 0 ? 1 : 0.9,
           opacity: i === 0 ? 1 : 0,
-          y: i === 0 ? 0 : 30,
-          filter: i === 0 ? "brightness(1) contrast(1)" : "brightness(0.5) contrast(1.1)",
+          y: i === 0 ? 0 : "105%",
+          rotateX: i === 0 ? 0 : -20,
+          transformOrigin: "center bottom",
+          filter: i === 0 ? "brightness(1) contrast(1)" : "brightness(0.6) contrast(1.1)",
         });
       });
 
       texts.forEach((text, i) => {
         gsap.set(text, {
           opacity: i === 0 ? 1 : 0,
-          y: i === 0 ? 0 : 30,
+          y: i === 0 ? 0 : 20,
         });
       });
 
-      // Build scroll-driven timeline with cinematic easing
+      // Build scroll-driven timeline with roll-in/roll-out (scroll-reel) transitions
       const tl = gsap.timeline({
         scrollTrigger: {
           trigger: sectionRef.current,
@@ -166,18 +167,19 @@ export function BuildTimeline() {
             frames.forEach((f, i) => {
               gsap.set(f, {
                 opacity: i === activeIdx ? 1 : 0,
-                scale: i === activeIdx ? 1 : 0.9,
-                y: i === activeIdx ? 0 : i < activeIdx ? -30 : 30,
+                y: i === activeIdx ? 0 : i < activeIdx ? "-105%" : "105%",
+                rotateX: i === activeIdx ? 0 : i < activeIdx ? 20 : -20,
+                transformOrigin: i < activeIdx ? "center top" : "center bottom",
                 filter:
                   i === activeIdx
                     ? "brightness(1) contrast(1)"
-                    : "brightness(0.5) contrast(1.1)",
+                    : "brightness(0.6) contrast(1.1)",
               });
             });
             texts.forEach((t, i) => {
               gsap.set(t, {
                 opacity: i === activeIdx ? 1 : 0,
-                y: i === activeIdx ? 0 : i < activeIdx ? -30 : 30,
+                y: i === activeIdx ? 0 : i < activeIdx ? -20 : 20,
               });
             });
           },
@@ -193,53 +195,58 @@ export function BuildTimeline() {
       for (let i = 0; i < frames.length - 1; i++) {
         const slot = (i + 1) / (frames.length - 1);
 
-        // ── Frame transition: snap-like with minimal overlap ─────────────
-        // Old frame exits quickly
+        // ── Frame roll-out: old frame rolls UP and away like a reel ──────
         tl.to(
           frames[i],
           {
-            scale: 0.9,
+            y: "-105%",
+            rotateX: 20,
+            transformOrigin: "center top",
             opacity: 0,
-            y: -30,
             filter: "brightness(0.5) contrast(1.1)",
-            duration: 0.12,
-            ease: "power1.in",
+            duration: 0.14,
+            ease: "power2.in",
           },
-          slot - 0.06
+          slot - 0.07
         );
 
-        // New frame enters immediately after
+        // ── Frame roll-in: new frame rolls UP from below like a reel ─────
         tl.fromTo(
           frames[i + 1],
-          { scale: 0.9, opacity: 0, y: 30, filter: "brightness(0.5) contrast(1.1)" },
           {
-            scale: 1,
-            opacity: 1,
+            y: "105%",
+            rotateX: -20,
+            transformOrigin: "center bottom",
+            opacity: 0,
+            filter: "brightness(0.5) contrast(1.1)",
+          },
+          {
             y: 0,
+            rotateX: 0,
+            transformOrigin: "center center",
+            opacity: 1,
             filter: "brightness(1) contrast(1)",
-            duration: 0.15,
-            ease: "power1.out",
+            duration: 0.16,
+            ease: "power2.out",
           },
           slot - 0.04
         );
 
-        // ── Text transition: snap-like with minimal overlap ──────────────
-        // Old text exits quickly
+        // ── Text transition: slide with fade ─────────────────────────────
         tl.to(
           texts[i],
           {
             opacity: 0,
-            y: -30,
+            y: -20,
             duration: 0.1,
             ease: "power1.in",
           },
           slot - 0.05
         );
 
-        // New text enters immediately after
         tl.fromTo(
           texts[i + 1],
-          { opacity: 0, y: 30 },
+          { opacity: 0, y: 20 },
           {
             opacity: 1,
             y: 0,
@@ -353,7 +360,7 @@ export function BuildTimeline() {
               </div>
 
               {/* Film frames — stacked absolutely, only active frame visible */}
-              <div className="absolute inset-x-[28px] inset-y-3">
+              <div className="absolute inset-x-[28px] inset-y-3" style={{ perspective: 900 }}>
                 {PHASES.map((p, i) => (
                   <div
                     key={p.phase}
@@ -370,42 +377,56 @@ export function BuildTimeline() {
                       opacity: i === 0 ? 1 : 0,
                     }}
                   >
-                    {/* Phase image background — full brightness */}
+                    {/* Phase image — vivid, bright, high contrast */}
                     <img
                       src={p.img}
                       alt={_(p.titleZh, p.titleEn)}
                       className="absolute inset-0 w-full h-full object-cover"
-                      style={{ opacity: 1 }}
+                      style={{
+                        opacity: 1,
+                        filter: "brightness(1.25) saturate(1.35) contrast(1.15)",
+                      }}
                       loading="eager"
                     />
 
-                    {/* Center dark mask: only dims the center text area, leaves edges bright */}
+                    {/* Outer edge vignette: keeps image bright, only softens the very edges */}
                     <div
                       className="absolute inset-0 pointer-events-none z-[2]"
                       style={{
                         background: `
-                          radial-gradient(ellipse 55% 50% at 50% 50%, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.15) 45%, transparent 70%)
+                          radial-gradient(ellipse 70% 65% at 50% 50%, transparent 50%, rgba(0,0,0,0.35) 80%, rgba(0,0,0,0.75) 100%)
                         `,
                       }}
                       aria-hidden="true"
                     />
 
-                    {/* Edge glow: accent color bleeding into the black background */}
+                    {/* Light center haze for text readability — very subtle */}
                     <div
                       className="absolute inset-0 pointer-events-none z-[3]"
                       style={{
                         background: `
-                          radial-gradient(ellipse 80% 70% at 50% 50%, transparent 55%, ${p.accent}18 75%, ${p.accent}08 100%)
+                          radial-gradient(ellipse 45% 40% at 50% 50%, rgba(0,0,0,0.25) 0%, transparent 65%)
                         `,
                       }}
                       aria-hidden="true"
                     />
 
-                    {/* Frame border glow */}
+                    {/* Accent edge glow — color bleed into black background */}
                     <div
                       className="absolute inset-0 pointer-events-none z-[4]"
                       style={{
-                        boxShadow: `inset 0 0 40px ${p.accent}15, inset 0 0 80px ${p.accent}05`,
+                        background: `
+                          radial-gradient(ellipse 85% 75% at 50% 50%, transparent 60%, ${p.accent}22 78%, ${p.accent}0d 100%)
+                        `,
+                      }}
+                      aria-hidden="true"
+                    />
+
+                    {/* Frame border glow — stronger accent rim */}
+                    <div
+                      className="absolute inset-0 pointer-events-none z-[5]"
+                      style={{
+                        boxShadow: `inset 0 0 30px ${p.accent}20, inset 0 0 60px ${p.accent}10, 0 0 40px ${p.accent}08`,
                       }}
                       aria-hidden="true"
                     />

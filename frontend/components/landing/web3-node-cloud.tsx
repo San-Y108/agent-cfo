@@ -151,9 +151,9 @@ function ConnectionLines({
                 <animate
                   attributeName="opacity"
                   values={`0;${node.tier === "core" ? 0.12 : 0.06};0`}
-                  dur={`${4 + Math.random() * 3}s`}
+                  dur={`${4 + ((node.angle * 7) % 3)}s`}
                   repeatCount="indefinite"
-                  begin={`${Math.random() * 2}s`}
+                  begin={`${(node.angle * 3) % 2}s`}
                 />
               </line>
             )}
