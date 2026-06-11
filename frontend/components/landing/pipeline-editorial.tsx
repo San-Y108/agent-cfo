@@ -169,7 +169,16 @@ function PipelineStage({
 
         {/* Headline */}
         <div className="animate-in mt-5">
-          <DecodeHeadline text={stage.headline} accent={stage.accent} />
+          <DecodeHeadline
+            text={stage.headline}
+            accent={stage.accent}
+            style={{
+              fontFamily: "Inter, sans-serif",
+              fontSize: "clamp(2rem, 4.5vw, 3.5rem)",
+              letterSpacing: "-0.025em",
+              lineHeight: 1.05,
+            }}
+          />
         </div>
 
         {/* Divider */}
@@ -180,7 +189,7 @@ function PipelineStage({
 
         {/* Lead */}
         <div
-          className="animate-in mt-6 text-base leading-relaxed text-white/85 sm:text-lg"
+          className="animate-in mt-6 text-lg leading-relaxed text-white/85 sm:text-xl"
           style={{ fontFamily: "Inter, sans-serif" }}
         >
           {stage.lead}
@@ -190,7 +199,7 @@ function PipelineStage({
         {stage.paragraphs.map((para, i) => (
           <div
             key={i}
-            className="animate-in mt-4 text-sm leading-relaxed text-white/55 sm:text-base italic"
+            className="animate-in mt-4 text-base leading-relaxed text-white/55 sm:text-lg italic"
             style={{ fontFamily: "Inter, sans-serif" }}
           >
             {para}
