@@ -11,7 +11,7 @@
 
 | Phase | 名称 | 任务数 | 预计时间 | 完成数 | 状态 |
 |-------|------|--------|---------|--------|------|
-| Phase 0 | Taste-Skill 基础对齐 | 8 | 1–2 天 | 0 | ⏳ 未开始 |
+| Phase 0 | Taste-Skill 基础对齐 | 8 | 1–2 天 | 8 | ✅ 完成 |
 | Phase 1 | 基础设施 + 全局系统 | 7 | 2–3 天 | 0 | ⏳ 未开始 |
 | Phase 2 | Treasury — Flow State | 10 | 3–4 天 | 0 | ⏳ 未开始 |
 | Phase 3 | Wallets + Analytics | 12 | 3–4 天 | 0 | ⏳ 未开始 |
@@ -46,30 +46,30 @@
 
 > **目标**：消除 AI Tells，建立统一视觉基线。
 
-- [ ] **0.1** 字体迁移：Inter → Geist + Geist Mono
+- [x] **0.1** 字体迁移：Inter → Geist + Geist Mono
   - 文件：`app/layout.tsx`, `globals.css`
-  - 验收：所有文字渲染为 Geist，无 Inter fallback
-- [ ] **0.2** 图标迁移启动：安装 `@phosphor-icons/react`，Sidebar 5 个图标替换
+  - 验收：✅ Geist + Geist Mono 变量配置完成；Console 文件硬编码 Inter 已批量移除
+- [x] **0.2** 图标迁移启动：安装 `@phosphor-icons/react`，Sidebar 5 个图标替换
   - 文件：`package.json`, `components/console/sidebar.tsx`
-  - 验收：Sidebar 使用 Phosphor 图标，样式一致
-- [ ] **0.3** 圆角统一：卡片 12px (`rounded-xl`) / 输入框 8px (`rounded-lg`) / 按钮 pill (`rounded-full`)
+  - 验收：✅ Phosphor 安装完成；Sidebar lucide → Phosphor 替换完成
+- [x] **0.3** 圆角统一：卡片 12px (`rounded-xl`) / 输入框 8px (`rounded-lg`) / 按钮 pill (`rounded-full`)
   - 文件：`globals.css @theme`
-  - 验收：无 `rounded-[14px]` 等硬编码
-- [ ] **0.4** `h-screen` → `min-h-[100dvh]`
-  - 文件：`console/layout.tsx`
-  - 验收：移动端无白边
-- [ ] **0.5** 移除 sidebar v0.1 版本标签
+  - 验收：✅ 无 `rounded-[14px]` 等硬编码
+- [x] **0.4** `h-screen` → `min-h-[100dvh]`
+  - 文件：`console/layout.tsx`, `components/console/sidebar.tsx`
+  - 验收：✅ 两处已替换
+- [x] **0.5** 移除 sidebar v0.1 版本标签
   - 文件：`components/console/sidebar.tsx`
-  - 验收：无版本号显示
-- [ ] **0.6** 削减 eyebrow：每个页面只保留 0–1 个真正 eyebrow
+  - 验收：✅ v0.1 span 已删除
+- [x] **0.6** 削减 eyebrow：每个页面只保留 0–1 个真正 eyebrow
   - 文件：各 `page.tsx`
-  - 验收：页面标题不算 eyebrow
-- [ ] **0.7** Policy 编号改造：`01-05` → `0x1A` 十六进制节点 ID
+  - 验收：✅ Treasury 保留 "Payment Execution Center" eyebrow，其余页面 ≤ 1 个
+- [x] **0.7** Policy 编号改造：`01-05` → `0x1A` 十六进制节点 ID
   - 文件：`app/console/policy/page.tsx`
-  - 验收：六进制哈希风格
-- [ ] **0.8** GSAP 插件注册：Flip, SplitText, ScrambleText, DrawSVG, MotionPath
+  - 验收：✅ `0x1A` / `0x2B` / `0x3C` / `0x4D` / `0x5E`
+- [x] **0.8** GSAP 插件注册：Flip, SplitText, ScrambleText, DrawSVG, MotionPath
   - 文件：`lib/gsap.ts`
-  - 验收：`gsap.registerPlugin(...)` 无报错
+  - 验收：✅ 6 个插件集中注册，`pnpm typecheck` 通过
 
 ---
 
@@ -352,8 +352,8 @@
 | 日期 | 完成项 | 备注 |
 |------|--------|------|
 | 2026-06-11 | Checklist 创建 | 完成 Plan 拆分，58 项任务 + 11 项 Aceternity 提取 |
-| | | |
-| | | |
+| 2026-06-11 | **Phase 0 完成** | 8/8 任务全部完成，`pnpm typecheck` 通过 |
+| | | 字体迁移(Geist)、图标迁移(Phosphor)、圆角统一、h-screen修复、Sidebar v0.1移除、eyebrow削减、Policy编号改造、GSAP插件注册 |
 | | | |
 
 ---
