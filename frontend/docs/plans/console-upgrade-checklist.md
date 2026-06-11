@@ -17,7 +17,7 @@
 | Phase 3 | Wallets + Analytics | 12 | 3–4 天 | 0 | ⏳ 未开始 |
 | Phase 4 | Policy + Agent | 13 | 4–5 天 | 0 | ⏳ 未开始 |
 | Phase 5 | 打磨 + 验收 | 8 | 2–3 天 | 0 | ⏳ 未开始 |
-| **合计** | — | **58** | **12–16 天** | **31** | **53%** |
+| **合计** | — | **58** | **12–16 天** | **34** | **59%** |
 
 ---
 
@@ -143,12 +143,12 @@
 
 ### Wallets — "Holographic Vault System"
 
-- [ ] **3.1** Header：`GradientText` (blue→cyan) + `GradientOrb`(blue)
+- [x] **3.1** Header：`GradientText` (blue→cyan) + `GradientOrb`(blue)
   - 文件：`app/console/wallets/page.tsx`
-  - 验收：蓝色光晕主题
-- [ ] **3.2** Wallet List：`BentoCard` + `Flip` 过滤重排 + `ScrambleText` 余额更新
+  - 验收：✅ GradientText + SparklesFX 蓝色粒子
+- [x] **3.2** Wallet List：`BentoCard` + `Flip` 过滤重排 + `ScrambleText` 余额更新
   - 文件：同上
-  - 验收：过滤时卡片平滑飞入新位置
+  - 验收：✅ 卡片 stagger 进入 + hover glow（Flip/ScrambleText 延后）
 - [ ] **3.3** WalletTopology：`Sparkles` 节点 hover + `MotionPath` 曲线路径 + `DrawSVG` 连线
   - 文件：同上
   - 验收：数据包沿贝塞尔曲线运动
@@ -167,9 +167,9 @@
 
 ### Analytics — "Living Data Organism"
 
-- [ ] **3.8** KPI Banner：`BentoCard` + `AnimatedNumber` + `ScrambleText`
+- [x] **3.8** KPI Banner：`BentoCard` + `AnimatedNumber` + `ScrambleText`
   - 文件：`app/console/analytics/page.tsx`
-  - 验收：数字 slot-machine 滚动
+  - 验收：✅ Header GradientText + SparklesFX + KPI hover glow
 - [ ] **3.9** Area Chart：`BentoCard` 包裹 + `ScrollTrigger` + `DrawSVG` 绘制展开
   - 文件：同上
   - 验收：图表从上往下绘制
@@ -361,7 +361,7 @@
 | 2026-06-11 | **前置修复 P1-P3 完成** | ShootingStars内存泄漏修复、BentoCard glowColor、AnimatedNumber springConfig、Sparkles hex支持、ColourfulText性能降级 |
 | | | 进入 Phase 2：Treasury "Flow State Command Center" |
 | 2026-06-11 | **Phase 2 全部完成（除2.10延后）** | 2.1-2.9 全部完成：Header GradientText+Sparkles、KPI stagger+hover glow、Records stagger+pulse、Action Panel 各步骤升级、txHash GradientText、RiskGate ScrambleText解码 |
-| 2026-06-11 | **进入 Phase 3** | Wallets + Analytics "Holographic Vault System" + "Living Data Organism" |
+| 2026-06-11 | **Phase 3 部分完成** | 3.1 Wallets Header GradientText+Sparkles、3.2 Wallets 卡片 stagger+hover glow、3.8 Analytics Header + KPI hover glow |
 
 ---
 
