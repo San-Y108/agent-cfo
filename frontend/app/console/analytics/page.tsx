@@ -85,13 +85,20 @@ function KpiCard({
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, delay }}
-      className="p-5 rounded-xl border border-border-token dark:border-white/[0.06] bg-surface dark:bg-white/[0.03] space-y-2"
+      className="group relative p-5 rounded-xl border border-border-token dark:border-white/[0.06] bg-surface dark:bg-white/[0.03] space-y-2 overflow-hidden transition-colors hover:border-white/[0.12]"
     >
-      <span className="text-[10px] font-mono font-bold uppercase text-fg-muted tracking-wider">
+      {/* Hover glow */}
+      <div
+        className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
+        style={{
+          background: `radial-gradient(circle at 50% 0%, ${VIOLET}08, transparent 70%)`,
+        }}
+      />
+      <span className="relative z-10 text-[10px] font-mono font-bold uppercase text-fg-muted tracking-wider">
         {label}
       </span>
       <div
-        className="text-3xl font-extrabold tracking-tight tabular-nums"
+        className="relative z-10 text-3xl font-extrabold tracking-tight tabular-nums"
         style={{
           background: `linear-gradient(135deg, ${VIOLET} 0%, ${VIOLET_LIGHT} 100%)`,
           WebkitBackgroundClip: "text",
@@ -101,7 +108,7 @@ function KpiCard({
       >
         {value}
       </div>
-      <div className="flex items-center gap-1.5 text-xs text-success font-semibold font-mono">
+      <div className="relative z-10 flex items-center gap-1.5 text-xs text-success font-semibold font-mono">
         <Icon className="w-3.5 h-3.5" />
         {sub}
       </div>
