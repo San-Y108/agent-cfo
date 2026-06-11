@@ -168,6 +168,15 @@ body {
   animation: pulse-slow 3s ease-in-out infinite;
 }
 
+/* Shimmer animation for progress bars */
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+.animate-shimmer {
+  animation: shimmer 2s linear infinite;
+}
+
 /* Marquee animation for transaction ticker */
 @keyframes marquee {
   0% { transform: translateX(0%); }

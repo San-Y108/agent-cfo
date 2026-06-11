@@ -31,8 +31,9 @@ import { RecordsImport } from "@/components/console/records-import";
 import { StatCard } from "@/components/ui/aceternity/stats-section";
 import { AnimatedNumber } from "@/components/ui/aceternity/animated-number";
 import { GradientOrb } from "@/components/ui/aceternity/background";
-import { GradientText } from "@/components/ui/aceternity/colourful-text";
+import { GradientText, ColourfulText } from "@/components/ui/aceternity/colourful-text";
 import { Sparkles as SparklesFX } from "@/components/ui/aceternity/sparkles";
+import { GridBackground } from "@/components/ui/aceternity/background";
 import { HolographicButton } from "@/components/ui/holographic-button";
 import { FlowTimeline } from "@/components/console/flow-timeline";
 import { RiskGateAnimation } from "@/components/console/risk-gate-anim";
@@ -702,15 +703,23 @@ function ActionPanel({
               </div>
             </div>
 
-            <HolographicButton
-              onClick={onGenerate}
-              variant="lime"
-              size="lg"
-              icon={<RefreshCw className="w-4 h-4" />}
-              className="w-full"
+            <div className="relative"
             >
-              {_("生成付款计划", "Generate Plan")}
-            </HolographicButton>
+              <SparklesFX
+                count={12}
+                className="absolute -inset-4 pointer-events-none"
+                color="#B5FF4D"
+              />
+              <HolographicButton
+                onClick={onGenerate}
+                variant="lime"
+                size="lg"
+                icon={<RefreshCw className="w-4 h-4" />}
+                className="w-full relative z-10"
+              >
+                {_("生成付款计划", "Generate Plan")}
+              </HolographicButton>
+            </div>
 
             <div className="text-[11px] text-fg-subtle space-y-1">
               <div className="flex justify-between">
@@ -734,20 +743,36 @@ function ActionPanel({
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="py-8 flex flex-col items-center gap-4 text-center"
+            className="py-8 flex flex-col items-center gap-4 text-center relative overflow-hidden rounded-xl"
           >
-            <div className="relative">
-              <RefreshCw className="w-10 h-10 text-[#5EEAD4] animate-spin" />
+            {/* Local grid highlight */}
+            <div className="absolute inset-0 opacity-30 pointer-events-none"
+            >
+              <GridBackground />
+            </div>
+            {/* Cyan orb */}
+            <div
+              className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 rounded-full blur-[100px] pointer-events-none"
+              style={{ backgroundColor: "rgba(94,234,212,0.12)" }}
+            />
+
+            <div className="relative z-10"
+            >
+              <RefreshCw className="w-10 h-10 text-[#5EEAD4] animate-spin mx-auto" />
               <div
-                className="absolute inset-0 blur-xl rounded-full scale-150"
+                className="absolute inset-0 blur-xl rounded-full scale-150 pointer-events-none"
                 style={{ backgroundColor: "rgba(94,234,212,0.2)" }}
               />
             </div>
-            <div>
-              <p className="text-fg font-semibold">
-                {_("AI 扫描中...", "Agent scanning...")}
-              </p>
-              <p className="text-xs text-fg-subtle mt-1">
+            <div className="relative z-10"
+            >
+              <ColourfulText
+                text={_("AI 扫描中...", "Agent scanning...")}
+                className="text-fg font-semibold"
+                interval={2000}
+              />
+              <p className="text-xs text-fg-subtle mt-1"
+              >
                 {_("正在评估白名单、预算边界和单笔限额", "Evaluating whitelist, budget bounds and single-payment limits")}
               </p>
             </div>
@@ -854,16 +879,39 @@ function ActionPanel({
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="py-8 flex flex-col items-center gap-4 text-center"
+            className="py-10 flex flex-col items-center gap-5 text-center relative overflow-hidden rounded-xl"
           >
-            <div className="relative">
-              <div className="w-12 h-12 rounded-full border-2 border-[#60A5FA]/30 border-t-[#60A5FA] animate-spin" />
-              <div
-                className="absolute inset-0 blur-xl rounded-full"
-                style={{ backgroundColor: "rgba(96,165,250,0.15)" }}
+            {/* Grid overlay */}
+            <div className="absolute inset-0 opacity-20 pointer-events-none"
+            >
+              <GridBackground /
+            >
+            </div>
+            {/* Blue orb */}
+            <div
+              className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-48 h-48 rounded-full blur-[80px] pointer-events-none"
+              style={{ backgroundColor: "rgba(96,165,250,0.15)" }}
+            />
+
+            {/* Rotating ring */}
+            <div className="relative z-10"
+            >
+              <div className="w-16 h-16 rounded-full border-2 border-[#60A5FA]/20 border-t-[#60A5FA] border-r-[#60A5FA]/50 animate-spin" />
+              <div className="absolute inset-2 rounded-full border border-[#B5FF4D]/20 border-b-[#B5FF4D] animate-spin"
+                style={{ animationDirection: "reverse", animationDuration: "2s" }}
               />
             </div>
-            <div>
+
+            {/* Shimmer progress bar */}
+            <div className="relative z-10 w-full max-w-[200px] h-1 rounded-full bg-white/[0.06] overflow-hidden"
+            >
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-[#B5FF4D]/60 to-transparent animate-shimmer"
+                style={{ backgroundSize: "200% 100%" }}
+              />
+            </div>
+
+            <div className="relative z-10"
+            >
               <p className="text-fg font-semibold">
                 {_("加密核心广播中...", "Cryptographic broadcast...")}
               </p>
