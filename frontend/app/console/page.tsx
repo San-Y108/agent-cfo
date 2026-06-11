@@ -207,15 +207,13 @@ export default function TreasuryPage() {
               <Wallet className="w-4 h-4 text-[#B5FF4D]" />
             </div>
             <span
-              className="text-[11px] font-medium uppercase tracking-[0.18em] text-[#B5FF4D]"
-              style={{ fontFamily: "'Courier New', Courier, monospace" }}
+              className="text-[11px] font-medium uppercase tracking-[0.18em] text-[#B5FF4D] font-mono"
             >
               {_("付款执行中心", "Payment Execution Center")}
             </span>
           </div>
           <h1
             className="text-2xl font-semibold text-fg leading-tight tracking-tight"
-            style={{ fontFamily: "Inter, sans-serif" }}
           >
             {_("统筹月度贡献结算", "Monthly Contribution Settlement")}
           </h1>
@@ -525,7 +523,7 @@ function KpiCard({
       </div>
       <div
         className="text-xl font-bold tracking-tight"
-        style={{ color: accent, fontFamily: "Inter, sans-serif" }}
+        style={{ color: accent }}
       >
         {value}
       </div>

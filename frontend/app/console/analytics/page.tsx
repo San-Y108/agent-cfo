@@ -90,7 +90,6 @@ function KpiCard({
       <div
         className="text-3xl font-extrabold tracking-tight tabular-nums"
         style={{
-          fontFamily: "Inter, sans-serif",
           background: `linear-gradient(135deg, ${VIOLET} 0%, ${VIOLET_LIGHT} 100%)`,
           WebkitBackgroundClip: "text",
           WebkitTextFillColor: "transparent",
@@ -162,7 +161,6 @@ export default function AnalyticsPage() {
         <div>
           <h2
             className="text-xl font-bold tracking-tight text-fg"
-            style={{ fontFamily: "Inter, sans-serif" }}
           >
             {t("console.analytics.title" as any)}
           </h2>

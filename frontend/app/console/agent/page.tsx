@@ -127,7 +127,6 @@ function HolographicButton({
       whileHover={{ scale: 1.03 }}
       whileTap={{ scale: 0.97 }}
       className="group relative flex items-center gap-2.5 px-5 py-3 rounded-xl border border-white/[0.08] bg-white/[0.02] text-sm font-semibold text-fg transition-all duration-300 overflow-hidden"
-      style={{ fontFamily: "Inter, sans-serif" }}
       onMouseEnter={(e) => {
         e.currentTarget.style.borderColor = `${color}40`;
         e.currentTarget.style.boxShadow = `0 0 24px ${color}15, inset 0 1px 1px ${color}10`;
@@ -330,8 +329,7 @@ export default function AgentPage() {
           {/* Agent name */}
           <motion.h2
             className="relative z-10 mt-8 text-xl font-bold tracking-tight text-fg"
-            style={{ fontFamily: "Inter, sans-serif" }}
-            initial={{ opacity: 0, y: 10 }}
+                  initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3 }}
           >
@@ -381,8 +379,7 @@ export default function AgentPage() {
             <Zap size={15} style={{ color: LIME }} />
             <span
               className="text-xs font-bold text-fg"
-              style={{ fontFamily: "Inter, sans-serif" }}
-            >
+                    >
               {lang === "zh" ? "对话" : "Conversation"}
             </span>
             <span className="text-[10px] font-mono text-fg-subtle ml-auto">
@@ -435,8 +432,7 @@ export default function AgentPage() {
                         ? "rounded-tl-sm border border-white/[0.06] bg-white/[0.03] text-fg"
                         : "rounded-tr-sm bg-white/[0.08] text-fg"
                     )}
-                    style={{ fontFamily: "Inter, sans-serif" }}
-                  >
+                                >
                     {msg.text}
                   </div>
                 </motion.div>
@@ -479,8 +475,7 @@ export default function AgentPage() {
                   }
                   disabled={isThinking}
                   className="w-full rounded-xl border border-white/[0.08] bg-white/[0.03] px-4 py-3 pr-11 text-[13px] text-fg placeholder:text-fg-subtle/50 focus:outline-none focus:border-lime-500/30 focus:ring-1 focus:ring-lime-500/10 transition-all disabled:opacity-50"
-                  style={{ fontFamily: "Inter, sans-serif" }}
-                />
+                            />
                 <Sparkles
                   size={14}
                   className="absolute right-3.5 top-1/2 -translate-y-1/2 text-fg-subtle/30"

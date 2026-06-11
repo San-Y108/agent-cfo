@@ -215,7 +215,6 @@ export default function PolicyPage() {
         <div>
           <h2
             className="text-xl font-bold tracking-tight text-fg"
-            style={{ fontFamily: "Inter, sans-serif" }}
           >
             {t("console.policy.title" as any)}
           </h2>
@@ -243,7 +242,7 @@ export default function PolicyPage() {
             />
             <span
               className="block text-[42px] font-bold leading-none tracking-tighter opacity-[0.15] group-hover:opacity-[0.25] transition-opacity"
-              style={{ color: rule.color, fontFamily: "Inter, sans-serif" }}
+              style={{ color: rule.color }}
             >
               {rule.num}
             </span>

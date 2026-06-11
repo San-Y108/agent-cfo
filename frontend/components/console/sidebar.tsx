@@ -4,15 +4,15 @@ import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
-  LogOut,
-  LayoutDashboard,
+  SignOut,
+  SquaresFour,
   Wallet,
-  BarChart3,
+  ChartBar,
   Shield,
-  Bot,
-  PanelLeftClose,
-  PanelLeftOpen,
-} from "lucide-react";
+  Robot,
+  CaretLeft,
+  CaretRight,
+} from "@phosphor-icons/react";
 import { useApp } from "@/lib/i18n/context";
 import { ThemeLanguageToggle } from "@/components/ui/theme-language-toggle";
 import { motion } from "framer-motion";
@@ -23,7 +23,7 @@ const NAV_ITEMS = [
     href: "/console",
     labelKey: "console.tab.treasury" as const,
     shortLabel: "Treasury",
-    icon: LayoutDashboard,
+    icon: SquaresFour,
     color: "#B5FF4D",
   },
   {
@@ -37,7 +37,7 @@ const NAV_ITEMS = [
     href: "/console/analytics",
     labelKey: "console.tab.analytics" as const,
     shortLabel: "Analytics",
-    icon: BarChart3,
+    icon: ChartBar,
     color: "#C084FC",
   },
   {
@@ -51,7 +51,7 @@ const NAV_ITEMS = [
     href: "/console/agent",
     labelKey: "console.tab.agent" as const,
     shortLabel: "Agent",
-    icon: Bot,
+    icon: Robot,
     color: "#C084FC",
   },
 ];
@@ -74,7 +74,7 @@ export function ConsoleSidebar({
     <>
       {/* Desktop Sidebar */}
       <motion.aside
-        className="fixed left-0 top-0 z-40 hidden h-screen flex-col border-r border-border-token dark:border-white/[0.06] bg-surface dark:bg-[#0D0D0D] md:flex"
+        className="fixed left-0 top-0 z-40 hidden min-h-[100dvh] flex-col border-r border-border-token dark:border-white/[0.06] bg-surface dark:bg-[#0D0D0D] md:flex"
         animate={{ width: open ? 260 : 72 }}
         transition={{ type: "spring", stiffness: 380, damping: 30 }}
       >
@@ -89,9 +89,9 @@ export function ConsoleSidebar({
           title={open ? "Collapse sidebar" : "Expand sidebar"}
         >
           {open ? (
-            <PanelLeftClose className="h-3.5 w-3.5" />
+            <CaretLeft className="h-3.5 w-3.5" />
           ) : (
-            <PanelLeftOpen className="h-3.5 w-3.5" />
+            <CaretRight className="h-3.5 w-3.5" />
           )}
         </button>
 
@@ -103,15 +103,8 @@ export function ConsoleSidebar({
           <motion.span
             animate={{ opacity: open ? 1 : 0, display: open ? "inline" : "none" }}
             className="whitespace-pre text-lg font-bold tracking-tight text-fg"
-            style={{ fontFamily: "Inter, sans-serif" }}
           >
             AgentCFO
-          </motion.span>
-          <motion.span
-            animate={{ opacity: open ? 1 : 0, display: open ? "inline" : "none" }}
-            className="rounded bg-white/5 px-1.5 py-0.5 text-[9px] font-mono uppercase tracking-wider text-fg-subtle"
-          >
-            v0.1
           </motion.span>
         </div>
 
@@ -184,7 +177,6 @@ export function ConsoleSidebar({
                         display: open ? "inline-block" : "none",
                       }}
                       className="font-medium whitespace-pre"
-                      style={{ fontFamily: "Inter, sans-serif" }}
                     >
                       {t(item.labelKey as any)}
                     </motion.span>
@@ -215,7 +207,7 @@ export function ConsoleSidebar({
               href="/"
               className="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs text-fg-subtle transition-colors hover:bg-white/5 hover:text-fg"
             >
-              <LogOut size={13} />
+              <SignOut size={13} />
               <span>Exit</span>
             </Link>
           </div>

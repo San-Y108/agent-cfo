@@ -171,7 +171,7 @@ export default function WalletsPage() {
       {/* Header */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 p-5 rounded-xl border border-border-token dark:border-white/[0.06] bg-surface-2 dark:bg-white/[0.03]">
         <div>
-          <h2 className="text-xl font-bold tracking-tight text-fg" style={{ fontFamily: "Inter, sans-serif" }}>
+          <h2 className="text-xl font-bold tracking-tight text-fg">
             {t("console.wallets.title" as any)}
           </h2>
           <p className="text-xs mt-1 text-fg-subtle">{t("console.wallets.desc" as any)}</p>
