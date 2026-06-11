@@ -17,7 +17,7 @@
 | Phase 3 | Wallets + Analytics | 12 | 3–4 天 | 0 | ⏳ 未开始 |
 | Phase 4 | Policy + Agent | 13 | 4–5 天 | 0 | ⏳ 未开始 |
 | Phase 5 | 打磨 + 验收 | 8 | 2–3 天 | 0 | ⏳ 未开始 |
-| **合计** | — | **58** | **12–16 天** | **15** | **26%** |
+| **合计** | — | **58** | **12–16 天** | **21** | **36%** |
 
 ---
 
@@ -26,18 +26,18 @@
 > 来源：Aceternity 深度排查补充报告 §6「已提取组件修复建议」
 > 这些修复不依赖 Phase 顺序，可随时穿插进行。
 
-- [ ] **P1** 修复 `ShootingStars` 内存泄漏：`useEffect` 返回 `clearTimeout(timeoutId)`
+- [x] **P1** 修复 `ShootingStars` 内存泄漏：`useEffect` 返回 `clearTimeout(timeoutId)`
   - 文件：`components/ui/aceternity/shooting-stars.tsx`
   - 风险：组件卸载后定时器继续运行，内存泄漏
-- [ ] **P2** 扩展 `GradientOrb`：添加 `customColorClass` prop 支持任意品牌色
+- [x] **P2** 扩展 `GradientOrb`：添加 `customColorClass` prop 支持任意品牌色
   - 文件：`components/ui/aceternity/background.tsx`
-- [ ] **P2** 扩展 `BentoCard` hover glow：添加 `glowColor` prop 或 CSS 变量
+- [x] **P2** 扩展 `BentoCard` hover glow：添加 `glowColor` prop 或 CSS 变量
   - 文件：`components/ui/aceternity/bento-grid.tsx`
-- [ ] **P3** 扩展 `AnimatedNumber`：添加 `springConfig` prop
+- [x] **P3** 扩展 `AnimatedNumber`：添加 `springConfig` prop
   - 文件：`components/ui/aceternity/animated-number.tsx`
-- [ ] **P3** 扩展 `Sparkles`：`color` 支持 hex 值（当前只接受 Tailwind class）
+- [x] **P3** 扩展 `Sparkles`：`color` 支持 hex 值（当前只接受 Tailwind class）
   - 文件：`components/ui/aceternity/sparkles.tsx`
-- [ ] **P3** `ColourfulText` 性能保护：超过 50 字符时降级为 `GradientText`
+- [x] **P3** `ColourfulText` 性能保护：超过 50 字符时降级为 `GradientText`
   - 文件：`components/ui/aceternity/colourful-text.tsx`
 
 ---
@@ -357,6 +357,8 @@
 | 2026-06-11 | **Phase 0 补做 + Phase 1 完成** | 调查发现 Phase 0 部分修改未持久化，重新应用并 commit |
 | | | 根因：修改写入文件系统但未 commit，后续被覆盖。非 linter 问题。 |
 | | | Phase 1：全局背景层( GridBackground+NoiseOverlay)、GradientOrb扩展(coral/violet)、5页面氛围色、Sidebar折叠(bb35f3a5已有)、HolographicButton、AnimatedNumber、GSAP文字特效(SlamText+ScrambleValue+FadeInText fallback) |
+| 2026-06-11 | **前置修复 P1-P3 完成** | ShootingStars内存泄漏修复、BentoCard glowColor、AnimatedNumber springConfig、Sparkles hex支持、ColourfulText性能降级 |
+| | | 进入 Phase 2：Treasury "Flow State Command Center" |
 
 ---
 
