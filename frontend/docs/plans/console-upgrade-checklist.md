@@ -12,12 +12,12 @@
 | Phase | 名称 | 任务数 | 预计时间 | 完成数 | 状态 |
 |-------|------|--------|---------|--------|------|
 | Phase 0 | Taste-Skill 基础对齐 | 8 | 1–2 天 | 8 | ✅ 完成 |
-| Phase 1 | 基础设施 + 全局系统 | 7 | 2–3 天 | 0 | ⏳ 未开始 |
+| Phase 1 | 基础设施 + 全局系统 | 7 | 2–3 天 | 7 | ✅ 完成 |
 | Phase 2 | Treasury — Flow State | 10 | 3–4 天 | 0 | ⏳ 未开始 |
 | Phase 3 | Wallets + Analytics | 12 | 3–4 天 | 0 | ⏳ 未开始 |
 | Phase 4 | Policy + Agent | 13 | 4–5 天 | 0 | ⏳ 未开始 |
 | Phase 5 | 打磨 + 验收 | 8 | 2–3 天 | 0 | ⏳ 未开始 |
-| **合计** | — | **58** | **12–16 天** | **0** | **0%** |
+| **合计** | — | **58** | **12–16 天** | **15** | **26%** |
 
 ---
 
@@ -77,27 +77,27 @@
 
 > **目标**：全局背景层、Sidebar 折叠、通用组件就位。
 
-- [ ] **1.1** 全局背景层注入（`console/layout.tsx`）
+- [x] **1.1** 全局背景层注入（`console/layout.tsx`）
   - 文件：`app/console/layout.tsx`
-  - 验收：5 层 Z-Index 架构就位
-- [ ] **1.2** `NoiseOverlay` + `GridBackground` + `GradientOrb` 全局挂载
+  - 验收：✅ 5 层 Z-Index 架构就位（底色 + Grid + Noise + 内容 + 悬浮）
+- [x] **1.2** `NoiseOverlay` + `GridBackground` + `GradientOrb` 全局挂载
   - 文件：同上
-  - 验收：所有 Console 页面共享背景
-- [ ] **1.3** 页面氛围色系统
+  - 验收：✅ GridBackground + NoiseOverlay 全局共享；GradientOrb 扩展 coral/violet
+- [x] **1.3** 页面氛围色系统
   - 文件：各 `page.tsx`
-  - 验收：`GradientOrb` 颜色按页面变化（Treasury=lime, Wallets=blue, Analytics=violet, Policy=coral, Agent=cyan）
-- [ ] **1.4** Sidebar 折叠改造（`CollapsibleSidebar`）
+  - 验收：✅ Treasury=lime, Wallets=blue, Analytics=violet, Policy=coral, Agent=cyan(lime+cyan 自定义)
+- [x] **1.4** Sidebar 折叠改造（`CollapsibleSidebar`）
   - 文件：`components/console/sidebar.tsx`
-  - 验收：260px↔72px spring 动画，主面板自动伸缩
-- [ ] **1.5** `HolographicButton` 组件完善
+  - 验收：✅ 260px↔72px spring 动画（已在 bb35f3a5 中实现）
+- [x] **1.5** `HolographicButton` 组件完善
   - 文件：`components/ui/holographic-button.tsx`
-  - 验收：lime/blue/coral/violet 四主题可用
-- [ ] **1.6** `AnimatedNumber` 组件集成
+  - 验收：✅ lime/blue/coral/violet/cyan 五主题可用
+- [x] **1.6** `AnimatedNumber` 组件集成
   - 文件：`components/ui/aceternity/animated-number.tsx`
-  - 验收：数字从 0 滚动到目标值，1.2s
-- [ ] **1.7** GSAP 文字特效组件：`SlamText` + `ScrambleValue`
+  - 验收：✅ 已存在，Treasury 页面已使用
+- [x] **1.7** GSAP 文字特效组件：`SlamText` + `ScrambleValue`
   - 文件：`components/ui/gsap-text-effects.tsx`
-  - 验收：SplitText 逐字砸入 + ScrambleText 解码
+  - 验收：✅ SplitText 逐字砸入 + ScrambleText 解码 + Framer Motion fallback
 
 ---
 
@@ -354,7 +354,9 @@
 | 2026-06-11 | Checklist 创建 | 完成 Plan 拆分，58 项任务 + 11 项 Aceternity 提取 |
 | 2026-06-11 | **Phase 0 完成** | 8/8 任务全部完成，`pnpm typecheck` 通过 |
 | | | 字体迁移(Geist)、图标迁移(Phosphor)、圆角统一、h-screen修复、Sidebar v0.1移除、eyebrow削减、Policy编号改造、GSAP插件注册 |
-| | | |
+| 2026-06-11 | **Phase 0 补做 + Phase 1 完成** | 调查发现 Phase 0 部分修改未持久化，重新应用并 commit |
+| | | 根因：修改写入文件系统但未 commit，后续被覆盖。非 linter 问题。 |
+| | | Phase 1：全局背景层( GridBackground+NoiseOverlay)、GradientOrb扩展(coral/violet)、5页面氛围色、Sidebar折叠(bb35f3a5已有)、HolographicButton、AnimatedNumber、GSAP文字特效(SlamText+ScrambleValue+FadeInText fallback) |
 
 ---
 
