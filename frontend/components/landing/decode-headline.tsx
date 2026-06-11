@@ -52,7 +52,7 @@ export function DecodeHeadline({
         const el = char as HTMLElement;
         const targetChar = el.dataset.char!;
         if (targetChar === " ") {
-          el.textContent = " ";
+          el.textContent = " ";
           el.style.opacity = "1";
           return;
         }
@@ -171,7 +171,7 @@ export function DecodeHeadline({
     return (
       <Tag ref={containerRef as any} className={className} style={style}>
         {lines.map((line, i) => (
-          <div key={i} className="font-medium text-white" style={{ ...style, whiteSpace: "nowrap" }}>
+          <div key={i} className="font-medium text-white" style={style}>
             {line}
           </div>
         ))}
@@ -194,28 +194,43 @@ export function DecodeHeadline({
             fontSize: style?.fontSize,
             letterSpacing: style?.letterSpacing || "-0.022em",
             lineHeight: style?.lineHeight || 1.08,
-            whiteSpace: "nowrap",
           }}
         >
-          {line.split("").map((char, charIdx) => {
-            const key = `${lineIdx}-${charIdx}`;
-            const fallbackChar =
-              char === " "
-                ? " "
-                : SCRAMBLE_CHARS[(key.length + charIdx + lineIdx) % SCRAMBLE_CHARS.length];
+          {line.split(" ").map((word, wordIdx) => {
+            const wordKey = `${lineIdx}-w${wordIdx}`;
             return (
               <span
-                key={key}
-                className="decode-char inline-block will-change-transform"
-                data-char={char}
-                data-key={key}
-                style={{
-                  color: accent,
-                  opacity: isClient ? 0 : 1,
-                  minWidth: char === " " ? "0.25em" : undefined,
-                }}
+                key={wordKey}
+                style={{ display: "inline-block", whiteSpace: "nowrap" }}
               >
-                {isClient ? fallbackChar : char}
+                {word.split("").map((char, charIdx) => {
+                  const key = `${lineIdx}-${wordIdx}-${charIdx}`;
+                  const fallbackChar =
+                    char === " "
+                      ? " "
+                      : SCRAMBLE_CHARS[(key.length + charIdx + wordIdx) % SCRAMBLE_CHARS.length];
+                  return (
+                    <span
+                      key={key}
+                      className="decode-char inline-block will-change-transform"
+                      data-char={char}
+                      data-key={key}
+                      style={{
+                        color: accent,
+                        opacity: isClient ? 0 : 1,
+                        minWidth: char === " " ? "0.25em" : undefined,
+                      }}
+                    >
+                      {isClient ? fallbackChar : char}
+                    </span>
+                  );
+                })}
+                {/* Space between words — allow wrapping here */}
+                {wordIdx < line.split(" ").length - 1 && (
+                  <span className="decode-char inline-block" data-char=" " data-key={`${wordKey}-sp`} style={{ minWidth: "0.25em" }}>
+                    {" "}
+                  </span>
+                )}
               </span>
             );
           })}
