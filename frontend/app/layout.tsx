@@ -1,6 +1,10 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import { Geist, Geist_Mono } from "next/font/google";
 import { AppProvider } from "@/lib/i18n/context";
+
+const geist = Geist({ subsets: ["latin"], variable: "--font-geist" });
+const geistMono = Geist_Mono({ subsets: ["latin"], variable: "--font-mono" });
 
 export const metadata: Metadata = {
   title: "AgentCFO — AI Treasury Command Center",
@@ -29,14 +33,15 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="dark" suppressHydrationWarning>
-      <head>
-        {/* suppressHydrationWarning: browser extensions (e.g. AdGuard) inject
-            scripts into <head> before React hydrates, shifting attribute
-            matching onto this tag. The script itself is a static constant. */}
-        <script suppressHydrationWarning dangerouslySetInnerHTML={{ __html: themeScript }} />
-      </head>
-      <body className="min-h-screen bg-bg text-fg antialiased">
+    <html lang="en" className={`dark ${geist.variable} ${geistMono.variable}`} suppressHydrationWarning>
+      <head />
+      <body className="min-h-screen bg-bg text-fg antialiased font-sans">
+        {/* Anti-FOUC theme script — placed at body top so React doesn't warn
+            about scripts inside <head>. Runs synchronously before paint. */}
+        <script
+          suppressHydrationWarning
+          dangerouslySetInnerHTML={{ __html: themeScript }}
+        />
         <AppProvider>{children}</AppProvider>
       </body>
     </html>

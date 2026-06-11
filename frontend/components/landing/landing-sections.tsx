@@ -4,7 +4,7 @@ import React from "react";
 import { HolographicCard } from "./holographic-card";
 import { CardSplitter } from "./card-splitter";
 import { Web3NodeCloud } from "./web3-node-cloud";
-import { PipelineShowcase } from "./pipeline-showcase";
+import { PipelineEditorial } from "./pipeline-editorial";
 import { GuardrailsCTA } from "./guardrails-cta";
 import { TeamShowcase } from "./team-showcase";
 import { BuildTimeline } from "./build-timeline";
@@ -21,7 +21,7 @@ import { LandingFooter } from "./landing-footer";
  *
  * Flow (top → bottom):
  *   HolographicCard + Web3NodeCloud  |  CardSplitter
- *   PipelineShowcase (5 stages, GSAP horizontal pin scroll)
+ *   PipelineEditorial (5 stages, editorial flow with Pretext animations)
  *   GuardrailsCTA
  *   FAQ + HSM
  *   LandingFooter (giant wordmark + 4 columns)
@@ -44,7 +44,7 @@ export function LandingSections() {
       </section>
 
       {/* The 5-stage pipeline */}
-      <PipelineShowcase />
+      <PipelineEditorial />
 
       <section id="guardrails" className="w-full">
         <GuardrailsCTA />

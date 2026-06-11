@@ -128,6 +128,7 @@ function Navbar() {
   const [open, setOpen] = useState(false);
   const [activeIdx, setActiveIdx] = useState(0);
   const [scrolled, setScrolled] = useState(false);
+  const [pastHero, setPastHero] = useState(false);
   const t = useT();
   const navRef = useRef<HTMLDivElement>(null);
   const linkRefs = useRef<(HTMLAnchorElement | null)[]>([]);
@@ -239,9 +240,16 @@ function Navbar() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Scroll detection — transparent at top of hero, solid when scrolled (never hides)
+  // Scroll detection —
+  //   · scrolled  : transparent → solid background (at 50% hero)
+  //   · pastHero  : hide logo + right buttons, keep only nav pills
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > window.innerHeight * 0.5);
+    const onScroll = () => {
+      const y = window.scrollY;
+      const heroH = window.innerHeight;
+      setScrolled(y > heroH * 0.5);
+      setPastHero(y > heroH * 0.95);
+    };
     window.addEventListener("scroll", onScroll, { passive: true });
     onScroll();
     return () => window.removeEventListener("scroll", onScroll);
@@ -257,28 +265,48 @@ function Navbar() {
     <>
       <nav
         ref={navWrapRef}
-        className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-5 py-4 lg:px-10 lg:py-5 transition-all duration-500"
+        className={`fixed top-4 z-50 flex items-center transition-all duration-500 ${
+          pastHero
+            ? "left-1/2 -translate-x-1/2 px-4 py-2.5 rounded-full border-0 justify-center"
+            : "left-0 right-0 px-5 py-4 lg:px-10 lg:py-5 justify-between"
+        }`}
         style={{
-          backgroundColor: scrolled ? "rgba(13,13,13,0.85)" : "transparent",
-          backdropFilter: scrolled ? "blur(16px) saturate(1.2)" : "none",
-          WebkitBackdropFilter: scrolled ? "blur(16px) saturate(1.2)" : "none",
-          borderBottom: scrolled ? "1px solid rgba(255,255,255,0.12)" : "1px solid transparent",
-          boxShadow: scrolled
-            ? "0 1px 0 rgba(255,255,255,0.10), 0 4px 24px rgba(0,0,0,0.4), inset 0 -1px 0 rgba(181,255,77,0.06)"
-            : "none",
+          backgroundColor: pastHero
+            ? "rgba(13,13,13,0.75)"
+            : scrolled
+              ? "rgba(13,13,13,0.85)"
+              : "transparent",
+          backdropFilter: scrolled || pastHero ? "blur(16px) saturate(1.2)" : "none",
+          WebkitBackdropFilter: scrolled || pastHero ? "blur(16px) saturate(1.2)" : "none",
+          borderBottom: pastHero ? "none" : scrolled ? "1px solid rgba(255,255,255,0.12)" : "1px solid transparent",
+          boxShadow: pastHero
+            ? "0 4px 24px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.06)"
+            : scrolled
+              ? "0 1px 0 rgba(255,255,255,0.10), 0 4px 24px rgba(0,0,0,0.4), inset 0 -1px 0 rgba(181,255,77,0.06)"
+              : "none",
         }}
       >
-        {/* Edge glow */}
+        {/* Edge glow — hidden when compact */}
+        {!pastHero && (
+          <div
+            className="absolute bottom-0 left-0 right-0 pointer-events-none transition-opacity duration-500"
+            style={{
+              height: "1px",
+              background: "linear-gradient(90deg, transparent 0%, rgba(181,255,77,0.15) 20%, rgba(181,255,77,0.2) 50%, rgba(181,255,77,0.15) 80%, transparent 100%)",
+              opacity: scrolled ? 1 : 0,
+            }}
+          />
+        )}
+        {/* Logo — hidden when scrolled past hero */}
         <div
-          className="absolute bottom-0 left-0 right-0 pointer-events-none transition-opacity duration-500"
+          className="flex items-center gap-2.5 transition-all duration-500"
           style={{
-            height: "1px",
-            background: "linear-gradient(90deg, transparent 0%, rgba(181,255,77,0.15) 20%, rgba(181,255,77,0.2) 50%, rgba(181,255,77,0.15) 80%, transparent 100%)",
-            opacity: scrolled ? 1 : 0,
+            opacity: pastHero ? 0 : 1,
+            visibility: pastHero ? "hidden" : "visible",
+            width: pastHero ? 0 : "auto",
+            overflow: "hidden",
           }}
-        />
-        {/* Logo */}
-        <div className="flex items-center gap-2.5">
+        >
           <img src="/logo.png" alt="AgentCFO" className="h-9 w-9" style={{ filter: "drop-shadow(0 0 6px rgba(181,255,77,0.5))" }} />
           <span
             className="text-xl font-bold tracking-tight bg-gradient-to-r from-lime-400 via-cyan-400 to-violet-400 bg-clip-text text-transparent"
@@ -330,8 +358,16 @@ function Navbar() {
             <circle ref={svgDotRef} r="2" fill="#B5FF4D" />
           </svg>
         </div>
-        {/* Controls */}
-        <div className="flex items-center gap-2">
+        {/* Controls — hidden when scrolled past hero */}
+        <div
+          className="flex items-center gap-2 transition-all duration-500"
+          style={{
+            opacity: pastHero ? 0 : 1,
+            visibility: pastHero ? "hidden" : "visible",
+            width: pastHero ? 0 : "auto",
+            overflow: "hidden",
+          }}
+        >
           <div className="hidden lg:block">
             <ThemeLanguageToggle variant="hero" />
           </div>

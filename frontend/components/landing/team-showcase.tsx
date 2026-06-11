@@ -268,25 +268,29 @@ function MemberCard({
           opacity,
         }}
       >
-        {/* Avatar */}
-        <AvatarRing
-          accent={member.accent}
-          avatar={member.avatar}
-          icon={member.icon}
-          speed={member.ringSpeed}
-          active={isHovered}
-          size={56}
-        />
-
-        {/* Role label */}
+        {/* Role badge — top-right pill */}
         <div
-          className="mt-4 text-[9px] font-bold uppercase tracking-[0.18em]"
+          className="absolute top-1 right-2 text-[8px] font-bold uppercase tracking-[0.15em] px-1.5 py-0.5 rounded-full z-20"
           style={{
             fontFamily: "'Courier New', Courier, monospace",
+            backgroundColor: `${member.accent}18`,
             color: member.accent,
+            border: `1px solid ${member.accent}30`,
           }}
         >
           {_(member.roleZh, member.roleEn)}
+        </div>
+
+        {/* Avatar */}
+        <div className="mt-5">
+          <AvatarRing
+            accent={member.accent}
+            avatar={member.avatar}
+            icon={member.icon}
+            speed={member.ringSpeed}
+            active={isHovered}
+            size={56}
+          />
         </div>
 
         {/* Handle */}

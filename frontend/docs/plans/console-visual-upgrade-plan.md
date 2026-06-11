@@ -69,7 +69,36 @@ Data Flow Particles  ·  AI Companion  ·  Cinematic Workflow
 | `ColourfulText` | `colourful-text.tsx` | 逐字颜色循环动画 |
 | `GradientText` | `colourful-text.tsx` | 静态渐变文字 |
 
-### 2.2 自定义组件（本次需新建）
+### 2.2 已提取组件限制与修复建议
+
+| 组件 | 关键限制 | 修复建议 | 优先级 |
+|------|---------|---------|--------|
+| `ShootingStars` | `useEffect` 未清理递归 `setTimeout`，存在内存泄漏风险 | 返回清理函数 `clearTimeout(timeoutId)` | **高** |
+| `GradientOrb` | 只支持 6 个预设颜色，不支持任意品牌色 | 添加 `customColorClass` prop 覆盖内部颜色 | 中 |
+| `BentoCard` | hover glow 固定为 lime，不支持其他主题色 | 添加 `glowColor` prop 或 CSS 变量覆盖 | 中 |
+| `Sparkles` | `color` 只接受 Tailwind className，不支持 hex 值 | 文档标注清楚，或扩展为同时支持 hex | 低 |
+| `AnimatedNumber` | spring 参数固定，不支持自定义 | 添加 `springConfig` prop | 低 |
+| `ColourfulText` | 每个字符拆分为独立 `motion.span`，长文本性能差 | 超过 50 字符时降级为 `GradientText` | 低 |
+
+### 2.3 草稿池新发现（待提取）
+
+> 来源：`components/ui/aceternity/_drafts/` 深度扫描
+
+| 组件 | 来源文件 | 核心效果 | 适用页面 | 优先级 |
+|------|---------|---------|---------|--------|
+| `BeamCollision` | `hero-1.tsx` | 4 条光束射入容器碰撞产生粒子爆炸 | Treasury 执行区 / Agent 思考态 | **P0** |
+| `SvgGradientLines` | `hero-7.tsx` | 5 子组件完整边框光效系统：渐变线条 + 径向光晕 + 角落折线 | 任意卡片边框 / Header 背景 | **P0** |
+| `ScrollScatter` | `hero-4.tsx` | 滚动时 6 张卡片向左右飞散，电影感叙事 | Landing 信任背书（如需要）| P1 |
+| `StickyScroll` | `4.tsx` | 滚动吸附 + 背景色渐变切换 + 双栏视差 | Workflow 步骤展示 | P1 |
+| `AvatarStack` | `hero-2.tsx` | 头像堆叠 hover tooltip + 无限滚动 logo 云 | Team / 贡献者展示 | P1 |
+| `MobileMockup` | `hero-6.tsx` | 纯 SVG iPhone 骨架屏，`currentColor` 暗色自动适配 | Treasury 扫描态 / Agent 预览 | P1 |
+| `SkewedRectangles` | `6.tsx` | `[perspective:1000px]` + `rotateX(±45deg)` 3D 科幻地面 | Agent 3D 角色底座 | P1 |
+| `PathDrawIcon` | `hero-2.tsx` | `motion.path` `pathLength` 0→1 SVG 图标自绘动画 | 任意图标动画 | P1 |
+| `RoughNotation` | `hero-6.tsx` | 手绘风格文字高亮/圈注（需 `react-rough-notation`）| 产品功能展示 | P2 |
+| `LogoCloudMarquee` | `hero-2.tsx` | `react-fast-marquee` 无限滚动 Logo 云（需额外依赖）| Landing 社交证明 | P2 |
+| `SkewedLines` | `7.tsx` | SVG pattern 斜向线条背景，`[mask-image]` 淡出 | 备用背景纹理 | P2 |
+
+### 2.4 自定义组件（本次需新建）
 
 | 组件 | 位置 | 说明 |
 |---|---|---|
@@ -101,6 +130,8 @@ Z-Index 层级（从底到顶）：
 
 ### 3.2 配色规范
 
+**品牌色体系**：
+
 | Token | 值 | 用途 |
 |---|---|---|
 | `--bg-base` | `#0D0D0D` | 全局底色 |
@@ -109,11 +140,27 @@ Z-Index 层级（从底到顶）：
 | `--border-hover` | `rgba(255,255,255,0.12)` | hover 边框 |
 | `--fg-primary` | `#FFFFFF` | 主文字 |
 | `--fg-subtle` | `rgba(255,255,255,0.6)` | 次要文字 |
-| `--accent-lime` | `#B5FF4D` | AgentCFO 品牌色 |
-| `--accent-cyan` | `#5EEAD4` | 信息/执行 |
-| `--accent-coral` | `#FB7185` | 风险/拦截 |
-| `--accent-violet` | `#C084FC` | 分析/图表 |
-| `--accent-blue` | `#60A5FA` | 钱包/资产 |
+| `--accent-lime` | `#B5FF4D` | **AgentCFO 品牌色** — 所有 CTA、核心数据高亮、hover glow |
+| `--accent-cyan` | `#5EEAD4` | 信息/执行态（扫描、Agent 思考、加载） |
+| `--accent-coral` | `#FB7185` | 风险/拦截态（Bob blocked、安全警告） |
+| `--accent-violet` | `#C084FC` | 分析/图表态（Analytics 数据可视化） |
+| `--accent-blue` | `#60A5FA` | 钱包/资产态（Wallets 转账、签名） |
+| `--accent-gold` | `#FFD700` | 导师/特殊标识 |
+
+**页面氛围色分配**（`GradientOrb` 光晕按页面区分，增强导航辨识度）：
+
+| 页面 | 氛围主色 | 说明 |
+|---|---|---|
+| Treasury | **lime** `#B5FF4D` | 付款执行中心，品牌色主导 |
+| Wallets | **blue** `#60A5FA` | 资产管理，蓝色科技感 |
+| Analytics | **violet** `#C084FC` | 数据分析，紫色洞察感 |
+| Policy | **coral** `#FB7185` | 风控策略，暖色警戒感 |
+| Agent | **cyan** `#5EEAD4` | AI 交互，青色智能感 |
+
+**配色原则**：
+- 品牌色 lime 无处不在（按钮、重点数据、hover glow），保持品牌一致性
+- 每个页面的 `GradientOrb` 氛围光晕不同，让用户一眼识别当前模块
+- 辅助色仅在状态指示、图表、特定功能区域使用，不抢夺品牌色焦点
 
 ### 3.3 动效时间规范
 
@@ -127,15 +174,24 @@ Z-Index 层级（从底到顶）：
 | 粒子闪烁 | 2-4s loop | `easeInOut` |
 | 流星划过 | 速度 8-20 | `requestAnimationFrame` |
 
-### 3.4 字体层级
+### 3.4 字体层级（升级：Inter → Geist）
 
-| 层级 | Size | Weight | 字体 |
-|---|---|---|---|
-| 页面标题 | 24px | 600 | Inter |
-| 区块标题 | 16px | 600 | Inter |
-| 正文 | 13-14px | 400 | Inter |
-| 数据/数字 | 20-32px | 700 | JetBrains Mono / monospace |
-| 标签 | 11px | 500 | monospace, uppercase |
+> **迁移说明**：根据 Taste-Skill 规范，Inter 是 LLM 默认字体（AI Tell），需替换为 Geist。Geist 的 tighter tracking 更适合数据界面，且与 Geist Mono 原生配对。
+
+```tsx
+// app/layout.tsx
+import { Geist, Geist_Mono } from "next/font/google";
+const geist = Geist({ subsets: ["latin"], variable: "--font-geist" });
+const geistMono = Geist_Mono({ subsets: ["latin"], variable: "--font-mono" });
+```
+
+| 层级 | Size | Weight | 字体 | 备注 |
+|---|---|---|---|---|
+| 页面标题 | 24px | 600 | **Geist** | 替代 Inter |
+| 区块标题 | 16px | 600 | **Geist** | 替代 Inter |
+| 正文 | 13-14px | 400 | **Geist** | 替代 Inter |
+| 数据/数字 | 20-32px | 700 | **Geist Mono** | 替代 'Courier New'，tabular-nums 防抖动 |
+| 标签 | 11px | 500 | **Geist Mono**, uppercase | 替代 monospace |
 
 ---
 
@@ -194,6 +250,20 @@ Z-Index 层级（从底到顶）：
     - txHash 显示用 `GradientText` + 复制按钮 hover glow
     - "Process next cycle" 按钮用 `HolographicButton`
 
+#### E. 技术映射（Aceternity × GSAP × Taste-Skill）
+
+| 区域 | Aceternity 资产 | GSAP 技术 | Taste-Skill 约束 |
+|------|----------------|-----------|-----------------|
+| Header | `GradientText` (lime→cyan) | `SplitText` 逐字砸入 | 无 eyebrow，标题即导航 |
+| KPI Cards | `BentoCard` + `AnimatedNumber` | `staggerReveal` 滑入 + `ScrambleText` 数字解码 | 卡片圆角统一 12px |
+| Records Table | `BentoCard` 包裹行 | `DrawSVG` 状态指示线绘制 | 行 stagger delay ≤ 0.15s |
+| Action Panel Step 1 | `MobileMockup` SVG 手机骨架屏 + `GridBackground` 局部高亮 | `ScrambleText` 扫描状态解码 | 扫描动画叠加在手机屏幕上增强真实感 |
+| Action Panel Step 3 | `HolographicButton` + `Sparkles` + `ShootingStars` | `Flip` 面板状态切换 + `ScrambleText` 解码 | 状态变化用动效叙事，非静态跳切 |
+| Risk Gate | 现有 Framer Motion shake | `ScrambleText` 拦截原因解码 | 风险态 coral glow 是语义反馈，非装饰 |
+| 卡片边框装饰 | `SvgGradientLines` 的 `SideLines` 子组件 | `DrawSVG` 角落线条绘制 | 可缩放至任意卡片尺寸 |
+
+**创新概念**："Flow State Command Center" — 全屏沉浸式流程，每一步像电影转场。Blocked 时触发 chromatic aberration（色差故障）+ 屏幕震动。
+
 ---
 
 ### 4.2 Wallets 页 (`/console/wallets`) — 资产管理
@@ -233,6 +303,19 @@ Z-Index 层级（从底到顶）：
 - HSM SECURED badge 加 `Sparkles` 点缀
 - Active 状态指示器（绿点）用 `animate-pulse` + 外发光
 
+#### G. 技术映射（Aceternity × GSAP × Taste-Skill）
+
+| 区域 | Aceternity 资产 | GSAP 技术 | Taste-Skill 约束 |
+|------|----------------|-----------|-----------------|
+| Header | `GradientText` (blue→cyan) + `GradientOrb`(blue) | — | 无 eyebrow |
+| Wallet List | `BentoCard` + `AnimatedNumber` | `Flip` 过滤重排 + `ScrambleText` 余额更新 | 卡片 hover glow 0.3s 内完成 |
+| WalletTopology | `Sparkles` 节点 hover | `MotionPath` 数据包曲线路径 + `DrawSVG` 连线绘制 | 性能优先，粒子数 ≤ 20 |
+| WalletHoloCard | `BentoCard` mini + `AnimatedNumber` | `3D rotateY` 增强透视 + `transformOrigin` 深度 | 触摸设备禁用 3D tilt |
+| Transfer Panel | `HolographicButton` (blue) | `MotionPath` 资金流动粒子 + `DrawSVG` 路径绘制 | 状态变化用动效叙事 |
+| Signers Matrix | `BentoCard` + `Sparkles` | — | 图标统一用 Phosphor |
+
+**创新概念**："Holographic Vault System" — 全息投影系统 + CRT 扫描线效果 + 生物识别授权动画（指纹波纹）。
+
 ---
 
 ### 4.3 Analytics 页 (`/console/analytics`) — 数据分析
@@ -265,6 +348,17 @@ Z-Index 层级（从底到顶）：
 - 优胜项（绿色值）加 `Sparkles` 点缀
 - 卡片 stagger 进入（delay=0.1s）
 - 悬停时卡片内出现 subtle grid 背景动画
+
+#### E. 技术映射（Aceternity × GSAP × Taste-Skill）
+
+| 区域 | Aceternity 资产 | GSAP 技术 | Taste-Skill 约束 |
+|------|----------------|-----------|-----------------|
+| KPI Banner | `BentoCard` + `AnimatedNumber` | `ScrambleText` 数字更新 | 数据数字必须用 `tabular-nums` |
+| Area Chart | `BentoCard` 包裹 | `ScrollTrigger` + `DrawSVG` 图表绘制展开 | 图表需稳定可读，motion 克制 |
+| Pie Chart | `BentoCard` + `AnimatedNumber` | `Flip` 图例卡片重排 | hover 外扩 + 发光 |
+| Comparison Matrix | `BentoCard` + `Sparkles` | `Flip` 卡片重排 + `staggerReveal` | 水平 scroll-snap "数据切片" |
+
+**创新概念**："Living Data Organism" — 图表像呼吸的有机体，Area chart 填充像液体波动，KPI 数字用 slot-machine 滚动效果（机场航班牌）。
 
 ---
 
@@ -302,6 +396,17 @@ Z-Index 层级（从底到顶）：
 - 改用 `BentoCard`
 - CheckCircle 图标加 `Sparkles`（3 个粒子）
 - Hover 时卡片内出现 shield 图标水波纹
+
+#### E. 技术映射（Aceternity × GSAP × Taste-Skill）
+
+| 区域 | Aceternity 资产 | GSAP 技术 | Taste-Skill 约束 |
+|------|----------------|-----------|-----------------|
+| 5 Rules | `BentoGrid` + `AnimatedNumber` | `ScrambleText` 数字解码 + `SplitText` 标题砸入 + `DrawSVG` 边框绘制 | **打破规范**：编号 `01-05` → `0x1A` 十六进制节点 ID |
+| Whitelist Table | `BentoCard` 行包裹 | `Flip` 列表增删动画 + `SplitText` 标签淡入 | 行 stagger delay ≤ 0.15s |
+| Threshold Sliders | `AnimatedNumber` | `Observer` 统一手势 + `ScrambleText` 值更新 + `gsap.utils.mapRange` 颜色映射 | Slider 轨道 gradient（深色→lime→深色）|
+| Security Gateway | `BentoCard` + `Sparkles` | `3D rotateX` 卡片翻转立起 | 图标迁移至 Phosphor |
+
+**创新概念**："Neural Guardrails Interface" — 5 条规则变为神经网络可视化节点，相互之间有脉冲连接。Slider 调整时神经元亮度实时变化。白名单地址像 DNA 基因片段排列。
 
 ---
 
@@ -341,9 +446,12 @@ Z-Index 层级（从底到顶）：
 
 - **位置**: 左侧 40% 宽度，垂直居中
 - **实现方式**:
-  - 方案 1（推荐）: 使用 **Live2D / Vtuber 风格** 的 Web 渲染（`pixi-live2d-display` 或 `live2d-widget`）
-  - 方案 2（备用）: 用 Three.js 加载一个低多边形 3D 角色（`.glb` 格式）
-  - 方案 3（最简）: 高质量循环动画 `.webm` / `.lottie`（动漫人物 idle 动画）
+  - **方案 1（确认）: 使用 Three.js 加载低多边形 3D 角色（`.glb` 格式）**
+    - 通过 `next/dynamic` lazy load，避免首屏阻塞
+    - 角色模型需自行制作或采购（推荐风格：低多边形科幻风 / 赛博朋克风）
+    - 灯光设置：key light (lime) + rim light (cyan) + ambient (dark)
+  - 方案 2（备用）: Live2D / Vtuber 风格（`pixi-live2d-display`）
+  - 方案 3（最简）: 高质量循环动画 `.webm` / `.lottie`
 - **状态动画**:
   - `idle`: 呼吸动画（轻微上下浮动）
   - `thinking`: 手托下巴 / 头微歪 + 思考气泡（...）
@@ -365,12 +473,17 @@ Z-Index 层级（从底到顶）：
 - 按钮用 `HolographicButton`
 - Hover 时按钮上方出现微型预览提示
 
-#### E. 页面背景
-- 最强的氛围层：
-  - `NoiseOverlay`（6% 透明度，比其他页面更强）
-  - `GridBackground`（中心放射状 mask）
-  - `ShootingStars`（低频率，从左上到右下）
-  - `GradientOrb`（lime 400px + cyan 400px，双光球）
+#### F. 技术映射（Aceternity × GSAP × Taste-Skill）
+
+| 区域 | Aceternity 资产 | GSAP 技术 | Taste-Skill 约束 |
+|------|----------------|-----------|-----------------|
+| 3D Agent 角色 | `GradientOrb` (lime+cyan) + `GridBackground` + `SkewedRectangles` 全息地面 | `3D rotateY` 状态切换翻转 + `MorphSVG` 图标变形 | **打破规范**：AI 头像表情是角色设计，不是随意 emoji |
+| 角色背景光晕 | `SvgGradientLines` 的 `TopGradient` + `BottomGradient` | — | 蓝色径向光晕替代简单 `GradientOrb` |
+| Chat 界面 | `BentoCard` 消息气泡 | `SplitText` 逐词淡入 + `ScrambleText` 用户消息解码 | 消息气泡 stagger delay 0.02s |
+| Quick Actions | `HolographicButton` + `PathDrawIcon` 图标自绘 | `Flip` 按钮飞向输入区 + `3D rotateX` hover 倾斜 | 按钮统一高度 40px (md) |
+| 页面背景 | `NoiseOverlay`(6%) + `ShootingStars` + `GradientOrb`(双光球) | `gsap.utils.random` 粒子随机化 | 粒子数单页面 ≤ 20 |
+
+**创新概念**："Sentient CFO Persona" — 3D 全息头像有表情状态（思考时粒子聚集，回答时扩散）。对话气泡采用打字机 + 语义高亮（金额自动标绿，风险词自动标红）。Quick Actions 变为思维泡泡，像漫画一样从 AI 头像旁飘出。
 
 ---
 
@@ -569,42 +682,109 @@ const [sidebarOpen, setSidebarOpen] = useState(true);
 
 ## 9. 实现顺序
 
-### Phase 1: 基础设施（第 1 轮）
-1. ✅ 分支创建（`feat/console-aceternity-upgrade`）
-2. ✅ Aceternity 资产提取
-3. 全局背景层注入（`console/layout.tsx`）
-4. `NoiseOverlay` + `GridBackground` + `GradientOrb` 全局挂载
-5. Sidebar 折叠改造（`CollapsibleSidebar`）
-6. `HolographicButton` 组件
-7. `AnimatedNumber` 组件集成
+### Phase 0: Taste-Skill 基础对齐（前置，1-2 天）
 
-### Phase 2: Treasury 页升级（第 2 轮）
-8. KPI Cards → `BentoCard` + `AnimatedNumber`
-9. Records Table → stagger + hover 色条
-10. Action Panel → 分步动效（扫描/审查/执行/完成）
-11. `FlowTimeline` 组件
-12. `RiskGateAnimation` 组件
+**目标**：消除 AI Tells，建立统一视觉基线。
 
-### Phase 3: Wallets + Analytics（第 3 轮）
-13. Wallets → `BentoCard` 改造 + Token 卡片升级
-14. Wallets → `ShootingStars` + `Sparkles` 点缀
-15. Analytics → 图表容器升级
-16. Analytics → `AnimatedNumber` 集成
+| # | 任务 | 文件 | 验收标准 |
+|---|------|------|---------|
+| 0.1 | **字体迁移**：Inter → Geist + Geist Mono | `app/layout.tsx`, `globals.css` | 所有文字渲染为 Geist，无 Inter fallback |
+| 0.2 | **图标迁移启动**：安装 @phosphor-icons/react，Sidebar 5 个图标替换 | `package.json`, `components/console/sidebar.tsx` | Sidebar 使用 Phosphor 图标，样式一致 |
+| 0.3 | **圆角统一**：卡片 12px (`rounded-xl`) / 输入框 8px (`rounded-lg`) / 按钮 pill (`rounded-full`) | `globals.css @theme` | 无 `rounded-[14px]` 等硬编码 |
+| 0.4 | **h-screen → min-h-[100dvh]** | `console/layout.tsx` | 移动端无白边 |
+| 0.5 | **移除 sidebar v0.1 版本标签** | `components/console/sidebar.tsx` | 无版本号显示 |
+| 0.6 | **削减 eyebrow**：每个页面只保留 0-1 个真正 eyebrow | 各 page.tsx | 页面标题不算 eyebrow |
+| 0.7 | **Policy 编号改造**：`01-05` → `0x1A` 十六进制节点 ID | `app/console/policy/page.tsx` | 六进制哈希风格 |
+| 0.8 | **GSAP 插件注册**：Flip, SplitText, ScrambleText, DrawSVG, MotionPath | `lib/gsap.ts` | `gsap.registerPlugin(...)` |
 
-### Phase 4: Policy + Agent（第 4 轮）
-17. Policy → 5 Rules `BentoGrid`
-18. Policy → Slider + Save 动效
-19. **Agent 页新建** — 页面骨架
-20. **Agent 角色** — 3D 动漫人物接入
-21. Agent Chat 界面
-22. Quick Actions
+### Phase 1: 基础设施 + 全局系统（第 1 轮，2-3 天）
 
-### Phase 5: 打磨（第 5 轮）
-23. 所有页面响应式检查
-24. `pnpm typecheck` + `pnpm build`
-25. 动效性能检查（Chrome DevTools Performance）
-26. Taste-skill 清单逐项核对
-27. 截图 + 文档更新
+| # | 任务 | 文件 | 验收标准 |
+|---|------|------|---------|
+| 1.1 | 全局背景层注入（`console/layout.tsx`） | `app/console/layout.tsx` | 5 层 Z-Index 架构就位 |
+| 1.2 | `NoiseOverlay` + `GridBackground` + `GradientOrb` 全局挂载 | 同上 | 所有 Console 页面共享背景 |
+| 1.3 | **页面氛围色系统**：Treasury=lime, Wallets=blue, Analytics=violet, Policy=coral, Agent=cyan | 各 page.tsx | `GradientOrb` 颜色按页面变化 |
+| 1.4 | Sidebar 折叠改造（`CollapsibleSidebar`） | `components/console/sidebar.tsx` | 260px↔72px spring 动画，主面板自动伸缩 |
+| 1.5 | `HolographicButton` 组件完善（lime/blue/coral/violet 四主题） | `components/ui/holographic-button.tsx` | 4 种 variant 可用 |
+| 1.6 | `AnimatedNumber` 组件集成 | `components/ui/aceternity/animated-number.tsx` | 数字从 0 滚动到目标值，1.2s |
+| 1.7 | **GSAP 文字特效组件**：`SlamText` + `ScrambleValue` | `components/ui/gsap-text-effects.tsx` | SplitText 逐字砸入 + ScrambleText 解码 |
+
+### Phase 2: Treasury 页升级 — "Flow State Command Center"（第 2 轮，3-4 天）
+
+| # | 任务 | 文件 | 验收标准 |
+|---|------|------|---------|
+| 2.1 | Header：`GradientText` (lime→cyan) + `SplitText` 逐字砸入 + `Sparkles` | `app/console/page.tsx` | 标题有 neon glow |
+| 2.2 | **KPI Cards**：`BentoCard` + `AnimatedNumber` + `staggerReveal` 滑入 | 同上 | 4 张卡片 stagger 进入，数字滚动 |
+| 2.3 | **Records Table**：`BentoCard` 行包裹 + `DrawSVG` 状态指示线 + stagger | 同上 | 行 hover 左侧色条，新增行滑入 |
+| 2.4 | **Action Panel Step 0**：`HolographicButton` + `Sparkles` | 同上 | "Generate Plan" 按钮有 scanline |
+| 2.5 | **Action Panel Step 1**：`ColourfulText` + `GridBackground` 局部高亮 + `GradientOrb`(cyan) | 同上 | 扫描状态文字变色 |
+| 2.6 | **Action Panel Step 2**：`BentoGrid` + `Flip` 面板切换 + Bob shake | 同上 | 面板状态平滑切换 |
+| 2.7 | **Action Panel Step 3**：全屏 overlay + `ShootingStars` + 旋转环 + shimmer 进度条 | 同上 | 加密核心动画 |
+| 2.8 | **Action Panel Step 4**：`StatsSection` Tab 切换 + `GradientText` txHash | 同上 | 三面板 Tab 切换 |
+| 2.9 | **Risk Gate**：Framer Motion shake + `ScrambleText` 拦截原因解码 | 同上 | 从乱码解码为 "Address not whitelisted" |
+| 2.10 | **创新特效**：Chromatic aberration（色差故障）风险态 | `lib/effects/chromatic-aberration.ts` | Blocked 时屏幕边缘 RGB 分离 |
+
+### Phase 3: Wallets + Analytics（第 3 轮，3-4 天）
+
+**Wallets — "Holographic Vault System"**
+
+| # | 任务 | 文件 | 验收标准 |
+|---|------|------|---------|
+| 3.1 | Header：`GradientText` (blue→cyan) + `GradientOrb`(blue) | `app/console/wallets/page.tsx` | 蓝色光晕主题 |
+| 3.2 | **Wallet List**：`BentoCard` + `Flip` 过滤重排 + `ScrambleText` 余额更新 | 同上 | 过滤时卡片平滑飞入新位置 |
+| 3.3 | **WalletTopology**：`Sparkles` 节点 hover + `MotionPath` 曲线路径 + `DrawSVG` 连线 | 同上 | 数据包沿贝塞尔曲线运动 |
+| 3.4 | **WalletHoloCard**：`BentoCard` mini + `3D rotateY` 增强透视 | 同上 | 更强烈的浮出屏幕效果 |
+| 3.5 | **Transfer Panel**：`HolographicButton`(blue) + `MotionPath` 资金流动 + `DrawSVG` | 同上 | 转账粒子沿路径飞行 |
+| 3.6 | **Signers Matrix**：`BentoCard` + `Sparkles` + Phosphor 图标 | 同上 | HSM badge 粒子点缀 |
+| 3.7 | **创新特效**：CRT scanline 全息材质 + 生物识别授权动画 | `lib/effects/crt-scanline.ts` | 扫描线 + 指纹波纹 |
+
+**Analytics — "Living Data Organism"**
+
+| # | 任务 | 文件 | 验收标准 |
+|---|------|------|---------|
+| 3.8 | KPI Banner：`BentoCard` + `AnimatedNumber` + `ScrambleText` | `app/console/analytics/page.tsx` | 数字 slot-machine 滚动 |
+| 3.9 | Area Chart：`BentoCard` 包裹 + `ScrollTrigger` + `DrawSVG` 绘制展开 | 同上 | 图表从上往下绘制 |
+| 3.10 | Pie Chart：`BentoCard` + `AnimatedNumber` 中心 + `Flip` 图例重排 | 同上 | hover 外扩 + 发光 |
+| 3.11 | Comparison Matrix：`BentoCard` + `Sparkles` + `Flip` 重排 + 水平 scroll-snap | 同上 | "数据切片"式滑动 |
+| 3.12 | **创新特效**：液体波动图表（CSS `animation: liquid-wave`） | `lib/effects/liquid-wave.css` | Area chart 填充像液体波动 |
+
+### Phase 4: Policy + Agent（第 4 轮，4-5 天）
+
+**Policy — "Neural Guardrails Interface"**
+
+| # | 任务 | 文件 | 验收标准 |
+|---|------|------|---------|
+| 4.1 | **5 Rules**：`BentoGrid` + `ScrambleText` 数字解码 + `SplitText` 标题砸入 + `DrawSVG` 边框 | `app/console/policy/page.tsx` | 编号 `0x1A` 风格 |
+| 4.2 | **Threshold Sliders**：`Observer` 手势 + `ScrambleText` 值更新 + `mapRange` 颜色映射 | 同上 | Slider 释放时弹性回弹 |
+| 4.3 | **Whitelist Table**：`Flip` 增删动画 + `SplitText` 标签淡入 | 同上 | 新增行平滑展开 |
+| 4.4 | **Security Gateway**：`BentoCard` + `Sparkles` + `3D rotateX` 翻转立起 | 同上 | 卡片从水平翻转立起 |
+| 4.5 | **创新特效**：神经网络可视化（Canvas 2D 力导向图） | `components/console/neural-network.tsx` | 5 个规则节点 + 脉冲连接 |
+
+**Agent — "Sentient CFO Persona"（灵魂页面）**
+
+| # | 任务 | 文件 | 验收标准 |
+|---|------|------|---------|
+| 4.6 | **页面骨架**：左侧 40% 3D 角色 + 右侧 Chat + 底部 Quick Actions | `app/console/agent/page.tsx` | 布局就位 |
+| 4.7 | **3D Agent 角色**：Three.js `.glb` 低多边形 + `next/dynamic` lazy load | `components/console/agent-character.tsx` | 有 idle/thinking/speaking/happy/warning 状态 |
+| 4.8 | **角色灯光**：key light (lime) + rim light (cyan) + ambient (dark) | 同上 | 灯光层次清晰 |
+| 4.9 | **Chat 界面**：`BentoCard` 气泡 + `SplitText` 逐词淡入 + `ScrambleText` 解码 | `components/console/agent-chat.tsx` | 模拟 AI 打字效果 |
+| 4.10 | **语义高亮**：金额自动标绿，风险词自动标红 | `lib/semantic-highlight.ts` | 正则解析高亮 |
+| 4.11 | **Quick Actions**：`HolographicButton` + `Flip` 飞向输入区 + `3D rotateX` hover | 同上 | 思维泡泡式飘出 |
+| 4.12 | **页面背景**：`NoiseOverlay`(6%) + `GridBackground`(中心放射) + `ShootingStars` + 双光球 | `app/console/agent/page.tsx` | 最强氛围层 |
+| 4.13 | **创新特效**：语音波形可视化（Web Audio API） | `components/console/voice-waveform.tsx` | 说话时波形实时响应 |
+
+### Phase 5: 打磨 + 验收（第 5 轮，2-3 天）
+
+| # | 任务 | 验收标准 |
+|---|------|---------|
+| 5.1 | 所有页面响应式检查（Mobile/Tablet/Desktop） | 无布局错位 |
+| 5.2 | `pnpm typecheck` 零错误 | 零 TS 错误 |
+| 5.3 | `pnpm build` 成功 | 构建通过 |
+| 5.4 | 动效性能检查：Chrome DevTools Performance，目标 60fps | 无掉帧 |
+| 5.5 | `prefers-reduced-motion` 降级测试 | 所有动效可降级 |
+| 5.6 | Lighthouse 性能审计，目标 LCP < 2.5s | 达标 |
+| 5.7 | Taste-Skill 清单逐项核对（见 §8） | 所有项通过 |
+| 5.8 | 截图文档更新：5 个页面截图 + 动效 GIF | 产出交付物 |
 
 ---
 
@@ -620,7 +800,14 @@ const [sidebarOpen, setSidebarOpen] = useState(true);
   "recharts": "^2.x"
 }
 
-// 可能需要新增
+// Aceternity 草稿池提取可能新增
+{
+  "react-rough-notation": "^1.x", // P2: RoughNotation 手绘效果（hero-6.tsx）
+  "react-fast-marquee": "^1.x",   // P2: LogoCloudMarquee 无限滚动（hero-2.tsx）
+  "react-wrap-balancer": "^1.x"   // P2: 标题换行优化（hero-1.tsx，可能已有）
+}
+
+// Agent 角色动画（备选方案）
 {
   "lottie-react": "^2.x",        // Agent 角色动画
   "@pixi/live2d-display": "^0.x" // 备选 Live2D
@@ -657,6 +844,9 @@ const [sidebarOpen, setSidebarOpen] = useState(true);
 | Aceternity 组件与现有样式冲突 | UI 错乱 | 所有 Aceternity 组件封装在 `components/ui/aceternity/`，props 化，不直接改源码 |
 | Sidebar 折叠导致布局错位 | 主内容溢出或留白 | 用 `motion.div` 统一控制 sidebar + main 的 width/margin，避免手动计算 |
 | 新增依赖导致构建失败 | CI/CD 失败 | 每轮结束后必须 `pnpm build` 验证 |
+| Aceternity 草稿池图标库冲突 | 引入 `@tabler/icons-react` / `react-icons` 与项目 Phosphor 迁移冲突 | 提取组件时同步替换为 Phosphor 等价物，不引入新图标库 |
+| `ShootingStars` 内存泄漏 | 组件卸载后定时器继续运行 | 修复 `useEffect` 清理函数，见 §2.2 |
+| `ColourfulText` 长文本性能 | 超过 50 字符时大量 DOM 节点导致卡顿 | 长文本降级为 `GradientText`，仅短标题使用 `ColourfulText` |
 
 ---
 

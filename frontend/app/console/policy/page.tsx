@@ -21,11 +21,11 @@ const LIME = "#B5FF4D";
 
 /* ─── 5 rule categories (PipelineShowcase big-number style) ─── */
 const RULES = [
-  { num: "01", titleKey: "risk.1.title", bodyKey: "risk.1.body", color: "#5EEAD4" },
-  { num: "02", titleKey: "risk.2.title", bodyKey: "risk.2.body", color: "#FB7185" },
-  { num: "03", titleKey: "risk.3.title", bodyKey: "risk.3.body", color: "#B5FF4D" },
-  { num: "04", titleKey: "risk.4.title", bodyKey: "risk.4.body", color: "#60A5FA" },
-  { num: "05", titleKey: "risk.5.title", bodyKey: "risk.5.body", color: "#C084FC" },
+  { num: "0x1A", titleKey: "risk.1.title", bodyKey: "risk.1.body", color: "#5EEAD4" },
+  { num: "0x2B", titleKey: "risk.2.title", bodyKey: "risk.2.body", color: "#FB7185" },
+  { num: "0x3C", titleKey: "risk.3.title", bodyKey: "risk.3.body", color: "#B5FF4D" },
+  { num: "0x4D", titleKey: "risk.4.title", bodyKey: "risk.4.body", color: "#60A5FA" },
+  { num: "0x5E", titleKey: "risk.5.title", bodyKey: "risk.5.body", color: "#C084FC" },
 ];
 
 interface WhitelistItem {

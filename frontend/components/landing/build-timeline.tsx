@@ -411,25 +411,15 @@ export function BuildTimeline() {
                       aria-hidden="true"
                     />
 
-                    {/* Content layer above image */}
-                    <div className="relative z-10 flex flex-col items-center justify-center">
-                      {/* Accent glow line at top */}
-                      <div
-                        className="absolute -top-4 left-0 right-0 h-[1px]"
-                        style={{
-                          background: `linear-gradient(90deg, transparent 5%, ${p.accent}80 50%, transparent 95%)`,
-                          boxShadow: `0 0 12px ${p.accent}60`,
-                        }}
-                        aria-hidden="true"
-                      />
-
-                      {/* Large phase number — accent color with glow */}
+                    {/* Left edge label — moved from center to left of the film frame */}
+                    <div className="absolute left-2 top-1/2 z-10 flex -translate-y-1/2 flex-col items-start gap-1">
+                      {/* Phase number */}
                       <span
-                        className="text-[56px] md:text-[64px] font-bold leading-none tracking-tighter"
+                        className="text-[32px] font-bold leading-none tracking-tighter md:text-[40px]"
                         style={{
                           color: p.accent,
-                          textShadow: `0 0 30px ${p.accent}60, 0 0 60px ${p.accent}30, 0 0 100px ${p.accent}15`,
-                          opacity: 0.9,
+                          textShadow: `0 0 16px ${p.accent}50, 0 0 32px ${p.accent}25`,
+                          opacity: 0.85,
                         }}
                       >
                         {p.number}
@@ -437,21 +427,21 @@ export function BuildTimeline() {
 
                       {/* Phase label */}
                       <span
-                        className="mt-3 text-[10px] font-mono uppercase tracking-[0.2em] drop-shadow"
+                        className="text-[9px] font-mono uppercase tracking-[0.2em]"
                         style={{
                           color: `${p.accent}90`,
-                          textShadow: `0 0 8px ${p.accent}40`,
+                          textShadow: `0 0 6px ${p.accent}40`,
                         }}
                       >
                         {p.phase}
                       </span>
 
-                      {/* Phase title — accent color glow */}
+                      {/* Phase title */}
                       <span
-                        className="mt-1 text-sm font-bold drop-shadow"
+                        className="text-[11px] font-bold"
                         style={{
                           color: p.accent,
-                          textShadow: `0 0 16px ${p.accent}50, 0 0 32px ${p.accent}25`,
+                          textShadow: `0 0 10px ${p.accent}50`,
                         }}
                       >
                         {_(p.titleZh, p.titleEn)}

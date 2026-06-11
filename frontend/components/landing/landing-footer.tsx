@@ -231,7 +231,7 @@ export function LandingFooter() {
                 <stop offset="100%" stopColor="#CCFF00" />
               </linearGradient>
 
-              {/* Displacement filter — ripple on mouse move */}
+              {/* Displacement filter — subtle ripple on mouse move */}
               <filter id="footer-distortion" x="-10%" y="-10%" width="120%" height="120%">
                 <feTurbulence
                   type="fractalNoise"
@@ -241,8 +241,8 @@ export function LandingFooter() {
                 >
                   <animate
                     attributeName="baseFrequency"
-                    dur="0.4s"
-                    values="0.005 0.02;0.015 0.06;0.005 0.02"
+                    dur="0.7s"
+                    values="0.005 0.02;0.008 0.035;0.005 0.02"
                     repeatCount="1"
                     begin="indefinite"
                     fill="freeze"
@@ -257,8 +257,8 @@ export function LandingFooter() {
                 >
                   <animate
                     attributeName="scale"
-                    dur="0.35s"
-                    values="0;22;10;0"
+                    dur="0.7s"
+                    values="0;8;3;0"
                     repeatCount="1"
                     begin="indefinite"
                     fill="freeze"
