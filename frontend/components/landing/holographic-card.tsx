@@ -52,7 +52,7 @@ export function HolographicCard() {
         }}
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
-        className="w-full max-w-3xl mx-auto border rounded-2xl p-8 backdrop-blur-md shadow-2xl relative cursor-pointer group will-change-transform bg-gradient-to-br from-white/[0.08] to-white/[0.02] border-white/15"
+        className="w-full max-w-3xl mx-auto border rounded-2xl p-8 backdrop-blur-md shadow-2xl relative cursor-pointer group will-change-transform bg-gradient-to-br from-white/[0.08] to-white/[0.04] border-white/15"
       >
         {/* Glossy overlay */}
         <div className="absolute inset-0 rounded-2xl bg-gradient-to-tr from-transparent via-[#B5FF4D]/5 to-transparent pointer-events-none group-hover:opacity-100 opacity-50 transition-opacity" />
@@ -72,7 +72,7 @@ export function HolographicCard() {
 
             <div>
               <h3 className="text-2xl font-black tracking-tight mb-2 text-white">{t("heroCard.title")}</h3>
-              <p className="text-xs leading-relaxed font-mono text-white/50">
+              <p className="text-xs leading-relaxed font-mono text-white/75">
                 {t("heroCard.desc")}
               </p>
             </div>
@@ -95,7 +95,7 @@ export function HolographicCard() {
           </div>
 
           {/* Card Right: Live Audit Interface Simulation */}
-          <div className="border rounded-xl p-6 font-mono text-[11px] space-y-3 shadow-inner bg-[#0D0D0D]/65 border-white/5 text-white">
+          <div className="border rounded-xl p-6 font-mono text-[11px] space-y-3 shadow-inner bg-[#0D0D0D]/65 border-white/12 text-white">
             <div className="text-[9px] font-bold flex items-center justify-between mb-2 text-[#B5FF4D]">
               <span>AGENT LOG OVERVIEW</span>
               <span className="text-[9px] px-1.5 py-0.5 rounded font-extrabold bg-[#B5FF4D]/10 text-[#B5FF4D]">ACTIVE</span>

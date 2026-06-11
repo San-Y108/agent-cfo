@@ -61,7 +61,7 @@ export function CardSplitter() {
   return (
     <section
       ref={scrollContainerRef}
-      className="w-full h-full py-16 px-6 border rounded-3xl relative overflow-hidden border-white/10 bg-neutral-900/60 backdrop-blur-xl"
+      className="w-full h-full py-16 px-6 border rounded-3xl relative overflow-hidden border-white/18 bg-neutral-900/80 backdrop-blur-xl"
     >
       <div className="absolute top-0 right-0 w-80 h-80 bg-[#B5FF4D]/5 rounded-full blur-3xl pointer-events-none" />
       <div className="absolute bottom-0 left-0 w-80 h-80 bg-blue-500/5 rounded-full blur-3xl pointer-events-none" />
@@ -74,7 +74,7 @@ export function CardSplitter() {
         <h2 className="text-3xl md:text-4xl font-extrabold tracking-tight mb-4 text-white">
           {t("cardSplitter.title")}
         </h2>
-        <p className="text-sm md:text-base text-white/50">
+        <p className="text-sm md:text-base text-white/75">
           {t("cardSplitter.subtitle")}
         </p>
       </div>
@@ -94,7 +94,7 @@ export function CardSplitter() {
                 </div>
                 <span className="text-[9px] font-mono px-2 py-0.5 rounded bg-[#B5FF4D]/10 text-[#B5FF4D] border border-[#B5FF4D]/20 font-bold">ACTIVE</span>
               </div>
-              <div className="mt-8 flex justify-between font-mono text-[10px] text-white/50">
+              <div className="mt-8 flex justify-between font-mono text-[10px] text-white/75">
                 <span>Spent: <strong className="text-white">$20</strong></span>
                 <span>Limit: <strong className="text-white">$50</strong></span>
               </div>
@@ -107,8 +107,8 @@ export function CardSplitter() {
                 RECIPIENT: <span className="text-white/80">0xAlice123...12</span>
               </div>
               <div className="flex gap-1">
-                <span className="text-[9px] bg-white/5 px-1.5 py-0.5 rounded text-white/60 font-semibold font-mono">Sepolia</span>
-                <span className="text-[9px] bg-white/5 px-1.5 py-0.5 rounded text-white/60 font-semibold font-mono font-bold">100% Secure</span>
+                <span className="text-[9px] bg-white/5 px-1.5 py-0.5 rounded text-white font-semibold font-mono">Sepolia</span>
+                <span className="text-[9px] bg-white/5 px-1.5 py-0.5 rounded text-white font-semibold font-mono font-bold">100% Secure</span>
               </div>
             </div>
           </motion.div>
@@ -116,7 +116,7 @@ export function CardSplitter() {
           {/* CARD B: Charlie */}
           <motion.div
             style={{ y: cardBY, rotate: cardBRotate, zIndex: cardProgress > 22 ? 25 : 9 }}
-            className="absolute w-80 h-52 bg-gradient-to-br from-neutral-900 via-neutral-950 to-[#0D0D0D] border border-white/10 rounded-xl p-5 shadow-xl flex flex-col justify-between text-left"
+            className="absolute w-80 h-52 bg-gradient-to-br from-neutral-900 via-neutral-950 to-[#0D0D0D] border border-white/18 rounded-xl p-5 shadow-xl flex flex-col justify-between text-left"
           >
             <div>
               <div className="flex justify-between items-start">
@@ -126,7 +126,7 @@ export function CardSplitter() {
                 </div>
                 <span className="text-[9px] font-mono px-2 py-0.5 rounded bg-pink-500/10 text-pink-400 border border-pink-500/20 font-bold">LIMITED</span>
               </div>
-              <div className="mt-8 flex justify-between font-mono text-[10px] text-white/50">
+              <div className="mt-8 flex justify-between font-mono text-[10px] text-white/75">
                 <span>Spent: <strong className="text-white">$10</strong></span>
                 <span>Limit: <strong className="text-white">$30</strong></span>
               </div>
@@ -145,7 +145,7 @@ export function CardSplitter() {
           {/* CARD C: Data API */}
           <motion.div
             style={{ x: cardCX, y: cardCY, rotate: cardCRotate, zIndex: cardProgress > 22 ? 20 : 8 }}
-            className="absolute w-80 h-52 bg-gradient-to-br from-slate-950 to-neutral-900 border border-white/10 rounded-xl p-5 shadow-lg flex flex-col justify-between text-left"
+            className="absolute w-80 h-52 bg-gradient-to-br from-slate-950 to-neutral-900 border border-white/18 rounded-xl p-5 shadow-lg flex flex-col justify-between text-left"
           >
             <div>
               <div className="flex justify-between items-start">
@@ -155,7 +155,7 @@ export function CardSplitter() {
                 </div>
                 <span className="text-[9px] font-mono px-2 py-0.5 rounded bg-blue-500/10 text-blue-400 border border-blue-500/20 font-bold">METERED</span>
               </div>
-              <div className="mt-8 flex justify-between font-mono text-[10px] text-white/50">
+              <div className="mt-8 flex justify-between font-mono text-[10px] text-white/75">
                 <span>Spent: <strong className="text-white">$5</strong></span>
                 <span>Limit: <strong className="text-white">$10</strong></span>
               </div>
@@ -167,7 +167,7 @@ export function CardSplitter() {
               <div className="text-[9px] font-mono text-white/40">
                 RECIPIENT: <span className="text-white/80">0xDataAPI12...de</span>
               </div>
-              <span className="text-[9px] bg-white/5 px-1.5 py-0.5 rounded text-white/50 font-bold font-mono">Auto Relayed</span>
+              <span className="text-[9px] bg-white/5 px-1.5 py-0.5 rounded text-white/90 font-bold font-mono">Auto Relayed</span>
             </div>
           </motion.div>
 
@@ -194,7 +194,7 @@ export function CardSplitter() {
               </div>
             </div>
 
-            <div className="font-mono text-xs tracking-wider text-white/80 relative z-10">••••  ••••  ••••  90A8</div>
+            <div className="font-mono text-xs tracking-wider text-white relative z-10">••••  ••••  ••••  90A8</div>
 
             <div className="flex items-center justify-between relative z-10 pt-3 border-t border-white/5">
               <div className="text-[8px] font-mono text-white/40">

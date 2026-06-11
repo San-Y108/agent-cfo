@@ -235,7 +235,7 @@ def test_demo_sample_returns_non_mutating_payment_plan_request():
     assert sample["mode"] == "mock-demo"
     assert sample["externalSystemTouched"] is False
     assert sample["paymentPlanRequest"]["budgetRule"]["allowedToken"] == "USDC"
-    assert len(sample["paymentPlanRequest"]["contributions"]) == 3
+    assert len(sample["paymentPlanRequest"]["contributions"]) == 4
     assert "0xBob" not in sample["paymentPlanRequest"]["budgetRule"]["whitelist"]
     assert store.next_plan_id() == "plan_demo_001"
 

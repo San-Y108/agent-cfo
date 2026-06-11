@@ -13,6 +13,8 @@ import {
   ShieldCheck,
 } from "lucide-react";
 import { useApp } from "@/lib/i18n/context";
+import { HolographicButton } from "@/components/ui/holographic-button";
+import { GradientOrb } from "@/components/ui/aceternity/background";
 
 const CORAL = "#FB7185";
 const CORAL_LIGHT = "#F43F5E";
@@ -20,11 +22,11 @@ const LIME = "#B5FF4D";
 
 /* ─── 5 rule categories (PipelineShowcase big-number style) ─── */
 const RULES = [
-  { num: "01", titleKey: "risk.1.title", bodyKey: "risk.1.body", color: "#5EEAD4" },
-  { num: "02", titleKey: "risk.2.title", bodyKey: "risk.2.body", color: "#FB7185" },
-  { num: "03", titleKey: "risk.3.title", bodyKey: "risk.3.body", color: "#B5FF4D" },
-  { num: "04", titleKey: "risk.4.title", bodyKey: "risk.4.body", color: "#60A5FA" },
-  { num: "05", titleKey: "risk.5.title", bodyKey: "risk.5.body", color: "#C084FC" },
+  { num: "0x1A", titleKey: "risk.1.title", bodyKey: "risk.1.body", color: "#5EEAD4" },
+  { num: "0x2B", titleKey: "risk.2.title", bodyKey: "risk.2.body", color: "#FB7185" },
+  { num: "0x3C", titleKey: "risk.3.title", bodyKey: "risk.3.body", color: "#B5FF4D" },
+  { num: "0x4D", titleKey: "risk.4.title", bodyKey: "risk.4.body", color: "#60A5FA" },
+  { num: "0x5E", titleKey: "risk.5.title", bodyKey: "risk.5.body", color: "#C084FC" },
 ];
 
 interface WhitelistItem {
@@ -204,7 +206,10 @@ export default function PolicyPage() {
   };
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-6 space-y-6 relative">
+      {/* ─── Ambient orb: Policy = coral ─── */}
+      <GradientOrb color="coral" className="-top-32 -right-32" />
+
       {/* ── Header ── */}
       <motion.div
         initial={{ opacity: 0, y: 12 }}
@@ -214,7 +219,6 @@ export default function PolicyPage() {
         <div>
           <h2
             className="text-xl font-bold tracking-tight text-fg"
-            style={{ fontFamily: "Inter, sans-serif" }}
           >
             {t("console.policy.title" as any)}
           </h2>
@@ -242,7 +246,7 @@ export default function PolicyPage() {
             />
             <span
               className="block text-[42px] font-bold leading-none tracking-tighter opacity-[0.15] group-hover:opacity-[0.25] transition-opacity"
-              style={{ color: rule.color, fontFamily: "Inter, sans-serif" }}
+              style={{ color: rule.color }}
             >
               {rule.num}
             </span>
@@ -273,13 +277,14 @@ export default function PolicyPage() {
                   {t("console.policy.whitelistDesc" as any)}
                 </p>
               </div>
-              <button
+              <HolographicButton
                 onClick={() => setIsAddingItem(true)}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold border border-border-token dark:border-white/[0.08] bg-surface-2 dark:bg-white/[0.05] hover:bg-surface-hover dark:hover:bg-white/[0.08] transition-colors text-fg cursor-pointer"
+                variant="cyan"
+                size="sm"
+                icon={<Plus className="w-3.5 h-3.5" />}
               >
-                <Plus className="w-3.5 h-3.5" />
                 {t("console.policy.registerBtn" as any)}
-              </button>
+              </HolographicButton>
             </div>
 
             <div className="overflow-x-auto">
@@ -442,15 +447,17 @@ export default function PolicyPage() {
               />
             </div>
 
-            <button
+            <HolographicButton
               type="submit"
+              variant="coral"
+              size="sm"
               disabled={isSaving}
-              className="w-full py-2.5 rounded-lg text-xs font-bold transition-all cursor-pointer bg-accent hover:brightness-95 text-accent-fg disabled:opacity-60"
+              className="w-full"
             >
               {isSaving
                 ? t("console.policy.syncing" as any)
                 : t("console.policy.confirmPolicyBtn" as any)}
-            </button>
+            </HolographicButton>
           </form>
 
           <AnimatePresence>
@@ -541,19 +548,21 @@ export default function PolicyPage() {
                 </div>
 
                 <div className="flex justify-end gap-2.5 pt-2">
-                  <button
+                  <HolographicButton
                     type="button"
                     onClick={() => setIsAddingItem(false)}
-                    className="px-4 py-2 border border-border-token dark:border-white/[0.08] text-xs font-bold rounded-lg bg-surface-2 dark:bg-white/[0.03] hover:bg-surface-hover dark:hover:bg-white/[0.06] text-fg-muted transition-colors cursor-pointer"
+                    variant="cyan"
+                    size="sm"
                   >
                     {lang === "zh" ? "取消" : "Cancel"}
-                  </button>
-                  <button
+                  </HolographicButton>
+                  <HolographicButton
                     type="submit"
-                    className="px-4 py-2 text-xs font-bold rounded-lg bg-accent hover:brightness-95 text-accent-fg transition-all cursor-pointer"
+                    variant="coral"
+                    size="sm"
                   >
                     {lang === "zh" ? "确立注册" : "Confirm Registry"}
-                  </button>
+                  </HolographicButton>
                 </div>
               </form>
             </motion.div>

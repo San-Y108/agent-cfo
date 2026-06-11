@@ -195,8 +195,11 @@ export function PipelineShowcase() {
   );
 
   return (
-    <div id="workflow" className="relative w-full">
-      {/* ─── Intro headline (vertical scroll-in) ────────────────────────── */}
+    <>
+      {/* Non-pinned marker for nav IntersectionObserver (GSAP pin breaks #workflow detection) */}
+      <div id="workflow-marker" className="h-px w-full" aria-hidden="true" />
+      <div id="workflow" className="relative w-full">
+        {/* ─── Intro headline (vertical scroll-in) ────────────────────────── */}
       <div className="mx-auto max-w-6xl px-5 pb-12 pt-32 text-center lg:px-10 lg:pt-40">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -223,7 +226,7 @@ export function PipelineShowcase() {
             to <span className="text-[#B5FF4D]">audit trail</span>.
           </h2>
           <p
-            className="mx-auto mt-7 max-w-2xl text-base leading-relaxed text-white/55 md:text-lg"
+            className="mx-auto mt-7 max-w-2xl text-base leading-relaxed text-white md:text-lg"
             style={{ fontFamily: "Inter, sans-serif" }}
           >
             One visible loop, five stages. Scroll on — each stage pans into view.
@@ -248,7 +251,7 @@ export function PipelineShowcase() {
           </div>
 
           {/* Scroll cue */}
-          <div className="mt-10 flex flex-col items-center gap-2 text-white/35">
+          <div className="mt-10 flex flex-col items-center gap-2 text-white/60">
             <span
               className="text-[10px] uppercase tracking-[0.25em]"
               style={{ fontFamily: "'Courier New', Courier, monospace" }}
@@ -276,7 +279,7 @@ export function PipelineShowcase() {
 
         {/* Stage counter (top right) */}
         <div
-          className="absolute right-6 top-6 z-30 flex items-baseline gap-1 text-white/50 lg:right-10 lg:top-10"
+          className="absolute right-6 top-6 z-30 flex items-baseline gap-1 text-white/90 lg:right-10 lg:top-10"
           style={{ fontFamily: "'Courier New', Courier, monospace" }}
         >
           <span
@@ -319,6 +322,7 @@ export function PipelineShowcase() {
         </div>
       </section>
     </div>
+  </>
   );
 }
 
@@ -338,7 +342,7 @@ function Panel({ stage, index }: { stage: Stage; index: number }) {
           fontFamily: "Inter, sans-serif",
           fontSize: "clamp(14rem, 36vw, 32rem)",
           color: stage.accent,
-          opacity: 0.06,
+          opacity: 0.10,
           letterSpacing: "-0.08em",
           left: isEven ? "-6%" : "auto",
           right: isEven ? "auto" : "-6%",
@@ -399,7 +403,7 @@ function TextBlock({ stage }: { stage: Stage }) {
       </h3>
 
       <p
-        className="mt-6 max-w-md text-sm leading-relaxed text-white/55 md:text-base"
+        className="mt-6 max-w-md text-sm leading-relaxed text-white md:text-base"
         style={{ fontFamily: "Inter, sans-serif" }}
       >
         {stage.body}
@@ -446,7 +450,7 @@ function RecordsMock({ stage }: { stage: Stage }) {
             className="flex items-center gap-2 rounded-[10px] border bg-[#141414] px-2.5 py-2 text-[10px]"
             style={{
               fontFamily: "'Courier New', Courier, monospace",
-              borderColor: "rgba(255,255,255,0.08)",
+              borderColor: "rgba(255,255,255,0.15)",
             }}
           >
             <span style={{ color: stage.accent }}>{s.icon}</span>
@@ -471,7 +475,7 @@ function RecordsMock({ stage }: { stage: Stage }) {
       >
         <div
           className="flex items-center justify-between border-b px-4 py-2.5"
-          style={{ borderColor: "rgba(255,255,255,0.05)", backgroundColor: stage.accentSoft }}
+          style={{ borderColor: "rgba(255,255,255,0.12)", backgroundColor: stage.accentSoft }}
         >
           <span
             className="text-[10px] font-bold uppercase tracking-[0.18em]"
@@ -480,7 +484,7 @@ function RecordsMock({ stage }: { stage: Stage }) {
             Payment plan · 4 entries
           </span>
           <span
-            className="text-[10px] text-white/40"
+            className="text-[10px] text-white/65"
             style={{ fontFamily: "'Courier New', Courier, monospace" }}
           >
             50 USDC budget
@@ -490,13 +494,13 @@ function RecordsMock({ stage }: { stage: Stage }) {
           <div
             key={r.name}
             className={`flex items-center justify-between px-4 py-2.5 text-xs ${
-              i !== planRows.length - 1 ? "border-b border-white/[0.04]" : ""
+              i !== planRows.length - 1 ? "border-b border-white/[0.10]" : ""
             }`}
             style={{ fontFamily: "'Courier New', Courier, monospace" }}
           >
             <div className="min-w-0 flex-1 truncate">
               <span className="text-white/85">{r.name}</span>
-              <span className="text-white/35"> — {r.reason}</span>
+              <span className="text-white/60"> — {r.reason}</span>
             </div>
             <span className="ml-3 font-semibold" style={{ color: stage.accent }}>
               {r.amount}
@@ -525,7 +529,7 @@ function RiskMock({ stage }: { stage: Stage }) {
     <div className="grid gap-3">
       <div className="flex items-center justify-between">
         <div
-          className="text-[10px] font-semibold uppercase tracking-[0.18em] text-white/45"
+          className="text-[10px] font-semibold uppercase tracking-[0.18em] text-white/70"
           style={{ fontFamily: "'Courier New', Courier, monospace" }}
         >
           5 gates · 4 pass · 1 block
@@ -553,7 +557,7 @@ function RiskMock({ stage }: { stage: Stage }) {
               style={{
                 fontFamily: "'Courier New', Courier, monospace",
                 backgroundColor: blocked ? stage.accentSoft : "#141414",
-                borderColor: blocked ? stage.accentBorder : "rgba(255,255,255,0.06)",
+                borderColor: blocked ? stage.accentBorder : "rgba(255,255,255,0.12)",
               }}
             >
               <div className="flex flex-col">
@@ -563,7 +567,7 @@ function RiskMock({ stage }: { stage: Stage }) {
                 >
                   {g.name}
                 </span>
-                <span className="text-[10px] text-white/40">{g.detail}</span>
+                <span className="text-[10px] text-white/65">{g.detail}</span>
               </div>
               <div
                 className="flex h-6 w-6 items-center justify-center rounded-full"
@@ -617,7 +621,7 @@ function ApprovalMock({ stage }: { stage: Stage }) {
                 style={{ fontFamily: "'Courier New', Courier, monospace" }}
               >
                 <span className="text-white/85">{q.name}</span>
-                <span className="text-white/55">{q.amount}</span>
+                <span className="text-white/80">{q.amount}</span>
               </div>
             ))}
           </div>
@@ -642,10 +646,10 @@ function ApprovalMock({ stage }: { stage: Stage }) {
               style={{ fontFamily: "'Courier New', Courier, monospace" }}
             >
               <span className="text-white/85">bob.eth</span>
-              <span className="text-white/55">15 USDC</span>
+              <span className="text-white/80">15 USDC</span>
             </div>
             <div
-              className="mt-1 text-[10px] text-white/35"
+              className="mt-1 text-[10px] text-white/60"
               style={{ fontFamily: "'Courier New', Courier, monospace" }}
             >
               reason: not in whitelist
@@ -668,7 +672,7 @@ function ApprovalMock({ stage }: { stage: Stage }) {
       </button>
 
       <p
-        className="text-center text-[10px] text-white/35"
+        className="text-center text-[10px] text-white/60"
         style={{ fontFamily: "'Courier New', Courier, monospace" }}
       >
         human-in-the-loop · no autonomous transfers
@@ -695,7 +699,7 @@ function WalletMock({ stage }: { stage: Stage }) {
     >
       <div
         className="flex items-center justify-between border-b px-5 py-3"
-        style={{ borderColor: "rgba(255,255,255,0.05)", backgroundColor: stage.accentSoft }}
+        style={{ borderColor: "rgba(255,255,255,0.12)", backgroundColor: stage.accentSoft }}
       >
         <div className="flex items-center gap-2">
           <Wallet className="h-4 w-4" style={{ color: stage.accent }} />
@@ -721,16 +725,16 @@ function WalletMock({ stage }: { stage: Stage }) {
           <div
             key={t.hash}
             className={`flex items-center justify-between px-5 py-3 ${
-              i !== txs.length - 1 ? "border-b border-white/[0.04]" : ""
+              i !== txs.length - 1 ? "border-b border-white/[0.10]" : ""
             }`}
             style={{ fontFamily: "'Courier New', Courier, monospace" }}
           >
             <div className="flex items-center gap-3">
-              <Hash className="h-3 w-3 text-white/35" />
+              <Hash className="h-3 w-3 text-white/60" />
               <span className="text-xs font-semibold text-white/90">{t.hash}</span>
             </div>
             <div className="flex items-center gap-3">
-              <span className="text-[11px] text-white/45">→ {t.to}</span>
+              <span className="text-[11px] text-white/70">→ {t.to}</span>
               <span
                 className="rounded-md border px-2 py-0.5 text-[10px] font-bold"
                 style={{
@@ -747,7 +751,7 @@ function WalletMock({ stage }: { stage: Stage }) {
       </div>
 
       <div
-        className="border-t border-white/[0.04] px-5 py-2.5 text-center text-[9px] text-white/35"
+        className="border-t border-white/[0.10] px-5 py-2.5 text-center text-[9px] text-white/60"
         style={{ fontFamily: "'Courier New', Courier, monospace" }}
       >
         AI does not hold keys · policy boundary enforced by Cobo CAW
@@ -767,7 +771,7 @@ function AuditMock({ stage }: { stage: Stage }) {
       style={{ borderColor: stage.accentBorder }}
     >
       <div
-        className="flex items-center justify-between border-b border-white/[0.05] px-5 py-3"
+        className="flex items-center justify-between border-b border-white/[0.10] px-5 py-3"
         style={{ backgroundColor: stage.accentSoft }}
       >
         <div className="flex items-center gap-2">
@@ -777,7 +781,7 @@ function AuditMock({ stage }: { stage: Stage }) {
           </span>
         </div>
         <span
-          className="text-[10px] text-white/40"
+          className="text-[10px] text-white/65"
           style={{ fontFamily: "'Courier New', Courier, monospace" }}
         >
           audit-2026-06-09
@@ -791,9 +795,9 @@ function AuditMock({ stage }: { stage: Stage }) {
           <KPI label="Settled" value="35 USDC" color={stage.accent} />
         </div>
 
-        <div className="rounded-[10px] border border-white/[0.06] bg-[#141414]">
+        <div className="rounded-[10px] border border-white/[0.12] bg-[#141414]">
           <div
-            className="border-b border-white/[0.05] px-3.5 py-2 text-[10px] font-bold uppercase tracking-[0.16em] text-white/45"
+            className="border-b border-white/[0.10] px-3.5 py-2 text-[10px] font-bold uppercase tracking-[0.16em] text-white/70"
             style={{ fontFamily: "'Courier New', Courier, monospace" }}
           >
             On-chain proof
@@ -805,7 +809,7 @@ function AuditMock({ stage }: { stage: Stage }) {
                 className="flex items-center justify-between py-1 text-[11px]"
                 style={{ fontFamily: "'Courier New', Courier, monospace" }}
               >
-                <span className="text-white/75">{h}</span>
+                <span className="text-white/90">{h}</span>
                 <span style={{ color: "#5EEAD4" }}>✓</span>
               </div>
             ))}
@@ -813,12 +817,12 @@ function AuditMock({ stage }: { stage: Stage }) {
         </div>
 
         <div className="grid grid-cols-2 gap-2 text-[11px]" style={{ fontFamily: "'Courier New', Courier, monospace" }}>
-          <div className="rounded-md border border-white/[0.06] bg-[#141414] px-3 py-2">
-            <span className="text-white/40">risk </span>
+          <div className="rounded-md border border-white/[0.12] bg-[#141414] px-3 py-2">
+            <span className="text-white/65">risk </span>
             <span className="text-white/90">4 pass · 1 block</span>
           </div>
-          <div className="rounded-md border border-white/[0.06] bg-[#141414] px-3 py-2">
-            <span className="text-white/40">approver </span>
+          <div className="rounded-md border border-white/[0.12] bg-[#141414] px-3 py-2">
+            <span className="text-white/65">approver </span>
             <span className="text-white/90">human</span>
           </div>
         </div>
@@ -842,9 +846,9 @@ function AuditMock({ stage }: { stage: Stage }) {
 
 function KPI({ label, value, color }: { label: string; value: string; color: string }) {
   return (
-    <div className="rounded-[10px] border border-white/[0.06] bg-[#141414] px-3 py-2.5">
+    <div className="rounded-[10px] border border-white/[0.12] bg-[#141414] px-3 py-2.5">
       <div
-        className="text-[9px] font-bold uppercase tracking-[0.18em] text-white/40"
+        className="text-[9px] font-bold uppercase tracking-[0.18em] text-white/65"
         style={{ fontFamily: "'Courier New', Courier, monospace" }}
       >
         {label}
