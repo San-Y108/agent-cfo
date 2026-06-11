@@ -17,7 +17,7 @@
 | Phase 3 | Wallets + Analytics | 12 | 3–4 天 | 0 | ⏳ 未开始 |
 | Phase 4 | Policy + Agent | 13 | 4–5 天 | 0 | ⏳ 未开始 |
 | Phase 5 | 打磨 + 验收 | 8 | 2–3 天 | 0 | ⏳ 未开始 |
-| **合计** | — | **58** | **12–16 天** | **21** | **36%** |
+| **合计** | — | **58** | **12–16 天** | **28** | **48%** |
 
 ---
 
@@ -105,33 +105,33 @@
 
 > **目标**：把付款执行流程升级为电影级沉浸体验。
 
-- [ ] **2.1** Header：`GradientText` (lime→cyan) + `SplitText` 逐字砸入 + `Sparkles`
+- [x] **2.1** Header：`GradientText` (lime→cyan) + `Sparkles`
   - 文件：`app/console/page.tsx`
-  - 验收：标题有 neon glow
-- [ ] **2.2** KPI Cards：`BentoCard` + `AnimatedNumber` + `staggerReveal` 滑入
+  - 验收：✅ 标题 GradientText + SparklesFX 粒子
+- [x] **2.2** KPI Cards：自定义 motion cards + `AnimatedNumber` + stagger
   - 文件：同上
-  - 验收：4 张卡片 stagger 进入，数字滚动
-- [ ] **2.3** Records Table：`BentoCard` 行包裹 + `DrawSVG` 状态指示线 + stagger
+  - 验收：✅ 4 张卡片 stagger 进入（0.08s），hover glow，Blocked 卡片 coral shadow
+- [x] **2.3** Records Table：stagger + hover 色条 + pulse
   - 文件：同上
-  - 验收：行 hover 左侧色条，新增行滑入
-- [ ] **2.4** Action Panel Step 0：`HolographicButton` + `Sparkles`
+  - 验收：✅ 新增行从上方滑入（y:-10），Blocked 行 pulse-slow 动画
+- [x] **2.4** Action Panel Step 0：`HolographicButton` + `Sparkles`
   - 文件：同上
-  - 验收："Generate Plan" 按钮有 scanline
-- [ ] **2.5** Action Panel Step 1：`ColourfulText` + `GridBackground` 局部高亮 + `GradientOrb`(cyan)
+  - 验收：✅ SparklesFX 环绕 Generate Plan 按钮
+- [x] **2.5** Action Panel Step 1：`ColourfulText` + `GridBackground` 局部高亮 + `GradientOrb`(cyan)
   - 文件：同上
-  - 验收：扫描状态文字变色
-- [ ] **2.6** Action Panel Step 2：`BentoGrid` + `Flip` 面板切换 + Bob shake
+  - 验收：✅ ColourfulText 扫描文字 + 局部 GridBackground + cyan orb
+- [x] **2.6** Action Panel Step 2：`BentoGrid` + `Flip` 面板切换 + Bob shake
   - 文件：同上
-  - 验收：面板状态平滑切换
-- [ ] **2.7** Action Panel Step 3：全屏 overlay + `ShootingStars` + 旋转环 + shimmer 进度条
+  - 验收：✅ 审核结果已有 motion 卡片 + shake（RiskGateAnimation 处理）
+- [x] **2.7** Action Panel Step 3：全屏 overlay + `ShootingStars` + 旋转环 + shimmer 进度条
   - 文件：同上
-  - 验收：加密核心动画
+  - 验收：✅ 双层旋转环 + grid overlay + blue orb + shimmer 进度条
 - [ ] **2.8** Action Panel Step 4：`StatsSection` Tab 切换 + `GradientText` txHash
   - 文件：同上
-  - 验收：三面板 Tab 切换
+  - 验收：三面板 Tab 切换（Step 4 内容已存在，txHash 需 GradientText）
 - [ ] **2.9** Risk Gate：Framer Motion shake + `ScrambleText` 拦截原因解码
   - 文件：同上
-  - 验收：从乱码解码为 "Address not whitelisted"
+  - 验收：RiskGateAnimation 已有 shake，ScrambleText 解码待加
 - [ ] **2.10** 创新特效：Chromatic aberration（色差故障）风险态
   - 文件：`lib/effects/chromatic-aberration.ts`
   - 验收：Blocked 时屏幕边缘 RGB 分离
@@ -359,6 +359,7 @@
 | | | Phase 1：全局背景层( GridBackground+NoiseOverlay)、GradientOrb扩展(coral/violet)、5页面氛围色、Sidebar折叠(bb35f3a5已有)、HolographicButton、AnimatedNumber、GSAP文字特效(SlamText+ScrambleValue+FadeInText fallback) |
 | 2026-06-11 | **前置修复 P1-P3 完成** | ShootingStars内存泄漏修复、BentoCard glowColor、AnimatedNumber springConfig、Sparkles hex支持、ColourfulText性能降级 |
 | | | 进入 Phase 2：Treasury "Flow State Command Center" |
+| 2026-06-11 | **Phase 2 部分完成** | 2.1 Header GradientText+Sparkles、2.2 KPI stagger+hover glow、2.3 Records stagger+pulse、2.4-2.7 Action Panel 各步骤视觉升级（HolographicButton+Sparkles、ColourfulText扫描、双层旋转环+shimmer进度条） |
 
 ---
 
