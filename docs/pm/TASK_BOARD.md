@@ -24,7 +24,7 @@
 | 岗位 | 负责人 | 进度 | 最大卡点 |
 |------|--------|------|----------|
 | 交付/总控 | San-Y108 (严硕) | ✅ repo + 文档已完成 | 物料兜底 + 路演准备 |
-| 后端/Agent | W5W8L9jlu | ✅ P0 + P1 Render + P2 spike + Phase 4C closeout | **demo-sample 缺 Data API（T-076）** + P2 收尾范围已明确（见后端聚焦决策文档） |
+| 后端/Agent | W5W8L9jlu | ✅ P0 + P1 Render + P2 spike + Phase 4C closeout | **🔴 今日生病，T-076/edge case/P0 验证暂由 CAW 代做** |
 | 前端 | Aafff623 | ✅ Landing + Demo + Console + Vercel | PR #1 未合并；real mode 未接入 /demo |
 | 合约/CAW | gitgdut | ✅ API Key + Wallet + 1 笔 testnet tx | **仍缺至少 2 笔 tx 或需调整提交口径** |
 | 物料/设计 | Eloise-qiu | 🔴 **0 产出，已逾期 2 天** | PPT/视频/头图/Logo/截图全部缺失，**今日必须确认产能或启动兜底** |
@@ -96,7 +96,7 @@
 |----|------|--------|------|------|
 | T-050 | 启用/验证真实 CAW mode | opt-in testnet RealCawAdapter skeleton + 1 笔 tx evidence | 6月10日 | ✅ DONE |
 | T-051 | 加入 LLM 生成付款计划 | payment_planner.py (OpenAI) | 6月9日 | ✅ DONE（已实现 OpenAI Structured Outputs） |
-| T-052 | 和前端联调 | 前端能调通 5 个接口 | 6月9日 | 🔵 IN_PROGRESS（线上 real mode 待验证） |
+| T-052 | 和前端联调 | 前端能调通 5 个接口 | 6月9日 | 🔴 BLOCKED（后端同学生病，待恢复） |
 | T-053 | 和 CAW 联调 | 本地 live test 完成 1 笔 | 6月10日 | ✅ DONE（1 笔 testnet evidence） |
 | T-054 | 部署后端到公网 | https://agentcfo-backend.onrender.com | 6月10日 | ✅ DONE |
 | T-055 | SQLite 持久化 | store.py SQLiteStore + 测试 | 6月10日 | ✅ DONE |
@@ -201,8 +201,8 @@ CAW 验证（✅ 1 笔 testnet tx）
 
 | 状态 | 数量 |
 |------|------|
-| 🔴 BLOCKED | 7 |
+| 🔴 BLOCKED | 8 |
 | 🟡 TODO | 21 |
-| 🔵 IN_PROGRESS | 2 |
+| 🔵 IN_PROGRESS | 1 |
 | ✅ DONE | 45 |
 | ❌ CANCELLED | 0 |
