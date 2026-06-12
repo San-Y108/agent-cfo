@@ -72,9 +72,42 @@
   --color-surface-dark: #141414;
   --color-surface-darker: #0a0a0a;
 
+  /* Radius scale — card 16 / control 12 / field 8 / pill */
+  --radius-card: 1rem;
+  --radius-control: 0.75rem;
+  --radius-field: 0.5rem;
+  --radius-pill: 9999px;
+
   /* Font families — Geist + Geist Mono */
   --font-sans: var(--font-geist), system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   --font-mono: var(--font-mono), ui-monospace, "SF Mono", "Cascadia Code", monospace;
+
+  /* ==========================================================
+     Command Deck HUD tokens — Phase 6
+     ========================================================== */
+  --hud-prefix: var(--fg-subtle);
+  --hud-value: var(--fg);
+  --hud-lime: #B5FF4D;
+  --hud-cyan: #5EEAD4;
+  --hud-coral: #FB7185;
+  --hud-amber: #F59E0B;
+  --hud-blue: #60A5FA;
+  --hud-violet: #C084FC;
+
+  --glow-lime: rgba(181, 255, 77, 0.22);
+  --glow-cyan: rgba(94, 234, 212, 0.22);
+  --glow-coral: rgba(251, 113, 133, 0.22);
+  --glow-amber: rgba(245, 158, 11, 0.22);
+  --glow-blue: rgba(96, 165, 250, 0.22);
+  --glow-violet: rgba(192, 132, 252, 0.22);
+
+  /* Command Deck HUD colors */
+  --color-hud-lime: var(--hud-lime);
+  --color-hud-cyan: var(--hud-cyan);
+  --color-hud-coral: var(--hud-coral);
+  --color-hud-amber: var(--hud-amber);
+  --color-hud-blue: var(--hud-blue);
+  --color-hud-violet: var(--hud-violet);
 }
 
 :root {
@@ -168,6 +201,37 @@ body {
   animation: pulse-slow 3s ease-in-out infinite;
 }
 
+/* Command Deck scanline — horizontal sweep with a traveling highlight */
+@keyframes scanline-sweep {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+@keyframes scanline-pulse {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 0.8; }
+}
+.animate-scanline {
+  animation: scanline-sweep 3s linear infinite, scanline-pulse 2s ease-in-out infinite;
+}
+
+/* Status pulse dot — breathing status indicator */
+@keyframes status-pulse {
+  0%, 100% { opacity: 1; transform: scale(1); box-shadow: 0 0 0 0 currentColor; }
+  50% { opacity: 0.75; transform: scale(1.05); box-shadow: 0 0 8px 2px currentColor; }
+}
+.animate-status-pulse {
+  animation: status-pulse 2s ease-in-out infinite;
+}
+
+/* Corner glow subtle drift */
+@keyframes corner-glow-drift {
+  0%, 100% { transform: translate(0, 0) scale(1); opacity: 0.6; }
+  50% { transform: translate(4%, -4%) scale(1.05); opacity: 0.8; }
+}
+.animate-corner-glow {
+  animation: corner-glow-drift 8s ease-in-out infinite;
+}
+
 /* Shimmer animation for progress bars */
 @keyframes shimmer {
   0% { background-position: 200% 0; }
@@ -252,6 +316,40 @@ body {
 .animate-marquee:hover {
   animation-play-state: paused;
 }
+
+/* TEAM letter gradient shimmer */
+@keyframes team-letter-shimmer {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.animate-team-letter {
+  animation: team-letter-shimmer 3s ease-in-out infinite;
+}
+
+/* Text breathing — subtle scale + brightness pulse */
+@keyframes breathe {
+  0%, 100% {
+    transform: scale(1);
+    filter: brightness(1);
+  }
+  50% {
+    transform: scale(1.012);
+    filter: brightness(1.08);
+  }
+}
+
+.animate-breathe {
+  animation: breathe 4s ease-in-out infinite;
+  will-change: transform, filter;
+}
+
+.animate-breathe-delay-1 { animation-delay: 0.5s; }
+.animate-breathe-delay-2 { animation-delay: 1s; }
+.animate-breathe-delay-3 { animation-delay: 1.5s; }
+.animate-breathe-delay-4 { animation-delay: 2s; }
+.animate-breathe-delay-5 { animation-delay: 2.5s; }
 
 /* Custom scrollbar */
 ::-webkit-scrollbar {

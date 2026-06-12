@@ -21,6 +21,8 @@ import {
   Clock,
   Users,
   Upload,
+  ChevronDown,
+  ChevronUp,
 } from "lucide-react";
 import { useApp } from "@/lib/i18n/context";
 import { MOCK_RECORDS, MOCK_RULES } from "@/lib/demo/console-mock";
@@ -28,15 +30,22 @@ import { ContributorRecord, PaymentPlanItem } from "@/lib/types/console";
 import type { CawStatus } from "@/lib/api/types";
 import { isMockMode } from "@/lib/api/client";
 import { RecordsImport } from "@/components/console/records-import";
-import { StatCard } from "@/components/ui/aceternity/stats-section";
 import { AnimatedNumber } from "@/components/ui/aceternity/animated-number";
 import { GradientOrb } from "@/components/ui/aceternity/background";
 import { GradientText, ColourfulText } from "@/components/ui/aceternity/colourful-text";
 import { Sparkles as SparklesFX } from "@/components/ui/aceternity/sparkles";
 import { GridBackground } from "@/components/ui/aceternity/background";
+import { BentoCard } from "@/components/ui/aceternity/bento-grid";
 import { HolographicButton } from "@/components/ui/holographic-button";
 import { FlowTimeline } from "@/components/console/flow-timeline";
 import { RiskGateAnimation } from "@/components/console/risk-gate-anim";
+import {
+  HudLabel,
+  StatusPulse,
+  Scanline,
+  CornerGlow,
+  FrostedPanel,
+} from "@/components/console/command-deck";
 
 /* =============================================================================
  * BUSINESS LOGIC HELPERS
@@ -238,287 +247,194 @@ export default function TreasuryPage() {
         </motion.div>
       </div>
 
-      {/* ─── Flow Timeline ─── */}
-      <div className="px-6 lg:px-10 pb-6">
-        <FlowTimeline
-          currentStep={step}
-          steps={[
-            { label: _("生成计划", "Generate Plan"), icon: <Sparkles className="w-4 h-4" /> },
-            { label: _("风险检查", "Risk Check"), icon: <ShieldAlert className="w-4 h-4" /> },
-            { label: _("人工确认", "Approval"), icon: <CheckCircle className="w-4 h-4" /> },
-            { label: _("执行付款", "Execution"), icon: <Send className="w-4 h-4" /> },
-            { label: _("审计报告", "Audit"), icon: <FileSpreadsheet className="w-4 h-4" /> },
-          ]}
-        />
-      </div>
-
-      {/* ─── Risk Gate Alert ─── */}
-      <AnimatePresence>
-        {totalBlocked > 0 && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: "auto" }}
-            exit={{ opacity: 0, height: 0 }}
-            className="px-6 lg:px-10 pb-4 overflow-hidden"
-          >
-            <RiskGateAnimation
-              isBlocked={true}
-              reason={_(
-                `${blockedItems.length} 笔付款被拦截（共 ${totalBlocked} USDC）：${blockedItems[0]?.riskReason}`,
-                `${blockedItems.length} payment(s) blocked (${totalBlocked} USDC): ${blockedItems[0]?.riskReason}`
-              )}
-            />
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* ─── KPI Cards ─── */}
-      <div className="px-6 lg:px-10 pb-8">
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-          {[
-            {
-              label: _("本月预算", "Monthly Budget"),
-              value: <AnimatedNumber value={totalBudget} />,
-              subtext: "USDC",
-              icon: <Wallet className="w-4 h-4" />,
-              accent: "#B5FF4D",
-            },
-            {
-              label: _("待付款", "Pending"),
-              value: <AnimatedNumber value={totalPending} />,
-              subtext: "USDC",
-              icon: <Clock className="w-4 h-4" />,
-              accent: "#5EEAD4",
-            },
-            {
-              label: _("已拦截", "Blocked"),
-              value: <AnimatedNumber value={totalBlocked} />,
-              subtext: "USDC",
-              icon: <ShieldAlert className="w-4 h-4" />,
-              accent: "#FB7185",
-              isBlocked: true,
-            },
-            {
-              label: _("预算剩余", "Remaining"),
-              value: <AnimatedNumber value={budgetRemaining} />,
-              subtext: "USDC",
-              icon: <TrendingUp className="w-4 h-4" />,
-              accent: "#60A5FA",
-            },
-          ].map((card, i) => (
-            <motion.div
-              key={card.label}
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: i * 0.08, ease: [0.16, 1, 0.3, 1] }}
-              className={cn(
-                "group relative rounded-2xl border bg-surface p-5 overflow-hidden",
-                "hover:border-white/[0.12] transition-colors duration-300",
-                card.isBlocked
-                  ? "border-[#FB7185]/20 shadow-[0_0_20px_rgba(251,113,133,0.06)]"
-                  : "border-white/[0.06]"
-              )}
-            >
-              {/* Hover glow */}
-              <div
-                className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
-                style={{
-                  background: `radial-gradient(circle at 50% 0%, ${card.accent}08, transparent 70%)`,
-                }}
-              />
-              <div className="relative z-10 flex items-center justify-between">
-                <span className="text-[11px] uppercase tracking-wider text-fg-subtle font-mono">
-                  {card.label}
-                </span>
-                <div style={{ color: card.accent }}>{card.icon}</div>
-              </div>
-              <div className="relative z-10 mt-3 text-2xl font-bold font-mono tabular-nums" style={{ color: card.accent }}>
-                {card.value}
-              </div>
-              <div className="relative z-10 mt-1 text-[11px] text-fg-subtle font-mono">{card.subtext}</div>
-            </motion.div>
-          ))}
-        </div>
-      </div>
-
-      {/* ─── Main Content ─── */}
+      {/* ─── Command Deck Layout ─── */}
       <div className="px-6 lg:px-10 pb-10">
-        <div className="grid grid-cols-1 xl:grid-cols-5 gap-6">
-          {/* Left: Records Table */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          {/* Left: KPI satellite column */}
           <motion.div
-            className="xl:col-span-3 space-y-4"
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
+            className="lg:col-span-2 grid grid-cols-2 lg:grid-cols-1 gap-3 content-start"
+            initial={{ opacity: 0, x: -16 }}
+            animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.5, delay: 0.1 }}
           >
-            <div className="rounded-xl border border-border-token dark:border-white/[0.06] bg-surface dark:bg-white/[0.02] overflow-hidden">
-              {/* Table header */}
-              <div className="px-5 py-4 border-b border-border-token dark:border-white/[0.06] flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <FileSpreadsheet className="w-4 h-4 text-fg-muted" />
-                  <span className="text-sm font-semibold text-fg">
-                    {_("贡献记录", "Contribution Records")}
-                  </span>
-                  <span className="text-[11px] text-fg-subtle font-mono px-2 py-0.5 rounded-full bg-surface-2 dark:bg-white/[0.04]">
-                    {records.length}
-                  </span>
-                </div>
-                <div className="flex items-center gap-3">
-                  <button
-                    onClick={() => setImportOpen(true)}
-                    className="text-[11px] text-fg-subtle hover:text-fg transition-colors flex items-center gap-1 cursor-pointer"
-                  >
-                    <Upload className="w-3 h-3" />
-                    {_("批量导入", "Import")}
-                  </button>
-                  <button
-                    onClick={reset}
-                    className="text-[11px] text-fg-subtle hover:text-fg transition-colors flex items-center gap-1 cursor-pointer"
-                  >
-                    <RefreshCw className="w-3 h-3" />
-                    {_("重置", "Reset")}
-                  </button>
-                </div>
-              </div>
-
-              {/* Table */}
-              <div className="overflow-x-auto">
-                <table className="w-full text-left text-[13px]">
-                  <thead className="bg-surface-2 dark:bg-white/[0.03]">
-                    <tr className="border-b border-border-token dark:border-white/[0.06] text-fg-muted font-mono uppercase text-[11px]">
-                      <th className="py-3 px-5">{_("收款人", "Recipient")}</th>
-                      <th className="py-3 px-5">{_("任务", "Task")}</th>
-                      <th className="py-3 px-5 text-right">USDC</th>
-                      <th className="py-3 px-5 text-center">{_("状态", "Status")}</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-border-token dark:divide-white/[0.04]">
-                    {records.map((r, i) => {
-                      const planItem = plan.find((p) => p.record.id === r.id);
-                      const status = planItem?.status;
-                      const isBlocked = status === "Blocked";
-                      const isReady = status === "Ready";
-                      const isExecuted = status === "Executed";
-                      return (
-                        <motion.tr
-                          key={r.id}
-                          initial={{ opacity: 0, y: -10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ delay: i * 0.03, duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
-                          className={cn(
-                            "group transition-colors",
-                            "hover:bg-surface-2/50 dark:hover:bg-white/[0.02]",
-                            isBlocked && "bg-[#FB7185]/[0.03] animate-pulse-slow"
-                          )}
-                        >
-                          <td
-                            className={cn(
-                              "py-3 px-5 border-l-[2px] border-transparent group-hover:border-l-[2px] transition-colors",
-                              isReady && "group-hover:border-[#B5FF4D]",
-                              isBlocked && "group-hover:border-[#FB7185]",
-                              isExecuted && "group-hover:border-emerald-500",
-                              !status && "group-hover:border-fg-subtle"
-                            )}
-                          >
-                            <div className="font-medium text-fg text-[13px]">{r.name}</div>
-                            <div className="font-mono text-[11px] text-fg-subtle">
-                              {r.wallet.substring(0, 8)}...{r.wallet.substring(r.wallet.length - 6)}
-                            </div>
-                          </td>
-                          <td className="py-3 px-5 text-fg-muted text-[13px]">{r.task}</td>
-                          <td className="py-3 px-5 text-right font-mono font-semibold text-fg text-[13px]">
-                            {r.amount}
-                          </td>
-                          <td className="py-3 px-5 text-center">
-                            {status ? (
-                              <StatusBadge status={status} riskReason={planItem?.riskReason} />
-                            ) : (
-                              <span className="text-[11px] text-fg-subtle">—</span>
-                            )}
-                          </td>
-                        </motion.tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
-
-              {/* Add form */}
-              <div className="px-5 py-4 border-t border-border-token dark:border-white/[0.06] bg-surface-2/30 dark:bg-white/[0.01]">
-                <form onSubmit={handleAdd} className="flex flex-wrap items-end gap-2">
-                  <div className="flex-1 min-w-[120px]">
-                    <label className="block text-[10px] text-fg-subtle font-mono uppercase mb-1">
-                      {_("姓名", "Name")}
-                    </label>
-                    <input
-                      placeholder={_("例如 Alice", "e.g. Alice")}
-                      value={newName}
-                      onChange={(e) => setNewName(e.target.value)}
-                      className="w-full px-3 py-2 text-[13px] rounded-lg border border-border-token dark:border-white/[0.08] bg-surface dark:bg-white/[0.03] text-fg outline-none focus:border-[#B5FF4D] transition-colors"
-                    />
-                  </div>
-                  <div className="flex-[2] min-w-[180px]">
-                    <label className="block text-[10px] text-fg-subtle font-mono uppercase mb-1">
-                      {_("钱包地址", "Wallet")}
-                    </label>
-                    <input
-                      placeholder="0x..."
-                      value={newWallet}
-                      onChange={(e) => setNewWallet(e.target.value)}
-                      className="w-full px-3 py-2 text-[13px] rounded-lg border border-border-token dark:border-white/[0.08] bg-surface dark:bg-white/[0.03] text-fg outline-none focus:border-[#B5FF4D] transition-colors"
-                    />
-                  </div>
-                  <div className="w-24">
-                    <label className="block text-[10px] text-fg-subtle font-mono uppercase mb-1">
-                      USDC
-                    </label>
-                    <input
-                      type="number"
-                      value={newAmount}
-                      onChange={(e) => setNewAmount(Number(e.target.value))}
-                      className="w-full px-3 py-2 text-[13px] rounded-lg border border-border-token dark:border-white/[0.08] bg-surface dark:bg-white/[0.03] text-fg outline-none focus:border-[#B5FF4D] transition-colors"
-                    />
-                  </div>
-                  <button
-                    type="submit"
-                    className="px-4 py-2 text-[13px] font-semibold rounded-lg border border-border-token dark:border-white/[0.08] bg-surface dark:bg-white/[0.03] hover:bg-surface-hover text-fg transition-colors cursor-pointer flex items-center gap-1.5"
-                  >
-                    <Plus className="w-3.5 h-3.5" />
-                    {_("添加", "Add")}
-                  </button>
-                </form>
-              </div>
-            </div>
+            {[
+              {
+                prefix: "BUDGET::",
+                value: <AnimatedNumber value={totalBudget} />,
+                subtext: "USDC",
+                color: "lime" as const,
+                accent: "#B5FF4D",
+              },
+              {
+                prefix: "PENDING::",
+                value: <AnimatedNumber value={totalPending} />,
+                subtext: "USDC",
+                color: "cyan" as const,
+                accent: "#5EEAD4",
+              },
+              {
+                prefix: "BLOCKED::",
+                value: <AnimatedNumber value={totalBlocked} />,
+                subtext: "USDC",
+                color: "coral" as const,
+                accent: "#FB7185",
+              },
+              {
+                prefix: "REMAIN::",
+                value: <AnimatedNumber value={budgetRemaining} />,
+                subtext: "USDC",
+                color: "blue" as const,
+                accent: "#60A5FA",
+              },
+            ].map((card, i) => (
+              <motion.div
+                key={card.prefix}
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4, delay: i * 0.06 }}
+              >
+                <FrostedPanel glowColor={card.color} sheen className="p-4">
+                  <HudLabel prefix={card.prefix} value={card.value} color={card.color} size="sm" />
+                  <div className="mt-1 text-[10px] text-fg-subtle font-mono">{card.subtext}</div>
+                </FrostedPanel>
+              </motion.div>
+            ))}
           </motion.div>
 
-          {/* Right: Action Panel */}
+          {/* Center: Payment Pipeline Hero */}
           <motion.div
-            className="xl:col-span-2 space-y-4"
+            className="lg:col-span-7"
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.2 }}
           >
-            <ActionPanel
-              step={step}
-              plan={plan}
+            <FrostedPanel
+              glowColor="lime"
+              scanline
+              sheen
+              className="relative min-h-[520px] p-6"
+            >
+              <CornerGlow color="lime" className="-top-24 -right-24" intensity={0.2} />
+
+              {/* HUD header */}
+              <div className="relative z-10 flex items-start justify-between mb-6">
+                <div>
+                  <HudLabel
+                    prefix="PIPELINE::"
+                    value={[
+                      _("待机", "IDLE"),
+                      _("扫描", "SCAN"),
+                      _("审核", "REVIEW"),
+                      _("执行", "EXEC"),
+                      _("完成", "DONE"),
+                    ][step]}
+                    color="lime"
+                    size="md"
+                  />
+                  <h2 className="mt-1 text-lg font-semibold text-fg">
+                    {_("付款执行管道", "Payment Execution Pipeline")}
+                  </h2>
+                </div>
+                <StatusPulse
+                  color={step === 3 ? "coral" : step === 4 ? "cyan" : "lime"}
+                  label={[
+                    "STANDBY",
+                    "SCANNING",
+                    "REVIEW",
+                    "EXECUTING",
+                    "AUDIT",
+                  ][step]}
+                  size="sm"
+                />
+              </div>
+
+              <Scanline color="lime" className="relative z-10 mb-6" />
+
+              {/* Flow Timeline */}
+              <div className="relative z-10 mb-6">
+                <FlowTimeline
+                  currentStep={step}
+                  steps={[
+                    { label: _("生成计划", "Generate Plan"), icon: <Sparkles className="w-4 h-4" /> },
+                    { label: _("风险检查", "Risk Check"), icon: <ShieldAlert className="w-4 h-4" /> },
+                    { label: _("人工确认", "Approval"), icon: <CheckCircle className="w-4 h-4" /> },
+                    { label: _("执行付款", "Execution"), icon: <Send className="w-4 h-4" /> },
+                    { label: _("审计报告", "Audit"), icon: <FileSpreadsheet className="w-4 h-4" /> },
+                  ]}
+                />
+              </div>
+
+              {/* Embedded Action Panel */}
+              <div className="relative z-10">
+                <ActionPanel
+                  step={step}
+                  plan={plan}
+                  records={records}
+                  totalReady={totalReady}
+                  totalBlocked={totalBlocked}
+                  isExecuting={isExecuting}
+                  onGenerate={handleGenerate}
+                  onExecute={handleExecute}
+                  onReset={reset}
+                  cawStatuses={cawStatuses}
+                  cawRefreshing={cawRefreshing}
+                  onRefreshCaw={handleRefreshCawStatus}
+                  p2Visible={p2Visible}
+                  p2Loading={p2Loading}
+                  lang={lang}
+                  _={_}
+                  embedded
+                />
+              </div>
+            </FrostedPanel>
+          </motion.div>
+
+          {/* Right: Records satellite */}
+          <motion.div
+            className="lg:col-span-3"
+            initial={{ opacity: 0, x: 16 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.5, delay: 0.3 }}
+          >
+            <RecordsSatellite
               records={records}
-              totalReady={totalReady}
-              totalBlocked={totalBlocked}
-              isExecuting={isExecuting}
-              onGenerate={handleGenerate}
-              onExecute={handleExecute}
+              plan={plan}
+              onImport={() => setImportOpen(true)}
               onReset={reset}
-              cawStatuses={cawStatuses}
-              cawRefreshing={cawRefreshing}
-              onRefreshCaw={handleRefreshCawStatus}
-              p2Visible={p2Visible}
-              p2Loading={p2Loading}
-              lang={lang}
+              onAdd={handleAdd}
+              newName={newName}
+              setNewName={setNewName}
+              newWallet={newWallet}
+              setNewWallet={setNewWallet}
+              newAmount={newAmount}
+              setNewAmount={setNewAmount}
               _={_}
             />
           </motion.div>
         </div>
       </div>
+
+      {/* ─── Risk Gate floating satellite ─── */}
+      <AnimatePresence>
+        {totalBlocked > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 20, scale: 0.96 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 20, scale: 0.96 }}
+            className="px-6 lg:px-10 pb-6 flex justify-end"
+          >
+            <FrostedPanel glowColor="coral" scanline className="w-full max-w-md p-4">
+              <RiskGateAnimation
+                isBlocked={true}
+                reason={_(
+                  `${blockedItems.length} 笔付款被拦截（共 ${totalBlocked} USDC）：${blockedItems[0]?.riskReason}`,
+                  `${blockedItems.length} payment(s) blocked (${totalBlocked} USDC): ${blockedItems[0]?.riskReason}`
+                )}
+              />
+            </FrostedPanel>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* ─── Batch import modal ─── */}
       <RecordsImport
@@ -531,50 +447,151 @@ export default function TreasuryPage() {
 }
 
 /* =============================================================================
- * KPI CARD
+ * RECORDS SATELLITE — Right-side compact record list for Command Deck.
+ * Shows Top 3 by default; expandable to full list.
  * ===========================================================================*/
 
-function KpiCard({
-  label,
-  value,
-  icon,
-  accent,
-  delay,
+function RecordsSatellite({
+  records,
+  plan,
+  onImport,
+  onReset,
+  onAdd,
+  newName,
+  setNewName,
+  newWallet,
+  setNewWallet,
+  newAmount,
+  setNewAmount,
+  _,
 }: {
-  label: string;
-  value: string;
-  icon: React.ReactNode;
-  accent: string;
-  delay: number;
+  records: ContributorRecord[];
+  plan: PaymentPlanItem[];
+  onImport: () => void;
+  onReset: () => void;
+  onAdd: (e: React.FormEvent) => void;
+  newName: string;
+  setNewName: (v: string) => void;
+  newWallet: string;
+  setNewWallet: (v: string) => void;
+  newAmount: number;
+  setNewAmount: (v: number) => void;
+  _: (zh: string, en: string) => string;
 }) {
+  const [expanded, setExpanded] = React.useState(false);
+  const displayRecords = expanded ? records : records.slice(0, 3);
+
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 12 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4, delay }}
-      className="rounded-xl border border-border-token dark:border-white/[0.06] bg-surface dark:bg-white/[0.02] p-4"
-    >
-      <div className="flex items-center justify-between mb-3">
-        <span className="text-[11px] text-fg-subtle font-mono uppercase tracking-wider">
-          {label}
-        </span>
-        <div
-          className="w-7 h-7 rounded-lg flex items-center justify-center"
-          style={{
-            backgroundColor: `${accent}15`,
-            color: accent,
-          }}
-        >
-          {icon}
+    <FrostedPanel glowColor="cyan" sheen className="h-full flex flex-col overflow-hidden">
+      {/* Header */}
+      <div className="px-4 py-3 border-b border-white/[0.06] flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <FileSpreadsheet className="w-4 h-4 text-hud-cyan" />
+          <span className="text-sm font-semibold text-fg">
+            {_("贡献记录", "Records")}
+          </span>
+          <span className="text-[10px] text-fg-subtle font-mono px-1.5 py-0.5 rounded-full bg-white/[0.04]">
+            {records.length}
+          </span>
+        </div>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={onImport}
+            className="text-[10px] text-fg-subtle hover:text-fg transition-colors"
+            title={_("批量导入", "Import")}
+          >
+            <Upload className="w-3 h-3" />
+          </button>
+          <button
+            onClick={onReset}
+            className="text-[10px] text-fg-subtle hover:text-fg transition-colors"
+            title={_("重置", "Reset")}
+          >
+            <RefreshCw className="w-3 h-3" />
+          </button>
         </div>
       </div>
-      <div
-        className="text-xl font-bold tracking-tight"
-        style={{ color: accent }}
-      >
-        {value}
+
+      {/* Records list */}
+      <div className="flex-1 overflow-y-auto p-2 space-y-1">
+        {displayRecords.map((r, i) => {
+          const planItem = plan.find((p) => p.record.id === r.id);
+          const status = planItem?.status;
+          return (
+            <motion.div
+              key={r.id}
+              initial={{ opacity: 0, x: 8 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: i * 0.04, duration: 0.3 }}
+              className={cn(
+                "p-2.5 rounded-lg border border-white/[0.04] bg-white/[0.02] hover:bg-white/[0.04] transition-colors",
+                status === "Blocked" && "border-hud-coral/20 bg-hud-coral/[0.03]"
+              )}
+            >
+              <div className="flex items-center justify-between">
+                <span className="text-[13px] font-medium text-fg truncate">{r.name}</span>
+                <span className="text-[12px] font-mono font-semibold text-fg">{r.amount}</span>
+              </div>
+              <div className="flex items-center justify-between mt-1">
+                <span className="text-[10px] font-mono text-fg-subtle truncate max-w-[120px]">
+                  {r.wallet.substring(0, 6)}...{r.wallet.substring(r.wallet.length - 4)}
+                </span>
+                {status ? (
+                  <StatusBadge status={status} riskReason={planItem?.riskReason} />
+                ) : (
+                  <span className="text-[10px] text-fg-subtle">—</span>
+                )}
+              </div>
+            </motion.div>
+          );
+        })}
+
+        {records.length > 3 && (
+          <button
+            onClick={() => setExpanded((v) => !v)}
+            className="w-full py-2 text-[10px] text-fg-subtle hover:text-fg transition-colors flex items-center justify-center gap-1"
+          >
+            {expanded ? (
+              <>{_("收起", "Collapse")} <ChevronUp className="w-3 h-3" /></>
+            ) : (
+              <>{_("查看全部", "View All")} ({records.length - 3}) <ChevronDown className="w-3 h-3" /></>
+            )}
+          </button>
+        )}
       </div>
-    </motion.div>
+
+      {/* Compact add form */}
+      <div className="p-3 border-t border-white/[0.06] bg-white/[0.02]">
+        <form onSubmit={onAdd} className="space-y-2">
+          <input
+            placeholder={_("姓名", "Name")}
+            value={newName}
+            onChange={(e) => setNewName(e.target.value)}
+            className="w-full px-2.5 py-1.5 text-[12px] rounded-field border border-white/[0.08] bg-surface/50 text-fg outline-none focus:border-hud-cyan transition-colors"
+          />
+          <input
+            placeholder="0x..."
+            value={newWallet}
+            onChange={(e) => setNewWallet(e.target.value)}
+            className="w-full px-2.5 py-1.5 text-[12px] rounded-field border border-white/[0.08] bg-surface/50 text-fg outline-none focus:border-hud-cyan transition-colors"
+          />
+          <div className="flex gap-2">
+            <input
+              type="number"
+              value={newAmount}
+              onChange={(e) => setNewAmount(Number(e.target.value))}
+              className="flex-1 px-2.5 py-1.5 text-[12px] rounded-field border border-white/[0.08] bg-surface/50 text-fg outline-none focus:border-hud-cyan transition-colors"
+            />
+            <button
+              type="submit"
+              className="px-3 py-1.5 text-[12px] font-semibold rounded-field border border-white/[0.08] bg-surface hover:bg-surface-hover text-fg transition-colors flex items-center gap-1"
+            >
+              <Plus className="w-3 h-3" />
+            </button>
+          </div>
+        </form>
+      </div>
+    </FrostedPanel>
   );
 }
 
@@ -645,6 +662,7 @@ function ActionPanel({
   p2Loading,
   lang,
   _,
+  embedded = false,
 }: {
   step: number;
   plan: PaymentPlanItem[];
@@ -662,26 +680,16 @@ function ActionPanel({
   p2Loading: boolean;
   lang: string;
   _: (zh: string, en: string) => string;
+  embedded?: boolean;
 }) {
   const readyCount = plan.filter((i) => i.status === "Ready").length;
   const blockedCount = plan.filter((i) => i.status === "Blocked").length;
   const executedCount = plan.filter((i) => i.status === "Executed").length;
 
-  return (
-    <div className="rounded-xl border border-border-token dark:border-white/[0.06] bg-surface dark:bg-white/[0.02] overflow-hidden">
-      {/* Panel header */}
-      <div className="px-5 py-4 border-b border-border-token dark:border-white/[0.06]">
-        <div className="flex items-center gap-2">
-          <Sparkles className="w-4 h-4 text-[#B5FF4D]" />
-          <span className="text-sm font-semibold text-fg">
-            {_("执行操作", "Actions")}
-          </span>
-        </div>
-      </div>
-
-      <div className="p-5 space-y-4">
-        {/* Step 0: Generate Plan */}
-        {step === 0 && (
+  const content = (
+    <>
+      {/* Step 0: Generate Plan */}
+      {step === 0 && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -786,55 +794,71 @@ function ActionPanel({
             animate={{ opacity: 1 }}
             className="space-y-4"
           >
-            {/* Summary */}
+            {/* Summary — BentoGrid */}
             <div className="grid grid-cols-2 gap-2">
-              <div className="p-3 rounded-lg border border-success/20 bg-success/5 text-center">
+              <BentoCard index={0} padding="sm" glowColor="#34d399" className="text-center">
                 <div className="text-lg font-bold text-success">{readyCount}</div>
                 <div className="text-[10px] text-fg-subtle uppercase">{_("通过", "Passed")}</div>
-              </div>
-              <div className="p-3 rounded-lg border border-[#FB7185]/20 bg-[#FB7185]/5 text-center">
+              </BentoCard>
+              <BentoCard index={1} padding="sm" glowColor="#FB7185" className="text-center">
                 <div className="text-lg font-bold" style={{ color: "#FB7185" }}>{blockedCount}</div>
                 <div className="text-[10px] text-fg-subtle uppercase">{_("拦截", "Blocked")}</div>
-              </div>
+              </BentoCard>
             </div>
 
-            {/* Plan items */}
-            <div className="space-y-2 max-h-[280px] overflow-y-auto pr-1">
-              {plan.map((item, i) => (
-                <motion.div
-                  key={item.record.id}
-                  initial={{ opacity: 0, x: -8 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: i * 0.05 }}
-                  className={`p-3 rounded-lg border flex items-center justify-between ${
-                    item.status === "Blocked"
-                      ? "bg-[#FB7185]/5 border-[#FB7185]/15"
-                      : "bg-success/5 border-success/15"
-                  }`}
-                >
-                  <div className="flex items-center gap-2.5">
-                    {item.status === "Blocked" ? (
-                      <ShieldAlert className="w-4 h-4 text-[#FB7185]" />
-                    ) : (
-                      <CheckCircle className="w-4 h-4 text-success" />
-                    )}
-                    <div>
-                      <div className="text-[13px] font-medium text-fg">{item.record.name}</div>
-                      <div className="text-[10px] text-fg-subtle">
-                        {item.status === "Blocked"
-                          ? item.riskReason
-                          : _("通过所有检查", "All checks passed")}
+            {/* Plan items — Flip-style layout reorder: Blocked sorts to top */}
+            <motion.div layout className="space-y-2 max-h-[280px] overflow-y-auto pr-1">
+              {[...plan]
+                .sort((a, b) => (a.status === "Blocked" ? 0 : 1) - (b.status === "Blocked" ? 0 : 1))
+                .map((item, i) => {
+                  const isBlocked = item.status === "Blocked";
+                  return (
+                    <motion.div
+                      layout
+                      key={item.record.id}
+                      initial={{ opacity: 0, x: -8 }}
+                      animate={
+                        isBlocked
+                          ? { opacity: 1, x: [-8, 0, -3, 3, -3, 0] }
+                          : { opacity: 1, x: 0 }
+                      }
+                      transition={{
+                        delay: i * 0.05,
+                        x: isBlocked
+                          ? { delay: i * 0.05 + 0.15, duration: 0.4 }
+                          : { delay: i * 0.05 },
+                        layout: { type: "spring", stiffness: 420, damping: 32 },
+                      }}
+                      className={`p-3 rounded-field border flex items-center justify-between ${
+                        isBlocked
+                          ? "bg-[#FB7185]/5 border-[#FB7185]/15"
+                          : "bg-success/5 border-success/15"
+                      }`}
+                    >
+                      <div className="flex items-center gap-2.5">
+                        {isBlocked ? (
+                          <ShieldAlert className="w-4 h-4 text-[#FB7185]" />
+                        ) : (
+                          <CheckCircle className="w-4 h-4 text-success" />
+                        )}
+                        <div>
+                          <div className="text-[13px] font-medium text-fg">{item.record.name}</div>
+                          <div className="text-[10px] text-fg-subtle">
+                            {isBlocked
+                              ? item.riskReason
+                              : _("通过所有检查", "All checks passed")}
+                          </div>
+                        </div>
                       </div>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <div className="text-[13px] font-mono font-semibold text-fg">
-                      {item.record.amount} USDC
-                    </div>
-                  </div>
-                </motion.div>
-              ))}
-            </div>
+                      <div className="text-right">
+                        <div className="text-[13px] font-mono font-semibold text-fg">
+                          {item.record.amount} USDC
+                        </div>
+                      </div>
+                    </motion.div>
+                  );
+                })}
+            </motion.div>
 
             {/* Risk warning */}
             {blockedCount > 0 && (
@@ -1098,7 +1122,25 @@ function ActionPanel({
             </HolographicButton>
           </motion.div>
         )}
+      </>
+  );
+
+  if (embedded) {
+    return <div className="p-5 space-y-4">{content}</div>;
+  }
+
+  return (
+    <div className="rounded-xl border border-border-token dark:border-white/[0.06] bg-surface dark:bg-white/[0.02] overflow-hidden">
+      {/* Panel header */}
+      <div className="px-5 py-4 border-b border-border-token dark:border-white/[0.06]">
+        <div className="flex items-center gap-2">
+          <Sparkles className="w-4 h-4 text-[#B5FF4D]" />
+          <span className="text-sm font-semibold text-fg">
+            {_("执行操作", "Actions")}
+          </span>
+        </div>
       </div>
+      <div className="p-5 space-y-4">{content}</div>
     </div>
   );
 }

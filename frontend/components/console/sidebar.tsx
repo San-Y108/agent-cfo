@@ -62,10 +62,14 @@ const NAV_ITEMS = [
 
 export function ConsoleSidebar({
   open,
-  setOpen,
+  onToggle,
+  onHoverExpand,
+  onHoverCollapse,
 }: {
   open: boolean;
-  setOpen: (v: boolean) => void;
+  onToggle: () => void;
+  onHoverExpand: () => void;
+  onHoverCollapse: () => void;
 }) {
   const pathname = usePathname();
   const { t } = useApp();
@@ -80,7 +84,7 @@ export function ConsoleSidebar({
       >
         {/* Collapse toggle */}
         <button
-          onClick={() => setOpen(!open)}
+          onClick={onToggle}
           className={cn(
             "absolute -right-3 top-6 z-50 flex h-6 w-6 items-center justify-center rounded-full border border-white/[0.08] bg-surface text-fg-subtle opacity-0 transition-opacity hover:text-fg",
             "group-hover/aside:opacity-100"
@@ -98,11 +102,18 @@ export function ConsoleSidebar({
         {/* Brand */}
         <div className="flex items-center gap-2 px-5 pt-6 pb-4 h-16"
         >
-          <div className="h-5 w-6 flex-shrink-0 rounded-bl-sm rounded-br-lg rounded-tl-lg rounded-tr-sm bg-lime-400"
+          <img
+            src="/logo.png"
+            alt="AgentCFO"
+            className="h-7 w-auto flex-shrink-0 object-contain"
+            style={{ filter: "drop-shadow(0 0 6px rgba(181,255,77,0.5))" }}
           />
           <motion.span
             animate={{ opacity: open ? 1 : 0, display: open ? "inline" : "none" }}
-            className="whitespace-pre text-lg font-bold tracking-tight text-fg"
+            className="whitespace-pre text-lg font-bold tracking-tight bg-gradient-to-r from-lime-400 via-cyan-400 to-violet-400 bg-clip-text text-transparent"
+            style={{
+              filter: "drop-shadow(0 0 8px rgba(181,255,77,0.45)) drop-shadow(0 0 16px rgba(94,234,212,0.25))",
+            }}
           >
             AgentCFO
           </motion.span>
@@ -202,7 +213,7 @@ export function ConsoleSidebar({
         >
           <div className="flex items-center justify-between"
           >
-            <ThemeLanguageToggle variant="app" />
+            <ThemeLanguageToggle variant="hero" />
             <Link
               href="/"
               className="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs text-fg-subtle transition-colors hover:bg-white/5 hover:text-fg"
@@ -213,6 +224,15 @@ export function ConsoleSidebar({
           </div>
         </motion.div>
       </motion.aside>
+
+      {/* Left-edge hover peek zone — only active when collapsed */}
+      {!open && (
+        <div
+          className="fixed left-0 top-0 bottom-0 z-[35] w-2 hover:w-4 transition-all"
+          onMouseEnter={onHoverExpand}
+          onMouseLeave={onHoverCollapse}
+        />
+      )}
 
       {/* Mobile Sidebar (unchanged logic) */}
       <MobileSidebar />

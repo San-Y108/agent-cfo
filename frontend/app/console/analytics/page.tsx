@@ -1,52 +1,43 @@
 "use client";
 
 import React, { useState } from "react";
+import dynamic from "next/dynamic";
 import { motion } from "framer-motion";
 import {
   TrendingUp,
   Zap,
   CheckCircle,
-  Info,
   BarChart3,
-  PieChartIcon,
 } from "lucide-react";
-import {
-  ResponsiveContainer,
-  AreaChart,
-  Area,
-  XAxis,
-  YAxis,
-  Tooltip,
-  Cell,
-  PieChart,
-  Pie as RePie,
-  Sector,
-} from "recharts";
-
-// Recharts typings lag the runtime API; cast to avoid strict-mode false positives.
-const PieAny = RePie as any;
 
 import { useApp } from "@/lib/i18n/context";
 import { AnimatedNumber } from "@/components/ui/aceternity/animated-number";
-import { GradientOrb } from "@/components/ui/aceternity/background";
 import { GradientText } from "@/components/ui/aceternity/colourful-text";
 import { Sparkles as SparklesFX } from "@/components/ui/aceternity/sparkles";
 import { BentoCard } from "@/components/ui/aceternity/bento-grid";
 import { GridBackground } from "@/components/ui/aceternity/background";
+import {
+  HudLabel,
+  StatusPulse,
+  Scanline,
+  CornerGlow,
+  FrostedPanel,
+} from "@/components/console/command-deck";
+
+// Client-only Recharts wrappers — avoids SSR container-size warnings.
+const AreaChartCard = dynamic(
+  () => import("@/components/console/charts/area-chart-card").then((m) => m.AreaChartCard),
+  { ssr: false }
+);
+
+const PieChartCard = dynamic(
+  () => import("@/components/console/charts/pie-chart-card").then((m) => m.PieChartCard),
+  { ssr: false }
+);
 
 const VIOLET = "#C084FC";
-const VIOLET_LIGHT = "#A855F7";
 
-/* ─── 5 stage colours for pie chart ─── */
-const STAGE_COLORS = [
-  "#5EEAD4", // cyan
-  "#FB7185", // coral
-  "#B5FF4D", // lime
-  "#60A5FA", // blue
-  "#C084FC", // violet
-];
-
-/* ─── Mock data (mirrors AI Studio shape) ─── */
+/* ─── Mock data shared with KPI banner and chart components ─── */
 const MONTHLY_VOLUME_DATA = [
   { month: "Jan", volume: 8400, gasSaved: 120, transactions: 14 },
   { month: "Feb", volume: 10200, gasSaved: 180, transactions: 19 },
@@ -55,73 +46,6 @@ const MONTHLY_VOLUME_DATA = [
   { month: "May", volume: 19800, gasSaved: 380, transactions: 34 },
   { month: "Jun", volume: 24500, gasSaved: 490, transactions: 41 },
 ];
-
-const RECIPIENT_TYPE_DATA = [
-  { name: "Core Contributors", value: 12500 },
-  { name: "QA Testing", value: 5400 },
-  { name: "Community Devs", value: 4300 },
-  { name: "API Nodes", value: 2300 },
-  { name: "Misc", value: 1200 },
-];
-
-const MONTH_NAMES_ZH: Record<string, string> = {
-  Jan: "一月",
-  Feb: "二月",
-  Mar: "三月",
-  Apr: "四月",
-  May: "五月",
-  Jun: "六月",
-};
-
-/* ─── KPI card component ─── */
-function KpiCard({
-  label,
-  value,
-  sub,
-  icon: Icon,
-  delay = 0,
-}: {
-  label: string;
-  value: React.ReactNode;
-  sub: React.ReactNode;
-  icon: React.ElementType;
-  delay?: number;
-}) {
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5, delay }}
-      className="group relative p-5 rounded-xl border border-border-token dark:border-white/[0.06] bg-surface dark:bg-white/[0.03] space-y-2 overflow-hidden transition-colors hover:border-white/[0.12]"
-    >
-      {/* Hover glow */}
-      <div
-        className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
-        style={{
-          background: `radial-gradient(circle at 50% 0%, ${VIOLET}08, transparent 70%)`,
-        }}
-      />
-      <span className="relative z-10 text-[10px] font-mono font-bold uppercase text-fg-muted tracking-wider">
-        {label}
-      </span>
-      <div
-        className="relative z-10 text-3xl font-extrabold tracking-tight tabular-nums"
-        style={{
-          background: `linear-gradient(135deg, ${VIOLET} 0%, ${VIOLET_LIGHT} 100%)`,
-          WebkitBackgroundClip: "text",
-          WebkitTextFillColor: "transparent",
-          backgroundClip: "text",
-        }}
-      >
-        {value}
-      </div>
-      <div className="relative z-10 flex items-center gap-1.5 text-xs text-success font-semibold font-mono">
-        <Icon className="w-3.5 h-3.5" />
-        {sub}
-      </div>
-    </motion.div>
-  );
-}
 
 /* ─── Time-range pill toggle ─── */
 function RangePills({
@@ -162,351 +86,231 @@ function RangePills({
 export default function AnalyticsPage() {
   const { t, lang } = useApp();
   const [activeRange, setActiveRange] = useState<"30d" | "90d" | "1y">("90d");
-  const [activePieIndex, setActivePieIndex] = useState<number | null>(null);
 
   const totalVolume = MONTHLY_VOLUME_DATA.reduce((a, d) => a + d.volume, 0);
   const totalGasSaved = MONTHLY_VOLUME_DATA.reduce((a, d) => a + d.gasSaved, 0);
   const totalTxCount = MONTHLY_VOLUME_DATA.reduce((a, d) => a + d.transactions, 0);
-  const totalPieValue = RECIPIENT_TYPE_DATA.reduce((a, d) => a + d.value, 0);
+
+  const kpis = [
+    {
+      prefix: "VOLUME::",
+      value: <AnimatedNumber value={totalVolume} />,
+      sub: lang === "zh" ? "较上期 +24%" : "+24% vs last period",
+      color: "violet" as const,
+      icon: TrendingUp,
+    },
+    {
+      prefix: "GAS::",
+      value: `$${totalGasSaved.toLocaleString()}`,
+      sub: lang === "zh" ? `批处理节省 ${totalGasSaved * 4} gwei` : `Saved ${totalGasSaved * 4} gwei via batching`,
+      color: "cyan" as const,
+      icon: Zap,
+    },
+    {
+      prefix: "CYCLES::",
+      value: `${totalTxCount}`,
+      sub: lang === "zh" ? "100% 规则合规率" : "100% compliance rate",
+      color: "lime" as const,
+      icon: CheckCircle,
+    },
+    {
+      prefix: "LATENCY::",
+      value: "1.8s",
+      sub: lang === "zh" ? "底层 API 区块同步活跃" : "API block sync active",
+      color: "blue" as const,
+      icon: BarChart3,
+    },
+  ];
 
   return (
-    <div className="p-6 space-y-6 relative">
-      {/* ─── Ambient orb: Analytics = violet ─── */}
-      <GradientOrb color="violet" className="-top-32 -right-32" />
-
-      {/* ── Header + range toggle ── */}
-      <motion.div
-        initial={{ opacity: 0, y: 12 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 p-5 rounded-xl border border-border-token dark:border-white/[0.06] bg-surface-2 dark:bg-white/[0.03]"
-      >
-        <div>
-          <div className="relative inline-block">
-            <GradientText className="text-xl font-bold tracking-tight">
-              {t("console.analytics.title" as any)}
-            </GradientText>
-            <SparklesFX
-              count={6}
-              className="absolute -right-6 -top-1 w-12 h-12"
-              color="#C084FC"
-            />
-          </div>
-          <p className="text-xs mt-1 text-fg-subtle">
-            {t("console.analytics.desc" as any)}
-          </p>
-        </div>
-        <RangePills active={activeRange} onChange={setActiveRange} />
-      </motion.div>
-
-      {/* ── KPI banner ── */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <KpiCard
-          label={t("console.analytics.conducted" as any)}
-          value={<AnimatedNumber value={totalVolume} />}
-          sub={lang === "zh" ? "较上期 +24%" : "+24% vs last period"}
-          icon={TrendingUp}
-          delay={0.05}
-        />
-        <KpiCard
-          label={t("console.analytics.gasSavedTitle" as any)}
-          value={`$${totalGasSaved.toLocaleString()}`}
-          sub={
-            lang === "zh"
-              ? `通过批处理节省了 ${totalGasSaved * 4} gwei`
-              : `Saved ${totalGasSaved * 4} gwei via batching`
-          }
-          icon={Zap}
-          delay={0.1}
-        />
-        <KpiCard
-          label={t("console.analytics.scheduled" as any)}
-          value={`${totalTxCount} ${lang === "zh" ? "个周期" : "Cycles"}`}
-          sub={lang === "zh" ? "100% 规则合规率" : "100% compliance rate"}
-          icon={CheckCircle}
-          delay={0.15}
-        />
-        <KpiCard
-          label={t("console.analytics.latency" as any)}
-          value="1.8s"
-          sub={lang === "zh" ? "底层 API 区块同步活跃" : "API block sync active"}
-          icon={BarChart3}
-          delay={0.2}
-        />
-      </div>
-
-      {/* ── Charts row ── */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Area chart */}
-        <BentoCard
-          index={0}
-          glowColor={VIOLET}
-          className="lg:col-span-2 p-6 space-y-4"
+    <div className="relative w-full min-h-full">
+      {/* ─── Header ─── */}
+      <div className="px-6 py-8 lg:px-10 lg:py-10">
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
         >
-          <div className="flex justify-between items-center border-b border-border-token dark:border-white/[0.06] pb-3">
-            <h3 className="text-sm font-bold flex items-center gap-2 text-fg">
-              <TrendingUp className="w-4 h-4" style={{ color: VIOLET }} />
-              {t("console.analytics.payoutChart" as any)}
-            </h3>
-            <span className="text-xs font-mono text-fg-subtle">
-              {t("console.analytics.chartHover" as any)}
+          <div className="flex items-center gap-3 mb-2">
+            <div className="w-8 h-8 rounded-lg bg-[#C084FC]/10 border border-[#C084FC]/20 flex items-center justify-center">
+              <BarChart3 className="w-4 h-4 text-[#C084FC]" />
+            </div>
+            <span className="text-[11px] font-medium uppercase tracking-[0.18em] text-[#C084FC] font-mono">
+              Performance & Gas
             </span>
           </div>
-
-          <div className="relative h-64 w-full">
-            {/* Faint grid backdrop inside chart */}
-            <div className="absolute inset-0 opacity-[0.02] pointer-events-none">
-              <GridBackground />
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+            <div className="relative inline-block">
+              <GradientText className="text-2xl font-semibold leading-tight tracking-tight">
+                {t("console.analytics.title" as any)}
+              </GradientText>
+              <SparklesFX
+                count={8}
+                className="absolute -right-8 -top-2 w-16 h-16"
+                color="#C084FC"
+              />
             </div>
-            <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={MONTHLY_VOLUME_DATA} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                <defs>
-                  <linearGradient id="colorVolume" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor={VIOLET} stopOpacity={0.4} />
-                    <stop offset="95%" stopColor={VIOLET} stopOpacity={0.02} />
-                  </linearGradient>
-                </defs>
-                <XAxis
-                  dataKey="month"
-                  stroke={VIOLET}
-                  fontSize={11}
-                  tickLine={false}
-                  axisLine={false}
-                  className="text-fg-subtle"
-                  style={{ filter: `drop-shadow(0 0 4px ${VIOLET}40)` }}
-                />
-                <YAxis
-                  stroke={VIOLET}
-                  fontSize={11}
-                  tickLine={false}
-                  axisLine={false}
-                  className="text-fg-subtle"
-                  style={{ filter: `drop-shadow(0 0 4px ${VIOLET}40)` }}
-                />
-                <Tooltip
-                  content={({ active, payload }) => {
-                    if (active && payload && payload.length) {
-                      const data = payload[0].payload as any;
-                      const monthName =
-                        lang === "zh"
-                          ? MONTH_NAMES_ZH[data.month] || data.month
-                          : `${data.month} Payouts`;
-                      return (
-                        <div className="p-3 border rounded-lg shadow-xl text-[11px] font-mono space-y-1 bg-surface dark:bg-[#0b1120] border-border-token dark:border-white/[0.08] text-fg">
-                          <div className="font-bold border-b border-border-token dark:border-white/[0.08] pb-1 mb-1">
-                            {monthName}
-                          </div>
-                          <div>
-                            {lang === "zh" ? "交易额" : "Volume"}:{" "}
-                            <span style={{ color: VIOLET }} className="font-bold">
-                              ${data.volume} USDC
-                            </span>
-                          </div>
-                          <div>
-                            {lang === "zh" ? "交易笔数" : "Transactions"}: <span>{data.transactions}</span>
-                          </div>
-                          <div>
-                            {lang === "zh" ? "节省 Gas" : "Gas saved"}:{" "}
-                            <span className="text-success font-bold">${data.gasSaved}</span>
-                          </div>
-                        </div>
-                      );
-                    }
-                    return null;
-                  }}
-                />
-                <Area
-                  type="monotone"
-                  dataKey="volume"
-                  stroke={VIOLET}
-                  strokeWidth={2.5}
-                  fillOpacity={1}
-                  fill="url(#colorVolume)"
-                  animationDuration={1500}
-                  animationBegin={300}
-                />
-              </AreaChart>
-            </ResponsiveContainer>
+            <RangePills active={activeRange} onChange={setActiveRange} />
           </div>
-
-          <p className="text-[11px] flex items-start gap-1.5 p-3 rounded-lg border border-border-token dark:border-white/[0.06] bg-surface-2 dark:bg-white/[0.02] text-fg-subtle">
-            <Info className="w-4 h-4 shrink-0 mt-0.5" style={{ color: VIOLET }} />
-            <span>{t("console.analytics.chartDesc" as any)}</span>
+          <p className="mt-2 text-sm text-fg-subtle max-w-xl">
+            {t("console.analytics.desc" as any)}
           </p>
-        </BentoCard>
-
-        {/* Pie chart */}
-        <BentoCard
-          index={1}
-          glowColor={VIOLET}
-          className="p-6 flex flex-col justify-between space-y-4"
-        >
-          <div className="border-b border-border-token dark:border-white/[0.06] pb-3">
-            <h3 className="text-sm font-bold text-fg flex items-center gap-2">
-              <PieChartIcon className="w-4 h-4" style={{ color: VIOLET }} />
-              {t("console.analytics.pieTitle" as any)}
-            </h3>
-            <p className="text-[11px] mt-0.5 text-fg-subtle">
-              {t("console.analytics.pieDesc" as any)}
-            </p>
-          </div>
-
-          <div className="relative flex justify-center h-40">
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                  <RePie
-                    data={RECIPIENT_TYPE_DATA}
-                    cx="50%"
-                    cy="50%"
-                    innerRadius={50}
-                    outerRadius={70}
-                    paddingAngle={5}
-                    dataKey="value"
-                    shape={(props: any) => {
-                      const { index, ...rest } = props;
-                      const isActive = activePieIndex === index;
-                      return (
-                        <Sector
-                          {...rest}
-                          index={index}
-                          outerRadius={isActive ? (rest.outerRadius as number) + 8 : rest.outerRadius}
-                          stroke={isActive ? "#ffffff" : "transparent"}
-                          strokeWidth={isActive ? 2 : 0}
-                          style={{
-                            filter: isActive
-                              ? `drop-shadow(0 0 10px ${STAGE_COLORS[index % STAGE_COLORS.length]})`
-                              : undefined,
-                            transition: "all 0.2s ease",
-                          }}
-                        />
-                      );
-                    }}
-                    onMouseEnter={(_data: any, index: number) => setActivePieIndex(index)}
-                    onMouseLeave={() => setActivePieIndex(null)}
-                  />
-              </PieChart>
-            </ResponsiveContainer>
-
-            {/* Center total — AnimatedNumber */}
-            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-              <div className="text-center">
-                <div className="text-[9px] font-mono uppercase text-fg-subtle tracking-wider">
-                  {lang === "zh" ? "总计" : "Total"}
-                </div>
-                <div className="text-lg font-extrabold text-fg tabular-nums">
-                  $<AnimatedNumber value={totalPieValue} />
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            {RECIPIENT_TYPE_DATA.map((entry, idx) => {
-              const zhNames: Record<string, string> = {
-                "Core Contributors": "核心贡献者 / Core Contributors",
-                "QA Testing": "QA 交付物 / QA Testing",
-                "Community Devs": "社区开发者 / Community Devs",
-                "API Nodes": "索引与 Web3 API 节点 / API Nodes",
-                Misc: "其他 / Misc",
-              };
-              const displayLabel = lang === "zh" ? zhNames[entry.name] || entry.name : entry.name;
-              const isActive = activePieIndex === idx;
-              return (
-                <div
-                  key={idx}
-                  className="flex justify-between items-center text-xs rounded-lg px-2 py-1 transition-colors cursor-default hover:bg-white/[0.03]"
-                  onMouseEnter={() => setActivePieIndex(idx)}
-                  onMouseLeave={() => setActivePieIndex(null)}
-                >
-                  <div className="flex items-center gap-1.5 truncate mr-1">
-                    <div
-                      className="w-2.5 h-2.5 rounded-full shrink-0 transition-transform duration-200"
-                      style={{
-                        backgroundColor: STAGE_COLORS[idx % STAGE_COLORS.length],
-                        transform: isActive ? "scale(1.3)" : "scale(1)",
-                        boxShadow: isActive ? `0 0 8px ${STAGE_COLORS[idx % STAGE_COLORS.length]}` : undefined,
-                      }}
-                    />
-                    <span className={`font-medium truncate ${isActive ? "text-fg" : "text-fg-muted"}`}>
-                      {displayLabel}
-                    </span>
-                  </div>
-                  <span className="font-mono font-bold shrink-0 text-fg">
-                    ${entry.value.toLocaleString()}
-                  </span>
-                </div>
-              );
-            })}
-          </div>
-        </BentoCard>
+        </motion.div>
       </div>
 
-      {/* ── Comparison matrix ── */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.45 }}
-        className="rounded-xl border border-border-token dark:border-white/[0.06] bg-surface-2 dark:bg-white/[0.03] p-6"
-      >
-        <h3 className="font-bold text-sm mb-4 flex items-center gap-2 text-fg">
-          <Zap className="w-4 h-4" style={{ color: VIOLET }} />
-          {t("console.analytics.optimalTitle" as any)}
-        </h3>
-
-        <div className="flex md:grid md:grid-cols-3 gap-4 overflow-x-auto snap-x snap-mandatory md:overflow-visible md:snap-none pb-1">
-          {[1, 2, 3].map((i) => {
-            const isWinning = i === 1 || i === 3;
-            return (
-              <BentoCard
-                key={i}
-                index={i}
-                glowColor={VIOLET}
-                title={t(`console.analytics.compare${i}Title` as any) as string}
-                className="snap-start min-w-[280px] md:min-w-0 text-xs"
+      {/* ─── Command Deck Layout ─── */}
+      <div className="px-6 lg:px-10 pb-10">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          {/* Left: KPI satellite column */}
+          <motion.div
+            className="lg:col-span-2 grid grid-cols-2 lg:grid-cols-1 gap-3 content-start"
+            initial={{ opacity: 0, x: -16 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.5, delay: 0.1 }}
+          >
+            {kpis.map((kpi, i) => (
+              <motion.div
+                key={kpi.prefix}
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4, delay: i * 0.06 }}
               >
-                <div className="relative space-y-1.5 pt-1">
-                  {/* Subtle grid backdrop on hover */}
-                  <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none">
-                    <GridBackground />
+                <FrostedPanel glowColor={kpi.color} sheen className="p-4">
+                  <HudLabel prefix={kpi.prefix} value={kpi.value} color={kpi.color} size="sm" />
+                  <div className="mt-2 flex items-center gap-1.5 text-[10px] font-semibold font-mono text-success">
+                    <kpi.icon className="w-3 h-3" />
+                    {kpi.sub}
                   </div>
-                  <div className="relative z-10 flex justify-between font-mono">
-                    <span className="text-fg-subtle">{t(`console.analytics.compare${i}Row1` as any)}</span>
-                    <span className="text-fg">
-                      {i === 1 ? "0.05 ETH" : i === 2 ? "~3 Hours" : lang === "zh" ? "无风控约束" : "No compliance"}
-                    </span>
-                  </div>
-                  <div className="relative z-10 flex justify-between font-mono">
-                    <span className="text-fg">{t(`console.analytics.compare${i}Row2` as any)}</span>
-                    <span
-                      className="relative font-bold inline-block"
-                      style={{ color: i === 1 ? "#34d399" : i === 2 ? VIOLET : "#34d399" }}
-                    >
-                      {i === 1
-                        ? "0.008 ETH"
-                        : i === 2
-                        ? lang === "zh"
-                          ? "即时签发 (毫秒级)"
-                          : "Instant (Seconds)"
-                        : lang === "zh"
-                        ? "100% 策略验证"
-                        : "100% Guard enforcement"}
-                      {isWinning && (
-                        <SparklesFX
-                          count={4}
-                          color="#34d399"
-                          className="absolute -inset-1"
-                        />
-                      )}
-                    </span>
-                  </div>
+                </FrostedPanel>
+              </motion.div>
+            ))}
+          </motion.div>
+
+          {/* Center: Area Chart Hero */}
+          <motion.div
+            className="lg:col-span-7"
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+          >
+            <FrostedPanel
+              glowColor="violet"
+              scanline
+              sheen
+              className="relative min-h-[520px] p-6"
+            >
+              <CornerGlow color="violet" className="-top-24 -right-24" intensity={0.2} />
+
+              <div className="relative z-10 flex items-start justify-between mb-4">
+                <div>
+                  <HudLabel prefix="METRIC::" value="LIVING VOLUME" color="violet" size="md" />
+                  <h2 className="mt-1 text-lg font-semibold text-fg">
+                    {t("console.analytics.payoutChart" as any)}
+                  </h2>
                 </div>
-                <p className="relative z-10 text-[10px] italic border-t border-border-token dark:border-white/[0.06] pt-1.5 mt-2 text-fg-subtle">
-                  {t(`console.analytics.compare${i}Note` as any)}
-                </p>
-              </BentoCard>
-            );
-          })}
+                <StatusPulse color="violet" label={activeRange.toUpperCase()} size="sm" />
+              </div>
+
+              <Scanline color="violet" className="relative z-10 mb-4" />
+
+              <div className="relative z-10">
+                <AreaChartCard
+                  embedded
+                  lang={lang}
+                  title={t("console.analytics.payoutChart" as any)}
+                  hint={t("console.analytics.chartHover" as any)}
+                  description={t("console.analytics.chartDesc" as any)}
+                />
+              </div>
+            </FrostedPanel>
+          </motion.div>
+
+          {/* Right: Pie Chart satellite */}
+          <motion.div
+            className="lg:col-span-3"
+            initial={{ opacity: 0, x: 16 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.5, delay: 0.3 }}
+          >
+            <FrostedPanel glowColor="violet" sheen className="h-full p-4">
+              <PieChartCard
+                embedded
+                lang={lang}
+                title={t("console.analytics.pieTitle" as any)}
+                description={t("console.analytics.pieDesc" as any)}
+                totalLabel={lang === "zh" ? "总计" : "Total"}
+              />
+            </FrostedPanel>
+          </motion.div>
         </div>
-      </motion.div>
+
+        {/* Bottom: Comparison Matrix strip */}
+        <div className="mt-6">
+          <FrostedPanel glowColor="violet" sheen className="p-5">
+            <div className="flex items-center gap-2 mb-4">
+              <Zap className="w-4 h-4" style={{ color: VIOLET }} />
+              <span className="text-sm font-semibold text-fg">
+                {t("console.analytics.optimalTitle" as any)}
+              </span>
+            </div>
+
+            <div className="flex md:grid md:grid-cols-3 gap-4 overflow-x-auto snap-x snap-mandatory md:overflow-visible md:snap-none pb-1">
+              {[1, 2, 3].map((i) => {
+                const isWinning = i === 1 || i === 3;
+                return (
+                  <BentoCard
+                    key={i}
+                    index={i}
+                    glowColor={VIOLET}
+                    title={t(`console.analytics.compare${i}Title` as any) as string}
+                    className="snap-start min-w-[280px] md:min-w-0 text-xs"
+                  >
+                    <div className="relative space-y-1.5 pt-1">
+                      {/* Subtle grid backdrop on hover */}
+                      <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none">
+                        <GridBackground />
+                      </div>
+                      <div className="relative z-10 flex justify-between font-mono">
+                        <span className="text-fg-subtle">{t(`console.analytics.compare${i}Row1` as any)}</span>
+                        <span className="text-fg">
+                          {i === 1 ? "0.05 ETH" : i === 2 ? "~3 Hours" : lang === "zh" ? "无风控约束" : "No compliance"}
+                        </span>
+                      </div>
+                      <div className="relative z-10 flex justify-between font-mono">
+                        <span className="text-fg">{t(`console.analytics.compare${i}Row2` as any)}</span>
+                        <span
+                          className="relative font-bold inline-block"
+                          style={{ color: i === 1 ? "#34d399" : i === 2 ? VIOLET : "#34d399" }}
+                        >
+                          {i === 1
+                            ? "0.008 ETH"
+                            : i === 2
+                            ? lang === "zh"
+                              ? "即时签发 (毫秒级)"
+                              : "Instant (Seconds)"
+                            : lang === "zh"
+                            ? "100% 策略验证"
+                            : "100% Guard enforcement"}
+                          {isWinning && (
+                            <SparklesFX
+                              count={4}
+                              color="#34d399"
+                              className="absolute -inset-1"
+                            />
+                          )}
+                        </span>
+                      </div>
+                    </div>
+                    <p className="relative z-10 text-[10px] italic border-t border-border-token dark:border-white/[0.06] pt-1.5 mt-2 text-fg-subtle">
+                      {t(`console.analytics.compare${i}Note` as any)}
+                    </p>
+                  </BentoCard>
+                );
+              })}
+            </div>
+          </FrostedPanel>
+        </div>
+      </div>
     </div>
   );
 }

@@ -37,17 +37,26 @@ export function WalletHoloCard({ children }: { children: React.ReactNode }) {
   const springX = useSpring(rawX, SPRING);
   const springY = useSpring(rawY, SPRING);
 
-  // Stronger tilt than the landing card (/10 vs /15) for holographic pop-out
-  const rotateX = useTransform(springY, (v) => -v / 10);
-  const rotateY = useTransform(springX, (v) => v / 10);
+  // Gentler tilt for large content cards: avoids the "whole panel is warping"
+  // effect that made the wallet detail card feel cheap on a big surface.
+  const MAX_ROTATE = 6;
+  const TILT_DIVISOR = 22;
+  const LIFT_DIVISOR = 16;
 
-  // Lift inner content off the card surface for extra depth
+  const rotateX = useTransform(springY, (v) =>
+    Math.max(-MAX_ROTATE, Math.min(MAX_ROTATE, -v / TILT_DIVISOR))
+  );
+  const rotateY = useTransform(springX, (v) =>
+    Math.max(-MAX_ROTATE, Math.min(MAX_ROTATE, v / TILT_DIVISOR))
+  );
+
+  // Subtle lift — roughly half of what it used to be for a more refined feel.
   const contentZ = useTransform(
     [springX, springY],
     (values) => {
       const [sx, sy] = values as [number, number];
       const dist = Math.sqrt(sx * sx + sy * sy);
-      return Math.min(30, dist / 8);
+      return Math.min(16, dist / LIFT_DIVISOR);
     }
   );
 
