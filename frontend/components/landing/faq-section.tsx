@@ -176,7 +176,7 @@ export function FAQSection() {
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, amount: 0.5 }}
         transition={{ duration: 0.5, delay: 0.05, ease: [0.16, 1, 0.3, 1] }}
-        className="text-sm mb-8 max-w-md font-normal leading-relaxed text-white/85"
+        className="text-sm mb-8 max-w-md font-normal italic leading-relaxed text-white/85"
       >
         {t("faq.subtitle")}
       </motion.p>

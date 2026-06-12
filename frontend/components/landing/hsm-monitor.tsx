@@ -9,11 +9,16 @@ export function HSMMonitor() {
   const t = useT();
 
   return (
-    <div className="md:col-span-2 p-6 border border-white/18 rounded-2xl bg-gradient-to-b from-neutral-900 to-black flex flex-col justify-between relative overflow-hidden group">
-      {/* Glossy radial overlay */}
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_0%_0%,rgba(181,255,77,0.05),transparent_60%)] rounded-2xl pointer-events-none" />
+    /* Perspective stage — lets the card stand at an angle instead of facing
+     * the viewer head-on. Flat on mobile (stacked full-width). */
+    <div className="md:col-span-2" style={{ perspective: "1600px" }}>
+      <div
+        className="group relative flex h-full flex-col justify-between rounded-2xl border border-white/18 bg-gradient-to-b from-neutral-900 to-black p-6 transition-[transform,box-shadow] duration-700 ease-out md:border-r-white/30 md:[transform:rotateX(3deg)_rotateY(-14deg)_rotateZ(2.5deg)] md:[transform-style:preserve-3d] md:[box-shadow:30px_40px_80px_rgba(0,0,0,0.55),10px_16px_32px_rgba(0,0,0,0.45),inset_0_1px_0_rgba(255,255,255,0.08)] md:hover:[transform:rotateX(1.5deg)_rotateY(-7deg)_rotateZ(1.2deg)_translateZ(10px)] md:hover:[box-shadow:18px_26px_60px_rgba(0,0,0,0.5),6px_10px_24px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.1)]"
+      >
+        {/* Glossy radial overlay */}
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_0%_0%,rgba(181,255,77,0.05),transparent_60%)] rounded-2xl pointer-events-none" />
 
-      <div className="space-y-4 relative z-10">
+        <div className="space-y-4 relative z-10 md:[transform:translateZ(28px)]">
         {/* Header */}
         <div className="flex justify-between items-center border-b border-white/12 pb-4">
           <div className="flex items-center gap-2">
@@ -75,17 +80,18 @@ export function HSMMonitor() {
         </div>
       </div>
 
-      {/* Footer CTA */}
-      <div className="mt-8 pt-4 border-t border-white/12 flex items-center justify-between text-xs relative z-10">
-        <span className="text-white/65 font-mono text-[10px]">
-          COBO CLIENT INTG OK
-        </span>
-        <a
-          href={ROUTES.console}
-          className="text-xs font-bold font-mono text-[#B5FF4D] uppercase flex items-center gap-1.5 hover:underline"
-        >
-          {t("hsm.enter")} <ArrowRight className="w-3.5 h-3.5" />
-        </a>
+        {/* Footer CTA */}
+        <div className="mt-8 pt-4 border-t border-white/12 flex items-center justify-between text-xs relative z-10 md:[transform:translateZ(18px)]">
+          <span className="text-white/65 font-mono text-[10px]">
+            COBO CLIENT INTG OK
+          </span>
+          <a
+            href={ROUTES.console}
+            className="text-xs font-bold font-mono text-[#B5FF4D] uppercase flex items-center gap-1.5 hover:underline"
+          >
+            {t("hsm.enter")} <ArrowRight className="w-3.5 h-3.5" />
+          </a>
+        </div>
       </div>
     </div>
   );

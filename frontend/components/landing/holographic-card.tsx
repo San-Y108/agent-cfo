@@ -72,7 +72,7 @@ export function HolographicCard() {
 
             <div>
               <h3 className="text-2xl font-black tracking-tight mb-2 text-white">{t("heroCard.title")}</h3>
-              <p className="text-xs leading-relaxed font-mono text-white/75">
+              <p className="text-xs italic leading-relaxed font-mono text-white/75">
                 {t("heroCard.desc")}
               </p>
             </div>

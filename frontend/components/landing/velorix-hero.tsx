@@ -5,6 +5,7 @@ import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { ScrollToPlugin } from "gsap/ScrollToPlugin";
 import { useGSAP } from "@gsap/react";
 import { useT, useApp } from "@/lib/i18n/context";
 import type { DictKey } from "@/lib/i18n/dict";
@@ -13,7 +14,7 @@ import { motion } from "framer-motion";
 import { ParticleHeroTitle } from "@/components/landing/particle-hero-title";
 import { DecodeHeadline } from "@/components/landing/decode-headline";
 
-gsap.registerPlugin(ScrollTrigger);
+gsap.registerPlugin(ScrollTrigger, ScrollToPlugin);
 
 // Background "robot + hand" cinematic visual — remote video, verbatim from Velorix IIC demo.
 const BG_VIDEO =
@@ -349,12 +350,27 @@ function Navbar() {
               style={{ fontFamily: "Inter, sans-serif" }}
               onClick={(e) => {
                 e.preventDefault();
-                const el = document.querySelector(item.href);
-                if (el) {
-                  clickCooldown.current = Date.now() + 1200;
-                  setActiveIdx(i);
-                  el.scrollIntoView({ behavior: "smooth" });
-                }
+                const el = document.querySelector(item.href) as HTMLElement | null;
+                if (!el) return;
+
+                // GSAP-driven scroll instead of native scrollIntoView(smooth):
+                // the BuildTimeline pinned ScrollTrigger has `snap`, and any
+                // gap in native smooth-scroll events lets snap fire its own
+                // scroll tween — which cancels the native scroll mid-route
+                // (the "need to click twice" bug). A GSAP tween writes the
+                // scroll position every frame, so snap never sees a stop,
+                // and autoKill:false makes the jump uninterruptible.
+                const targetY = el.getBoundingClientRect().top + window.scrollY;
+                const dist = Math.abs(targetY - window.scrollY);
+                const dur = Math.min(1.4, 0.45 + dist / 5000);
+                clickCooldown.current = Date.now() + dur * 1000 + 500;
+                setActiveIdx(i);
+                gsap.to(window, {
+                  scrollTo: { y: targetY, autoKill: false },
+                  duration: dur,
+                  ease: "power3.inOut",
+                  overwrite: "auto",
+                });
               }}
             >
               {t(item.key)}

@@ -9,6 +9,7 @@ import { SplitText } from "gsap/SplitText";
 import { ScrambleTextPlugin } from "gsap/ScrambleTextPlugin";
 import { DrawSVGPlugin } from "gsap/DrawSVGPlugin";
 import { MotionPathPlugin } from "gsap/MotionPathPlugin";
+import { ScrollToPlugin } from "gsap/ScrollToPlugin";
 
 // 注册插件（只需一次，此处集中注册）
 if (typeof window !== "undefined") {
@@ -18,7 +19,8 @@ if (typeof window !== "undefined") {
     SplitText,
     ScrambleTextPlugin,
     DrawSVGPlugin,
-    MotionPathPlugin
+    MotionPathPlugin,
+    ScrollToPlugin
   );
 }
 

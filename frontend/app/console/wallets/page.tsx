@@ -188,7 +188,7 @@ export default function WalletsPage() {
   const totalWalletValue = activeWallet.tokens.reduce((acc, tok) => acc + tok.valueUsd, 0);
 
   return (
-    <div className="relative w-full min-h-full">
+    <div className="relative mx-auto w-full max-w-7xl min-h-full">
       {/* ─── Header ─── */}
       <div className="px-6 py-8 lg:px-10 lg:py-10">
         <motion.div

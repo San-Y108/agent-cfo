@@ -24,6 +24,17 @@ export enum FlowStep {
   Done = 4,
 }
 
+export type ActivityType = "plan" | "execute" | "rule" | "records" | "system";
+
+export interface ActivityEntry {
+  id: string;
+  ts: string;
+  type: ActivityType;
+  message: string;
+}
+
+export type DrawerTab = "sandbox" | "rules" | "activity";
+
 interface ConsoleState {
   budgetRule: BudgetRules;
   records: ContributorRecord[];
@@ -31,6 +42,9 @@ interface ConsoleState {
   step: FlowStep;
   isExecuting: boolean;
   cawStatuses: CawStatus[];
+  activityLog: ActivityEntry[];
+  drawerOpen: boolean;
+  drawerTab: DrawerTab;
 }
 
 interface ConsoleActions {
@@ -48,6 +62,9 @@ interface ConsoleActions {
   generatePlan: () => Promise<PaymentPlanItem[]>;
   executePlan: () => Promise<PaymentPlanItem[]>;
   refreshCawStatus: () => Promise<CawStatus[]>;
+  logActivity: (type: ActivityType, message: string) => void;
+  openDrawer: (tab?: DrawerTab) => void;
+  closeDrawer: () => void;
 }
 
 const ConsoleStateContext = createContext<(ConsoleState & ConsoleActions) | null>(
@@ -65,22 +82,58 @@ export function ConsoleStateProvider({
   const [step, setStep] = useState<FlowStep>(FlowStep.Idle);
   const [isExecuting, setIsExecuting] = useState(false);
   const [cawStatuses, setCawStatuses] = useState<CawStatus[]>([]);
+  const [activityLog, setActivityLog] = useState<ActivityEntry[]>([
+    {
+      id: "act_boot",
+      ts: new Date().toISOString(),
+      type: "system",
+      message: "Console session started · guardrails loaded",
+    },
+  ]);
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [drawerTab, setDrawerTab] = useState<DrawerTab>("sandbox");
+
+  const logActivity = useCallback((type: ActivityType, message: string) => {
+    setActivityLog((prev) => [
+      {
+        id: `act_${Date.now()}_${prev.length}`,
+        ts: new Date().toISOString(),
+        type,
+        message,
+      },
+      ...prev.slice(0, 49),
+    ]);
+  }, []);
+
+  const openDrawer = useCallback((tab?: DrawerTab) => {
+    if (tab) setDrawerTab(tab);
+    setDrawerOpen(true);
+  }, []);
+
+  const closeDrawer = useCallback(() => setDrawerOpen(false), []);
 
   const addRecords = useCallback((newRecords: ContributorRecord[]) => {
     setRecords((prev) => [...prev, ...newRecords]);
-  }, []);
+    logActivity(
+      "records",
+      `${newRecords.length} contribution record(s) added`
+    );
+  }, [logActivity]);
 
   const updateWhitelist = useCallback((whitelist: string[]) => {
     setBudgetRule((prev) => ({ ...prev, whitelist }));
-  }, []);
+    logActivity("rule", `Whitelist updated · ${whitelist.length} address(es)`);
+  }, [logActivity]);
 
   const updateSingleLimit = useCallback((singlePaymentLimit: number) => {
     setBudgetRule((prev) => ({ ...prev, singlePaymentLimit }));
-  }, []);
+    logActivity("rule", `Single payment limit set to ${singlePaymentLimit} USDC`);
+  }, [logActivity]);
 
   const updateMonthlyBudget = useCallback((monthlyBudget: number) => {
     setBudgetRule((prev) => ({ ...prev, monthlyBudget }));
-  }, []);
+    logActivity("rule", `Monthly budget set to ${monthlyBudget} USDC`);
+  }, [logActivity]);
 
   const resetFlow = useCallback(() => {
     setPlan([]);
@@ -89,7 +142,8 @@ export function ConsoleStateProvider({
     setCawStatuses([]);
     setRecords(MOCK_RECORDS);
     setBudgetRule(MOCK_RULES);
-  }, []);
+    logActivity("system", "Flow reset · records and rules restored");
+  }, [logActivity]);
 
   const evaluateItem = useCallback(
     (record: ContributorRecord): PaymentPlanItem => {
@@ -123,10 +177,16 @@ export function ConsoleStateProvider({
         const p = records.map(evaluateItem);
         setPlan(p);
         setStep(FlowStep.Review);
+        const ready = p.filter((i) => i.status === "Ready").length;
+        const blocked = p.filter((i) => i.status === "Blocked").length;
+        logActivity(
+          "plan",
+          `Payment plan generated · ${ready} ready, ${blocked} blocked`
+        );
         resolve(p);
       }, 1200);
     });
-  }, [records, evaluateItem]);
+  }, [records, evaluateItem, logActivity]);
 
   const executePlan = useCallback(async (): Promise<PaymentPlanItem[]> => {
     if (plan.length === 0) return plan;
@@ -163,10 +223,18 @@ export function ConsoleStateProvider({
         setCawStatuses(statuses);
         setStep(FlowStep.Done);
         setIsExecuting(false);
+        const total = statuses.length;
+        const sum = executed
+          .filter((i) => i.status === "Executed")
+          .reduce((a, c) => a + c.record.amount, 0);
+        logActivity(
+          "execute",
+          `CAW execution complete · ${total} payment(s), ${sum} USDC settled`
+        );
         resolve(executed);
       }, 2000);
     });
-  }, [plan]);
+  }, [plan, logActivity]);
 
   const refreshCawStatus = useCallback(async (): Promise<CawStatus[]> => {
     return new Promise((resolve) => {
@@ -193,6 +261,9 @@ export function ConsoleStateProvider({
         step,
         isExecuting,
         cawStatuses,
+        activityLog,
+        drawerOpen,
+        drawerTab,
         setBudgetRule,
         setRecords,
         addRecords,
@@ -207,6 +278,9 @@ export function ConsoleStateProvider({
         generatePlan,
         executePlan,
         refreshCawStatus,
+        logActivity,
+        openDrawer,
+        closeDrawer,
       }}
     >
       {children}

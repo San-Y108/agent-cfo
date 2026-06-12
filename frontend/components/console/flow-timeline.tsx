@@ -21,8 +21,8 @@ export interface FlowTimelineProps {
 
 export function FlowTimeline({ currentStep, steps }: FlowTimelineProps) {
   return (
-    <div className="w-full">
-      <div className="flex items-center justify-between">
+    <div className="w-full overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+      <div className="flex min-w-[420px] items-center justify-between">
         {steps.map((step, index) => {
           const isCompleted = index < currentStep;
           const isCurrent = index === currentStep;

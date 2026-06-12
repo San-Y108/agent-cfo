@@ -145,7 +145,7 @@ export function LandingFooter() {
               </span>
             </div>
             <p
-              className="mt-4 max-w-sm text-sm leading-relaxed text-white/80"
+              className="mt-4 max-w-sm text-sm italic leading-relaxed text-white/80"
               style={{ fontFamily: "Inter, sans-serif" }}
             >
               DAO AI Treasury Officer — risk-checked payouts, human approval, audit-grade settlement, built on Cobo Agentic Wallet.

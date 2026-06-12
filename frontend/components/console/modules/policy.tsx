@@ -139,38 +139,15 @@ function ThresholdSlider({
         max={max}
         value={value}
         onChange={(e) => onChange(Number(e.target.value))}
-        className="w-full h-1.5 rounded-lg appearance-none cursor-pointer"
-        style={{
-          background: `linear-gradient(to right, rgba(255,255,255,0.08) 0%, ${LIME} ${pct}%, rgba(255,255,255,0.08) ${pct}%, rgba(255,255,255,0.08) 100%)`,
-        }}
+        className="hud-range w-full"
+        style={
+          {
+            "--range-fill": LIME,
+            "--range-pct": `${pct}%`,
+          } as React.CSSProperties
+        }
       />
       <p className="text-[10px] leading-tight text-fg-subtle">{tip}</p>
-
-      <style jsx>{`
-        input[type="range"]::-webkit-slider-thumb {
-          appearance: none;
-          width: 16px;
-          height: 16px;
-          border-radius: 50%;
-          background: ${LIME};
-          cursor: pointer;
-          box-shadow: 0 0 10px ${LIME}99, 0 0 20px ${LIME}40;
-          border: 2px solid #0D0D0D;
-          transition: transform 0.15s ease;
-        }
-        input[type="range"]::-webkit-slider-thumb:hover {
-          transform: scale(1.15);
-        }
-        input[type="range"]::-moz-range-thumb {
-          width: 16px;
-          height: 16px;
-          border-radius: 50%;
-          background: ${LIME};
-          cursor: pointer;
-          box-shadow: 0 0 10px ${LIME}99, 0 0 20px ${LIME}40;
-          border: 2px solid #0D0D0D;
-        }
-      `}</style>
     </div>
   );
 }
