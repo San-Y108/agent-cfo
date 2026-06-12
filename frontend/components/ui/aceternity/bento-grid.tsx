@@ -51,6 +51,7 @@ export function BentoGrid({
 interface BentoCardProps extends Partial<BentoItem> {
   index?: number;
   glowColor?: string;
+  padding?: "sm" | "md";
   children?: React.ReactNode;
 }
 
@@ -62,7 +63,9 @@ export function BentoCard({
   children,
   index = 0,
   glowColor = "#B5FF4D",
+  padding = "md",
 }: BentoCardProps) {
+  const hasHeader = Boolean(icon || title || description);
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -74,8 +77,9 @@ export function BentoCard({
         ease: [0.16, 1, 0.3, 1],
       }}
       className={cn(
-        "group relative flex flex-col justify-between overflow-hidden rounded-2xl",
-        "border border-white/[0.06] bg-surface p-6",
+        "group relative flex flex-col justify-between overflow-hidden rounded-card",
+        "border border-white/[0.06] bg-surface",
+        padding === "sm" ? "p-4" : "p-6",
         "hover:border-white/[0.12] transition-colors duration-300",
         className
       )}
@@ -91,19 +95,21 @@ export function BentoCard({
       </div>
 
       {/* Content */}
-      <div className="relative z-10">
-        {icon && (
-          <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-xl bg-white/[0.03] border border-white/[0.06]">
-            {icon}
-          </div>
-        )}
-        {title && <h3 className="text-base font-semibold text-fg">{title}</h3>}
-        {description && <p className="mt-2 text-sm text-fg-subtle leading-relaxed">{description}</p>}
-      </div>
+      {hasHeader && (
+        <div className="relative z-10">
+          {icon && (
+            <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-control bg-white/[0.03] border border-white/[0.06]">
+              {icon}
+            </div>
+          )}
+          {title && <h3 className="text-base font-semibold text-fg">{title}</h3>}
+          {description && <p className="mt-2 text-sm text-fg-subtle leading-relaxed">{description}</p>}
+        </div>
+      )}
 
       {/* Visual area */}
       {children && (
-        <div className="relative z-10 mt-4 flex-1 min-h-[100px]">{children}</div>
+        <div className={cn("relative z-10 flex-1", hasHeader && "mt-4 min-h-[100px]")}>{children}</div>
       )}
     </motion.div>
   );
