@@ -298,7 +298,7 @@ export function BuildTimeline() {
                 </h4>
 
                 {/* Description */}
-                <p className="mt-4 text-sm md:text-[15px] leading-relaxed text-white/95 max-w-md">
+                <p className="mt-4 text-sm md:text-[15px] italic leading-relaxed text-white/95 max-w-md">
                   {_(p.descZh, p.descEn)}
                 </p>
 

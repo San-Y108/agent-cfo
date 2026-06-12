@@ -479,7 +479,7 @@ function PipelineIntro() {
         </h2>
 
         <p
-          className="intro-animate mx-auto mt-6 max-w-xl text-base leading-relaxed text-white/60 sm:text-lg"
+          className="intro-animate mx-auto mt-6 max-w-xl text-base italic leading-relaxed text-white/60 sm:text-lg"
           style={{
             fontFamily: "Inter, sans-serif",
             opacity: prefersReducedMotion ? 1 : 0,
