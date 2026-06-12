@@ -144,38 +144,15 @@ function ThresholdSlider({
         max={max}
         value={value}
         onChange={(e) => onChange(Number(e.target.value))}
-        className="w-full h-1.5 rounded-lg appearance-none cursor-pointer"
-        style={{
-          background: `linear-gradient(to right, rgba(255,255,255,0.08) 0%, ${LIME} ${pct}%, rgba(255,255,255,0.08) ${pct}%, rgba(255,255,255,0.08) 100%)`,
-        }}
+        className="hud-range w-full"
+        style={
+          {
+            "--range-fill": LIME,
+            "--range-pct": `${pct}%`,
+          } as React.CSSProperties
+        }
       />
       <p className="text-[10px] leading-tight text-fg-subtle">{tip}</p>
-
-      <style jsx>{`
-        input[type="range"]::-webkit-slider-thumb {
-          appearance: none;
-          width: 16px;
-          height: 16px;
-          border-radius: 50%;
-          background: ${LIME};
-          cursor: pointer;
-          box-shadow: 0 0 10px ${LIME}99, 0 0 20px ${LIME}40;
-          border: 2px solid #0D0D0D;
-          transition: transform 0.15s ease;
-        }
-        input[type="range"]::-webkit-slider-thumb:hover {
-          transform: scale(1.15);
-        }
-        input[type="range"]::-moz-range-thumb {
-          width: 16px;
-          height: 16px;
-          border-radius: 50%;
-          background: ${LIME};
-          cursor: pointer;
-          box-shadow: 0 0 10px ${LIME}99, 0 0 20px ${LIME}40;
-          border: 2px solid #0D0D0D;
-        }
-      `}</style>
     </div>
   );
 }
@@ -286,7 +263,7 @@ export default function PolicyPage() {
   };
 
   return (
-    <div className="relative w-full min-h-full">
+    <div className="relative mx-auto w-full max-w-7xl min-h-full">
       {/* ─── Ambient orb: Policy = coral ─── */}
       <GradientOrb color="coral" className="-top-32 -right-32" />
 
@@ -797,7 +774,64 @@ function WhitelistStrip({
         </HolographicButton>
       </div>
 
-      <div className="overflow-x-auto">
+      {/* Mobile: card list */}
+      <div className="space-y-2 md:hidden">
+        <AnimatePresence>
+          {whitelist.map((item) => {
+            const categoryColor =
+              item.category === "Developer"
+                ? "#B5FF4D"
+                : item.category === "API Provider"
+                ? "#60A5FA"
+                : item.category === "Ad Network"
+                ? "#C084FC"
+                : "#FB7185";
+            return (
+              <motion.div
+                key={item.id}
+                layout
+                initial={{ opacity: 0, y: -8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                className="relative overflow-hidden rounded-xl border border-white/[0.06] bg-white/[0.02] p-3"
+              >
+                <span
+                  className="absolute left-0 top-0 bottom-0 w-[2px]"
+                  style={{ backgroundColor: categoryColor }}
+                />
+                <div className="flex items-start justify-between gap-2">
+                  <div className="min-w-0">
+                    <div className="text-xs font-bold text-fg">{item.name}</div>
+                    <div className="mt-0.5 font-mono text-[10px] text-fg-subtle">
+                      {item.address.substring(0, 10)}...
+                      {item.address.substring(item.address.length - 8)}
+                    </div>
+                  </div>
+                  <motion.button
+                    whileTap={{ scale: 0.9 }}
+                    onClick={() => onDelete(item.id)}
+                    className="shrink-0 rounded-full p-1.5 text-fg-subtle transition-colors hover:bg-red-500/10 hover:text-danger"
+                    title="Delete"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </motion.button>
+                </div>
+                <div className="mt-2 flex items-center justify-between">
+                  <span className="rounded border border-white/[0.08] bg-white/[0.04] px-2 py-0.5 font-mono text-[10px] leading-none text-fg-muted">
+                    {item.category}
+                  </span>
+                  <span className="font-mono text-[10px] text-fg-subtle">
+                    {item.dateRegistered}
+                  </span>
+                </div>
+              </motion.div>
+            );
+          })}
+        </AnimatePresence>
+      </div>
+
+      {/* Desktop: table */}
+      <div className="hidden overflow-x-auto md:block">
         <table className="w-full text-left text-[12px]">
           <thead>
             <tr className="border-b border-white/[0.06] font-mono uppercase text-fg-muted bg-white/[0.02]">
