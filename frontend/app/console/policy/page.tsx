@@ -306,7 +306,7 @@ export default function PolicyPage() {
 
       {/* ─── Command Deck Layout ─── */}
       <div className="px-6 lg:px-10 pb-10">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <div className="grid grid-cols-1 items-stretch gap-6 lg:grid-cols-12">
           {/* Left: Rules satellite */}
           <motion.div
             className="lg:col-span-2"
@@ -314,11 +314,13 @@ export default function PolicyPage() {
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.5, delay: 0.1 }}
           >
-            <RulesSatellite
-              activeRuleId={activeRuleId}
-              onHover={setActiveRuleId}
-              _={_}
-            />
+            <div className="h-full">
+              <RulesSatellite
+                activeRuleId={activeRuleId}
+                onHover={setActiveRuleId}
+                _={_}
+              />
+            </div>
           </motion.div>
 
           {/* Center: Neural Guardrails Graph protagonist */}
@@ -332,7 +334,7 @@ export default function PolicyPage() {
               glowColor="coral"
               scanline
               sheen
-              className="relative min-h-[520px] p-6"
+              className="relative flex h-full min-h-[640px] flex-col p-6"
             >
               <CornerGlow color="coral" className="-top-24 -right-24" intensity={0.2} />
 
@@ -352,7 +354,7 @@ export default function PolicyPage() {
 
               <Scanline color="coral" className="relative z-10 mb-4" />
 
-              <div className="relative z-10 flex items-center justify-center h-[420px]">
+              <div className="relative z-10 flex flex-1 items-center justify-center">
                 <NeuralGuardrailsGraph
                   activeRuleId={activeRuleId}
                   onRuleHover={setActiveRuleId}
@@ -369,20 +371,22 @@ export default function PolicyPage() {
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.5, delay: 0.3 }}
           >
-            <ThresholdSatellite
-              maxSingle={maxSingle}
-              setMaxSingle={setMaxSingle}
-              dailyCum={dailyCum}
-              setDailyCum={setDailyCum}
-              autoUnder={autoUnder}
-              setAutoUnder={setAutoUnder}
-              slackWebhook={slackWebhook}
-              setSlackWebhook={setSlackWebhook}
-              isSaving={isSaving}
-              saveSuccess={saveSuccess}
-              onSave={handleSave}
-              _={_}
-            />
+            <div className="flex h-full flex-col">
+              <ThresholdSatellite
+                maxSingle={maxSingle}
+                setMaxSingle={setMaxSingle}
+                dailyCum={dailyCum}
+                setDailyCum={setDailyCum}
+                autoUnder={autoUnder}
+                setAutoUnder={setAutoUnder}
+                slackWebhook={slackWebhook}
+                setSlackWebhook={setSlackWebhook}
+                isSaving={isSaving}
+                saveSuccess={saveSuccess}
+                onSave={handleSave}
+                _={_}
+              />
+            </div>
           </motion.div>
         </div>
 
