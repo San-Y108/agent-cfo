@@ -50,6 +50,7 @@ export interface HolographicButtonProps {
   size?: "sm" | "md" | "lg";
   icon?: React.ReactNode;
   glowOnHover?: boolean;
+  tilt3d?: boolean;
   className?: string;
   disabled?: boolean;
   onClick?: React.MouseEventHandler<HTMLButtonElement>;
@@ -63,6 +64,7 @@ export function HolographicButton({
   size = "md",
   icon,
   glowOnHover = true,
+  tilt3d = false,
   className,
   disabled,
   onClick,
@@ -76,21 +78,25 @@ export function HolographicButton({
     lg: "px-8 py-3 text-base gap-2.5",
   }[size];
 
+  const hoverState = !disabled
+    ? {
+        scale: 1.02,
+        ...(glowOnHover
+          ? { boxShadow: `0 0 30px ${c.glowStrong}, 0 0 60px ${c.glow}` }
+          : {}),
+        ...(tilt3d ? { rotateX: -12, transformPerspective: 600 } : {}),
+      }
+    : {};
+
   return (
     <motion.button
       type={type}
       onClick={onClick}
-      whileHover={
-        glowOnHover && !disabled
-          ? {
-              scale: 1.02,
-              boxShadow: `0 0 30px ${c.glowStrong}, 0 0 60px ${c.glow}`,
-            }
-          : { scale: 1.02 }
-      }
+      style={tilt3d ? { transformStyle: "preserve-3d" } : undefined}
+      whileHover={hoverState}
       whileTap={!disabled ? { scale: 0.98 } : {}}
       className={cn(
-        "relative inline-flex items-center justify-center rounded-xl font-semibold backdrop-blur-sm transition-colors",
+        "relative inline-flex items-center justify-center rounded-control font-semibold backdrop-blur-sm transition-colors",
         "bg-white/[0.03] hover:bg-white/[0.06]",
         "border",
         c.border,
@@ -104,7 +110,7 @@ export function HolographicButton({
       {/* Subtle inner glow */}
       <div
         className={cn(
-          "pointer-events-none absolute inset-0 rounded-xl opacity-0 transition-opacity",
+          "pointer-events-none absolute inset-0 rounded-control opacity-0 transition-opacity",
           "bg-gradient-to-br from-white/[0.05] to-transparent"
         )}
       />
@@ -151,7 +157,7 @@ export function HolographicLink({
       }}
       whileTap={{ scale: 0.98 }}
       className={cn(
-        "relative inline-flex items-center justify-center rounded-xl font-semibold backdrop-blur-sm transition-colors",
+        "relative inline-flex items-center justify-center rounded-control font-semibold backdrop-blur-sm transition-colors",
         "bg-white/[0.03] hover:bg-white/[0.06]",
         "border",
         c.border,
