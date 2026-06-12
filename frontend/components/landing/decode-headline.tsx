@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useRef, useState, useCallback } from "react";
-import { gsap, useGSAP } from "@/lib/gsap";
+import { gsap, ScrollTrigger, useGSAP } from "@/lib/gsap";
 import { useReducedMotion, motion } from "framer-motion";
 
 const SCRAMBLE_CHARS = "!@#$%^&*()_+-=[]{}|;:,.<>?/~`";
@@ -22,6 +22,8 @@ interface DecodeHeadlineProps {
   scrambleDelay?: number;
   charStagger?: number;
   specialWords?: WordStyle[];
+  /** Pretext-style breathing: words gently inflate/deflate on a sine wave. */
+  breathe?: boolean;
 }
 
 export function DecodeHeadline({
@@ -34,6 +36,7 @@ export function DecodeHeadline({
   scrambleDelay = 0.2,
   charStagger = 0.035,
   specialWords,
+  breathe = false,
 }: DecodeHeadlineProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const prefersReducedMotion = useReducedMotion();
@@ -99,6 +102,42 @@ export function DecodeHeadline({
       });
     },
     { scope: containerRef, dependencies: [text, accent, prefersReducedMotion, isClient] }
+  );
+
+  // Breathing loop (GSAP) — word-level scale wave, Pretext breathing style.
+  // Words carry the transform (chars keep the repel transform), so the two
+  // effects never fight over the same element.
+  useGSAP(
+    () => {
+      if (!breathe || !containerRef.current || prefersReducedMotion || !isClient)
+        return;
+      const words = containerRef.current.querySelectorAll(".decode-word");
+      if (!words.length) return;
+
+      const tween = gsap.to(words, {
+        scale: 1.03,
+        transformOrigin: "50% 70%",
+        duration: 2.6,
+        ease: "sine.inOut",
+        yoyo: true,
+        yoyoEase: true,
+        repeat: -1,
+        stagger: { each: 0.18 },
+        delay: 1.4, // let the decode scramble settle first
+        paused: true,
+      });
+
+      ScrollTrigger.create({
+        trigger: containerRef.current,
+        start: "top bottom",
+        end: "bottom top",
+        onToggle: (self) => (self.isActive ? tween.play() : tween.pause()),
+      });
+    },
+    {
+      scope: containerRef,
+      dependencies: [breathe, text, prefersReducedMotion, isClient],
+    }
   );
 
   // Mouse repel physics loop
@@ -230,7 +269,7 @@ export function DecodeHeadline({
             return (
               <span
                 key={wordKey}
-                className={`${matchedStyle?.className || ""} ${isSpecial ? "cursor-pointer" : ""}`}
+                className={`decode-word ${matchedStyle?.className || ""} ${isSpecial ? "cursor-pointer" : ""}`}
                 style={{
                   display: "inline-block",
                   whiteSpace: "nowrap",

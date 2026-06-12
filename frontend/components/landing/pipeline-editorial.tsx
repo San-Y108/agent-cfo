@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useRef, useState } from "react";
-import { gsap, useGSAP } from "@/lib/gsap";
+import { gsap, ScrollTrigger, useGSAP } from "@/lib/gsap";
 import { useReducedMotion } from "framer-motion";
 import {
   FileSpreadsheet,
@@ -28,6 +28,7 @@ import {
 import { STAGES, type Stage, type Capability } from "./pipeline-stage-data";
 import { DataSnippet } from "./pipeline-data-snippets";
 import { DecodeHeadline } from "./decode-headline";
+import { BreathingText } from "./breathing-text";
 
 /* =============================================================================
  * ICON MAPPING
@@ -114,6 +115,29 @@ function PipelineStage({
           },
         }
       );
+
+      // Ghost number — slow breathing pulse, pinned to its top-right anchor.
+      const ghost = sectionRef.current.querySelector(".ghost-no");
+      if (ghost) {
+        const ghostTween = gsap.to(ghost, {
+          scale: 1.045,
+          opacity: 0.095,
+          transformOrigin: "100% 0%",
+          duration: 4.5,
+          ease: "sine.inOut",
+          yoyo: true,
+          yoyoEase: true,
+          repeat: -1,
+          paused: true,
+        });
+        ScrollTrigger.create({
+          trigger: sectionRef.current,
+          start: "top bottom",
+          end: "bottom top",
+          onToggle: (self) =>
+            self.isActive ? ghostTween.play() : ghostTween.pause(),
+        });
+      }
     },
     { scope: sectionRef, dependencies: [prefersReducedMotion] }
   );
@@ -125,7 +149,7 @@ function PipelineStage({
       className="relative scroll-mt-28"
     >
       {/* Ghost number — sticky within the stage, stays visible while scrolling */}
-      <div className="pointer-events-none absolute right-0 top-0 select-none font-black leading-none lg:-right-8"
+      <div className="ghost-no pointer-events-none absolute right-0 top-0 select-none font-black leading-none lg:-right-8"
         style={{
           fontFamily: "Inter, sans-serif",
           fontSize: "clamp(6rem, 15vw, 12rem)",
@@ -172,6 +196,7 @@ function PipelineStage({
           <DecodeHeadline
             text={stage.headline}
             accent={stage.accent}
+            breathe
             style={{
               fontFamily: "Inter, sans-serif",
               fontSize: "clamp(2rem, 4.5vw, 3.5rem)",
@@ -446,9 +471,11 @@ function PipelineIntro() {
             opacity: prefersReducedMotion ? 1 : 0,
           }}
         >
-          From contribution
-          <br />
-          to <span className="text-[#B5FF4D]">audit trail</span>.
+          <BreathingText
+            text={"From contribution\nto audit trail."}
+            accentWords={["audit", "trail"]}
+            accentColor="#B5FF4D"
+          />
         </h2>
 
         <p
@@ -544,6 +571,18 @@ export function PipelineEditorial() {
     }
   };
 
+  /* ── Render one stage wrapper (keeps refs indexed by stage order) ── */
+  const renderStage = (i: number, className: string) => (
+    <div
+      ref={(el) => {
+        stageRefs.current[i] = el;
+      }}
+      className={className}
+    >
+      <PipelineStage stage={STAGES[i]} index={i} isActive={i === activeIndex} />
+    </div>
+  );
+
   return (
     <div id="workflow">
       {/* Non-pinned marker for nav IntersectionObserver */}
@@ -559,33 +598,28 @@ export function PipelineEditorial() {
       {/* Intro */}
       <PipelineIntro />
 
-      {/* 5 Stages — true masonry on desktop, single column on mobile */}
+      {/* 5 Stages — true masonry on desktop, single column on mobile.
+        * Two independent flex rails (left: 01/03, right: 02/04) so stages stack
+        * tightly inside each rail without grid-row height coupling. The right
+        * rail is pushed down (lg:mt-40) for the magazine-style stagger, and the
+        * final Audit stage spans both rails. On mobile the rails dissolve
+        * (display: contents) and `order-*` restores the 01→05 reading flow. */}
       <div className="relative mx-auto max-w-6xl px-6 py-12 lg:px-8 lg:py-16">
-        <div
-          className="grid grid-cols-1 gap-x-16 gap-y-20 lg:grid-cols-2 lg:items-start"
-          style={{ rowGap: "5rem" }}
-        >
-          {STAGES.map((stage, i) => (
-            <div
-              key={stage.key}
-              ref={(el) => {
-                stageRefs.current[i] = el;
-              }}
-              className={
-                i === STAGES.length - 1
-                  ? "lg:col-span-2"
-                  : i % 2 === 1
-                    ? "lg:mt-20"
-                    : ""
-              }
-            >
-              <PipelineStage
-                stage={stage}
-                index={i}
-                isActive={i === activeIndex}
-              />
-            </div>
-          ))}
+        <div className="grid grid-cols-1 gap-y-20 lg:grid-cols-2 lg:gap-x-16 lg:gap-y-28 lg:items-start">
+          {/* Left rail — Stage 01 with 03 tucked right beneath it */}
+          <div className="contents lg:flex lg:flex-col lg:gap-y-12">
+            {renderStage(0, "order-1 lg:order-none")}
+            {renderStage(2, "order-3 lg:order-none")}
+          </div>
+
+          {/* Right rail — Stage 02 offset down, 04 tucked right beneath it */}
+          <div className="contents lg:flex lg:flex-col lg:gap-y-12 lg:mt-40">
+            {renderStage(1, "order-2 lg:order-none")}
+            {renderStage(3, "order-4 lg:order-none")}
+          </div>
+
+          {/* Stage 05 — Audit finale, spans the full width */}
+          {renderStage(4, "order-5 lg:order-none lg:col-span-2")}
         </div>
       </div>
     </div>
