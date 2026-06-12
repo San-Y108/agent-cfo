@@ -19,6 +19,7 @@ import {
   ChevronUp,
 } from "lucide-react";
 import { useApp } from "@/lib/i18n/context";
+import { useConsoleState } from "@/lib/console/console-state";
 import { WalletTopology } from "@/components/console/wallet-hologram";
 import { HolographicButton } from "@/components/ui/holographic-button";
 import { AnimatedNumber } from "@/components/ui/aceternity/animated-number";
@@ -31,6 +32,13 @@ import {
 } from "@/components/console/command-deck";
 
 const BLUE = "#60A5FA";
+const ETH_PRICE_USD = 3400;
+
+function tokenValueUsd(symbol: string, balance: number): number {
+  if (symbol === "USDC" || symbol === "USDT") return balance;
+  if (symbol === "ETH") return balance * ETH_PRICE_USD;
+  return balance;
+}
 
 interface TokenBalance {
   symbol: string;
@@ -58,9 +66,9 @@ const INITIAL_WALLETS: WalletItem[] = [
     threshold: "1 / 2 Agents + Multi-sig",
     activeAgentsCount: 2,
     tokens: [
-      { symbol: "USDC", name: "USD Coin", balance: 12450.0, valueUsd: 12450.0 },
-      { symbol: "USDT", name: "Tether USD", balance: 5000.0, valueUsd: 5000.0 },
-      { symbol: "ETH", name: "Ethereum", balance: 4.85, valueUsd: 16490.0 },
+      { symbol: "USDC", name: "USD Coin", balance: 12450.0, valueUsd: tokenValueUsd("USDC", 12450.0) },
+      { symbol: "USDT", name: "Tether USD", balance: 5000.0, valueUsd: tokenValueUsd("USDT", 5000.0) },
+      { symbol: "ETH", name: "Ethereum", balance: 4.85, valueUsd: tokenValueUsd("ETH", 4.85) },
     ],
   },
   {
@@ -71,8 +79,8 @@ const INITIAL_WALLETS: WalletItem[] = [
     threshold: "2 / 3 Owners",
     activeAgentsCount: 1,
     tokens: [
-      { symbol: "USDC", name: "USD Coin", balance: 25000.0, valueUsd: 25000.0 },
-      { symbol: "ETH", name: "Ethereum", balance: 12.0, valueUsd: 40800.0 },
+      { symbol: "USDC", name: "USD Coin", balance: 25000.0, valueUsd: tokenValueUsd("USDC", 25000.0) },
+      { symbol: "ETH", name: "Ethereum", balance: 12.0, valueUsd: tokenValueUsd("ETH", 12.0) },
     ],
   },
   {
@@ -91,7 +99,9 @@ const INITIAL_WALLETS: WalletItem[] = [
 export function WalletsModule() {
   const { t, lang } = useApp();
   const _ = (zh: string, en: string) => (lang === "zh" ? zh : en);
+  const { budgetRule } = useConsoleState();
 
+  const singlePaymentLimit = budgetRule.singlePaymentLimit;
   const [copiedText, setCopiedText] = useState<string | null>(null);
   const [isAddingWallet, setIsAddingWallet] = useState(false);
   const [wallets, setWallets] = useState<WalletItem[]>(INITIAL_WALLETS);
@@ -140,7 +150,7 @@ export function WalletsModule() {
     if (!transferAmount || !transferRecipient) return;
 
     const amount = Number(transferAmount);
-    if (amount > 25) {
+    if (amount > singlePaymentLimit) {
       setShowBlockedAlert(true);
       return;
     }
@@ -157,7 +167,7 @@ export function WalletsModule() {
               tokens: w.tokens.map((tok) => {
                 if (tok.symbol === selectedToken) {
                   const updatedBal = Math.max(0, tok.balance - amount);
-                  return { ...tok, balance: updatedBal, valueUsd: tok.symbol === "ETH" ? updatedBal * 3400 : updatedBal };
+                  return { ...tok, balance: updatedBal, valueUsd: tokenValueUsd(tok.symbol, updatedBal) };
                 }
                 return tok;
               }),
@@ -194,8 +204,8 @@ export function WalletsModule() {
                   </div>
                   <div className="text-xs text-fg-subtle mt-0.5">
                     {lang === "zh"
-                      ? `单笔限额 25 USDC，您尝试转账 ${transferAmount} USDC 已超出安全边界。`
-                      : `Single payment limit is 25 USDC. Your attempt to transfer ${transferAmount} USDC exceeds the safety boundary.`}
+                      ? `单笔限额 ${singlePaymentLimit} USDC，您尝试转账 ${transferAmount} USDC 已超出安全边界。`
+                      : `Single payment limit is ${singlePaymentLimit} USDC. Your attempt to transfer ${transferAmount} USDC exceeds the safety boundary.`}
                   </div>
                 </div>
                 <button

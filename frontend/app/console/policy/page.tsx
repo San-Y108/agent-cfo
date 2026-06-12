@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import {
@@ -18,6 +18,7 @@ import {
   AlertTriangle,
 } from "lucide-react";
 import { useApp } from "@/lib/i18n/context";
+import { useConsoleState } from "@/lib/console/console-state";
 import { HolographicButton } from "@/components/ui/holographic-button";
 import { GradientOrb } from "@/components/ui/aceternity/background";
 import { AnimatedNumber } from "@/components/ui/aceternity/animated-number";
@@ -184,20 +185,72 @@ export default function PolicyPage() {
   const { t, lang } = useApp();
   const _ = (zh: string, en: string) => (lang === "zh" ? zh : en);
 
-  const [whitelist, setWhitelist] = useState<WhitelistItem[]>(INITIAL_WHITELIST);
+  const {
+    budgetRule,
+    updateSingleLimit,
+    updateMonthlyBudget,
+    updateWhitelist,
+  } = useConsoleState();
+
+  /* Sync local whitelist display with the global budget rule whitelist. */
+  const buildWhitelistFromRule = useCallback(
+    (addresses: string[]): WhitelistItem[] =>
+      addresses.map((address) => {
+        const known = INITIAL_WHITELIST.find(
+          (w) => w.address.toLowerCase() === address.toLowerCase()
+        );
+        return (
+          known ?? {
+            id: `wl-${address.slice(2, 10)}`,
+            name: address.slice(0, 10),
+            address,
+            category: "Developer" as const,
+            dateRegistered: new Date().toISOString().split("T")[0],
+          }
+        );
+      }),
+    []
+  );
+
+  const [whitelist, setWhitelist] = useState<WhitelistItem[]>(() =>
+    buildWhitelistFromRule(budgetRule.whitelist)
+  );
+
+  /* Keep local display in sync when the global rule changes elsewhere. */
+  useEffect(() => {
+    setWhitelist(buildWhitelistFromRule(budgetRule.whitelist));
+  }, [budgetRule.whitelist, buildWhitelistFromRule]);
+
   const [isAddingItem, setIsAddingItem] = useState(false);
   const [newName, setNewName] = useState("");
   const [newAddress, setNewAddress] = useState("");
   const [newCategory, setNewCategory] = useState<WhitelistItem["category"]>("Developer");
 
-  const [maxSingle, setMaxSingle] = useState(25);
-  const [dailyCum, setDailyCum] = useState(100);
+  const [maxSingle, setMaxSingle] = useState(budgetRule.singlePaymentLimit);
+  const [dailyCum, setDailyCum] = useState(budgetRule.monthlyBudget);
   const [autoUnder, setAutoUnder] = useState(10);
   const [slackWebhook, setSlackWebhook] = useState("placeholder-slack-webhook-url");
   const [isSaving, setIsSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
 
   const [activeRuleId, setActiveRuleId] = useState<string | null>(null);
+
+  /* Keep sliders aligned with externally updated rules. */
+  useEffect(() => {
+    setMaxSingle(budgetRule.singlePaymentLimit);
+  }, [budgetRule.singlePaymentLimit]);
+
+  useEffect(() => {
+    setDailyCum(budgetRule.monthlyBudget);
+  }, [budgetRule.monthlyBudget]);
+
+  const syncWhitelistToContext = useCallback(
+    (next: WhitelistItem[]) => {
+      setWhitelist(next);
+      updateWhitelist(next.map((w) => w.address));
+    },
+    [updateWhitelist]
+  );
 
   const handleAdd = (e: React.FormEvent) => {
     e.preventDefault();
@@ -209,19 +262,22 @@ export default function PolicyPage() {
       category: newCategory,
       dateRegistered: new Date().toISOString().split("T")[0],
     };
-    setWhitelist([...whitelist, item]);
+    syncWhitelistToContext([...whitelist, item]);
     setIsAddingItem(false);
     setNewName("");
     setNewAddress("");
   };
 
   const handleDelete = (id: string) => {
-    setWhitelist(whitelist.filter((w) => w.id !== id));
+    syncWhitelistToContext(whitelist.filter((w) => w.id !== id));
   };
 
   const handleSave = (e: React.FormEvent) => {
     e.preventDefault();
     setIsSaving(true);
+    updateSingleLimit(maxSingle);
+    updateMonthlyBudget(dailyCum);
+    updateWhitelist(whitelist.map((w) => w.address));
     setTimeout(() => {
       setIsSaving(false);
       setSaveSuccess(true);

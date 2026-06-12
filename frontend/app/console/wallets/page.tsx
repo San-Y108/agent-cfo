@@ -19,6 +19,7 @@ import {
   ChevronUp,
 } from "lucide-react";
 import { useApp } from "@/lib/i18n/context";
+import { useConsoleState } from "@/lib/console/console-state";
 import { WalletHoloCard, WalletTopology } from "@/components/console/wallet-hologram";
 import { HolographicButton } from "@/components/ui/holographic-button";
 import { GradientText } from "@/components/ui/aceternity/colourful-text";
@@ -33,6 +34,13 @@ import {
 } from "@/components/console/command-deck";
 
 const BLUE = "#60A5FA";
+const ETH_PRICE_USD = 3400;
+
+function tokenValueUsd(symbol: string, balance: number): number {
+  if (symbol === "USDC" || symbol === "USDT") return balance;
+  if (symbol === "ETH") return balance * ETH_PRICE_USD;
+  return balance;
+}
 
 interface TokenBalance {
   symbol: string;

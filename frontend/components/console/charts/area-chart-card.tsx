@@ -39,9 +39,10 @@ export interface AreaChartCardProps {
   hint: string;
   description: string;
   embedded?: boolean;
+  data?: Array<{ month: string; volume: number; gasSaved: number; transactions: number }>;
 }
 
-export function AreaChartCard({ lang, title, hint, description, embedded = false }: AreaChartCardProps) {
+export function AreaChartCard({ lang, title, hint, description, embedded = false, data = MONTHLY_VOLUME_DATA }: AreaChartCardProps) {
   const wrapperRef = useRef<HTMLDivElement>(null);
   const [size, setSize] = useState<{ width: number; height: number } | null>(null);
 
@@ -90,7 +91,7 @@ export function AreaChartCard({ lang, title, hint, description, embedded = false
         </div>
         {size ? (
           <ResponsiveContainer width={size.width} height={size.height}>
-            <AreaChart data={MONTHLY_VOLUME_DATA} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+            <AreaChart data={data} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
               <defs>
                 <linearGradient id="colorVolume" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="5%" stopColor={VIOLET} stopOpacity="0.4" />

@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 
 import { useApp } from "@/lib/i18n/context";
+import { useConsoleState } from "@/lib/console/console-state";
 import { AnimatedNumber } from "@/components/ui/aceternity/animated-number";
 import { Sparkles as SparklesFX } from "@/components/ui/aceternity/sparkles";
 import { BentoCard } from "@/components/ui/aceternity/bento-grid";
@@ -34,6 +35,27 @@ const PieChartCard = dynamic(
 );
 
 const VIOLET = "#C084FC";
+
+const RANGE_DATA: Record<"30d" | "90d" | "1y", Array<{ month: string; volume: number; gasSaved: number; transactions: number }>> = {
+  "30d": [
+    { month: "W1", volume: 4200, gasSaved: 60, transactions: 7 },
+    { month: "W2", volume: 5100, gasSaved: 90, transactions: 10 },
+    { month: "W3", volume: 7800, gasSaved: 145, transactions: 13 },
+    { month: "W4", volume: 6600, gasSaved: 110, transactions: 11 },
+  ],
+  "90d": [
+    { month: "Jan", volume: 8400, gasSaved: 120, transactions: 14 },
+    { month: "Feb", volume: 10200, gasSaved: 180, transactions: 19 },
+    { month: "Mar", volume: 15600, gasSaved: 290, transactions: 26 },
+    { month: "Apr", volume: 13200, gasSaved: 220, transactions: 22 },
+    { month: "May", volume: 19800, gasSaved: 380, transactions: 34 },
+    { month: "Jun", volume: 24500, gasSaved: 490, transactions: 41 },
+  ],
+  "1y": [
+    { month: "H1", volume: 28000, gasSaved: 520, transactions: 48 },
+    { month: "H2", volume: 32000, gasSaved: 610, transactions: 56 },
+  ],
+};
 
 function RangePills({
   active,
@@ -71,38 +93,49 @@ function RangePills({
 
 export function AnalyticsModule() {
   const { t, lang } = useApp();
+  const { plan, records } = useConsoleState();
   const [activeRange, setActiveRange] = useState<"30d" | "90d" | "1y">("90d");
 
-  const totalVolume = 91700;
-  const totalGasSaved = 1580;
-  const totalTxCount = 156;
+  /* ─── derive KPIs from global execution state ─── */
+  const executedItems = plan.filter((i) => i.status === "Executed");
+  const blockedItems = plan.filter((i) => i.status === "Blocked");
+  const totalVolume = executedItems.reduce((a, c) => a + c.record.amount, 0);
+  const totalBlocked = blockedItems.reduce((a, c) => a + c.record.amount, 0);
+  const totalTxCount = executedItems.length;
+  const gasPerTx = 5;
+  const totalGasSaved = totalTxCount * gasPerTx;
+
+  /* Fallback to mock headline numbers before any plan exists. */
+  const displayVolume = totalVolume || 91700;
+  const displayGasSaved = totalGasSaved || 1580;
+  const displayTxCount = totalTxCount || 156;
 
   const kpis = [
     {
       prefix: "VOLUME::",
-      value: <AnimatedNumber value={totalVolume} />,
-      sub: lang === "zh" ? "较上期 +24%" : "+24% vs last period",
+      value: <AnimatedNumber value={displayVolume} />,
+      sub: lang === "zh" ? "已执行总金额 (USDC)" : "Total executed (USDC)",
       color: "violet" as const,
       icon: TrendingUp,
     },
     {
-      prefix: "GAS::",
-      value: `$${totalGasSaved.toLocaleString()}`,
-      sub: lang === "zh" ? `批处理节省 ${totalGasSaved * 4} gwei` : `Saved ${totalGasSaved * 4} gwei via batching`,
-      color: "cyan" as const,
+      prefix: "BLOCKED::",
+      value: <AnimatedNumber value={totalBlocked} />,
+      sub: lang === "zh" ? "被拦截金额 (USDC)" : "Blocked amount (USDC)",
+      color: "coral" as const,
       icon: Zap,
     },
     {
       prefix: "CYCLES::",
-      value: `${totalTxCount}`,
-      sub: lang === "zh" ? "100% 规则合规率" : "100% compliance rate",
+      value: `${displayTxCount}`,
+      sub: lang === "zh" ? "执行笔数" : "Executed payments",
       color: "lime" as const,
       icon: CheckCircle,
     },
     {
-      prefix: "LATENCY::",
-      value: "1.8s",
-      sub: lang === "zh" ? "底层 API 区块同步活跃" : "API block sync active",
+      prefix: "RECORDS::",
+      value: `${records.length}`,
+      sub: lang === "zh" ? "待处理记录" : "Pending records",
       color: "blue" as const,
       icon: BarChart3,
     },
@@ -168,6 +201,7 @@ export function AnalyticsModule() {
               title={t("console.analytics.payoutChart" as any)}
               hint={t("console.analytics.chartHover" as any)}
               description={t("console.analytics.chartDesc" as any)}
+              data={RANGE_DATA[activeRange]}
             />
           </div>
 
