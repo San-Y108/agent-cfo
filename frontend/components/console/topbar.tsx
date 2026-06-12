@@ -10,8 +10,13 @@ const TAB_META: Record<
   { titleKey: string; subtitleKey: string; color: string }
 > = {
   "/console": {
-    titleKey: "console.tab.treasury",
-    subtitleKey: "console.treasury.welcomeDesc",
+    titleKey: "console.tab.agent",
+    subtitleKey: "console.agent.desc",
+    color: "#B5FF4D",
+  },
+  "/console/agent": {
+    titleKey: "console.tab.agent",
+    subtitleKey: "console.agent.desc",
     color: "#B5FF4D",
   },
   "/console/wallets": {

@@ -438,7 +438,7 @@
 | 2026-06-12 | **Phase 6.2 Wallets 主角模块改造完成** | 将 Wallets 改为 Command Deck 布局：左侧 Vaults 可折叠卫星卡、中间 Vault Topology 主角模块（FrostedPanel + CornerGlow + Scanline + StatusPulse）、右侧 Active Wallet Detail 卫星卡、底部 Signers Matrix 横向卫星卡条、右下角 Transfer 浮动卫星卡；桌面 + 移动端截图验证；`pnpm typecheck` + `pnpm build` 通过。 |
 | 2026-06-12 | **Phase 6.2 Analytics 主角模块改造完成** | 将 Analytics 改为 Command Deck 布局：左侧 KPI HUD 数字列、中间 Living Area Chart 主角模块（FrostedPanel + CornerGlow + Scanline + StatusPulse）、右上角 Pie Chart 卫星卡、底部 Comparison Matrix 横向卫星卡条；AreaChartCard / PieChartCard 新增 `embedded` prop；桌面 + 移动端截图验证；`pnpm typecheck` + `pnpm build` 通过。 |
 | 2026-06-12 | **Phase 6.2 Policy 主角模块改造完成** | 将 Policy 改为 Command Deck 布局：左侧 Rules 卫星卡列（hover 同步高亮神经网络节点）、中间 Neural Guardrails Graph 主角模块（FrostedPanel + CornerGlow + Scanline + StatusPulse + SVG 力导向图）、右侧 Threshold 卫星卡（含 integrity cards）、底部 Whitelist 横向卫星卡条；规则节点与图表双向联动；`pnpm typecheck` + `pnpm build` 通过。 |
-| 2026-06-12 | **Phase 6.2 Agent 主角模块改造完成** | 将 Agent 改为 Command Deck 布局：左侧 Chat 卫星卡、中间 Sentient CFO Persona 主角模块（FrostedPanel + CornerGlow + Scanline + StatusPulse + 磨砂玻璃质感球体 + 呼吸/分析动画）、底部 Quick Actions 横向卫星卡条；响应式 lg 堆叠；`pnpm typecheck` + `pnpm build` 通过。 |
+| 2026-06-12 | **Console 导航重构 + 过渡动画诊断** | 移除 desktop 左侧 Sidebar 与 3.2s 自动收缩机制；新增 `components/console/nav-dock.tsx` 浮动 HUD 胶囊导航条（FrostedPanel + 5 页图标标签 + 活跃态发光）；保留 mobile 顶部图标导航；`ConsoleSidebar` 简化为仅 mobile；`app/console/layout.tsx` 移除 marginLeft 动画与 auto-collapse state；诊断确认 `template.tsx` Boot Overlay 工作正常（按 sessionStorage 每会话只播放一次）；`pnpm typecheck` + `pnpm build` 通过。 |
 
 ---
 
@@ -480,6 +480,52 @@
 - [ ] **6.4.4** Agent 有磨砂玻璃质感
 - [ ] **6.4.5** `pnpm typecheck` + `pnpm build` 通过
 - [ ] **6.4.6** 截图存档到 `docs/screenshots/console-v3/`
+
+---
+
+## Phase 7: Console Command Center 重构（新增）
+
+> **目标**: 从传统导航面板升级为"AI Agent 常驻指挥中心"
+> **Plan**: `frontend/docs/plans/console-command-center-plan.md`
+> **来源**: 2026-06-12 用户讨论确认
+
+### 7.1 布局重构 — 常驻分屏
+
+- [ ] **7.1.1** `/console` 默认改为 Agent hub
+- [ ] **7.1.2** 创建 `EdgeCapsuleGroup` 左右边缘胶囊导航
+  - 左侧：Treasury、Policy
+  - 右侧：Wallets、Analytics
+  - 平时贴边隐藏，hover 浮出
+- [ ] **7.1.3** 创建 `ModulePanel` 可滑出常驻面板
+- [ ] **7.1.4** 改造 `app/console/layout.tsx` 为常驻分屏框架
+- [ ] **7.1.5** 把 4 个功能页抽成模块组件
+- [ ] **7.1.6** 移动端适配
+
+### 7.2 进入动画 — AI 觉醒 + 全息扫描（2.5s）
+
+- [ ] **7.2.1** 增强 `app/console/template.tsx`
+- [ ] **7.2.2** 黑屏 → lime 光点呼吸
+- [ ] **7.2.3** 光点扩展成 Agent 球体
+- [ ] **7.2.4** 全息扫描光束横扫
+- [ ] **7.2.5** HUD 网格/标签凝结显现
+- [ ] **7.2.6** 左右胶囊滑入，Agent 亮起
+- [ ] **7.2.7** 支持 `prefers-reduced-motion`
+
+### 7.3 模块切换微动画
+
+- [ ] **7.3.1** Treasury：左滑 + KPI stagger
+- [ ] **7.3.2** Policy：左滑 + 节点逐个亮起
+- [ ] **7.3.3** Wallets：右滑 + 数据包飞入
+- [ ] **7.3.4** Analytics：右滑 + 图表线绘制
+- [ ] **7.3.5** Agent：面板关闭 + orb 脉冲
+
+### 7.4 打磨与验收
+
+- [ ] **7.4.1** 胶囊 hover/active 视觉统一
+- [ ] **7.4.2** 面板 glow/scanline 风格统一
+- [ ] **7.4.3** `pnpm typecheck` + `pnpm build` 通过
+- [ ] **7.4.4** 桌面/移动端截图
+- [ ] **7.4.5** 更新 handoff 文档
 
 ---
 
