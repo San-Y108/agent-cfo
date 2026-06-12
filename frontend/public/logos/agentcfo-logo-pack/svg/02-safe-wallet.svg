@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" role="img" aria-label="Safe Wallet logo approximation">
+  <title>Safe Wallet logo approximation</title>
+  <rect width="256" height="256" fill="none"/>
+  <rect x="32" y="54" width="192" height="148" rx="46" fill="#12FF80"/>
+  <path d="M86 128c0-24 19-43 43-43h39" fill="none" stroke="#0B0F14" stroke-width="22" stroke-linecap="round"/>
+  <path d="M170 128c0 24-19 43-43 43H88" fill="none" stroke="#0B0F14" stroke-width="22" stroke-linecap="round"/>
+  <circle cx="87" cy="128" r="12" fill="#0B0F14"/>
+  <circle cx="169" cy="128" r="12" fill="#0B0F14"/>
+</svg>

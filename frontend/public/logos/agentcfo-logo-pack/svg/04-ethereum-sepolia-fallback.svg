@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" role="img" aria-label="Ethereum diamond logo">
+  <title>Ethereum diamond logo — Sepolia fallback</title>
+  <rect width="256" height="256" fill="none"/>
+  <polygon points="128,22 55,134 128,101 201,134" fill="#8A92B2"/>
+  <polygon points="128,101 55,134 128,176 201,134" fill="#62688F"/>
+  <polygon points="128,22 128,101 201,134" fill="#62688F"/>
+  <polygon points="128,22 55,134 128,101" fill="#C9D1FF"/>
+  <polygon points="55,148 128,234 128,190" fill="#8A92B2"/>
+  <polygon points="201,148 128,234 128,190" fill="#62688F"/>
+</svg>

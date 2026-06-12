@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" role="img" aria-label="GitHub node icon">
+  <title>GitHub node icon</title>
+  <defs>
+    <radialGradient id="glow" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#181717" stop-opacity="0.45"/><stop offset="0.58" stop-color="#181717" stop-opacity="0.18"/><stop offset="1" stop-color="#181717" stop-opacity="0"/></radialGradient>
+    <linearGradient id="accent" x1="58" y1="58" x2="198" y2="198" gradientUnits="userSpaceOnUse"><stop stop-color="#181717"/><stop offset="1" stop-color="#ffffff" stop-opacity="0.82"/></linearGradient>
+  </defs>
+  <rect width="256" height="256" fill="none"/>
+  <circle cx="128" cy="128" r="118" fill="url(#glow)"/>
+  <circle cx="128" cy="128" r="88" fill="#0B0F14" fill-opacity="0.94" stroke="#181717" stroke-opacity="0.75" stroke-width="2"/>
+  <path fill="#fff" fill-rule="evenodd" clip-rule="evenodd" d="M128 58c-39 0-70 31-70 70c0 31 20 57 48 66c3 1 5-1 5-3v-17c-20 4-24-8-24-8c-3-8-8-10-8-10c-6-4 0-4 0-4c7 1 11 8 11 8c6 11 16 8 21 6c1-5 3-8 5-10c-16-2-32-8-32-35c0-8 3-14 7-19c-1-2-3-9 1-19c0 0 6-2 19 8c6-2 11-2 17-2s12 1 17 2c13-10 19-8 19-8c4 10 2 17 1 19c5 5 7 11 7 19c0 27-16 33-32 35c3 2 5 6 5 13v20c0 2 2 4 5 3c28-9 48-35 48-66c0-39-31-70-70-70Z"/>
+</svg>

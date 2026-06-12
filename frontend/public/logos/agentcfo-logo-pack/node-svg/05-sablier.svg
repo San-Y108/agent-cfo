@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" role="img" aria-label="Sablier node icon">
+  <title>Sablier node icon</title>
+  <defs>
+    <radialGradient id="glow" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#F77423" stop-opacity="0.45"/><stop offset="0.58" stop-color="#F77423" stop-opacity="0.18"/><stop offset="1" stop-color="#F77423" stop-opacity="0"/></radialGradient>
+    <linearGradient id="accent" x1="58" y1="58" x2="198" y2="198" gradientUnits="userSpaceOnUse"><stop stop-color="#F77423"/><stop offset="1" stop-color="#ffffff" stop-opacity="0.82"/></linearGradient>
+  </defs>
+  <rect width="256" height="256" fill="none"/>
+  <circle cx="128" cy="128" r="118" fill="url(#glow)"/>
+  <circle cx="128" cy="128" r="88" fill="#0B0F14" fill-opacity="0.94" stroke="#F77423" stroke-opacity="0.75" stroke-width="2"/>
+  <path fill="url(#accent)" d="M78 80c32-28 74-28 103 0c4 4 5 11 1 16c-9 13-21 24-34 32c-10 6-21 4-29-4l-14-14c-7-7-18 4-11 11l68 68c4 4 3 11-2 14c-27 17-61 17-88-1c-5-3-7-11-3-16c10-14 22-25 35-33c9-5 21-4 28 4l16 16c7 7 18-4 11-11L76 95c-4-4-3-11 2-15Z"/>
+</svg>

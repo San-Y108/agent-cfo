@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 190 237" role="img" aria-label="Sablier logo approximation">
+  <title>Sablier logo approximation</title>
+  <defs><linearGradient id="sablier-g" x1="95" y1="0" x2="95" y2="237" gradientUnits="userSpaceOnUse"><stop stop-color="#F77423"/><stop offset="1" stop-color="#FBCE5B"/></linearGradient></defs>
+  <rect width="190" height="237" fill="none"/>
+  <path fill="url(#sablier-g)" d="M15 35c50-43 115-43 160 0c6 6 7 16 2 23c-14 20-31 36-51 49c-14 9-31 7-43-5L61 80c-10-10-26 5-16 16l101 101c6 6 5 16-2 21c-40 25-91 25-131-1c-8-5-10-16-4-24c15-21 32-37 52-50c13-8 30-6 41 5l24 24c10 10 26-5 16-16L12 56c-6-6-5-16 3-21Z"/>
+</svg>
