@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useRef, useEffect, useMemo } from "react";
-import { motion, useReducedMotion } from "framer-motion";
+import { motion, useReducedMotion, useMotionValue, useSpring } from "framer-motion";
 
 /* ========================================================================
  * Web3NodeCloud — Orbital Trust Stack v4
@@ -365,7 +365,7 @@ function NetworkNode({
       onMouseEnter={onHover}
       onMouseLeave={onLeave}
     >
-      {/* Back glow */}
+      {/* Back glow — static, only scale on hover */}
       <motion.div
         className="absolute rounded-full"
         style={{
@@ -374,10 +374,10 @@ function NetworkNode({
           marginLeft: -(size + glowSize * 2.4) / 2,
           marginTop: -(size + glowSize * 2.4) / 2,
           background: `radial-gradient(circle at 50% 50%, ${node.color}22, transparent 70%)`,
-          opacity: isHovered ? 0.85 : 0.25,
+          opacity: isDimmed ? 0.25 : isHovered ? 0.85 : 0.4,
         }}
-        animate={isHovered ? { scale: 1.15 } : { scale: [1, 1.06, 1], opacity: isDimmed ? 0.25 : 0.4 }}
-        transition={isHovered ? { duration: 0.3 } : { duration: 3 + index * 0.5, repeat: Infinity, ease: "easeInOut" }}
+        animate={{ scale: isHovered ? 1.15 : 1 }}
+        transition={{ duration: 0.3 }}
       />
 
       {/* Node: icon fills the circle + tight outer ring with glow */}
@@ -468,20 +468,22 @@ export function Web3NodeCloud() {
 
   const anyHovered = hoveredId !== null || centerHovered;
 
-  // Subtle parallax
-  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+  // Subtle parallax — use MotionValue to avoid React re-renders on every mousemove
+  const rawMouseX = useMotionValue(0);
+  const rawMouseY = useMotionValue(0);
+  const springX = useSpring(rawMouseX, { stiffness: 100, damping: 30 });
+  const springY = useSpring(rawMouseY, { stiffness: 100, damping: 30 });
+
   useEffect(() => {
     const onMove = (e: MouseEvent) => {
       if (!containerRef.current) return;
       const rect = containerRef.current.getBoundingClientRect();
-      setMousePos({
-        x: (e.clientX - rect.left - rect.width / 2) / 40,
-        y: (e.clientY - rect.top - rect.height / 2) / 40,
-      });
+      rawMouseX.set((e.clientX - rect.left - rect.width / 2) / 40);
+      rawMouseY.set((e.clientY - rect.top - rect.height / 2) / 40);
     };
     window.addEventListener("mousemove", onMove);
     return () => window.removeEventListener("mousemove", onMove);
-  }, []);
+  }, [rawMouseX, rawMouseY]);
 
   const grouped = useMemo(() => {
     return NODES.reduce(
@@ -543,11 +545,10 @@ export function Web3NodeCloud() {
 
         {/* Right: Constellation — kept below the left copy layer */}
         <div className="relative z-0" style={{ height: 360, width: 360 }}>
-          {/* Parallax layer */}
+          {/* Parallax layer — style-driven to skip React render on mousemove */}
           <motion.div
             className="absolute inset-0"
-            animate={{ x: mousePos.x, y: mousePos.y }}
-            transition={{ type: "spring", stiffness: 100, damping: 30 }}
+            style={{ x: springX, y: springY }}
           >
             <NebulaParticles count={12} />
 

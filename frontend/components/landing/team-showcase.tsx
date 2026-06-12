@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 import { Rocket, Server, Layout, Wallet, Palette, Crown } from "lucide-react";
 import { useApp } from "@/lib/i18n/context";
@@ -102,14 +102,50 @@ const MENTOR: Member = {
   isMentor: true,
 };
 
-/* Pentagon vertex coordinates (radius = 210, starting from top) */
-const PENTAGON_R = 210;
+/* Letter colors for TEAM — each letter has its own identity */
+const TEAM_LETTERS = [
+  { char: "T", color: "#FB7185", glow: "rgba(251,113,133,0.6)" },
+  { char: "E", color: "#5EEAD4", glow: "rgba(94,234,212,0.6)" },
+  { char: "A", color: "#60A5FA", glow: "rgba(96,165,250,0.6)" },
+  { char: "M", color: "#B5FF4D", glow: "rgba(181,255,77,0.6)" },
+];
+
+function AnimatedTeamWord() {
+  return (
+    <span className="inline-flex items-baseline">
+      {TEAM_LETTERS.map((l, i) => (
+        <span
+          key={i}
+          className="inline-block animate-team-letter"
+          style={{
+            background: `linear-gradient(90deg, #ffffff, ${l.color}, #ffffff, ${l.color})`,
+            backgroundSize: "300% 100%",
+            WebkitBackgroundClip: "text",
+            backgroundClip: "text",
+            WebkitTextFillColor: "transparent",
+            filter: `drop-shadow(0 0 22px ${l.glow}) drop-shadow(0 0 42px ${l.glow})`,
+            animationDelay: `${i * 0.18}s`,
+          }}
+        >
+          {l.char}
+        </span>
+      ))}
+      <span className="text-white/90">.</span>
+    </span>
+  );
+}
+
+/* Which side panel shows detail for each member index (left=opposite of member's position) */
+const DETAIL_SIDE: ("left" | "right")[] = ["right", "left", "left", "right", "right"];
+
+/* Pentagon vertex coordinates (radius = 270, starting from top) */
+const PENTAGON_R = 270;
 const PENTAGON_COORDS = [
-  { x: 0, y: -PENTAGON_R },           // Top: Cap (PM)
-  { x: 200, y: -65 },                 // Top-right: Node (Backend)
-  { x: 123, y: 170 },                 // Bottom-right: Pixel (Frontend)
-  { x: -123, y: 170 },                // Bottom-left: Vault (Contract)
-  { x: -200, y: -65 },                // Top-left: Ink (Design)
+  { x: 0, y: -PENTAGON_R },           // Top
+  { x: 257, y: -84 },                 // Top-right
+  { x: 158, y: 219 },                 // Bottom-right
+  { x: -158, y: 219 },                // Bottom-left
+  { x: -257, y: -84 },                // Top-left
 ];
 
 /* ── Avatar with rotating ring ───────────────────────────────────────── */
@@ -240,8 +276,8 @@ function MemberCard({
       style={{
         left: "50%",
         top: "50%",
-        marginLeft: -70,
-        marginTop: -100,
+        marginLeft: -90,
+        marginTop: -130,
         zIndex: isHovered ? 50 : 10,
       }}
       initial={{ opacity: 0, scale: 0.3, x: 0, y: 0 }}
@@ -255,7 +291,7 @@ function MemberCard({
       onMouseLeave={onLeave}
     >
       <div
-        className="relative flex h-[200px] w-[140px] flex-col items-center overflow-hidden rounded-xl border p-4 text-center transition-all duration-500"
+        className="relative flex h-[260px] w-[180px] flex-col items-center overflow-hidden rounded-xl border p-5 text-center transition-all duration-500"
         style={{
           borderColor: isHovered ? `${member.accent}50` : "rgba(255,255,255,0.12)",
           background: isHovered
@@ -270,7 +306,7 @@ function MemberCard({
       >
         {/* Role badge — top-right pill */}
         <div
-          className="absolute top-1 right-2 text-[8px] font-bold uppercase tracking-[0.15em] px-1.5 py-0.5 rounded-full z-20"
+          className="absolute top-2 right-3 text-[9px] font-bold uppercase tracking-[0.15em] px-2 py-0.5 rounded-full z-20"
           style={{
             fontFamily: "'Courier New', Courier, monospace",
             backgroundColor: `${member.accent}18`,
@@ -282,25 +318,25 @@ function MemberCard({
         </div>
 
         {/* Avatar */}
-        <div className="mt-5">
+        <div className="mt-6">
           <AvatarRing
             accent={member.accent}
             avatar={member.avatar}
             icon={member.icon}
             speed={member.ringSpeed}
             active={isHovered}
-            size={56}
+            size={72}
           />
         </div>
 
         {/* Handle */}
-        <div className="mt-1.5 font-mono text-sm font-bold text-white">
+        <div className="mt-2 font-mono text-base font-bold text-white">
           {member.handle}
         </div>
 
         {/* Divider */}
         <div
-          className="mt-3 h-[2px] w-8 rounded-full transition-all duration-500"
+          className="mt-4 h-[2px] w-10 rounded-full transition-all duration-500"
           style={{
             backgroundColor: member.accent,
             opacity: isHovered ? 1 : 0.4,
@@ -310,7 +346,7 @@ function MemberCard({
 
         {/* Description (visible on hover) */}
         <div
-          className="mt-3 text-[10px] leading-relaxed text-white/90 transition-all duration-500"
+          className="mt-4 text-[11px] leading-relaxed text-white/90 transition-all duration-500"
           style={{
             opacity: isHovered ? 1 : 0,
             transform: isHovered ? "translateY(0)" : "translateY(6px)",
@@ -347,8 +383,8 @@ function MentorCard({
       style={{
         left: "50%",
         top: "50%",
-        marginLeft: -90,
-        marginTop: -125,
+        marginLeft: -115,
+        marginTop: -160,
         zIndex: isHovered ? 60 : 20,
       }}
       initial={{ opacity: 0, scale: 0.5 }}
@@ -362,7 +398,7 @@ function MentorCard({
       onMouseLeave={onLeave}
     >
       <div
-        className="relative flex h-[250px] w-[180px] flex-col items-center overflow-hidden rounded-xl border p-5 text-center transition-all duration-500"
+        className="relative flex h-[320px] w-[230px] flex-col items-center overflow-hidden rounded-xl border p-6 text-center transition-all duration-500"
         style={{
           borderColor: isHovered ? "rgba(255,215,0,0.5)" : "rgba(255,255,255,0.15)",
           background: isHovered
@@ -375,7 +411,7 @@ function MentorCard({
       >
         {/* Mentor badge */}
         <div
-          className="absolute top-3 right-3 text-[8px] font-bold uppercase tracking-[0.2em] px-2 py-0.5 rounded-full"
+          className="absolute top-4 right-4 text-[9px] font-bold uppercase tracking-[0.2em] px-2.5 py-0.5 rounded-full"
           style={{
             backgroundColor: "rgba(255,215,0,0.15)",
             color: "#FFD700",
@@ -392,17 +428,17 @@ function MentorCard({
           icon={MENTOR.icon}
           speed={MENTOR.ringSpeed}
           active={isHovered}
-          size={72}
+          size={92}
         />
 
         {/* Handle */}
-        <div className="mt-4 font-mono text-lg font-bold text-white">
+        <div className="mt-5 font-mono text-xl font-bold text-white">
           {MENTOR.handle}
         </div>
 
         {/* Divider */}
         <div
-          className="mt-3 h-[2px] w-10 rounded-full transition-all duration-500"
+          className="mt-4 h-[2px] w-12 rounded-full transition-all duration-500"
           style={{
             backgroundColor: "#FFD700",
             opacity: isHovered ? 1 : 0.5,
@@ -411,7 +447,7 @@ function MentorCard({
         />
 
         {/* Description */}
-        <p className="mt-3 text-[11px] leading-relaxed text-white/80">
+        <p className="mt-4 text-[12px] leading-relaxed text-white/80">
           {_(MENTOR.contribZh, MENTOR.contribEn)}
         </p>
       </div>
@@ -496,10 +532,22 @@ export function TeamShowcase() {
   const { lang } = useApp();
   const _ = useCallback((zh: string, en: string) => (lang === "zh" ? zh : en), [lang]);
   const reduce = useReducedMotion();
-  const [hoveredIdx, setHoveredIdx] = useState<number | null>(null);
-  const [mentorHovered, setMentorHovered] = useState(false);
+  const [selectedIdx, setSelectedIdx] = useState<number | null>(null);
+  const [mentorSelected, setMentorSelected] = useState(false);
 
-  const anyHovered = hoveredIdx !== null || mentorHovered;
+  const anySelected = selectedIdx !== null || mentorSelected;
+
+  // Close panels on Escape
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setSelectedIdx(null);
+        setMentorSelected(false);
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
 
   return (
     <section
@@ -521,35 +569,69 @@ export function TeamShowcase() {
       <div className="relative z-10 mx-auto max-w-7xl">
         {/* Heading */}
         <motion.div
-          className="mx-auto mb-16 max-w-2xl text-center lg:mb-24"
+          className="mx-auto mb-16 max-w-3xl text-center lg:mb-24"
           initial={reduce ? false : { opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, amount: 0.5 }}
           transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
         >
-          <h2 className="text-3xl font-extrabold tracking-tight text-white md:text-4xl">
-            {_("由这支团队打造", "Built by the team")}
+          <h2
+            className="text-4xl font-black md:text-5xl lg:text-6xl whitespace-nowrap"
+            style={{ letterSpacing: "-0.03em", lineHeight: 1.0 }}
+          >
+            {lang === "zh" ? (
+              <span
+                style={{
+                  background: "linear-gradient(135deg, #ffffff 15%, #B5FF4D 55%, #5EEAD4 100%)",
+                  WebkitBackgroundClip: "text",
+                  backgroundClip: "text",
+                  WebkitTextFillColor: "transparent",
+                  filter: "drop-shadow(0 0 48px rgba(181,255,77,0.55)) drop-shadow(0 0 96px rgba(181,255,77,0.3))",
+                }}
+              >
+                由这支团队打造
+              </span>
+            ) : (
+              <span
+                className="inline-flex flex-wrap items-baseline justify-center gap-x-3"
+                style={{ color: "rgba(255,255,255,0.92)" }}
+              >
+                <span
+                  style={{
+                    fontSize: "0.55em",
+                    fontWeight: 400,
+                    letterSpacing: "0.04em",
+                    color: "rgba(255,255,255,0.55)",
+                    textTransform: "uppercase" as const,
+                  }}
+                >
+                  Built by the
+                </span>
+                <AnimatedTeamWord />
+              </span>
+            )}
           </h2>
-          <p className="mt-4 text-sm text-white/90 md:text-base">
+          <p className="mt-4 text-sm italic text-white/80 md:text-base">
             {_("五个角色，一位导师，一条受控的资金流水线。", "Five roles, one mentor, one controlled money pipeline.")}
           </p>
         </motion.div>
 
         {/* ── Desktop: Constellation Pentagon ── */}
-        <div className="hidden lg:block">
+        <div className="hidden lg:flex lg:items-center lg:justify-center">
+          {/* Pentagon */}
           <div
-            className="relative mx-auto"
-            style={{ width: 560, height: 560 }}
+            className="relative shrink-0 mx-auto"
+            style={{ width: 720, height: 720 }}
           >
             {/* Connection lines */}
-            <ConnectionLines activeIndex={hoveredIdx} mentorActive={mentorHovered} />
+            <ConnectionLines activeIndex={selectedIdx} mentorActive={mentorSelected} />
 
             {/* Mentor (center) */}
             <MentorCard
-              isHovered={mentorHovered}
-              anyHovered={anyHovered}
-              onHover={() => setMentorHovered(true)}
-              onLeave={() => setMentorHovered(false)}
+              isHovered={mentorSelected}
+              anyHovered={anySelected}
+              onHover={() => setMentorSelected(true)}
+              onLeave={() => setMentorSelected(false)}
             />
 
             {/* 5 outer members */}
@@ -558,10 +640,10 @@ export function TeamShowcase() {
                 key={m.handle}
                 member={m}
                 index={i}
-                isHovered={hoveredIdx === i}
-                anyHovered={anyHovered}
-                onHover={() => setHoveredIdx(i)}
-                onLeave={() => setHoveredIdx(null)}
+                isHovered={selectedIdx === i}
+                anyHovered={anySelected}
+                onHover={() => setSelectedIdx(i)}
+                onLeave={() => setSelectedIdx(null)}
               />
             ))}
           </div>

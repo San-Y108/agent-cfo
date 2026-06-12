@@ -2,8 +2,7 @@
 
 import React, { useRef, useCallback } from "react";
 import { motion } from "framer-motion";
-import Link from "next/link";
-import { ArrowRight, Play, X } from "lucide-react";
+import { Play, X } from "lucide-react";
 
 // ── Demo video slot ──
 // Materials team: drop the final demo video URL here (e.g. "/demo.mp4" or a CDN
@@ -68,16 +67,73 @@ export function GuardrailsCTA() {
                 Move funds with confidence
               </span>
               <h2
-                className="mt-3 font-medium leading-[1.08] text-white"
+                className="mt-3 font-black leading-[1.05]"
                 style={{
                   fontFamily: "Inter, sans-serif",
-                  fontSize: "clamp(2rem, 4.4vw, 3.25rem)",
+                  fontSize: "clamp(2.1rem, 4.6vw, 3.5rem)",
+                  letterSpacing: "-0.025em",
+                  color: "rgba(255, 255, 255, 0.88)",
+                  textShadow: "0 2px 12px rgba(0,0,0,0.35)",
+                  WebkitFontSmoothing: "antialiased",
                 }}
               >
-                Every payout is checked, approved, and reported.
+                Every payout is{" "}
+                <span
+                  className="inline-block animate-guard-word"
+                  style={{
+                    background: "linear-gradient(90deg, #B5FF4D, #00E5B0, #CCFF00, #B5FF4D)",
+                    backgroundSize: "300% 100%",
+                    WebkitBackgroundClip: "text",
+                    backgroundClip: "text",
+                    WebkitTextFillColor: "transparent",
+                  }}
+                >
+                  checked
+                </span>
+                ,{" "}
+                <span
+                  className="inline-block animate-guard-word"
+                  style={{
+                    background: "linear-gradient(90deg, #5EEAD4, #60A5FA, #00FFD1, #5EEAD4)",
+                    backgroundSize: "300% 100%",
+                    WebkitBackgroundClip: "text",
+                    backgroundClip: "text",
+                    WebkitTextFillColor: "transparent",
+                    animationDelay: "0.6s",
+                  }}
+                >
+                  approved
+                </span>
+                , and{" "}
+                <span
+                  className="inline-block animate-guard-word"
+                  style={{
+                    background: "linear-gradient(90deg, #C084FC, #F472B6, #A855F7, #C084FC)",
+                    backgroundSize: "300% 100%",
+                    WebkitBackgroundClip: "text",
+                    backgroundClip: "text",
+                    WebkitTextFillColor: "transparent",
+                    animationDelay: "1.2s",
+                  }}
+                >
+                  reported
+                </span>
+                .
               </h2>
+
+              <style jsx>{
+                `
+                @keyframes guard-word {
+                  0%, 100% { background-position: 0% 50%; }
+                  50% { background-position: 100% 50%; }
+                }
+                .animate-guard-word {
+                  animation: guard-word 4s ease-in-out infinite;
+                }
+                `
+              }</style>
               <p
-                className="mt-5 max-w-xl text-sm leading-relaxed text-white md:text-base"
+                className="mt-5 max-w-xl text-sm italic leading-relaxed text-white/80 md:text-base"
                 style={{ fontFamily: "Inter, sans-serif" }}
               >
                 AgentCFO turns messy contribution records into payout plans, blocks risky transfers,
@@ -85,23 +141,7 @@ export function GuardrailsCTA() {
               </p>
 
               <div className="mt-8 flex flex-wrap items-center gap-3">
-                {/* Primary CTA — direction-aware light + water ripple */}
-                <Link
-                  href="/console"
-                  className="group relative inline-flex items-center gap-2 overflow-hidden rounded-[10px] bg-[#B5FF4D] px-5 py-3 text-sm font-semibold text-[#0D0D0D] transition-all duration-200 hover:shadow-[0_0_28px_rgba(181,255,77,0.25)]"
-                  style={{ fontFamily: "Inter, sans-serif" }}
-                >
-                  {/* Water ripple on hover */}
-                  <span className="absolute inset-0 z-0 overflow-hidden rounded-[inherit] pointer-events-none">
-                    <span className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white/20 transition-all duration-600 ease-out group-hover:w-[250%] opacity-0 group-hover:opacity-100" style={{ width: "0%", aspectRatio: "1" }} />
-                  </span>
-                  <span className="relative z-10 flex items-center gap-2">
-                    Run demo
-                    <ArrowRight size={15} className="transition-transform duration-200 group-hover:translate-x-0.5" />
-                  </span>
-                </Link>
-
-                {/* Secondary CTA — direction-aware glow */}
+                {/* Primary CTA now lives in the navbar; keep a calm secondary action here */}
                 <DirectionAwareLink
                   href="#workflow"
                   className="inline-flex items-center gap-2 rounded-[10px] border border-white/25 px-5 py-3 text-sm font-medium text-white transition-all duration-200 hover:border-white/25 hover:text-white hover:shadow-[0_0_20px_rgba(181,255,77,0.08)]"
@@ -242,13 +282,48 @@ function DemoVideoCard() {
           )}
         </div>
 
-        {/* Status bar */}
+        {/* Status ribbon — chain of stage pills */}
         <div
-          className="flex items-center justify-between border-t border-white/12 bg-[#0a0a0a] px-4 py-2.5 text-[10px] text-white/60"
+          className="flex items-center justify-center gap-1 sm:gap-2 border-t border-white/12 bg-[#0a0a0a] px-4 py-3"
           style={{ fontFamily: "'Courier New', Courier, monospace" }}
         >
-          <span>records → plan → risk → approve → execute → audit</span>
-          <span className="text-white/50">mock · testnet</span>
+          {[
+            { label: "records", accent: "#5EEAD4" },
+            { label: "plan", accent: "#60A5FA" },
+            { label: "risk", accent: "#FB7185" },
+            { label: "approve", accent: "#C084FC" },
+            { label: "execute", accent: "#B5FF4D" },
+            { label: "audit", accent: "#E2E8F0" },
+          ].map((step, i, arr) => (
+            <React.Fragment key={step.label}>
+              <div
+                className="flex items-center gap-1.5 px-2 py-1 rounded-full border text-[9px] sm:text-[10px] font-mono uppercase tracking-wider"
+                style={{
+                  borderColor: `${step.accent}25`,
+                  background: `${step.accent}08`,
+                  color: step.accent,
+                  transform: `translateY(${i % 2 === 0 ? -2 : 2}px)`,
+                }}
+              >
+                <span
+                  className="w-1 h-1 rounded-full"
+                  style={{ background: step.accent, opacity: 0.8 }}
+                />
+                {step.label}
+              </div>
+              {i < arr.length - 1 && (
+                <div
+                  className="text-white/20 -mx-0.5"
+                  style={{ transform: `translateY(${i % 2 === 0 ? 2 : -2}px)` }}
+                >
+                  <svg width="10" height="6" viewBox="0 0 10 6" fill="none" className="opacity-50">
+                    <path d="M1 1L5 5L9 1" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </div>
+              )}
+            </React.Fragment>
+          ))}
+          <span className="ml-auto text-[9px] text-white/40 hidden sm:inline">mock · testnet</span>
         </div>
       </div>
 

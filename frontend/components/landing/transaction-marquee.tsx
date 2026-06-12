@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { motion, useReducedMotion, useMotionValue, useSpring, useTransform, useAnimationFrame } from "framer-motion";
+import { motion, useReducedMotion } from "framer-motion";
 
 type Status = "SIGNED" | "POLICY_HOLD" | "SAFE_LIMIT" | "RECORDS_IN" | "WALLET_LIVE" | "AUDIT_OK";
 
@@ -43,6 +43,10 @@ const DOT_COLOR: Record<Status, string> = {
   WALLET_LIVE: "bg-[#60A5FA]",
   AUDIT_OK:    "bg-[#C084FC]",
 };
+
+const WAVE_BG = `url("data:image/svg+xml;utf8,${encodeURIComponent(
+  '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 60 12" preserveAspectRatio="none"><path d="M0,6 Q15,1 30,6 T60,6" fill="none" stroke="rgba(181,255,77,0.35)" stroke-width="1"/></svg>'
+)}")`;
 
 /* ── Decorative rail components ─────────────────────────────────────── */
 
@@ -164,32 +168,35 @@ const ORNAMENTS_BOTTOM: OrnamentType[] = [
 ];
 
 function TopBottomRail({
-  direction,
+  flow,
   ornaments,
 }: {
-  direction: "left" | "right";
+  flow: "left" | "right";
   ornaments: OrnamentType[];
 }) {
   const reduce = useReducedMotion();
-  const driftX = direction === "left" ? [-16, 0] : [16, 0];
+  // 三份复制用于无缝循环：视觉向右流 = translate3d(+33.333%)，向左流 = -33.333%
+  const tripled = [...ornaments, ...ornaments, ...ornaments];
+  const animation = reduce
+    ? "none"
+    : `transaction-rail-flow-${flow} 60s linear infinite`;
 
   return (
     <div
       className="relative h-12 w-full pointer-events-none overflow-hidden"
       style={{
         background:
-          direction === "left"
+          flow === "right"
             ? "linear-gradient(180deg, rgba(255,255,255,0.03) 0%, transparent 100%)"
             : "linear-gradient(0deg, rgba(255,255,255,0.03) 0%, transparent 100%)",
       }}
     >
       <motion.div
-        className="absolute inset-0 flex items-center justify-around px-8"
-        animate={reduce ? {} : { x: driftX }}
-        transition={{ duration: 14, repeat: Infinity, repeatType: "mirror", ease: "easeInOut" }}
+        className="absolute inset-y-0 left-0 flex items-center gap-10 will-change-transform"
+        style={{ width: "max-content", animation }}
       >
-        {ornaments.map((type, i) => {
-          if (type === "gear") return <GearPulley key={i} direction={direction} />;
+        {tripled.map((type, i) => {
+          if (type === "gear") return <GearPulley key={i} direction={flow === "right" ? "left" : "right"} />;
           if (type === "chain") return <ChainLink key={i} />;
           if (type === "hex") return <HexNode key={i} />;
           if (type === "circuit") return <CircuitTrace key={i} />;
@@ -201,8 +208,8 @@ function TopBottomRail({
       <div
         className="absolute left-8 right-8 h-px"
         style={{
-          top: direction === "left" ? "auto" : "50%",
-          bottom: direction === "left" ? "50%" : "auto",
+          top: flow === "right" ? "auto" : "50%",
+          bottom: flow === "right" ? "50%" : "auto",
           background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.12), transparent)",
         }}
       />
@@ -218,18 +225,19 @@ export function TransactionMarquee() {
   const items = [...marqueeItems, ...marqueeItems, ...marqueeItems];
   const [hovered, setHovered] = useState(false);
 
-  const targetVelocity = reduce ? 0 : hovered ? 0.45 : 1.9;
-  const velocity = useSpring(targetVelocity, { stiffness: 28, damping: 18, mass: 1.2 });
-
-  const x = useMotionValue(0);
-
-  // Each copy of the list is 33.333% of the total width, so reset at that boundary.
-  useAnimationFrame((_, delta) => {
-    const v = velocity.get();
-    const step = (v * delta) / 35;
-    const next = x.get() - step;
-    x.set(next <= -33.333 ? 0 : next);
-  });
+  // 传送带改用 CSS keyframes（见下方 <style> 块）。30s/份 适合逐条阅读。
+  // -33.333% 是相对元素自身宽度，而元素 width: max-content ≈ 3 × 一份内容宽度，
+  // 所以 to 状态正好是滚过一份内容，下一帧回到 0 时视觉上是第二份内容无缝接位。
+  //
+  // Hover 行为：把 animation 字符串的 duration 拆出来改成 animationPlayState 单独切。
+  // 原因：CSS animation 的 duration 变化会触发浏览器从头重启 keyframes，元素会从
+  // "当前应在位置"瞬间跳回 from(x=0)，视觉上就是"突变"。play-state 切换只冻结/恢复
+  // 当前帧，无 restart。代价：hover 是"暂停"而非"减速"——但这反而更符合"想看清某个
+  // pill"的预期。
+  const scrollAnimation = reduce
+    ? "none"
+    : `transaction-marquee-scroll 30s linear infinite`;
+  const scrollPlayState = reduce || hovered ? "paused" : "running";
 
   return (
     <div
@@ -239,7 +247,21 @@ export function TransactionMarquee() {
         background: "linear-gradient(180deg, rgba(255,255,255,0.025) 0%, transparent 20%, transparent 80%, rgba(255,255,255,0.025) 100%)",
       }}
     >
-      <TopBottomRail direction="left" ornaments={ORNAMENTS_TOP} />
+      <style>{`
+        @keyframes transaction-marquee-scroll {
+          from { transform: translate3d(0, 0, 0); }
+          to   { transform: translate3d(-33.333%, 0, 0); }
+        }
+        @keyframes transaction-rail-flow-right {
+          from { transform: translate3d(0, 0, 0); }
+          to   { transform: translate3d(33.333%, 0, 0); }
+        }
+        @keyframes transaction-rail-flow-left {
+          from { transform: translate3d(0, 0, 0); }
+          to   { transform: translate3d(-33.333%, 0, 0); }
+        }
+      `}</style>
+      <TopBottomRail flow="right" ornaments={ORNAMENTS_TOP} />
 
       {/* Conveyor belt */}
       <div
@@ -248,24 +270,6 @@ export function TransactionMarquee() {
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
       >
-        {/* Top / bottom rail tracks */}
-        <div className="absolute inset-x-0 top-2 h-px bg-white/8" />
-        <div className="absolute inset-x-0 bottom-2 h-px bg-white/8" />
-
-        {/* Moving dashed center line — like a conveyor seam */}
-        <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 h-px overflow-hidden"
-          style={{ background: "linear-gradient(90deg, transparent 0%, rgba(181,255,77,0.12) 20%, rgba(181,255,77,0.12) 80%, transparent 100%)" }}
-        >
-          <motion.div
-            className="h-full w-[200%]"
-            style={{
-              background: "repeating-linear-gradient(90deg, rgba(181,255,77,0.35) 0px, rgba(181,255,77,0.35) 12px, transparent 12px, transparent 24px)",
-            }}
-            animate={{ x: ["0%", "-50%"] }}
-            transition={{ duration: 1.2, repeat: Infinity, ease: "linear" }}
-          />
-        </div>
-
         {/* Edge fades */}
         <div className="absolute left-0 top-0 bottom-0 w-28 z-10 pointer-events-none"
           style={{ background: "linear-gradient(90deg, rgba(13,13,13,1) 0%, rgba(13,13,13,0.9) 35%, transparent 100%)" }} />
@@ -274,16 +278,28 @@ export function TransactionMarquee() {
 
         {/* Scrolling cargo pills */}
         <motion.div
-          className="flex items-center gap-2"
-          style={{ width: "max-content", x: `${x}%` }}
+          className="flex items-center gap-2 will-change-transform relative"
+          style={{
+            width: "max-content",
+            animation: scrollAnimation,
+            animationPlayState: scrollPlayState,
+            backgroundImage: WAVE_BG,
+            backgroundRepeat: "repeat-x",
+            backgroundPosition: "0 58%",
+            backgroundSize: "48px 6px",
+          }}
         >
           {items.map((item, idx) => {
             const s = STATUS_STYLE[item.status];
+            const staggerY = Math.round(Math.sin(idx * 0.85) * 6);
             return (
               <React.Fragment key={idx}>
                 <div
                   className="inline-flex items-center gap-2.5 px-3.5 py-2 rounded-md border border-white/[0.09] bg-[#111111]/80 hover:bg-[#161616] transition-colors"
-                  style={{ boxShadow: `inset 0 1px 0 ${s.glow}` }}
+                  style={{
+                    boxShadow: `inset 0 1px 0 ${s.glow}`,
+                    transform: `translateY(${staggerY}px)`,
+                  }}
                 >
                   <div className={`w-1.5 h-1.5 rounded-full ${s.dot}`} style={{ opacity: 0.85, boxShadow: `0 0 6px ${s.glow}` }} />
                   <span className="text-[9px] font-mono text-white/35 hidden sm:inline uppercase tracking-wider">{item.sender}</span>
@@ -304,7 +320,7 @@ export function TransactionMarquee() {
         </motion.div>
       </div>
 
-      <TopBottomRail direction="right" ornaments={ORNAMENTS_BOTTOM} />
+      <TopBottomRail flow="left" ornaments={ORNAMENTS_BOTTOM} />
     </div>
   );
 }

@@ -94,19 +94,26 @@ function FilmGrainOverlay() {
 /**
  * Sprocket holes strip for the filmstrip edges.
  */
-function SprocketStrip() {
+function SprocketStrip({ side = "left" }: { side?: "left" | "right" }) {
   return (
     <div
-      className="absolute top-0 bottom-0 w-[22px] flex flex-col items-center py-3 gap-[14px]"
+      className="absolute top-0 bottom-0 w-[26px] flex flex-col items-center py-3 gap-[13px]"
+      style={{
+        background: "linear-gradient(180deg, rgba(5,5,5,0.99) 0%, rgba(9,9,9,0.99) 100%)",
+        borderRight: side === "left" ? "1px solid rgba(255,255,255,0.09)" : undefined,
+        borderLeft: side === "right" ? "1px solid rgba(255,255,255,0.09)" : undefined,
+      }}
       aria-hidden="true"
     >
       {Array.from({ length: 16 }).map((_, i) => (
         <div
           key={i}
-          className="w-[7px] h-[9px] rounded-[1px]"
+          className="w-[8px] h-[11px]"
           style={{
-            backgroundColor: "rgba(0,0,0,0.65)",
-            boxShadow: "inset 0 0 2px rgba(0,0,0,0.8), 0 0 0 1px rgba(255,255,255,0.10)",
+            borderRadius: "9999px",
+            backgroundColor: "rgba(0,0,0,0.97)",
+            boxShadow:
+              "0 0 0 1.5px rgba(255,255,255,0.24), inset 0 1px 3px rgba(0,0,0,1), inset 0 -1px 2px rgba(0,0,0,0.8)",
           }}
         />
       ))}
@@ -157,7 +164,7 @@ export function BuildTimeline() {
           start: "top top",
           end: "bottom bottom",
           pin: viewport,
-          scrub: 0.6,
+          scrub: 0.3,
           onLeave: () => {
             frames.forEach((f) => gsap.set(f, { opacity: 0 }));
             texts.forEach((t) => gsap.set(t, { opacity: 0 }));
@@ -176,9 +183,9 @@ export function BuildTimeline() {
           },
           snap: {
             snapTo: 1 / (frames.length - 1),
-            duration: { min: 0.2, max: 0.4 },
-            delay: 0,
-            ease: "power2.out",
+            duration: { min: 0.15, max: 0.3 },
+            delay: 0.05,
+            ease: "power1.out",
           },
         },
       });
@@ -271,14 +278,27 @@ export function BuildTimeline() {
 
                 {/* Large editorial title */}
                 <h4
-                  className="mt-3 text-3xl md:text-4xl lg:text-[42px] font-bold text-white leading-[1.1] tracking-tight"
-                  style={{ letterSpacing: "-0.02em" }}
+                  className="mt-3 text-3xl md:text-4xl lg:text-[42px] font-bold leading-[1.1]"
+                  style={{
+                    letterSpacing: "-0.02em",
+                    color: "#ffffff",
+                    textShadow: `0 0 28px ${p.accent}50, 0 2px 12px rgba(0,0,0,0.5)`,
+                  }}
                 >
-                  {_(p.titleZh, p.titleEn)}
+                  <span
+                    style={{
+                      background: `linear-gradient(135deg, #ffffff 0%, ${p.accent} 65%)`,
+                      WebkitBackgroundClip: "text",
+                      backgroundClip: "text",
+                      WebkitTextFillColor: "transparent",
+                    }}
+                  >
+                    {_(p.titleZh, p.titleEn)}
+                  </span>
                 </h4>
 
                 {/* Description */}
-                <p className="mt-4 text-sm md:text-[15px] leading-relaxed text-white/90 max-w-md">
+                <p className="mt-4 text-sm md:text-[15px] leading-relaxed text-white/95 max-w-md">
                   {_(p.descZh, p.descEn)}
                 </p>
 
@@ -299,19 +319,39 @@ export function BuildTimeline() {
               height: "clamp(480px, 64vh, 680px)",
             }}
           >
+            {/* Corner bracket decorations — projector frame feel */}
+            {(["tl","tr","bl","br"] as const).map((pos) => (
+              <div
+                key={pos}
+                className="absolute z-20 w-5 h-5 pointer-events-none"
+                style={{
+                  top: pos.startsWith("t") ? -3 : undefined,
+                  bottom: pos.startsWith("b") ? -3 : undefined,
+                  left: pos.endsWith("l") ? -3 : undefined,
+                  right: pos.endsWith("r") ? -3 : undefined,
+                  borderTop: pos.startsWith("t") ? "2px solid rgba(255,255,255,0.32)" : undefined,
+                  borderBottom: pos.startsWith("b") ? "2px solid rgba(255,255,255,0.32)" : undefined,
+                  borderLeft: pos.endsWith("l") ? "2px solid rgba(255,255,255,0.32)" : undefined,
+                  borderRight: pos.endsWith("r") ? "2px solid rgba(255,255,255,0.32)" : undefined,
+                }}
+                aria-hidden="true"
+              />
+            ))}
+
             {/* Filmstrip container */}
             <div
               className="relative w-full h-full overflow-hidden"
               style={{
-                background: `
-                  linear-gradient(180deg, rgba(13,13,13,0.98) 0%, rgba(18,18,18,0.98) 100%)
-                `,
-                border: "1px solid rgba(255,255,255,0.12)",
+                background: "linear-gradient(180deg, rgba(10,10,10,0.99) 0%, rgba(16,16,16,0.99) 100%)",
+                border: "1px solid rgba(255,255,255,0.17)",
                 borderRadius: "2px",
                 boxShadow: `
-                  0 0 80px rgba(0,0,0,0.6),
-                  0 20px 60px rgba(0,0,0,0.4),
-                  inset 0 0 100px rgba(0,0,0,0.5)
+                  0 0 0 1px rgba(0,0,0,0.98),
+                  0 0 80px rgba(0,0,0,0.7),
+                  0 20px 60px rgba(0,0,0,0.5),
+                  0 40px 120px rgba(0,0,0,0.35),
+                  inset 0 0 80px rgba(0,0,0,0.45),
+                  inset 0 1px 0 rgba(255,255,255,0.06)
                 `,
               }}
             >
@@ -331,12 +371,12 @@ export function BuildTimeline() {
 
               {/* Left sprocket strip */}
               <div className="absolute left-0 z-[6]">
-                <SprocketStrip />
+                <SprocketStrip side="left" />
               </div>
 
               {/* Right sprocket strip */}
               <div className="absolute right-0 z-[6]">
-                <SprocketStrip />
+                <SprocketStrip side="right" />
               </div>
 
               {/* Film frames — stacked absolutely, only active frame visible */}
@@ -353,7 +393,7 @@ export function BuildTimeline() {
                         linear-gradient(135deg, ${p.accentMuted} 0%, rgba(255,255,255,0.01) 60%, rgba(0,0,0,0.15) 100%)
                       `,
                       border: "1px solid rgba(255,255,255,0.10)",
-                      borderRadius: "1px",
+                      borderRadius: "16px",
                       opacity: i === 0 ? 1 : 0,
                     }}
                   >
@@ -365,14 +405,16 @@ export function BuildTimeline() {
                       style={{
                         opacity: 1,
                         filter: "brightness(1.25) saturate(1.35) contrast(1.15)",
+                        borderRadius: "16px",
                       }}
                       loading="eager"
                     />
 
-                    {/* Outer edge vignette: keeps image bright, only softens the very edges */}
+                    {/* Outer edge vignette */}
                     <div
                       className="absolute inset-0 pointer-events-none z-[2]"
                       style={{
+                        borderRadius: "16px",
                         background: `
                           radial-gradient(ellipse 70% 65% at 50% 50%, transparent 50%, rgba(0,0,0,0.15) 80%, rgba(0,0,0,0.55) 100%)
                         `,
@@ -380,10 +422,11 @@ export function BuildTimeline() {
                       aria-hidden="true"
                     />
 
-                    {/* Light center haze for text readability — very subtle */}
+                    {/* Light center haze */}
                     <div
                       className="absolute inset-0 pointer-events-none z-[3]"
                       style={{
+                        borderRadius: "16px",
                         background: `
                           radial-gradient(ellipse 45% 40% at 50% 50%, rgba(0,0,0,0.15) 0%, transparent 65%)
                         `,
@@ -391,10 +434,11 @@ export function BuildTimeline() {
                       aria-hidden="true"
                     />
 
-                    {/* Accent edge glow — color bleed into black background */}
+                    {/* Accent edge glow */}
                     <div
                       className="absolute inset-0 pointer-events-none z-[4]"
                       style={{
+                        borderRadius: "16px",
                         background: `
                           radial-gradient(ellipse 85% 75% at 50% 50%, transparent 60%, ${p.accent}22 78%, ${p.accent}0d 100%)
                         `,
@@ -402,10 +446,11 @@ export function BuildTimeline() {
                       aria-hidden="true"
                     />
 
-                    {/* Frame border glow — stronger accent rim */}
+                    {/* Frame border glow */}
                     <div
                       className="absolute inset-0 pointer-events-none z-[5]"
                       style={{
+                        borderRadius: "16px",
                         boxShadow: `inset 0 0 30px ${p.accent}20, inset 0 0 60px ${p.accent}10, 0 0 40px ${p.accent}08`,
                       }}
                       aria-hidden="true"
@@ -418,8 +463,8 @@ export function BuildTimeline() {
                         className="text-[32px] font-bold leading-none tracking-tighter md:text-[40px]"
                         style={{
                           color: p.accent,
-                          textShadow: `0 0 16px ${p.accent}50, 0 0 32px ${p.accent}25`,
-                          opacity: 0.85,
+                          textShadow: `0 0 20px ${p.accent}80, 0 0 40px ${p.accent}40`,
+                          opacity: 1,
                         }}
                       >
                         {p.number}
@@ -429,8 +474,8 @@ export function BuildTimeline() {
                       <span
                         className="text-[9px] font-mono uppercase tracking-[0.2em]"
                         style={{
-                          color: `${p.accent}90`,
-                          textShadow: `0 0 6px ${p.accent}40`,
+                          color: `${p.accent}DD`,
+                          textShadow: `0 0 8px ${p.accent}60`,
                         }}
                       >
                         {p.phase}
@@ -438,10 +483,13 @@ export function BuildTimeline() {
 
                       {/* Phase title */}
                       <span
-                        className="text-[11px] font-bold"
+                        className="text-[13px] font-extrabold leading-tight"
                         style={{
-                          color: p.accent,
-                          textShadow: `0 0 10px ${p.accent}50`,
+                          background: `linear-gradient(135deg, #ffffff 0%, ${p.accent} 60%)`,
+                          WebkitBackgroundClip: "text",
+                          backgroundClip: "text",
+                          WebkitTextFillColor: "transparent",
+                          filter: `drop-shadow(0 0 8px ${p.accent}70)`,
                         }}
                       >
                         {_(p.titleZh, p.titleEn)}
@@ -508,11 +556,19 @@ export function BuildTimeline() {
                   {p.date} · {p.phase}
                 </span>
 
-                <h4 className="text-lg font-bold text-white mb-2">
+                <h4
+                  className="text-lg font-bold mb-2"
+                  style={{
+                    background: `linear-gradient(135deg, #ffffff 30%, ${p.accent} 100%)`,
+                    WebkitBackgroundClip: "text",
+                    backgroundClip: "text",
+                    WebkitTextFillColor: "transparent",
+                  }}
+                >
                   {_(p.titleZh, p.titleEn)}
                 </h4>
 
-                <p className="text-[13px] leading-relaxed text-white/90">
+                <p className="text-[13px] leading-relaxed text-white/90 italic">
                   {_(p.descZh, p.descEn)}
                 </p>
               </motion.div>
