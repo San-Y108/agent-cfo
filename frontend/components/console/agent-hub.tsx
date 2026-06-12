@@ -14,6 +14,9 @@ import {
 } from "lucide-react";
 import { useApp } from "@/lib/i18n/context";
 import { cn } from "@/lib/utils";
+import { useConsoleState } from "@/lib/console/console-state";
+import type { PaymentPlanItem, BudgetRules } from "@/lib/types/console";
+import type { CawStatus } from "@/lib/api/types";
 import { HolographicButton } from "@/components/ui/holographic-button";
 import { BentoCard } from "@/components/ui/aceternity/bento-grid";
 import {
@@ -189,9 +192,9 @@ function SemanticText({ text }: { text: string }) {
           key={i}
           className={cn(
             part.type === "amount"
-              ? "text-[#B5FF4D] font-semibold"
+              ? "text-hud-lime font-semibold"
               : part.type === "risk"
-              ? "text-[#FB7185] font-semibold"
+              ? "text-hud-coral font-semibold"
               : undefined
           )}
         >
@@ -597,6 +600,55 @@ function QuickActionsStrip({
 }
 
 /**
+ * Summaries driven by the global console state so chat responses stay
+ * consistent with Treasury / Policy changes.
+ */
+function formatPlanSummary(plan: PaymentPlanItem[], lang: string): string {
+  const ready = plan.filter((i) => i.status === "Ready");
+  const blocked = plan.filter((i) => i.status === "Blocked");
+  const totalReady = ready.reduce((a, c) => a + c.record.amount, 0);
+  const totalBlocked = blocked.reduce((a, c) => a + c.record.amount, 0);
+  if (lang === "zh") {
+    return `付款计划已生成：${ready.length} 笔通过（${totalReady} USDC），${blocked.length} 笔被拦截（${totalBlocked} USDC）。${blocked.length > 0 ? `原因：${blocked[0].riskReason}。` : ""}总计：${totalReady + totalBlocked} USDC。`;
+  }
+  return `Payment plan generated: ${ready.length} passed (${totalReady} USDC), ${blocked.length} blocked (${totalBlocked} USDC).${blocked.length > 0 ? ` Reason: ${blocked[0].riskReason}.` : ""} Total: ${totalReady + totalBlocked} USDC.`;
+}
+
+function formatRiskSummary(
+  plan: PaymentPlanItem[],
+  budgetRule: BudgetRules,
+  lang: string
+): string {
+  const ready = plan.filter((i) => i.status === "Ready");
+  const blocked = plan.filter((i) => i.status === "Blocked");
+  const executed = plan.filter((i) => i.status === "Executed");
+  const totalExecuted = executed.reduce((a, c) => a + c.record.amount, 0);
+  const remaining = budgetRule.monthlyBudget - totalExecuted;
+  if (lang === "zh") {
+    return `风险扫描完成：${ready.length} 项就绪，${blocked.length} 项被拦截。月度预算剩余 ${remaining}/${budgetRule.monthlyBudget} USDC，单笔限额 ${budgetRule.singlePaymentLimit} USDC。`;
+  }
+  return `Risk scan complete: ${ready.length} ready, ${blocked.length} blocked. Monthly budget remaining: ${remaining}/${budgetRule.monthlyBudget} USDC. Single payment limit: ${budgetRule.singlePaymentLimit} USDC.`;
+}
+
+function formatAuditSummary(
+  plan: PaymentPlanItem[],
+  cawStatuses: CawStatus[],
+  lang: string
+): string {
+  const executed = plan.filter((i) => i.status === "Executed");
+  const blocked = plan.filter((i) => i.status === "Blocked");
+  const hashes = executed
+    .map((i) => i.txHash)
+    .filter(Boolean)
+    .slice(0, 2)
+    .join(", ");
+  if (lang === "zh") {
+    return `审计追踪：${executed.length} 笔已执行，${blocked.length} 笔被拦截。CAW Agent Vault 已签名${hashes ? `（${hashes}）` : ""}。结算报告就绪。`;
+  }
+  return `Audit trail: ${executed.length} executed, ${blocked.length} blocked. CAW Agent Vault signed${hashes ? ` (${hashes})` : ""}. Settlement report ready.`;
+}
+
+/**
  * AgentHub — the central Agent CFO interface for the Command Center.
  *
  * Replaces the old `/console/agent` page as the default Console home.
@@ -604,10 +656,21 @@ function QuickActionsStrip({
  */
 export function AgentHub() {
   const { lang } = useApp();
+  const {
+    budgetRule,
+    plan,
+    cawStatuses,
+    generatePlan,
+    executePlan,
+  } = useConsoleState();
   const [messages, setMessages] = useState<ChatMessage[]>(MOCK_MESSAGES);
   const [inputValue, setInputValue] = useState("");
   const [isThinking, setIsThinking] = useState(false);
   const [agentStatus, setAgentStatus] = useState<"ready" | "analyzing">("ready");
+
+  const pushAgentMessage = (text: string) => {
+    setMessages((prev) => [...prev, { role: "agent", text }]);
+  };
 
   const handleSend = () => {
     if (!inputValue.trim() || isThinking) return;
@@ -619,16 +682,11 @@ export function AgentHub() {
     setAgentStatus("analyzing");
 
     setTimeout(() => {
-      setMessages((prev) => [
-        ...prev,
-        {
-          role: "agent",
-          text:
-            lang === "zh"
-              ? `已收到您的请求："${userText}"。正在分析资金拓扑和风险边界...`
-              : `Received: "${userText}". Analyzing treasury topology and risk boundaries...`,
-        },
-      ]);
+      pushAgentMessage(
+        lang === "zh"
+          ? `已收到您的请求："${userText}"。正在分析资金拓扑和风险边界...`
+          : `Received: "${userText}". Analyzing treasury topology and risk boundaries...`
+      );
       setIsThinking(false);
       setAgentStatus("ready");
     }, 2000);
@@ -641,55 +699,54 @@ export function AgentHub() {
     }
   };
 
-  const handleQuickAction = (action: string) => {
+  const handleQuickAction = async (action: string) => {
     if (isThinking) return;
     setMessages((prev) => [...prev, { role: "user", text: action }]);
     setIsThinking(true);
     setAgentStatus("analyzing");
 
-    const responses: Record<string, { en: string; zh: string }> = {
-      plan: {
-        en: "Payment plan generated: Alice 20 USDC, Charlie 10 USDC, Data API 5 USDC. Bob blocked (not whitelisted). Total: 35 USDC.",
-        zh: "付款计划已生成：Alice 20 USDC，Charlie 10 USDC，Data API 5 USDC。Bob 被拦截（不在白名单）。总计：35 USDC。",
-      },
-      risk: {
-        en: "Risk scan complete: 3 Low-risk, 1 Blocked. Budget remaining: 15/50 USDC. No duplicate payments detected.",
-        zh: "风险扫描完成：3 项低风险，1 项被拦截。预算剩余：15/50 USDC。未检测到重复付款。",
-      },
-      audit: {
-        en: "Audit trail: 2 executed txns (0x7a3...f21, 0x9b2...c44). CAW Agent Vault signed. Settlement report ready.",
-        zh: "审计追踪：2 笔已执行交易（0x7a3...f21，0x9b2...c44）。CAW Agent Vault 已签名。结算报告就绪。",
-      },
-    };
+    try {
+      const isPlan = action.includes("Plan") || action.includes("计划");
+      const isRisk = action.includes("Risk") || action.includes("风险");
+      const isAudit = action.includes("Audit") || action.includes("审计");
 
-    const key =
-      action.includes("Plan") || action.includes("计划")
-        ? "plan"
-        : action.includes("Risk") || action.includes("风险")
-        ? "risk"
-        : "audit";
-
-    setTimeout(() => {
-      setMessages((prev) => [
-        ...prev,
-        {
-          role: "agent",
-          text: lang === "zh" ? responses[key].zh : responses[key].en,
-        },
-      ]);
+      if (isPlan) {
+        const p = await generatePlan();
+        pushAgentMessage(formatPlanSummary(p, lang));
+      } else if (isRisk) {
+        const currentPlan = plan.length > 0 ? plan : await generatePlan();
+        pushAgentMessage(formatRiskSummary(currentPlan, budgetRule, lang));
+      } else if (isAudit) {
+        let currentPlan = plan;
+        if (currentPlan.length === 0) {
+          currentPlan = await generatePlan();
+        }
+        const hasExecuted = currentPlan.some((i) => i.status === "Executed");
+        if (!hasExecuted) {
+          currentPlan = await executePlan();
+        }
+        pushAgentMessage(formatAuditSummary(currentPlan, cawStatuses, lang));
+      }
+    } catch (err) {
+      pushAgentMessage(
+        lang === "zh"
+          ? "操作失败，请重试。"
+          : "Action failed. Please try again."
+      );
+    } finally {
       setIsThinking(false);
       setAgentStatus("ready");
-    }, 1800);
+    }
   };
 
   return (
     <div className="h-full flex flex-col gap-4 p-4 md:p-6">
       <div className="flex-1 min-h-0 @container">
-        <div className="h-full grid grid-cols-1 @[900px]:grid-cols-[1fr_320px] gap-4">
-          <div className="min-h-[400px]">
+        <div className="h-full grid grid-cols-1 @[600px]:grid-cols-[1fr_280px] gap-4">
+          <div className="min-h-[400px] min-w-0">
             <AgentPersona agentStatus={agentStatus} />
           </div>
-          <div className="min-h-[320px]">
+          <div className="min-h-[320px] min-w-0">
             <ChatSatellite
               messages={messages}
               isThinking={isThinking}

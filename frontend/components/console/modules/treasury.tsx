@@ -25,10 +25,9 @@ import {
   ChevronUp,
 } from "lucide-react";
 import { useApp } from "@/lib/i18n/context";
-import { MOCK_RECORDS, MOCK_RULES } from "@/lib/demo/console-mock";
-import { ContributorRecord, PaymentPlanItem } from "@/lib/types/console";
+import { useConsoleState, FlowStep } from "@/lib/console/console-state";
+import type { ContributorRecord, PaymentPlanItem, BudgetRules } from "@/lib/types/console";
 import type { CawStatus } from "@/lib/api/types";
-import { isMockMode } from "@/lib/api/client";
 import { RecordsImport } from "@/components/console/records-import";
 import { AnimatedNumber } from "@/components/ui/aceternity/animated-number";
 import { GradientText, ColourfulText } from "@/components/ui/aceternity/colourful-text";
@@ -50,23 +49,6 @@ import {
  * BUSINESS LOGIC HELPERS
  * ===========================================================================*/
 
-function evaluateItem(record: ContributorRecord): PaymentPlanItem {
-  const isWhitelisted = MOCK_RULES.whitelist.some(
-    (w) => w.toLowerCase() === record.wallet.toLowerCase()
-  );
-  if (!isWhitelisted) {
-    return { record, status: "Blocked", riskReason: "Address not whitelisted" };
-  }
-  if (record.amount > MOCK_RULES.singlePaymentLimit) {
-    return {
-      record,
-      status: "Blocked",
-      riskReason: `Over limit of ${MOCK_RULES.singlePaymentLimit} USDC`,
-    };
-  }
-  return { record, status: "Ready" };
-}
-
 /* =============================================================================
  * TREASURY MODULE — Payment execution workspace inside the side panel.
  * ===========================================================================*/
@@ -75,23 +57,29 @@ export function TreasuryModule() {
   const { t, lang } = useApp();
   const _ = (zh: string, en: string) => (lang === "zh" ? zh : en);
 
-  /* ─── business state ─── */
-  const [records, setRecords] = useState<ContributorRecord[]>(MOCK_RECORDS);
-  const [plan, setPlan] = useState<PaymentPlanItem[]>([]);
-  const [step, setStep] = useState(0); // 0=idle, 1=scanning, 2=review, 3=executing, 4=done
-  const [isExecuting, setIsExecuting] = useState(false);
+  /* ─── global console state ─── */
+  const {
+    budgetRule,
+    records,
+    plan,
+    step,
+    isExecuting,
+    cawStatuses,
+    addRecords,
+    resetFlow,
+    generatePlan,
+    executePlan,
+    refreshCawStatus,
+  } = useConsoleState();
+  const [cawRefreshing, setCawRefreshing] = useState(false);
 
   const [newName, setNewName] = useState("");
   const [newWallet, setNewWallet] = useState("");
   const [newAmount, setNewAmount] = useState(10);
   const [importOpen, setImportOpen] = useState(false);
 
-  /* ─── CAW Status state ─── */
-  const [cawStatuses, setCawStatuses] = useState<CawStatus[]>([]);
-  const [cawRefreshing, setCawRefreshing] = useState(false);
-
   /* ─── derived metrics ─── */
-  const totalBudget = MOCK_RULES.monthlyBudget;
+  const totalBudget = budgetRule.monthlyBudget;
   const totalPending = records.reduce((a, c) => a + c.amount, 0);
   const readyItems = plan.filter((i) => i.status === "Ready");
   const blockedItems = plan.filter((i) => i.status === "Blocked");
@@ -105,8 +93,7 @@ export function TreasuryModule() {
   const handleAdd = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newName || !newWallet) return;
-    setRecords([
-      ...records,
+    addRecords([
       {
         id: `rec_${Date.now()}`,
         name: newName,
@@ -123,76 +110,25 @@ export function TreasuryModule() {
   };
 
   const handleImportRecords = (imported: ContributorRecord[]) => {
-    setRecords((prev) => [...prev, ...imported]);
+    addRecords(imported);
   };
 
   const handleGenerate = () => {
-    setStep(1);
-    setTimeout(() => {
-      const p = records.map(evaluateItem);
-      setPlan(p);
-      setStep(2);
-    }, 1200);
+    generatePlan();
   };
 
   const handleExecute = () => {
-    setStep(3);
-    setIsExecuting(true);
-    setTimeout(() => {
-      setIsExecuting(false);
-      const executed = plan.map((item) =>
-        item.status === "Ready"
-          ? {
-              ...item,
-              status: "Executed" as const,
-              txHash: `0x${Math.random().toString(16).substring(2, 10).toUpperCase()}...${Math.random().toString(16).substring(2, 6).toUpperCase()}`,
-            }
-          : item
-      );
-      setPlan(executed);
-      const mockCawStatuses: CawStatus[] = executed
-        .filter((i) => i.status === "Executed")
-        .map((item) => ({
-          cawRequestId: `mock_caw_${item.record.id}`,
-          executionId: `exec_${Date.now()}`,
-          paymentItemId: item.record.id,
-          providerStatus: "executed",
-          normalizedStatus: "Executed" as const,
-          mode: isMockMode() ? "mock" : "real",
-          network: "Sepolia",
-          agentWalletAddress: "0xAgentWallet...",
-          txHash: item.txHash ?? null,
-          error: null,
-          diagnosticCode: null,
-          lastCheckedAt: new Date().toISOString(),
-        }));
-      setCawStatuses(mockCawStatuses);
-      setStep(4);
-    }, 2000);
+    executePlan();
   };
 
   const handleRefreshCawStatus = async () => {
     setCawRefreshing(true);
-    setTimeout(() => {
-      setCawStatuses((prev: CawStatus[]) =>
-        prev.map((status) => ({
-          ...status,
-          txHash:
-            status.txHash ??
-            `0x${Math.random().toString(16).substring(2, 14).toUpperCase()}`,
-          lastCheckedAt: new Date().toISOString(),
-        }))
-      );
-      setCawRefreshing(false);
-    }, 1500);
+    await refreshCawStatus();
+    setCawRefreshing(false);
   };
 
   const reset = () => {
-    setStep(0);
-    setPlan([]);
-    setIsExecuting(false);
-    setCawStatuses([]);
-    setRecords(MOCK_RECORDS);
+    resetFlow();
   };
 
   return (
@@ -274,7 +210,7 @@ export function TreasuryModule() {
               </h2>
             </div>
             <StatusPulse
-              color={step === 3 ? "coral" : step === 4 ? "cyan" : "lime"}
+              color={step === FlowStep.Executing ? "coral" : step === FlowStep.Done ? "cyan" : "lime"}
               label={
                 ["STANDBY", "SCANNING", "REVIEW", "EXECUTING", "AUDIT"][step]
               }
@@ -302,6 +238,7 @@ export function TreasuryModule() {
               step={step}
               plan={plan}
               records={records}
+              budgetRule={budgetRule}
               totalReady={totalReady}
               totalBlocked={totalBlocked}
               isExecuting={isExecuting}
@@ -570,6 +507,7 @@ function ActionPanel({
   step,
   plan,
   records,
+  budgetRule,
   totalReady,
   totalBlocked,
   isExecuting,
@@ -582,9 +520,10 @@ function ActionPanel({
   lang,
   _,
 }: {
-  step: number;
+  step: FlowStep;
   plan: PaymentPlanItem[];
   records: ContributorRecord[];
+  budgetRule: BudgetRules;
   totalReady: number;
   totalBlocked: number;
   isExecuting: boolean;
@@ -604,7 +543,7 @@ function ActionPanel({
   return (
     <div className="space-y-4">
       {/* Step 0: Generate Plan */}
-      {step === 0 && (
+      {step === FlowStep.Idle && (
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -612,7 +551,7 @@ function ActionPanel({
         >
           <div className="p-4 rounded-lg border border-dashed border-white/[0.08] bg-white/[0.01]">
             <div className="flex items-center gap-3 mb-2">
-              <div className="w-8 h-8 rounded-full bg-[#5EEAD4]/10 border border-[#5EEAD4]/20 flex items-center justify-center text-[#5EEAD4] text-xs font-bold">
+              <div className="w-8 h-8 rounded-full bg-hud-cyan/10 border border-hud-cyan/20 flex items-center justify-center text-hud-cyan text-xs font-bold">
                 1
               </div>
               <div>
@@ -650,18 +589,18 @@ function ActionPanel({
             </div>
             <div className="flex justify-between">
               <span>{_("月度预算", "Budget")}</span>
-              <span className="font-mono">{MOCK_RULES.monthlyBudget} USDC</span>
+              <span className="font-mono">{budgetRule.monthlyBudget} USDC</span>
             </div>
             <div className="flex justify-between">
               <span>{_("单笔限额", "Limit")}</span>
-              <span className="font-mono">{MOCK_RULES.singlePaymentLimit} USDC</span>
+              <span className="font-mono">{budgetRule.singlePaymentLimit} USDC</span>
             </div>
           </div>
         </motion.div>
       )}
 
       {/* Step 1: Scanning */}
-      {step === 1 && (
+      {step === FlowStep.Scanning && (
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -676,7 +615,7 @@ function ActionPanel({
           />
 
           <div className="relative z-10">
-            <RefreshCw className="w-10 h-10 text-[#5EEAD4] animate-spin mx-auto" />
+            <RefreshCw className="w-10 h-10 text-hud-cyan animate-spin mx-auto" />
             <div
               className="absolute inset-0 blur-xl rounded-full scale-150 pointer-events-none"
               style={{ backgroundColor: "rgba(94,234,212,0.2)" }}
@@ -696,7 +635,7 @@ function ActionPanel({
       )}
 
       {/* Step 2: Review Results */}
-      {step >= 2 && step < 4 && (
+      {(step === FlowStep.Review || step === FlowStep.Executing) && (
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -738,13 +677,13 @@ function ActionPanel({
                     className={cn(
                       "p-3 rounded-field border flex items-center justify-between",
                       isBlocked
-                        ? "bg-[#FB7185]/5 border-[#FB7185]/15"
+                        ? "bg-hud-coral/5 border-hud-coral/15"
                         : "bg-success/5 border-success/15"
                     )}
                   >
                     <div className="flex items-center gap-2.5 min-w-0">
                       {isBlocked ? (
-                        <ShieldAlert className="w-4 h-4 text-[#FB7185] shrink-0" />
+                        <ShieldAlert className="w-4 h-4 text-hud-coral shrink-0" />
                       ) : (
                         <CheckCircle className="w-4 h-4 text-success shrink-0" />
                       )}
@@ -803,7 +742,7 @@ function ActionPanel({
       )}
 
       {/* Step 3: Executing */}
-      {step === 3 && isExecuting && (
+      {step === FlowStep.Executing && isExecuting && (
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -818,16 +757,16 @@ function ActionPanel({
           />
 
           <div className="relative z-10">
-            <div className="w-16 h-16 rounded-full border-2 border-[#60A5FA]/20 border-t-[#60A5FA] border-r-[#60A5FA]/50 animate-spin" />
+            <div className="w-16 h-16 rounded-full border-2 border-hud-blue/20 border-t-hud-blue border-r-hud-blue/50 animate-spin" />
             <div
-              className="absolute inset-2 rounded-full border border-[#B5FF4D]/20 border-b-[#B5FF4D] animate-spin"
+              className="absolute inset-2 rounded-full border border-[#B5FF4D]/20 border-b-hud-lime animate-spin"
               style={{ animationDirection: "reverse", animationDuration: "2s" }}
             />
           </div>
 
           <div className="relative z-10 w-full max-w-[200px] h-1 rounded-full bg-white/[0.06] overflow-hidden">
             <div
-              className="absolute inset-0 bg-gradient-to-r from-transparent via-[#B5FF4D]/60 to-transparent animate-shimmer"
+              className="absolute inset-0 bg-gradient-to-r from-transparent via-hud-lime/60 to-transparent animate-shimmer"
               style={{ backgroundSize: "200% 100%" }}
             />
           </div>
@@ -844,7 +783,7 @@ function ActionPanel({
       )}
 
       {/* Step 4: Done / Audit */}
-      {step === 4 && (
+      {step === FlowStep.Done && (
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -852,9 +791,9 @@ function ActionPanel({
         >
           <div className="p-4 rounded-xl border border-white/[0.06] bg-white/[0.02]">
             <div className="flex items-center gap-2 mb-3">
-              <ShieldAlert className="w-4 h-4 text-[#C084FC]" />
+              <ShieldAlert className="w-4 h-4 text-hud-violet" />
               <span className="text-sm font-semibold text-fg">{_("审计报告快照", "Audit Report Snapshot")}</span>
-              <span className="text-[10px] text-fg-subtle font-mono px-2 py-0.5 rounded-full bg-[#C084FC]/10">IMMUTABLE</span>
+              <span className="text-[10px] text-fg-subtle font-mono px-2 py-0.5 rounded-full bg-hud-violet/10">IMMUTABLE</span>
             </div>
             <p className="text-[11px] text-fg-subtle mb-3">
               {_(
@@ -881,7 +820,7 @@ function ActionPanel({
                             <CheckCircle className="w-3 h-3" /> EXECUTED
                           </span>
                         ) : (
-                          <span className="text-[#FB7185] font-bold flex items-center gap-1 text-[11px]">
+                          <span className="text-hud-coral font-bold flex items-center gap-1 text-[11px]">
                             <XCircle className="w-3 h-3" /> BLOCKED
                           </span>
                         )}
@@ -903,7 +842,7 @@ function ActionPanel({
           <div className="p-4 rounded-xl border border-white/[0.06] bg-white/[0.02]">
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2">
-                <RefreshCw className={cn("w-4 h-4 text-[#60A5FA]", cawRefreshing && "animate-spin")} />
+                <RefreshCw className={cn("w-4 h-4 text-hud-blue", cawRefreshing && "animate-spin")} />
                 <span className="text-sm font-semibold text-fg">{_("最新 CAW 状态", "Latest CAW Status")}</span>
               </div>
               <button
@@ -931,7 +870,7 @@ function ActionPanel({
                         status.normalizedStatus === "Executed"
                           ? "bg-success/10 text-success"
                           : status.normalizedStatus === "Failed"
-                          ? "bg-[#FB7185]/10 text-[#FB7185]"
+                          ? "bg-hud-coral/10 text-hud-coral"
                           : "bg-amber-500/10 text-amber-500"
                       )}>
                         {status.normalizedStatus}
@@ -962,11 +901,11 @@ function ActionPanel({
               <div className="text-[10px] text-fg-subtle">{_("已执行", "Executed")}</div>
             </div>
             <div className="p-2 rounded-lg bg-white/[0.03]">
-              <div className="text-sm font-bold text-[#FB7185]">{blockedCount}</div>
+              <div className="text-sm font-bold text-hud-coral">{blockedCount}</div>
               <div className="text-[10px] text-fg-subtle">{_("已拦截", "Blocked")}</div>
             </div>
             <div className="p-2 rounded-lg bg-white/[0.03]">
-              <div className="text-sm font-bold text-[#B5FF4D]">{totalReady + totalBlocked} USDC</div>
+              <div className="text-sm font-bold text-hud-lime">{totalReady + totalBlocked} USDC</div>
               <div className="text-[10px] text-fg-subtle">{_("总计", "Total")}</div>
             </div>
           </div>
