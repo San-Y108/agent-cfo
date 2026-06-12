@@ -11,14 +11,14 @@ import {
   TrendingUp,
   User,
   Zap,
+  History,
+  ArrowUpRight,
 } from "lucide-react";
 import { useApp } from "@/lib/i18n/context";
 import { cn } from "@/lib/utils";
 import { useConsoleState } from "@/lib/console/console-state";
 import type { PaymentPlanItem, BudgetRules } from "@/lib/types/console";
 import type { CawStatus } from "@/lib/api/types";
-import { HolographicButton } from "@/components/ui/holographic-button";
-import { BentoCard } from "@/components/ui/aceternity/bento-grid";
 import {
   HudLabel,
   StatusPulse,
@@ -50,44 +50,6 @@ const MOCK_MESSAGES: ChatMessage[] = [
       "I've analyzed 4 records. 3 passed risk checks, 1 blocked (Bob - not whitelisted).",
   },
 ];
-
-function SparkleParticle({
-  delay,
-  x,
-  size,
-  duration,
-}: {
-  delay: number;
-  x: string;
-  size: number;
-  duration: number;
-}) {
-  return (
-    <motion.div
-      className="absolute rounded-full"
-      style={{
-        left: x,
-        width: size,
-        height: size,
-        background:
-          "radial-gradient(circle, rgba(181,255,77,0.9) 0%, rgba(94,234,212,0.4) 50%, transparent 70%)",
-        boxShadow: `0 0 ${size * 2}px rgba(181,255,77,0.3)`,
-      }}
-      initial={{ opacity: 0, y: 40, scale: 0 }}
-      animate={{
-        opacity: [0, 1, 1, 0],
-        y: [40, -20, -60, -100],
-        scale: [0, 1, 0.8, 0],
-      }}
-      transition={{
-        duration,
-        delay,
-        repeat: Infinity,
-        ease: "easeOut",
-      }}
-    />
-  );
-}
 
 function TypingIndicator() {
   return (
@@ -134,16 +96,13 @@ function AgentBubble({ text, isLatest }: { text: string; isLatest: boolean }) {
   const [done, setDone] = useState(!isLatest);
 
   return (
-    <BentoCard
-      glowColor={LIME}
-      className="max-w-[80%] px-4 py-2.5 rounded-2xl rounded-tl-sm border border-white/[0.06] bg-white/[0.03] text-[13px] leading-relaxed text-fg"
-    >
+    <div className="max-w-[85%] rounded-2xl rounded-tl-sm border border-hud-lime/15 bg-hud-lime/[0.04] px-4 py-3 text-[13.5px] leading-relaxed text-fg shadow-[0_0_24px_-12px_var(--glow-lime)]">
       {isLatest && !done ? (
         <TypewriterBubble text={text} onDone={() => setDone(true)} />
       ) : (
         <SemanticText text={text} />
       )}
-    </BentoCard>
+    </div>
   );
 }
 
@@ -205,192 +164,225 @@ function SemanticText({ text }: { text: string }) {
   );
 }
 
-function AgentPersona({ agentStatus }: { agentStatus: "ready" | "analyzing" }) {
+/* =============================================================================
+ * AGENT ORB — compact breathing avatar (sidebar scale)
+ * ===========================================================================*/
+
+function AgentOrb({
+  size = 120,
+  analyzing,
+}: {
+  size?: number;
+  analyzing: boolean;
+}) {
+  return (
+    <motion.div
+      className="relative flex items-center justify-center"
+      style={{ width: size, height: size }}
+      animate={analyzing ? { scale: [1, 1.03, 1] } : { scale: [1, 1.02, 1] }}
+      transition={{
+        duration: analyzing ? 1.2 : 4,
+        repeat: Infinity,
+        ease: "easeInOut",
+      }}
+    >
+      {/* halo (kept tight so it never washes out nearby text) */}
+      <div
+        className="absolute inset-[-30%] rounded-full pointer-events-none"
+        style={{
+          background:
+            "radial-gradient(circle, rgba(181,255,77,0.16) 0%, rgba(94,234,212,0.06) 45%, transparent 68%)",
+          filter: "blur(18px)",
+        }}
+      />
+      {/* rotating orbit ring */}
+      <motion.div
+        className="absolute inset-1 rounded-full"
+        style={{
+          border: "1px solid rgba(94,234,212,0.3)",
+          boxShadow:
+            "0 0 18px rgba(94,234,212,0.16), inset 0 0 14px rgba(94,234,212,0.08)",
+        }}
+        animate={{ rotate: 360 }}
+        transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+      >
+        <span
+          className="absolute -top-[3px] left-1/2 h-1.5 w-1.5 rounded-full"
+          style={{ backgroundColor: CYAN, boxShadow: `0 0 8px ${CYAN}` }}
+        />
+      </motion.div>
+      {/* glass core */}
+      <div
+        className="relative flex items-center justify-center rounded-full"
+        style={{
+          width: size * 0.78,
+          height: size * 0.78,
+          background:
+            "radial-gradient(circle at 35% 35%, rgba(255,255,255,0.16), rgba(181,255,77,0.08) 45%, rgba(94,234,212,0.05) 100%)",
+          backdropFilter: "blur(16px)",
+          border: "1px solid rgba(255,255,255,0.2)",
+          boxShadow:
+            "inset 0 0 28px rgba(255,255,255,0.08), 0 0 44px rgba(181,255,77,0.16)",
+        }}
+      >
+        <Bot
+          size={size * 0.34}
+          style={{
+            color: analyzing ? CYAN : LIME,
+            filter: `drop-shadow(0 0 12px ${analyzing ? "rgba(94,234,212,0.5)" : "rgba(181,255,77,0.45)"})`,
+          }}
+          strokeWidth={1.4}
+        />
+      </div>
+    </motion.div>
+  );
+}
+
+/* =============================================================================
+ * AGENT SIDEBAR — compact persona + live telemetry + recent activity
+ * ===========================================================================*/
+
+function AgentSidebar({ analyzing }: { analyzing: boolean }) {
   const { lang } = useApp();
-  const statusText =
-    agentStatus === "ready"
-      ? lang === "zh"
-        ? "就绪"
-        : "Ready"
-      : lang === "zh"
-      ? "分析中..."
-      : "Analyzing...";
+  const _ = (zh: string, en: string) => (lang === "zh" ? zh : en);
+  const { budgetRule, records, plan, activityLog, openDrawer } = useConsoleState();
+
+  const ready = plan.filter((i) => i.status === "Ready").length;
+  const blocked = plan.filter((i) => i.status === "Blocked").length;
+  const executed = plan.filter((i) => i.status === "Executed");
+  const spent = executed.reduce((a, c) => a + c.record.amount, 0);
+  const remaining = budgetRule.monthlyBudget - spent;
+
+  const telemetry = [
+    { label: _("预算余额", "BUDGET LEFT"), value: `${remaining}`, unit: "USDC", color: LIME },
+    { label: _("贡献记录", "RECORDS"), value: `${records.length}`, unit: "ROWS", color: CYAN },
+    { label: _("待执行", "READY"), value: `${ready}`, unit: "TX", color: "#60A5FA" },
+    { label: _("已拦截", "BLOCKED"), value: `${blocked}`, unit: "TX", color: "#FB7185" },
+  ];
+
+  const recent = activityLog.slice(0, 3);
 
   return (
     <FrostedPanel
       glowColor="lime"
-      scanline
       sheen
-      className="relative h-full min-h-[480px] p-6 flex flex-col items-center justify-center"
+      className="flex h-full flex-col p-5"
     >
-      <CornerGlow color="lime" className="-top-24 -right-24" intensity={0.22} />
-      <CornerGlow color="cyan" className="-bottom-32 -left-32" intensity={0.12} />
+      <CornerGlow color="lime" className="-top-20 -right-20" intensity={0.14} />
 
-      <div className="absolute top-6 left-6 right-6 z-10 flex items-start justify-between">
-        <div>
-          <HudLabel prefix="AGENT::" value="AgentCFO" color="lime" size="md" />
-          <h2 className="mt-1 text-lg font-semibold text-fg">
-            {lang === "zh" ? "感知型 CFO 人格" : "Sentient CFO Persona"}
-          </h2>
-        </div>
+      {/* identity */}
+      <div className="relative z-10 flex items-start justify-between">
+        <HudLabel prefix="AGENT::" value="AgentCFO" color="lime" size="sm" />
         <StatusPulse
-          color={agentStatus === "analyzing" ? "cyan" : "lime"}
-          label={agentStatus === "analyzing" ? "ANALYZING" : "ONLINE"}
+          color={analyzing ? "cyan" : "lime"}
+          label={analyzing ? "BUSY" : "ONLINE"}
           size="sm"
         />
       </div>
 
-      <Scanline color="lime" className="absolute top-[76px] left-6 right-6 z-10" />
+      <div className="relative z-10 mt-5 flex flex-col items-center">
+        <AgentOrb size={116} analyzing={analyzing} />
+        <h2 className="mt-4 text-lg font-bold tracking-tight text-fg">AgentCFO</h2>
+        <p className="mt-1 text-center text-[11px] leading-relaxed text-fg-muted">
+          {_("DAO 财务智能体 · CAW 边界内执行", "DAO treasury agent, executing within CAW guardrails")}
+        </p>
+      </div>
 
-      <div className="relative z-10 flex flex-col items-center justify-center">
-        <div
-          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[340px] h-[340px] rounded-full pointer-events-none"
-          style={{
-            background:
-              "radial-gradient(circle at 40% 35%, rgba(181,255,77,0.12) 0%, rgba(94,234,212,0.06) 40%, transparent 70%)",
-            filter: "blur(60px)",
-          }}
-        />
+      <Scanline color="lime" className="relative z-10 my-5 opacity-40" />
 
-        <motion.div
-          className="absolute bottom-[10%] left-1/2 -translate-x-1/2 w-[220px] h-[70px] rounded-[100%] pointer-events-none"
-          style={{
-            background:
-              "radial-gradient(ellipse at 50% 50%, rgba(94,234,212,0.12) 0%, transparent 70%)",
-            border: "1px solid rgba(94,234,212,0.12)",
-          }}
-          animate={{ opacity: [0.4, 0.8, 0.4], scaleX: [1, 1.05, 1] }}
-          transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-        />
-
-        <motion.div
-          className="relative z-10 flex items-center justify-center"
-          animate={
-            agentStatus === "analyzing"
-              ? { scale: [1, 1.02, 1], rotate: [0, 1, -1, 0] }
-              : { scale: [1, 1.03, 1] }
-          }
-          transition={{
-            duration: agentStatus === "analyzing" ? 1.2 : 4,
-            repeat: Infinity,
-            ease: "easeInOut",
-          }}
-        >
-          <motion.div
-            className="absolute rounded-full"
-            style={{
-              width: 220,
-              height: 220,
-              background:
-                "radial-gradient(circle, rgba(181,255,77,0.12) 0%, transparent 70%)",
-              backdropFilter: "blur(8px)",
-            }}
-            animate={{
-              opacity: agentStatus === "analyzing" ? [0.5, 1, 0.5] : [0.4, 0.8, 0.4],
-              scale: [1, 1.1, 1],
-            }}
-            transition={{
-              duration: agentStatus === "analyzing" ? 1.2 : 3,
-              repeat: Infinity,
-              ease: "easeInOut",
-            }}
-          />
-
-          <motion.div
-            className="absolute rounded-full"
-            style={{
-              width: 176,
-              height: 176,
-              border: "1px solid rgba(94,234,212,0.25)",
-              boxShadow: "0 0 30px rgba(94,234,212,0.15), inset 0 0 20px rgba(94,234,212,0.08)",
-              backdropFilter: "blur(4px)",
-            }}
-            animate={{ rotate: 360 }}
-            transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-          />
-
-          <motion.div
-            className="relative flex items-center justify-center w-40 h-40 rounded-full"
-            style={{
-              background:
-                "radial-gradient(circle at 35% 35%, rgba(255,255,255,0.14), rgba(181,255,77,0.08) 45%, rgba(94,234,212,0.04) 100%)",
-              backdropFilter: "blur(20px)",
-              border: "1px solid rgba(255,255,255,0.18)",
-              boxShadow:
-                "inset 0 0 40px rgba(255,255,255,0.08), 0 0 80px rgba(181,255,77,0.14), 0 0 40px rgba(94,234,212,0.08)",
-            }}
-          >
+      {/* telemetry */}
+      <div className="relative z-10">
+        <div className="mb-2.5 font-mono text-[9px] uppercase tracking-[0.2em] text-fg-subtle">
+          {_("实时遥测", "Telemetry")}
+        </div>
+        <div className="grid grid-cols-2 gap-2">
+          {telemetry.map((item) => (
             <div
-              className="absolute inset-0 rounded-full pointer-events-none"
-              style={{
-                background:
-                  "linear-gradient(135deg, rgba(255,255,255,0.18) 0%, transparent 40%, transparent 60%, rgba(94,234,212,0.1) 100%)",
-              }}
-            />
-            <Bot
-              size={56}
-              style={{
-                color: agentStatus === "analyzing" ? CYAN : LIME,
-                filter: `drop-shadow(0 0 18px ${agentStatus === "analyzing" ? "rgba(94,234,212,0.5)" : "rgba(181,255,77,0.4)"})`,
-              }}
-              strokeWidth={1.2}
-            />
-          </motion.div>
+              key={item.label}
+              className="rounded-xl border border-white/[0.06] bg-white/[0.02] px-3 py-2.5"
+            >
+              <div className="font-mono text-[8.5px] uppercase tracking-[0.14em] text-fg-subtle">
+                {item.label}
+              </div>
+              <div className="mt-1 flex items-baseline gap-1">
+                <span
+                  className="font-mono text-base font-bold tabular-nums"
+                  style={{ color: item.color }}
+                >
+                  {item.value}
+                </span>
+                <span className="font-mono text-[8.5px] text-fg-subtle">{item.unit}</span>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
 
-          <SparkleParticle delay={0} x="20%" size={4} duration={3} />
-          <SparkleParticle delay={0.8} x="75%" size={3} duration={3.5} />
-          <SparkleParticle delay={1.5} x="50%" size={5} duration={4} />
-          <SparkleParticle delay={2.2} x="30%" size={2.5} duration={2.8} />
-          <SparkleParticle delay={0.4} x="80%" size={3.5} duration={3.2} />
-        </motion.div>
-
-        <motion.h2
-          className="relative z-10 mt-10 text-xl font-bold tracking-tight text-fg"
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
-        >
-          AgentCFO
-        </motion.h2>
-
-        <motion.div
-          className="relative z-10 flex items-center gap-2 mt-2"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.5 }}
-        >
-          <span
-            className="w-2 h-2 rounded-full animate-status-pulse"
-            style={{
-              backgroundColor: agentStatus === "ready" ? LIME : CYAN,
-              color: agentStatus === "ready" ? LIME : CYAN,
-            }}
-          />
-          <span className="text-xs text-fg-subtle font-mono">{statusText}</span>
-        </motion.div>
-
-        <motion.p
-          className="relative z-10 mt-3 text-[11px] text-fg-subtle text-center max-w-[220px] leading-relaxed"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.7 }}
-        >
-          {lang === "zh"
-            ? "DAO 财务智能助手 · CAW 安全边界内执行"
-            : "DAO Treasury AI · Executes within CAW guardrails"}
-        </motion.p>
+      {/* recent activity */}
+      <div className="relative z-10 mt-5 flex min-h-0 flex-1 flex-col">
+        <div className="mb-2.5 flex items-center justify-between">
+          <span className="font-mono text-[9px] uppercase tracking-[0.2em] text-fg-subtle">
+            {_("最近执行", "Recent runs")}
+          </span>
+          <button
+            onClick={() => openDrawer("activity")}
+            className="group flex items-center gap-1 text-[10px] text-fg-subtle transition-colors hover:text-hud-lime"
+          >
+            <History size={10} />
+            {_("全部", "View all")}
+            <ArrowUpRight size={9} className="transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+          </button>
+        </div>
+        <div className="space-y-1.5 overflow-y-auto">
+          {recent.map((entry) => (
+            <div
+              key={entry.id}
+              className="rounded-lg border border-white/[0.05] bg-white/[0.02] px-3 py-2"
+            >
+              <p className="truncate text-[11px] text-fg-muted">{entry.message}</p>
+              <p className="mt-0.5 font-mono text-[9px] text-fg-subtle">
+                {new Date(entry.ts).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+              </p>
+            </div>
+          ))}
+        </div>
       </div>
     </FrostedPanel>
   );
 }
 
-function ChatSatellite({
+/* =============================================================================
+ * MOBILE PERSONA STRIP — compact identity bar for < lg viewports
+ * ===========================================================================*/
+
+function MobilePersonaStrip({ analyzing }: { analyzing: boolean }) {
+  const { lang } = useApp();
+  return (
+    <FrostedPanel glowColor="lime" sheen className="flex items-center gap-3 px-4 py-3">
+      <AgentOrb size={44} analyzing={analyzing} />
+      <div className="min-w-0 flex-1">
+        <div className="text-sm font-bold text-fg">AgentCFO</div>
+        <div className="truncate text-[10px] text-fg-muted">
+          {lang === "zh" ? "DAO 财务智能体" : "DAO treasury agent"}
+        </div>
+      </div>
+      <StatusPulse color={analyzing ? "cyan" : "lime"} label={analyzing ? "BUSY" : "ONLINE"} size="sm" />
+    </FrostedPanel>
+  );
+}
+
+/* =============================================================================
+ * CHAT PANEL — the primary work surface, quick commands integrated
+ * ===========================================================================*/
+
+function ChatPanel({
   messages,
   isThinking,
   inputValue,
   setInputValue,
   onSend,
   onKeyDown,
+  onQuickAction,
 }: {
   messages: ChatMessage[];
   isThinking: boolean;
@@ -398,6 +390,7 @@ function ChatSatellite({
   setInputValue: (v: string) => void;
   onSend: () => void;
   onKeyDown: (e: React.KeyboardEvent) => void;
+  onQuickAction: (action: string) => void;
 }) {
   const { lang } = useApp();
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -408,21 +401,44 @@ function ChatSatellite({
     }
   }, [messages, isThinking]);
 
+  const quickActions = [
+    {
+      key: lang === "zh" ? "生成付款计划" : "Generate payment plan",
+      label: lang === "zh" ? "生成计划" : "Generate Plan",
+      icon: FileText,
+      color: LIME,
+    },
+    {
+      key: lang === "zh" ? "检查风险" : "Check risk",
+      label: lang === "zh" ? "检查风险" : "Check Risk",
+      icon: Shield,
+      color: CYAN,
+    },
+    {
+      key: lang === "zh" ? "查看审计报告" : "View audit report",
+      label: lang === "zh" ? "查看审计" : "View Audit",
+      icon: TrendingUp,
+      color: "#C084FC",
+    },
+  ];
+
   return (
-    <FrostedPanel glowColor="lime" sheen className="h-full flex flex-col">
-      <div className="flex items-center gap-2.5 px-5 py-3.5 border-b border-white/[0.06]">
+    <FrostedPanel glowColor="lime" sheen scanline className="flex h-full flex-col">
+      {/* header */}
+      <div className="flex items-center gap-2.5 border-b border-white/[0.06] px-5 py-3.5">
         <Zap size={15} style={{ color: LIME }} />
-        <span className="text-xs font-bold text-fg">
-          {lang === "zh" ? "对话" : "Conversation"}
+        <span className="text-[13px] font-bold text-fg">
+          {lang === "zh" ? "指挥对话" : "Command Conversation"}
         </span>
-        <span className="text-[10px] font-mono text-fg-subtle ml-auto">
+        <span className="ml-auto font-mono text-[10px] text-fg-subtle">
           {messages.length} {lang === "zh" ? "条消息" : "messages"}
         </span>
       </div>
 
+      {/* messages */}
       <div
         ref={scrollRef}
-        className="flex-1 overflow-y-auto px-5 py-4 space-y-4 min-h-0"
+        className="min-h-0 flex-1 space-y-4 overflow-y-auto px-5 py-5"
       >
         <AnimatePresence initial={false}>
           {messages.map((msg, idx) => {
@@ -447,23 +463,23 @@ function ChatSatellite({
               >
                 <div
                   className={cn(
-                    "flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center",
+                    "flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full",
                     msg.role === "agent"
-                      ? "bg-lime-500/10 border border-lime-500/20"
-                      : "bg-white/[0.06] border border-white/[0.08]"
+                      ? "border border-lime-500/20 bg-lime-500/10"
+                      : "border border-white/[0.08] bg-white/[0.06]"
                   )}
                 >
                   {msg.role === "agent" ? (
                     <Bot size={14} style={{ color: LIME }} />
                   ) : (
-                    <User size={14} className="text-fg-subtle" />
+                    <User size={14} className="text-fg-muted" />
                   )}
                 </div>
 
                 {msg.role === "agent" ? (
                   <AgentBubble text={msg.text} isLatest={isLatestAgent} />
                 ) : (
-                  <div className="max-w-[80%] px-4 py-2.5 rounded-2xl rounded-tr-sm bg-white/[0.08] text-[13px] leading-relaxed text-fg">
+                  <div className="max-w-[85%] rounded-2xl rounded-tr-sm border border-white/[0.06] bg-white/[0.07] px-4 py-3 text-[13.5px] leading-relaxed text-fg">
                     {msg.text}
                   </div>
                 )}
@@ -480,7 +496,7 @@ function ChatSatellite({
               exit={{ opacity: 0, y: 8 }}
               className="flex gap-3"
             >
-              <div className="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center bg-lime-500/10 border border-lime-500/20">
+              <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full border border-lime-500/20 bg-lime-500/10">
                 <Bot size={14} style={{ color: LIME }} />
               </div>
               <div className="rounded-2xl rounded-tl-sm border border-white/[0.06] bg-white/[0.03] px-4 py-2">
@@ -491,9 +507,36 @@ function ChatSatellite({
         </AnimatePresence>
       </div>
 
-      <div className="px-5 py-4 border-t border-white/[0.06]">
+      {/* quick commands + input */}
+      <div className="border-t border-white/[0.06] px-5 pb-4 pt-3">
+        <div className="mb-3 flex flex-wrap items-center gap-2">
+          <span className="mr-0.5 hidden font-mono text-[9px] uppercase tracking-[0.18em] text-fg-subtle sm:block">
+            {lang === "zh" ? "快速指令" : "Quick"}
+          </span>
+          {quickActions.map((a) => {
+            const Icon = a.icon;
+            return (
+              <motion.button
+                key={a.label}
+                onClick={() => onQuickAction(a.key)}
+                disabled={isThinking}
+                whileTap={{ scale: 0.96 }}
+                className="group flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-[11.5px] font-medium transition-all disabled:cursor-not-allowed disabled:opacity-40"
+                style={{
+                  borderColor: `${a.color}2E`,
+                  backgroundColor: `${a.color}0D`,
+                  color: a.color,
+                }}
+              >
+                <Icon size={12} />
+                {a.label}
+              </motion.button>
+            );
+          })}
+        </div>
+
         <div className="flex items-center gap-3">
-          <div className="flex-1 relative">
+          <div className="relative flex-1">
             <input
               type="text"
               value={inputValue}
@@ -505,11 +548,11 @@ function ChatSatellite({
                   : "Type a command or question..."
               }
               disabled={isThinking}
-              className="w-full rounded-xl border border-white/[0.08] bg-white/[0.03] px-4 py-3 pr-11 text-[13px] text-fg placeholder:text-fg-subtle/50 focus:outline-none focus:border-lime-500/30 focus:ring-1 focus:ring-lime-500/10 transition-all disabled:opacity-50"
+              className="w-full rounded-xl border border-white/[0.08] bg-white/[0.03] px-4 py-3 pr-11 text-[13px] text-fg placeholder:text-fg-subtle/60 transition-all focus:border-lime-500/30 focus:outline-none focus:ring-1 focus:ring-lime-500/10 disabled:opacity-50"
             />
             <Sparkles
               size={14}
-              className="absolute right-3.5 top-1/2 -translate-y-1/2 text-fg-subtle/30"
+              className="absolute right-3.5 top-1/2 -translate-y-1/2 text-fg-subtle/40"
             />
           </div>
           <motion.button
@@ -517,7 +560,7 @@ function ChatSatellite({
             disabled={!inputValue.trim() || isThinking}
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-            className="flex-shrink-0 w-11 h-11 rounded-xl flex items-center justify-center transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+            className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-xl transition-all disabled:cursor-not-allowed disabled:opacity-30"
             style={{
               backgroundColor: inputValue.trim()
                 ? `${LIME}15`
@@ -534,65 +577,6 @@ function ChatSatellite({
               }}
             />
           </motion.button>
-        </div>
-      </div>
-    </FrostedPanel>
-  );
-}
-
-function QuickActionsStrip({
-  isThinking,
-  onAction,
-}: {
-  isThinking: boolean;
-  onAction: (action: string) => void;
-}) {
-  const { lang } = useApp();
-
-  const actions = [
-    {
-      key: lang === "zh" ? "生成付款计划" : "Generate payment plan",
-      label: lang === "zh" ? "生成计划" : "Generate Plan",
-      icon: <FileText className="w-4 h-4" />,
-      variant: "lime" as const,
-    },
-    {
-      key: lang === "zh" ? "检查风险" : "Check risk",
-      label: lang === "zh" ? "检查风险" : "Check Risk",
-      icon: <Shield className="w-4 h-4" />,
-      variant: "cyan" as const,
-    },
-    {
-      key: lang === "zh" ? "查看审计报告" : "View audit report",
-      label: lang === "zh" ? "查看审计" : "View Audit",
-      icon: <TrendingUp className="w-4 h-4" />,
-      variant: "violet" as const,
-    },
-  ];
-
-  return (
-    <FrostedPanel glowColor="lime" sheen className="p-4">
-      <div className="flex flex-col sm:flex-row sm:items-center gap-4">
-        <div className="flex items-center gap-2 shrink-0">
-          <Zap className="w-4 h-4 text-hud-lime" />
-          <span className="text-sm font-semibold text-fg">
-            {lang === "zh" ? "快速指令" : "Quick Commands"}
-          </span>
-        </div>
-        <div className="flex items-center justify-center sm:justify-end gap-3 flex-1">
-          {actions.map((a) => (
-            <HolographicButton
-              key={a.label}
-              icon={a.icon}
-              variant={a.variant}
-              size="sm"
-              tilt3d
-              disabled={isThinking}
-              onClick={() => onAction(a.key)}
-            >
-              {a.label}
-            </HolographicButton>
-          ))}
         </div>
       </div>
     </FrostedPanel>
@@ -649,10 +633,9 @@ function formatAuditSummary(
 }
 
 /**
- * AgentHub — the central Agent CFO interface for the Command Center.
- *
- * Replaces the old `/console/agent` page as the default Console home.
- * Contains the Agent persona, chat, and quick actions.
+ * AgentHub — Console home. Chat-first layout: compact persona sidebar on the
+ * left, the conversation as the primary surface, quick commands integrated
+ * above the input.
  */
 export function AgentHub() {
   const { lang } = useApp();
@@ -666,7 +649,6 @@ export function AgentHub() {
   const [messages, setMessages] = useState<ChatMessage[]>(MOCK_MESSAGES);
   const [inputValue, setInputValue] = useState("");
   const [isThinking, setIsThinking] = useState(false);
-  const [agentStatus, setAgentStatus] = useState<"ready" | "analyzing">("ready");
 
   const pushAgentMessage = (text: string) => {
     setMessages((prev) => [...prev, { role: "agent", text }]);
@@ -679,7 +661,6 @@ export function AgentHub() {
     setMessages((prev) => [...prev, { role: "user", text: userText }]);
     setInputValue("");
     setIsThinking(true);
-    setAgentStatus("analyzing");
 
     setTimeout(() => {
       pushAgentMessage(
@@ -688,7 +669,6 @@ export function AgentHub() {
           : `Received: "${userText}". Analyzing treasury topology and risk boundaries...`
       );
       setIsThinking(false);
-      setAgentStatus("ready");
     }, 2000);
   };
 
@@ -703,7 +683,6 @@ export function AgentHub() {
     if (isThinking) return;
     setMessages((prev) => [...prev, { role: "user", text: action }]);
     setIsThinking(true);
-    setAgentStatus("analyzing");
 
     try {
       const isPlan = action.includes("Plan") || action.includes("计划");
@@ -727,7 +706,7 @@ export function AgentHub() {
         }
         pushAgentMessage(formatAuditSummary(currentPlan, cawStatuses, lang));
       }
-    } catch (err) {
+    } catch {
       pushAgentMessage(
         lang === "zh"
           ? "操作失败，请重试。"
@@ -735,30 +714,32 @@ export function AgentHub() {
       );
     } finally {
       setIsThinking(false);
-      setAgentStatus("ready");
     }
   };
 
   return (
-    <div className="h-full flex flex-col gap-4 p-4 md:p-6">
-      <div className="flex-1 min-h-0 @container">
-        <div className="h-full grid grid-cols-1 @[600px]:grid-cols-[1fr_280px] gap-4">
-          <div className="min-h-[400px] min-w-0">
-            <AgentPersona agentStatus={agentStatus} />
-          </div>
-          <div className="min-h-[320px] min-w-0">
-            <ChatSatellite
-              messages={messages}
-              isThinking={isThinking}
-              inputValue={inputValue}
-              setInputValue={setInputValue}
-              onSend={handleSend}
-              onKeyDown={handleKeyDown}
-            />
-          </div>
+    <div className="mx-auto flex h-[calc(100dvh-7.5rem)] w-full max-w-6xl flex-col gap-4 px-4 py-4 md:h-[calc(100dvh-4rem)] md:px-6 md:py-6">
+      {/* mobile compact persona */}
+      <div className="lg:hidden">
+        <MobilePersonaStrip analyzing={isThinking} />
+      </div>
+
+      <div className="grid min-h-0 flex-1 grid-cols-1 gap-4 lg:grid-cols-[300px_minmax(0,1fr)]">
+        <div className="hidden min-h-0 lg:block">
+          <AgentSidebar analyzing={isThinking} />
+        </div>
+        <div className="min-h-0">
+          <ChatPanel
+            messages={messages}
+            isThinking={isThinking}
+            inputValue={inputValue}
+            setInputValue={setInputValue}
+            onSend={handleSend}
+            onKeyDown={handleKeyDown}
+            onQuickAction={handleQuickAction}
+          />
         </div>
       </div>
-      <QuickActionsStrip isThinking={isThinking} onAction={handleQuickAction} />
     </div>
   );
 }
