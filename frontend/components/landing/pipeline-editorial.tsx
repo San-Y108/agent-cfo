@@ -559,9 +559,12 @@ export function PipelineEditorial() {
       {/* Intro */}
       <PipelineIntro />
 
-      {/* 5 Stages — two-column masonry on desktop, single column on mobile */}
-      <div className="relative mx-auto max-w-6xl px-6 py-12 lg:px-8 lg:py-16">
-        <div className="grid grid-cols-1 gap-x-12 gap-y-0 lg:grid-cols-2">
+      {/* 5 Stages — true masonry on desktop, single column on mobile */}
+      <div className="relative mx-auto max-w-7xl px-6 py-12 lg:px-8 lg:py-16">
+        <div
+          className="grid grid-cols-1 gap-x-10 gap-y-16 lg:grid-cols-2 lg:items-start"
+          style={{ rowGap: "4rem" }}
+        >
           {STAGES.map((stage, i) => (
             <div
               key={stage.key}
@@ -569,10 +572,10 @@ export function PipelineEditorial() {
                 stageRefs.current[i] = el;
               }}
               className={
-                i % 2 === 1
-                  ? "lg:mt-40"
-                  : i === STAGES.length - 1
-                    ? "lg:col-span-2 lg:max-w-2xl lg:mx-auto"
+                i === STAGES.length - 1
+                  ? "lg:col-span-2"
+                  : i % 2 === 1
+                    ? "lg:mt-24"
                     : ""
               }
             >
