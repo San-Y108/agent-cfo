@@ -15,16 +15,32 @@ import {
   ShieldCheck,
   AlertCircle,
   X,
+  ChevronDown,
+  ChevronUp,
 } from "lucide-react";
 import { useApp } from "@/lib/i18n/context";
+import { useConsoleState } from "@/lib/console/console-state";
 import { WalletHoloCard, WalletTopology } from "@/components/console/wallet-hologram";
 import { HolographicButton } from "@/components/ui/holographic-button";
-import { GradientOrb } from "@/components/ui/aceternity/background";
 import { GradientText } from "@/components/ui/aceternity/colourful-text";
 import { Sparkles as SparklesFX } from "@/components/ui/aceternity/sparkles";
 import { AnimatedNumber } from "@/components/ui/aceternity/animated-number";
+import {
+  HudLabel,
+  StatusPulse,
+  Scanline,
+  CornerGlow,
+  FrostedPanel,
+} from "@/components/console/command-deck";
 
 const BLUE = "#60A5FA";
+const ETH_PRICE_USD = 3400;
+
+function tokenValueUsd(symbol: string, balance: number): number {
+  if (symbol === "USDC" || symbol === "USDT") return balance;
+  if (symbol === "ETH") return balance * ETH_PRICE_USD;
+  return balance;
+}
 
 interface TokenBalance {
   symbol: string;
@@ -84,6 +100,8 @@ const INITIAL_WALLETS: WalletItem[] = [
 
 export default function WalletsPage() {
   const { t, lang } = useApp();
+  const _ = (zh: string, en: string) => (lang === "zh" ? zh : en);
+
   const [copiedText, setCopiedText] = useState<string | null>(null);
   const [isAddingWallet, setIsAddingWallet] = useState(false);
   const [wallets, setWallets] = useState<WalletItem[]>(INITIAL_WALLETS);
@@ -132,7 +150,6 @@ export default function WalletsPage() {
     e.preventDefault();
     if (!transferAmount || !transferRecipient) return;
 
-    // Check if transfer exceeds single limit (mock rule: 25 USDC)
     const amount = Number(transferAmount);
     if (amount > 25) {
       setShowBlockedAlert(true);
@@ -171,385 +188,173 @@ export default function WalletsPage() {
   const totalWalletValue = activeWallet.tokens.reduce((acc, tok) => acc + tok.valueUsd, 0);
 
   return (
-    <div className="p-6 space-y-6 relative">
-      {/* ─── Ambient orb: Wallets = blue ─── */}
-      <GradientOrb color="blue" className="-top-32 -right-32" />
-
-      {/* Header */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 p-5 rounded-xl border border-border-token dark:border-white/[0.06] bg-surface-2 dark:bg-white/[0.03]">
-        <div className="relative"
+    <div className="relative w-full min-h-full">
+      {/* ─── Header ─── */}
+      <div className="px-6 py-8 lg:px-10 lg:py-10">
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
         >
-          <div className="relative inline-block"
-          >
-            <GradientText className="text-xl font-bold tracking-tight"
-            >
+          <div className="flex items-center gap-3 mb-2">
+            <div className="w-8 h-8 rounded-lg bg-[#60A5FA]/10 border border-[#60A5FA]/20 flex items-center justify-center">
+              <Wallet className="w-4 h-4 text-[#60A5FA]" />
+            </div>
+            <span className="text-[11px] font-medium uppercase tracking-[0.18em] text-[#60A5FA] font-mono">
+              CWD Wallet Console
+            </span>
+          </div>
+          <div className="relative inline-block">
+            <GradientText className="text-2xl font-semibold leading-tight tracking-tight">
               {t("console.wallets.title" as any)}
             </GradientText>
             <SparklesFX
-              count={6}
-              className="absolute -right-6 -top-1 w-12 h-12"
+              count={8}
+              className="absolute -right-8 -top-2 w-16 h-16"
               color="#60A5FA"
             />
           </div>
-          <p className="text-xs mt-1 text-fg-subtle">{t("console.wallets.desc" as any)}</p>
-        </div>
-        <HolographicButton
-          onClick={() => setIsAddingWallet(true)}
-          variant="blue"
-          size="sm"
-          icon={<Plus className="w-4 h-4" />}
-        >
-          {t("console.wallets.addBtn" as any)}
-        </HolographicButton>
+          <p className="mt-2 text-sm text-fg-subtle max-w-xl">
+            {t("console.wallets.desc" as any)}
+          </p>
+        </motion.div>
       </div>
 
-      {/* Blocked Alert (Guardrails-style) */}
+      {/* ─── Blocked Alert (floating satellite) ─── */}
       <AnimatePresence>
         {showBlockedAlert && (
           <motion.div
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            className="rounded-xl border border-red-500/30 bg-red-500/10 p-4 flex items-center gap-3"
+            initial={{ opacity: 0, y: 20, scale: 0.96 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 20, scale: 0.96 }}
+            className="px-6 lg:px-10 pb-6 flex justify-end"
           >
-            <AlertCircle className="w-5 h-5 text-red-400 shrink-0" />
-            <div className="flex-1">
-              <div className="text-sm font-semibold text-red-400">
-                {lang === "zh" ? "转账被拦截" : "Transfer Blocked"}
+            <FrostedPanel glowColor="coral" scanline className="w-full max-w-md p-4">
+              <div className="flex items-start gap-3">
+                <AlertCircle className="w-5 h-5 text-hud-coral shrink-0 mt-0.5" />
+                <div className="flex-1">
+                  <div className="text-sm font-semibold text-hud-coral">
+                    {lang === "zh" ? "转账被拦截" : "Transfer Blocked"}
+                  </div>
+                  <div className="text-xs text-fg-subtle mt-0.5">
+                    {lang === "zh"
+                      ? `单笔限额 25 USDC，您尝试转账 ${transferAmount} USDC 已超出安全边界。`
+                      : `Single payment limit is 25 USDC. Your attempt to transfer ${transferAmount} USDC exceeds the safety boundary.`}
+                  </div>
+                </div>
+                <button
+                  onClick={() => { setShowBlockedAlert(false); setTransferAmount(""); }}
+                  className="text-fg-subtle hover:text-fg transition-colors"
+                >
+                  <X className="w-4 h-4" />
+                </button>
               </div>
-              <div className="text-xs text-red-300/70 mt-0.5">
-                {lang === "zh"
-                  ? `单笔限额 25 USDC，您尝试转账 ${transferAmount} USDC 已超出安全边界。`
-                  : `Single payment limit is 25 USDC. Your attempt to transfer ${transferAmount} USDC exceeds the safety boundary.`}
-              </div>
-            </div>
-            <button
-              onClick={() => { setShowBlockedAlert(false); setTransferAmount(""); }}
-              className="text-red-400 hover:text-red-300 transition-colors"
-            >
-              <X className="w-4 h-4" />
-            </button>
+            </FrostedPanel>
           </motion.div>
         )}
       </AnimatePresence>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Left: Wallet List */}
-        <div className="space-y-4">
-          <div className="font-mono text-[10px] uppercase tracking-wider font-bold text-fg-subtle px-1">
-            {t("console.wallets.registeredVaults" as any).replace("{count}", wallets.length.toString())}
-          </div>
+      {/* ─── Command Deck Layout ─── */}
+      <div className="px-6 lg:px-10 pb-10">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          {/* Left: Wallet List satellite */}
+          <motion.div
+            className="lg:col-span-3"
+            initial={{ opacity: 0, x: -16 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.5, delay: 0.1 }}
+          >
+            <WalletListSatellite
+              wallets={wallets}
+              activeWalletId={activeWalletId}
+              onSelect={(id) => { setActiveWalletId(id); setTransferSuccess(false); setShowBlockedAlert(false); }}
+              onAdd={() => setIsAddingWallet(true)}
+              _={_}
+            />
+          </motion.div>
 
-          <div className="space-y-3">
-            {wallets.map((w, i) => {
-              const isActive = w.id === activeWalletId;
-              const totalVal = w.tokens.reduce((acc, tok) => acc + tok.valueUsd, 0);
-              return (
-                <motion.div
-                  key={w.id}
-                  initial={{ opacity: 0, x: -12 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: i * 0.08, duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-                  onClick={() => { setActiveWalletId(w.id); setTransferSuccess(false); setShowBlockedAlert(false); }}
-                  className={cn(
-                    "group relative p-4 rounded-xl border cursor-pointer transition-all overflow-hidden",
-                    isActive
-                      ? "bg-surface-hover dark:bg-white/[0.05] border-[#60A5FA] shadow-[0_0_20px_rgba(96,165,250,0.08)]"
-                      : "bg-surface dark:bg-white/[0.02] border-border-token dark:border-white/[0.04] hover:border-[#60A5FA]/50"
-                  )}
-                >
-                  {/* Hover glow */}
-                  <div
-                    className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
-                    style={{
-                      background: "radial-gradient(circle at 50% 0%, rgba(96,165,250,0.06), transparent 70%)",
-                    }}
-                  />
-                  <div className="flex justify-between items-start mb-2">
-                    <span className="font-bold text-[14px] text-fg">{w.name}</span>
-                    <span
-                      className={`px-2 py-0.5 rounded text-[10px] font-mono leading-none border ${
-                        w.type === "Agent Vault"
-                          ? "bg-[#60A5FA]/10 text-[#60A5FA] border-[#60A5FA]/20"
-                          : w.type === "Multi-sig"
-                          ? "bg-indigo-500/10 text-indigo-400 border-indigo-500/20"
-                          : "bg-zinc-500/10 text-zinc-400 border-zinc-500/20"
-                      }`}
-                    >
-                      {w.type}
-                    </span>
-                  </div>
-                  <div className="font-mono text-[11px] truncate mb-3 text-fg-subtle" title={w.address}>
-                    {w.address.substring(0, 10)}...{w.address.substring(w.address.length - 8)}
-                  </div>
-                  <div className="flex justify-between items-end border-t border-border-token dark:border-white/[0.04] pt-2.5">
-                    <div className="text-[11px] text-fg-subtle">
-                      {t("console.wallets.authThreshold" as any)}{" "}
-                      <span className="font-bold text-fg">{w.threshold}</span>
-                    </div>
-                    <div className="font-mono font-bold text-sm text-fg">
-                      ${totalVal.toLocaleString(undefined, { minimumFractionDigits: 2 })}
-                    </div>
-                  </div>
-                </motion.div>
-              );
-            })}
-          </div>
+          {/* Center: Vault Topology Hero */}
+          <motion.div
+            className="lg:col-span-6"
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+          >
+            <FrostedPanel
+              glowColor="blue"
+              scanline
+              sheen
+              className="relative h-full min-h-[520px] p-6 flex flex-col"
+            >
+              <CornerGlow color="blue" className="-top-24 -right-24" intensity={0.2} />
 
-          {/* Treasury topology — CAW core + vault nodes */}
-          <WalletTopology
-            wallets={wallets.map((w) => ({
-              id: w.id,
-              name: w.name,
-              type: w.type,
-              valueUsd: w.tokens.reduce((acc, tok) => acc + tok.valueUsd, 0),
-            }))}
-            activeId={activeWalletId}
-            onSelect={(id) => { setActiveWalletId(id); setTransferSuccess(false); setShowBlockedAlert(false); }}
-          />
+              <div className="relative z-10 flex items-start justify-between mb-4">
+                <div>
+                  <HudLabel prefix="VAULT::" value={activeWallet.name} color="blue" size="md" />
+                  <h2 className="mt-1 text-lg font-semibold text-fg">
+                    {_("金库拓扑", "Vault Topology")}
+                  </h2>
+                </div>
+                <StatusPulse color="blue" label="HSM SECURED" size="sm" />
+              </div>
 
-          {/* Guide Card */}
-          <div className="p-4 rounded-xl border border-border-token dark:border-white/[0.06] bg-surface-2 dark:bg-white/[0.03]">
-            <div className="flex items-center gap-2 font-bold text-xs text-fg">
-              <ShieldCheck className="w-4 h-4 text-[#60A5FA]" />
-              {t("console.wallets.walletGuideTitle" as any)}
-            </div>
-            <p className="text-xs leading-relaxed mt-2.5 text-fg-subtle">
-              {t("console.wallets.walletGuideDesc" as any)}
-            </p>
-          </div>
+              <Scanline color="blue" className="relative z-10 mb-4" />
+
+              <div className="relative z-10 flex-1">
+                <WalletTopology
+                  wallets={wallets.map((w) => ({
+                    id: w.id,
+                    name: w.name,
+                    type: w.type,
+                    valueUsd: w.tokens.reduce((acc, tok) => acc + tok.valueUsd, 0),
+                  }))}
+                  activeId={activeWalletId}
+                  onSelect={(id) => { setActiveWalletId(id); setTransferSuccess(false); setShowBlockedAlert(false); }}
+                />
+              </div>
+            </FrostedPanel>
+          </motion.div>
+
+          {/* Right: Active wallet detail satellite */}
+          <motion.div
+            className="lg:col-span-3"
+            initial={{ opacity: 0, x: 16 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.5, delay: 0.3 }}
+          >
+            <WalletDetailSatellite
+              wallet={activeWallet}
+              totalValue={totalWalletValue}
+              copiedText={copiedText}
+              onCopy={handleCopy}
+              _={_}
+            />
+          </motion.div>
         </div>
 
-        {/* Right: Active Wallet Detail */}
-        <div className="lg:col-span-2 space-y-6">
-          {/* Detail Card — 3D tilt + cursor glare */}
-          <WalletHoloCard>
-          <div className="border border-border-token dark:border-white/[0.06] rounded-xl shadow-sm p-6 space-y-6 bg-surface dark:bg-white/[0.02]">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border-token dark:border-white/[0.04] pb-5">
-              <div>
-                <div className="flex items-center gap-2.5">
-                  <h3 className="text-lg font-bold tracking-tight text-fg">{activeWallet.name}</h3>
-                  <span className="px-2 py-0.5 rounded font-mono text-[10px] bg-surface-2 dark:bg-white/[0.05] text-fg-subtle">
-                    {activeWallet.type}
-                  </span>
-                </div>
-                <div className="flex items-center gap-2 mt-1.5 font-mono text-xs text-fg-subtle">
-                  <span>{activeWallet.address}</span>
-                  <button
-                    onClick={() => handleCopy(activeWallet.address)}
-                    className="p-1 rounded transition-all hover:bg-surface-hover text-[#60A5FA]"
-                    title="Copy"
-                  >
-                    {copiedText === activeWallet.address ? (
-                      <CheckCircle className="w-3.5 h-3.5 text-green-500" />
-                    ) : (
-                      <Copy className="w-3.5 h-3.5" />
-                    )}
-                  </button>
-                </div>
-              </div>
-              <div className="flex items-center gap-2.5 px-3 py-1.5 rounded-full border border-border-token dark:border-white/[0.06] bg-surface-2 dark:bg-white/[0.03] shrink-0 self-start sm:self-auto">
-                <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                <span className="text-xs font-semibold text-fg">{t("console.hsmClientOk" as any)}</span>
-              </div>
-            </div>
-
-            {/* Token Grid */}
-            <div className="space-y-3">
-              <div className="font-mono text-[10px] font-bold uppercase text-fg-subtle">
-                {t("console.wallets.assetPortfolio" as any)}
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                {activeWallet.tokens.map((token, idx) => (
-                  <div
-                    key={idx}
-                    className="p-4 rounded-xl border border-border-token dark:border-white/[0.04] bg-surface-2 dark:bg-white/[0.03] flex flex-col justify-between h-28"
-                  >
-                    <div className="flex justify-between items-center">
-                      <span className="font-bold text-sm text-fg">{token.symbol}</span>
-                      <div
-                        className="w-2.5 h-2.5 rounded-full"
-                        style={{
-                          backgroundColor:
-                            token.symbol === "USDC"
-                              ? "#60A5FA"
-                              : token.symbol === "USDT"
-                              ? "#34d399"
-                              : "#C084FC",
-                        }}
-                      />
-                    </div>
-                    <div>
-                      <div className="font-mono text-base font-extrabold text-fg">
-                        {token.balance.toLocaleString(undefined, { maximumFractionDigits: 4 })}
-                      </div>
-                      <div className="text-[11px] mt-0.5 font-mono text-fg-subtle">
-                        ${token.valueUsd.toLocaleString(undefined, { minimumFractionDigits: 2 })}
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Total Valuation */}
-            <div className="flex justify-between items-center p-4 rounded-xl border border-[#60A5FA]/20 bg-[#60A5FA]/5">
-              <div>
-                <span className="text-xs font-mono uppercase tracking-wider text-fg-subtle">
-                  {t("console.wallets.totalVal" as any)}
-                </span>
-                <div className="text-2xl font-extrabold tracking-tight mt-0.5 text-[#60A5FA]">
-                  ${totalWalletValue.toLocaleString(undefined, { minimumFractionDigits: 2 })}
-                </div>
-              </div>
-              <Wallet className="w-8 h-8 text-[#60A5FA]/30 shrink-0" />
-            </div>
-          </div>
-          </WalletHoloCard>
-
-          {/* Transfer Panel */}
-          <div className="border border-border-token dark:border-white/[0.06] rounded-xl shadow-sm p-6 bg-surface dark:bg-white/[0.02]">
-            <h3 className="text-sm font-bold mb-4 flex items-center gap-2 text-fg">
-              <ArrowUpRight className="w-4 h-4 text-[#60A5FA]" />
-              {t("console.wallets.disburseTitle" as any)}
-            </h3>
-
-            <form onSubmit={handleTransferSubmit} className="space-y-4">
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div>
-                  <label className="block text-[10px] font-mono uppercase font-bold mb-1 text-fg-subtle">
-                    {t("console.wallets.assetToken" as any)}
-                  </label>
-                  <select
-                    value={selectedToken}
-                    onChange={(e) => setSelectedToken(e.target.value)}
-                    className="w-full border border-border-token dark:border-white/[0.08] rounded-lg px-3 py-2 text-xs font-semibold bg-surface dark:bg-black/30 text-fg focus:border-[#60A5FA] focus:outline-none"
-                  >
-                    {activeWallet.tokens.map((tok) => (
-                      <option key={tok.symbol} value={tok.symbol}>
-                        {tok.symbol} (Avail: {tok.balance.toLocaleString()})
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-[10px] font-mono uppercase font-bold mb-1 text-fg-subtle">
-                    {t("console.wallets.outAmount" as any)}
-                  </label>
-                  <input
-                    type="number"
-                    placeholder="0.00"
-                    step="any"
-                    value={transferAmount}
-                    onChange={(e) => setTransferAmount(e.target.value)}
-                    className="w-full border border-border-token dark:border-white/[0.08] rounded-lg px-3 py-2 text-xs font-mono bg-surface dark:bg-black/30 text-fg focus:border-[#60A5FA] focus:outline-none"
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="block text-[10px] font-mono uppercase font-bold mb-1 text-fg-subtle">
-                    {t("console.wallets.recipientKey" as any)}
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="0x..."
-                    value={transferRecipient}
-                    onChange={(e) => setTransferRecipient(e.target.value)}
-                    className="w-full border border-border-token dark:border-white/[0.08] rounded-lg px-3 py-2 text-xs font-mono bg-surface dark:bg-black/30 text-fg focus:border-[#60A5FA] focus:outline-none"
-                    required
-                  />
-                </div>
-              </div>
-
-              <div className="flex justify-between items-center pt-2">
-                <p className="text-[11px] italic text-fg-subtle">
-                  {lang === "zh"
-                    ? "注意：划拨行为必须完全契合白名单配置，否则将中断并直接回落到多签防线。"
-                    : "Note: Disbursals must conform to whitelisted destinations or trigger multi-signed holds."}
-                </p>
-                <HolographicButton
-                  type="submit"
-                  disabled={isTransferring}
-                  variant="blue"
-                  size="sm"
-                  icon={
-                    isTransferring ? (
-                      <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                    ) : (
-                      <ArrowUpRight className="w-3.5 h-3.5" />
-                    )
-                  }
-                >
-                  {isTransferring
-                    ? t("console.wallets.broadcasting" as any)
-                    : t("console.wallets.broadcastBtn" as any)}
-                </HolographicButton>
-              </div>
-            </form>
-
-            <AnimatePresence>
-              {transferSuccess && (
-                <motion.div
-                  initial={{ opacity: 0, y: 5 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0 }}
-                  className="mt-4 p-3 rounded-lg text-xs flex items-center gap-2 border border-green-500/20 bg-green-500/10 text-green-500"
-                >
-                  <CheckCircle className="w-4 h-4 shrink-0" />
-                  <span>{t("console.wallets.broadcastSuccess" as any)}</span>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
-
-          {/* Signers Matrix */}
-          <div className="border border-border-token dark:border-white/[0.06] rounded-xl shadow-sm p-6 space-y-4 bg-surface dark:bg-white/[0.02]">
-            <div className="flex justify-between items-center border-b border-border-token dark:border-white/[0.04] pb-3">
-              <h3 className="text-sm font-bold flex items-center gap-2 text-fg">
-                <Key className="w-4 h-4 text-[#60A5FA]" />
-                {t("console.wallets.activeSignersMatrix" as any)}
-              </h3>
-              <span className="text-[10px] font-mono bg-surface-2 dark:bg-white/[0.05] text-[#60A5FA] px-2 py-0.5 rounded font-bold uppercase tracking-widest">
-                HSM SECURED
-              </span>
-            </div>
-            <div className="space-y-2.5">
-              {[
-                { label: t("console.wallets.signerRole1" as any), addr: "0x76B5A1Aad9040C58A91E1EdE...", status: "ACTIVE AGENT_KEY", color: "emerald" },
-                { label: t("console.wallets.signerRole2" as any), addr: "0x09FCD8a280cE1dEFeE90eaD20ee...", status: "ACTIVE MASTER_KEY", color: "indigo" },
-              ].map((s, i) => (
-                <div
-                  key={i}
-                  className="flex items-center justify-between p-3 rounded-xl border border-border-token dark:border-white/[0.04] bg-surface-2 dark:bg-white/[0.03]"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className={`w-8 h-8 rounded-full border flex items-center justify-center font-bold font-mono text-xs ${
-                      s.color === "emerald"
-                        ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/20"
-                        : "bg-indigo-500/10 text-indigo-400 border-indigo-500/20"
-                    }`}>
-                      0{i + 1}
-                    </div>
-                    <div>
-                      <div className="font-bold text-xs text-fg">{s.label}</div>
-                      <div className="text-[11px] font-mono mt-0.5 text-fg-subtle">{s.addr}</div>
-                    </div>
-                  </div>
-                  <div className={`flex items-center gap-1.5 text-[10px] font-bold border px-2 py-0.5 rounded font-mono ${
-                    s.color === "emerald"
-                      ? "text-green-400 bg-green-500/10 border-green-500/20"
-                      : "text-indigo-400 bg-indigo-500/10 border-indigo-500/20"
-                  }`}>
-                    {s.status}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
+        {/* Bottom: Signers Matrix strip */}
+        <div className="mt-6">
+          <SignersMatrixStrip _={_} />
         </div>
       </div>
 
-      {/* Add Wallet Modal */}
+      {/* ─── Transfer floating satellite ─── */}
+      <TransferFloating
+        activeWallet={activeWallet}
+        selectedToken={selectedToken}
+        setSelectedToken={setSelectedToken}
+        transferAmount={transferAmount}
+        setTransferAmount={setTransferAmount}
+        transferRecipient={transferRecipient}
+        setTransferRecipient={setTransferRecipient}
+        isTransferring={isTransferring}
+        transferSuccess={transferSuccess}
+        showBlockedAlert={showBlockedAlert}
+        onSubmit={handleTransferSubmit}
+        _={_}
+      />
+
+      {/* ─── Add Wallet Modal ─── */}
       <AnimatePresence>
         {isAddingWallet && (
           <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
@@ -637,5 +442,460 @@ export default function WalletsPage() {
         )}
       </AnimatePresence>
     </div>
+  );
+}
+
+/* =============================================================================
+ * WALLET LIST SATELLITE — Left-side collapsible vault selector.
+ * ===========================================================================*/
+
+function WalletListSatellite({
+  wallets,
+  activeWalletId,
+  onSelect,
+  onAdd,
+  _,
+}: {
+  wallets: WalletItem[];
+  activeWalletId: string;
+  onSelect: (id: string) => void;
+  onAdd: () => void;
+  _: (zh: string, en: string) => string;
+}) {
+  const { t } = useApp();
+  const [collapsed, setCollapsed] = useState(false);
+
+  return (
+    <FrostedPanel glowColor="blue" sheen className="h-full flex flex-col">
+      <div className="px-4 py-3 border-b border-white/[0.06] flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <Shield className="w-4 h-4 text-hud-blue" />
+          <span className="text-sm font-semibold text-fg">
+            {_("注册金库", "Vaults")}
+          </span>
+          <span className="text-[10px] text-fg-subtle font-mono px-1.5 py-0.5 rounded-full bg-white/[0.04]">
+            {wallets.length}
+          </span>
+        </div>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={onAdd}
+            className="text-fg-subtle hover:text-fg transition-colors"
+            title={t("console.wallets.addBtn" as any)}
+          >
+            <Plus className="w-3.5 h-3.5" />
+          </button>
+          <button
+            onClick={() => setCollapsed((v) => !v)}
+            className="text-fg-subtle hover:text-fg transition-colors lg:hidden"
+          >
+            {collapsed ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronUp className="w-3.5 h-3.5" />}
+          </button>
+        </div>
+      </div>
+
+      <div className={cn("flex-1 overflow-y-auto p-2 space-y-1", collapsed && "hidden lg:block")}>
+        {wallets.map((w, i) => {
+          const isActive = w.id === activeWalletId;
+          const totalVal = w.tokens.reduce((acc, tok) => acc + tok.valueUsd, 0);
+          return (
+            <motion.button
+              key={w.id}
+              type="button"
+              initial={{ opacity: 0, x: -8 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: i * 0.05, duration: 0.3 }}
+              onClick={() => onSelect(w.id)}
+              className={cn(
+                "w-full text-left p-3 rounded-lg border transition-colors",
+                isActive
+                  ? "bg-hud-blue/10 border-hud-blue/30"
+                  : "bg-white/[0.02] border-white/[0.04] hover:bg-white/[0.04]"
+              )}
+            >
+              <div className="flex justify-between items-start gap-2">
+                <span className="text-[13px] font-medium text-fg truncate">{w.name}</span>
+                <span
+                  className={cn(
+                    "shrink-0 px-1.5 py-0.5 rounded text-[9px] font-mono border",
+                    w.type === "Agent Vault"
+                      ? "bg-hud-blue/10 text-hud-blue border-hud-blue/20"
+                      : w.type === "Multi-sig"
+                      ? "bg-indigo-500/10 text-indigo-400 border-indigo-500/20"
+                      : "bg-zinc-500/10 text-zinc-400 border-zinc-500/20"
+                  )}
+                >
+                  {w.type}
+                </span>
+              </div>
+              <div className="mt-1 text-[10px] font-mono text-fg-subtle truncate">
+                {w.address.substring(0, 8)}...{w.address.substring(w.address.length - 6)}
+              </div>
+              <div className="mt-2 flex items-center justify-between">
+                <span className="text-[10px] text-fg-subtle truncate max-w-[110px]">{w.threshold}</span>
+                <span className="text-[12px] font-mono font-semibold text-fg">
+                  ${totalVal.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                </span>
+              </div>
+            </motion.button>
+          );
+        })}
+      </div>
+    </FrostedPanel>
+  );
+}
+
+/* =============================================================================
+ * WALLET DETAIL SATELLITE — Right-side active vault summary + token grid.
+ * ===========================================================================*/
+
+function WalletDetailSatellite({
+  wallet,
+  totalValue,
+  copiedText,
+  onCopy,
+  _,
+}: {
+  wallet: WalletItem;
+  totalValue: number;
+  copiedText: string | null;
+  onCopy: (text: string) => void;
+  _: (zh: string, en: string) => string;
+}) {
+  const { t } = useApp();
+
+  return (
+    <div className="space-y-4">
+      <FrostedPanel glowColor="blue" sheen className="p-4">
+        <HudLabel prefix="ACTIVE::" value={wallet.name} color="blue" size="sm" />
+        <div className="mt-2 flex items-center gap-2">
+          <span className="px-2 py-0.5 rounded font-mono text-[10px] bg-white/[0.05] text-fg-subtle">
+            {wallet.type}
+          </span>
+          <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full border border-white/[0.06] bg-white/[0.03]">
+            <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+            <span className="text-[10px] font-semibold text-fg">{t("console.hsmClientOk" as any)}</span>
+          </div>
+        </div>
+
+        <div className="mt-3 flex items-center gap-2 font-mono text-[11px] text-fg-subtle">
+          <span className="truncate">{wallet.address}</span>
+          <button
+            onClick={() => onCopy(wallet.address)}
+            className="p-1 rounded transition-all hover:bg-white/[0.06] text-hud-blue shrink-0"
+            title="Copy"
+          >
+            {copiedText === wallet.address ? (
+              <CheckCircle className="w-3.5 h-3.5 text-emerald-500" />
+            ) : (
+              <Copy className="w-3.5 h-3.5" />
+            )}
+          </button>
+        </div>
+      </FrostedPanel>
+
+      <FrostedPanel glowColor="blue" sheen className="p-4">
+        <div className="text-[10px] font-mono uppercase text-fg-subtle mb-3">
+          {t("console.wallets.assetPortfolio" as any)}
+        </div>
+        <div className="space-y-2">
+          {wallet.tokens.map((token, idx) => (
+            <div
+              key={idx}
+              className="flex items-center justify-between p-2.5 rounded-lg border border-white/[0.04] bg-white/[0.02]"
+            >
+              <div className="flex items-center gap-2">
+                <div
+                  className="w-2 h-2 rounded-full"
+                  style={{
+                    backgroundColor:
+                      token.symbol === "USDC"
+                        ? "#60A5FA"
+                        : token.symbol === "USDT"
+                        ? "#34d399"
+                        : "#C084FC",
+                  }}
+                />
+                <span className="text-[13px] font-semibold text-fg">{token.symbol}</span>
+              </div>
+              <div className="text-right">
+                <div className="text-[13px] font-mono font-semibold text-fg">
+                  {token.balance.toLocaleString(undefined, { maximumFractionDigits: 4 })}
+                </div>
+                <div className="text-[10px] font-mono text-fg-subtle">
+                  ${token.valueUsd.toLocaleString(undefined, { minimumFractionDigits: 0 })}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <div className="mt-4 p-3 rounded-lg border border-hud-blue/20 bg-hud-blue/5 flex items-center justify-between">
+          <div>
+            <div className="text-[10px] font-mono uppercase text-fg-subtle">
+              {t("console.wallets.totalVal" as any)}
+            </div>
+            <div className="text-xl font-extrabold tracking-tight mt-0.5 text-hud-blue">
+              ${totalValue.toLocaleString(undefined, { minimumFractionDigits: 0 })}
+            </div>
+          </div>
+          <Wallet className="w-6 h-6 text-hud-blue/30" />
+        </div>
+      </FrostedPanel>
+    </div>
+  );
+}
+
+/* =============================================================================
+ * TRANSFER FLOATING SATELLITE — Bottom-right disbursement card.
+ * ===========================================================================*/
+
+function TransferFloating({
+  activeWallet,
+  selectedToken,
+  setSelectedToken,
+  transferAmount,
+  setTransferAmount,
+  transferRecipient,
+  setTransferRecipient,
+  isTransferring,
+  transferSuccess,
+  showBlockedAlert,
+  onSubmit,
+  _,
+}: {
+  activeWallet: WalletItem;
+  selectedToken: string;
+  setSelectedToken: (v: string) => void;
+  transferAmount: string;
+  setTransferAmount: (v: string) => void;
+  transferRecipient: string;
+  setTransferRecipient: (v: string) => void;
+  isTransferring: boolean;
+  transferSuccess: boolean;
+  showBlockedAlert: boolean;
+  onSubmit: (e: React.FormEvent) => void;
+  _: (zh: string, en: string) => string;
+}) {
+  const { t, lang } = useApp();
+  const [expanded, setExpanded] = useState(false);
+
+  return (
+    <div className="px-6 lg:px-10 pb-6 flex justify-end">
+      <FrostedPanel glowColor="blue" scanline sheen className="w-full max-w-lg p-4">
+        <button
+          onClick={() => setExpanded((v) => !v)}
+          className="w-full flex items-center justify-between"
+        >
+          <div className="flex items-center gap-2">
+            <ArrowUpRight className="w-4 h-4 text-hud-blue" />
+            <span className="text-sm font-semibold text-fg">
+              {t("console.wallets.disburseTitle" as any)}
+            </span>
+          </div>
+          {expanded ? <ChevronUp className="w-4 h-4 text-fg-subtle" /> : <ChevronDown className="w-4 h-4 text-fg-subtle" />}
+        </button>
+
+        <AnimatePresence>
+          {expanded && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              className="overflow-hidden"
+            >
+              <form onSubmit={onSubmit} className="mt-4 space-y-4 relative">
+                {isTransferring && (
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="pointer-events-none absolute inset-0 z-10 overflow-hidden rounded-xl"
+                  >
+                    <motion.div
+                      className="absolute w-2 h-2 rounded-full shadow-[0_0_14px_rgba(96,165,250,0.9)]"
+                      style={{ backgroundColor: BLUE }}
+                      initial={{ left: "18%", top: "58%", opacity: 0, scale: 0.6 }}
+                      animate={{
+                        left: ["18%", "48%", "82%"],
+                        top: ["58%", "26%", "54%"],
+                        opacity: [0, 1, 0],
+                        scale: [0.6, 1.1, 0.8],
+                      }}
+                      transition={{ duration: 1.4, repeat: Infinity, ease: "easeInOut" }}
+                    />
+                    <motion.div
+                      className="absolute w-1 h-1 rounded-full opacity-60"
+                      style={{ backgroundColor: BLUE }}
+                      initial={{ left: "18%", top: "58%" }}
+                      animate={{
+                        left: ["18%", "48%", "82%"],
+                        top: ["58%", "26%", "54%"],
+                        opacity: [0, 0.6, 0],
+                      }}
+                      transition={{ duration: 1.4, repeat: Infinity, ease: "easeInOut", delay: 0.12 }}
+                    />
+                  </motion.div>
+                )}
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div>
+                    <label className="block text-[10px] font-mono uppercase font-bold mb-1 text-fg-subtle">
+                      {t("console.wallets.assetToken" as any)}
+                    </label>
+                    <select
+                      value={selectedToken}
+                      onChange={(e) => setSelectedToken(e.target.value)}
+                      className="w-full border border-white/[0.08] rounded-lg px-3 py-2 text-xs font-semibold bg-surface/50 text-fg focus:border-hud-blue focus:outline-none"
+                    >
+                      {activeWallet.tokens.map((tok) => (
+                        <option key={tok.symbol} value={tok.symbol}>
+                          {tok.symbol} (Avail: {tok.balance.toLocaleString()})
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-mono uppercase font-bold mb-1 text-fg-subtle">
+                      {t("console.wallets.outAmount" as any)}
+                    </label>
+                    <input
+                      type="number"
+                      placeholder="0.00"
+                      step="any"
+                      value={transferAmount}
+                      onChange={(e) => setTransferAmount(e.target.value)}
+                      className="w-full border border-white/[0.08] rounded-lg px-3 py-2 text-xs font-mono bg-surface/50 text-fg focus:border-hud-blue focus:outline-none"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-mono uppercase font-bold mb-1 text-fg-subtle">
+                      {t("console.wallets.recipientKey" as any)}
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="0x..."
+                      value={transferRecipient}
+                      onChange={(e) => setTransferRecipient(e.target.value)}
+                      className="w-full border border-white/[0.08] rounded-lg px-3 py-2 text-xs font-mono bg-surface/50 text-fg focus:border-hud-blue focus:outline-none"
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 pt-2">
+                  <p className="text-[11px] italic text-fg-subtle">
+                    {lang === "zh"
+                      ? "注意：划拨行为必须完全契合白名单配置，否则将中断并直接回落到多签防线。"
+                      : "Note: Disbursals must conform to whitelisted destinations or trigger multi-signed holds."}
+                  </p>
+                  <HolographicButton
+                    type="submit"
+                    disabled={isTransferring}
+                    variant="blue"
+                    size="sm"
+                    icon={
+                      isTransferring ? (
+                        <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                      ) : (
+                        <ArrowUpRight className="w-3.5 h-3.5" />
+                      )
+                    }
+                  >
+                    {isTransferring
+                      ? t("console.wallets.broadcasting" as any)
+                      : t("console.wallets.broadcastBtn" as any)}
+                  </HolographicButton>
+                </div>
+              </form>
+
+              <AnimatePresence>
+                {transferSuccess && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 5 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0 }}
+                    className="mt-4 p-3 rounded-lg text-xs flex items-center gap-2 border border-green-500/20 bg-green-500/10 text-green-500"
+                  >
+                    <CheckCircle className="w-4 h-4 shrink-0" />
+                    <span>{t("console.wallets.broadcastSuccess" as any)}</span>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </FrostedPanel>
+    </div>
+  );
+}
+
+/* =============================================================================
+ * SIGNERS MATRIX STRIP — Bottom horizontal satellite bar.
+ * ===========================================================================*/
+
+function SignersMatrixStrip({
+  _,
+}: {
+  _: (zh: string, en: string) => string;
+}) {
+  const { t } = useApp();
+
+  const signers = [
+    { label: t("console.wallets.signerRole1" as any), addr: "0x76B5A1Aad9040C58A91E1EdE...", status: "ACTIVE AGENT_KEY", color: "emerald" },
+    { label: t("console.wallets.signerRole2" as any), addr: "0x09FCD8a280cE1dEFeE90eaD20ee...", status: "ACTIVE MASTER_KEY", color: "indigo" },
+  ];
+
+  return (
+    <FrostedPanel glowColor="blue" sheen className="p-4">
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center gap-2">
+          <Key className="w-4 h-4 text-hud-blue" />
+          <span className="text-sm font-semibold text-fg">
+            {t("console.wallets.activeSignersMatrix" as any)}
+          </span>
+        </div>
+        <StatusPulse color="blue" label="HSM SECURED" size="sm" />
+      </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+        {signers.map((s, i) => (
+          <motion.div
+            key={i}
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: i * 0.08, duration: 0.3 }}
+            className="group relative flex items-center justify-between p-3 rounded-lg border border-white/[0.04] bg-white/[0.02] hover:bg-white/[0.04] transition-colors"
+          >
+            <div className="flex items-center gap-3">
+              <div
+                className={cn(
+                  "w-8 h-8 rounded-full border flex items-center justify-center font-bold font-mono text-xs",
+                  s.color === "emerald"
+                    ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/20"
+                    : "bg-indigo-500/10 text-indigo-400 border-indigo-500/20"
+                )}
+              >
+                0{i + 1}
+              </div>
+              <div>
+                <div className="font-bold text-xs text-fg">{s.label}</div>
+                <div className="text-[11px] font-mono mt-0.5 text-fg-subtle">{s.addr}</div>
+              </div>
+            </div>
+            <div
+              className={cn(
+                "flex items-center gap-1.5 text-[10px] font-bold border px-2 py-0.5 rounded font-mono",
+                s.color === "emerald"
+                  ? "text-green-400 bg-green-500/10 border-green-500/20"
+                  : "text-indigo-400 bg-indigo-500/10 border-indigo-500/20"
+              )}
+            >
+              {s.status}
+            </div>
+          </motion.div>
+        ))}
+      </div>
+    </FrostedPanel>
   );
 }

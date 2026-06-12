@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" role="img" aria-label="Sepolia node icon">
+  <title>Sepolia node icon</title>
+  <defs>
+    <radialGradient id="glow" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#8A92B2" stop-opacity="0.45"/><stop offset="0.58" stop-color="#8A92B2" stop-opacity="0.18"/><stop offset="1" stop-color="#8A92B2" stop-opacity="0"/></radialGradient>
+    <linearGradient id="accent" x1="58" y1="58" x2="198" y2="198" gradientUnits="userSpaceOnUse"><stop stop-color="#8A92B2"/><stop offset="1" stop-color="#ffffff" stop-opacity="0.82"/></linearGradient>
+  </defs>
+  <rect width="256" height="256" fill="none"/>
+  <circle cx="128" cy="128" r="118" fill="url(#glow)"/>
+  <circle cx="128" cy="128" r="88" fill="#0B0F14" fill-opacity="0.94" stroke="#8A92B2" stroke-opacity="0.75" stroke-width="2"/>
+  <polygon points="128,50 76,130 128,106 180,130" fill="#C9D1FF"/><polygon points="128,50 128,106 180,130" fill="#62688F"/><polygon points="76,130 128,160 180,130 128,106" fill="#8A92B2"/><polygon points="76,142 128,207 128,174" fill="#8A92B2"/><polygon points="180,142 128,207 128,174" fill="#62688F"/>
+</svg>

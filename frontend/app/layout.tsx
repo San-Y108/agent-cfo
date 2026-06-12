@@ -1,10 +1,19 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import { Geist, Geist_Mono } from "next/font/google";
+import localFont from "next/font/local";
 import { AppProvider } from "@/lib/i18n/context";
 
-const geist = Geist({ subsets: ["latin"], variable: "--font-geist" });
-const geistMono = Geist_Mono({ subsets: ["latin"], variable: "--font-mono" });
+const geist = localFont({
+  src: "../public/fonts/Geist-VariableFont_wght.ttf",
+  variable: "--font-geist",
+  weight: "100 900",
+});
+
+const geistMono = localFont({
+  src: "../public/fonts/GeistMono-VariableFont_wght.ttf",
+  variable: "--font-mono",
+  weight: "100 700",
+});
 
 export const metadata: Metadata = {
   title: "AgentCFO — AI Treasury Command Center",

@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" role="img" aria-label="Drizzle node icon">
+  <title>Drizzle node icon</title>
+  <defs>
+    <radialGradient id="glow" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#C5F74F" stop-opacity="0.45"/><stop offset="0.58" stop-color="#C5F74F" stop-opacity="0.18"/><stop offset="1" stop-color="#C5F74F" stop-opacity="0"/></radialGradient>
+    <linearGradient id="accent" x1="58" y1="58" x2="198" y2="198" gradientUnits="userSpaceOnUse"><stop stop-color="#C5F74F"/><stop offset="1" stop-color="#ffffff" stop-opacity="0.82"/></linearGradient>
+  </defs>
+  <rect width="256" height="256" fill="none"/>
+  <circle cx="128" cy="128" r="118" fill="url(#glow)"/>
+  <circle cx="128" cy="128" r="88" fill="#0B0F14" fill-opacity="0.94" stroke="#C5F74F" stroke-opacity="0.75" stroke-width="2"/>
+  <rect width="12" height="50" transform="matrix(0.873028 0.48767 -0.497212 0.867629 91 127)" fill="#C5F74F"/><rect width="12" height="50" transform="matrix(0.873028 0.48767 -0.497212 0.867629 123 92)" fill="#C5F74F"/><rect width="12" height="50" transform="matrix(0.873028 0.48767 -0.497212 0.867629 174 92)" fill="#C5F74F"/><rect width="12" height="50" transform="matrix(0.873028 0.48767 -0.497212 0.867629 141 127)" fill="#C5F74F"/>
+</svg>

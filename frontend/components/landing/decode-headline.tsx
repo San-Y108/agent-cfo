@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, useCallback } from "react";
 import { gsap, useGSAP } from "@/lib/gsap";
-import { useReducedMotion } from "framer-motion";
+import { useReducedMotion, motion } from "framer-motion";
 
 const SCRAMBLE_CHARS = "!@#$%^&*()_+-=[]{}|;:,.<>?/~`";
 
@@ -39,6 +39,9 @@ export function DecodeHeadline({
   const prefersReducedMotion = useReducedMotion();
   const lines = text.split("\n");
   const [isClient, setIsClient] = useState(false);
+
+  // Track which special words are currently being hovered.
+  const [mosaicWords, setMosaicWords] = useState<Set<string>>(new Set());
 
   // Physics refs for mouse repel
   const charStatesRef = useRef<
@@ -175,6 +178,15 @@ export function DecodeHeadline({
     };
   }, [prefersReducedMotion, isClient]);
 
+  const toggleMosaic = useCallback((wordKey: string, active: boolean) => {
+    setMosaicWords((prev) => {
+      const next = new Set(prev);
+      if (active) next.add(wordKey);
+      else next.delete(wordKey);
+      return next;
+    });
+  }, []);
+
   if (prefersReducedMotion) {
     return (
       <Tag ref={containerRef as any} className={className} style={style}>
@@ -206,11 +218,11 @@ export function DecodeHeadline({
         >
           {line.split(" ").map((word, wordIdx) => {
             const wordKey = `${lineIdx}-w${wordIdx}`;
-            const matchedStyle = specialWords?.find((ws) =>
-              ws.match.some((m) => m.toLowerCase() === word.toLowerCase())
+            const matchedStyle = specialWords?.find((ws: WordStyle) =>
+              ws.match.some((m: string) => m.toLowerCase() === word.toLowerCase().replace(/[^a-z一-龥]/gi, ""))
             );
             const isSpecial = !!matchedStyle;
-            const wordLower = word.toLowerCase();
+            const isMosaic = mosaicWords.has(wordKey);
 
             // Gradient colors for special words: lime → cyan → violet
             const specialColors = ["#B5FF4D", "#7DED8A", "#5EEAD4", "#7EC8E3", "#C084FC"];
@@ -218,12 +230,14 @@ export function DecodeHeadline({
             return (
               <span
                 key={wordKey}
-                className={matchedStyle?.className || ""}
+                className={`${matchedStyle?.className || ""} ${isSpecial ? "cursor-pointer" : ""}`}
                 style={{
                   display: "inline-block",
                   whiteSpace: "nowrap",
                   ...matchedStyle?.style,
                 }}
+                onMouseEnter={isSpecial ? () => toggleMosaic(wordKey, true) : undefined}
+                onMouseLeave={isSpecial ? () => toggleMosaic(wordKey, false) : undefined}
               >
                 {word.split("").map((char, charIdx) => {
                   const key = `${lineIdx}-${wordIdx}-${charIdx}`;
@@ -236,26 +250,22 @@ export function DecodeHeadline({
                   // Normal word: white color
                   const charColor = isSpecial
                     ? specialColors[charIdx % specialColors.length]
-                    : accent;
+                    : "#ffffff";
                   const glowShadow = isSpecial
                     ? `0 0 12px ${specialColors[charIdx % specialColors.length]}60, 0 0 28px ${specialColors[charIdx % specialColors.length]}30`
                     : undefined;
 
                   return (
-                    <span
+                    <MosaicChar
                       key={key}
-                      className="decode-char inline-block will-change-transform"
-                      data-char={char}
-                      data-key={key}
-                      style={{
-                        color: charColor,
-                        opacity: isClient ? 0 : 1,
-                        minWidth: char === " " ? "0.25em" : undefined,
-                        textShadow: glowShadow,
-                      }}
-                    >
-                      {isClient ? fallbackChar : char}
-                    </span>
+                      charKey={key}
+                      targetChar={char}
+                      fallbackChar={isClient ? fallbackChar : char}
+                      color={charColor}
+                      glowShadow={glowShadow}
+                      isClient={isClient}
+                      isMosaic={isMosaic}
+                    />
                   );
                 })}
                 {/* Space between words — allow wrapping here */}
@@ -270,5 +280,83 @@ export function DecodeHeadline({
         </div>
       ))}
     </Tag>
+  );
+}
+
+function MosaicChar({
+  charKey,
+  targetChar,
+  fallbackChar,
+  color,
+  glowShadow,
+  isClient,
+  isMosaic,
+}: {
+  charKey: string;
+  targetChar: string;
+  fallbackChar: string;
+  color: string;
+  glowShadow?: string;
+  isClient: boolean;
+  isMosaic: boolean;
+}) {
+  const [displayChar, setDisplayChar] = useState(targetChar);
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  useEffect(() => {
+    if (!isMosaic) {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
+      setDisplayChar(targetChar);
+      return;
+    }
+
+    intervalRef.current = setInterval(() => {
+      setDisplayChar(
+        targetChar === " "
+          ? " "
+          : SCRAMBLE_CHARS[Math.floor(Math.random() * SCRAMBLE_CHARS.length)]
+      );
+    }, 45);
+
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
+    };
+  }, [isMosaic, targetChar]);
+
+  if (targetChar === " ") {
+    return (
+      <span
+        className="decode-char inline-block will-change-transform"
+        data-char=" "
+        data-key={charKey}
+        style={{ minWidth: "0.25em" }}
+      >
+        {" "}
+      </span>
+    );
+  }
+
+  return (
+    <motion.span
+      className="decode-char inline-block will-change-transform"
+      data-char={targetChar}
+      data-key={charKey}
+      animate={isMosaic ? { filter: ["blur(0px)", "blur(1.5px)", "blur(0px)"] } : { filter: "blur(0px)" }}
+      transition={{ duration: 0.12, repeat: isMosaic ? Infinity : 0, ease: "linear" }}
+      style={{
+        color,
+        opacity: isClient ? 1 : 1,
+        minWidth: targetChar === " " ? "0.25em" : undefined,
+        textShadow: glowShadow,
+      }}
+    >
+      {displayChar}
+    </motion.span>
   );
 }

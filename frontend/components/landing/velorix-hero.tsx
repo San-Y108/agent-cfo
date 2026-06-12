@@ -111,10 +111,11 @@ function MobileMenu({ open, onClose }: { open: boolean; onClose: () => void }) {
             <Link
               href="/console"
               onClick={onClose}
-              className="block w-full py-3 rounded-full text-sm font-medium text-center transition-all duration-300 hover:opacity-80"
+              className="w-full py-3 rounded-full text-sm font-semibold text-center transition-all duration-300 hover:opacity-80 inline-flex items-center justify-center gap-2"
               style={{ fontFamily: "Inter, sans-serif", backgroundColor: "#B5FF4D", color: "#0D0D0D" }}
             >
-              {t("nav.openDemo")}
+              {t("hero.cta")}
+              <ArrowRight size={15} />
             </Link>
             <div className="mt-4 flex justify-center">
               <ThemeLanguageToggle variant="hero" />
@@ -191,7 +192,7 @@ function Navbar() {
   // Scroll-based active section detection — more reliable than IntersectionObserver
   // for pinned/sticky sections and overlapping layouts.
   useEffect(() => {
-    const OFFSET = 200; // navbar + buffer
+    const OFFSET = 80; // navbar + buffer
     const getActiveIdx = () => {
       if (Date.now() < clickCooldown.current) return; // respect click cooldown
       const y = window.scrollY + OFFSET;
@@ -398,10 +399,11 @@ function Navbar() {
           <HamburgerButton open={open} onClick={() => setOpen((v) => !v)} />
           <Link
             href="/console"
-            className="hidden lg:block text-sm font-medium px-5 py-2 rounded-full transition-all duration-300 hover:opacity-80"
+            className="hidden lg:inline-flex items-center gap-2 text-sm font-semibold px-4 py-2 rounded-full transition-all duration-300 hover:opacity-80 group"
             style={{ fontFamily: "Inter, sans-serif", backgroundColor: "#B5FF4D", color: "#0D0D0D" }}
           >
-            {t("nav.openDemo")}
+            {t("hero.cta")}
+            <ArrowRight size={14} className="transition-transform duration-200 group-hover:translate-x-0.5" />
           </Link>
         </motion.div>
       </nav>
@@ -483,7 +485,7 @@ export function VelorixHero() {
 
       <Navbar />
 
-      <div ref={contentRef} className="relative z-20 flex flex-col items-center text-center px-5 sm:px-8 max-w-4xl mx-auto -mt-24 md:-mt-32">
+      <div ref={contentRef} className="relative z-20 flex flex-col items-center text-center px-5 sm:px-8 max-w-4xl mx-auto -mt-36 md:-mt-48">
         {/* Eyebrow */}
         <span
           className="text-[11px] font-medium uppercase tracking-[0.18em] text-[#B5FF4D] mb-6"
@@ -504,9 +506,6 @@ export function VelorixHero() {
           scrollTriggerStart="top 120%"
           scrambleDelay={0.1}
           charStagger={0.025}
-          specialWords={[
-            { match: ["DAO", "executable", "可执行的"] },
-          ]}
         />
 
         <p
@@ -520,15 +519,6 @@ export function VelorixHero() {
         >
           {t("hero.subtitle")}
         </p>
-
-        <Link
-          href="/console"
-          className="mt-8 flex items-center gap-2.5 px-6 py-3 rounded-full text-sm font-semibold transition-all duration-300 hover:opacity-80 group"
-          style={{ fontFamily: "Inter, sans-serif", backgroundColor: "#B5FF4D", color: "#0D0D0D" }}
-        >
-          {t("hero.cta")}
-          <ArrowRight size={15} className="group-hover:translate-x-0.5 transition-transform duration-200" />
-        </Link>
 
       </div>
     </div>

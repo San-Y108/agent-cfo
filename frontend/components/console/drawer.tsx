@@ -9,9 +9,9 @@ import {
   Wifi,
   AlertTriangle,
   Trash2,
-  Save,
 } from "lucide-react";
 import { useApp } from "@/lib/i18n/context";
+import { useConsoleState } from "@/lib/console/console-state";
 
 type DrawerTab = "sandbox" | "rules";
 
@@ -24,6 +24,7 @@ export function ConsoleDrawer({
 }) {
   const [activeTab, setActiveTab] = useState<DrawerTab>("sandbox");
   const { t } = useApp();
+  const { budgetRule } = useConsoleState();
 
   // Sandbox state
   const [latency, setLatency] = useState(0);
@@ -31,16 +32,6 @@ export function ConsoleDrawer({
   const [logs, setLogs] = useState<string[]>([
     "[sandbox] init — latency 0ms",
     "[sandbox] ready",
-  ]);
-
-  // Live Rules state
-  const [monthlyBudget, setMonthlyBudget] = useState(50);
-  const [singleLimit, setSingleLimit] = useState(25);
-  const [whitelistInput, setWhitelistInput] = useState("");
-  const [whitelist, setWhitelist] = useState<string[]>([
-    "0xAlice1234567890abcdef1234567890abcdef12",
-    "0xCharlie1234567890abcdef1234567890abcdef",
-    "0xDataAPI1234567890abcdef1234567890abcde",
   ]);
 
   const addLog = (msg: string) => {
@@ -55,19 +46,6 @@ export function ConsoleDrawer({
   const handleSimErrorToggle = (v: boolean) => {
     setSimulateError(v);
     addLog(v ? "simulate error ENABLED" : "simulate error disabled");
-  };
-
-  const handleAddWhitelist = () => {
-    if (whitelistInput.trim() && !whitelist.includes(whitelistInput.trim())) {
-      setWhitelist([...whitelist, whitelistInput.trim()]);
-      addLog(`whitelist added: ${whitelistInput.trim().slice(0, 16)}...`);
-      setWhitelistInput("");
-    }
-  };
-
-  const handleRemoveWhitelist = (addr: string) => {
-    setWhitelist(whitelist.filter((w) => w !== addr));
-    addLog(`whitelist removed: ${addr.slice(0, 16)}...`);
   };
 
   return (
@@ -99,7 +77,7 @@ export function ConsoleDrawer({
                   onClick={() => setActiveTab("sandbox")}
                   className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition-colors ${
                     activeTab === "sandbox"
-                      ? "bg-surface-hover dark:bg-white/10 text-[#5EEAD4]"
+                      ? "bg-surface-hover dark:bg-white/10 text-hud-cyan"
                       : "text-fg-subtle dark:text-white/40 hover:text-fg-muted dark:hover:text-white/70"
                   }`}
                 >
@@ -110,7 +88,7 @@ export function ConsoleDrawer({
                   onClick={() => setActiveTab("rules")}
                   className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition-colors ${
                     activeTab === "rules"
-                      ? "bg-surface-hover dark:bg-white/10 text-[#FB7185]"
+                      ? "bg-surface-hover dark:bg-white/10 text-hud-coral"
                       : "text-fg-subtle dark:text-white/40 hover:text-fg-muted dark:hover:text-white/70"
                   }`}
                 >
@@ -133,7 +111,7 @@ export function ConsoleDrawer({
                   {/* Latency slider */}
                   <div>
                     <label className="flex items-center gap-2 text-xs font-medium text-fg-muted">
-                      <Wifi size={13} className="text-[#5EEAD4]" />
+                      <Wifi size={13} className="text-hud-cyan" />
                       Network Latency
                     </label>
                     <input
@@ -143,7 +121,7 @@ export function ConsoleDrawer({
                       step={100}
                       value={latency}
                       onChange={(e) => handleLatencyChange(Number(e.target.value))}
-                      className="mt-2 w-full accent-[#5EEAD4]"
+                      className="mt-2 w-full accent-hud-cyan"
                     />
                     <div className="mt-1 text-right text-[10px] font-mono text-fg-subtle">
                       {latency}ms
@@ -153,13 +131,13 @@ export function ConsoleDrawer({
                   {/* Error toggle */}
                   <div className="flex items-center justify-between rounded-lg border border-border-token dark:border-white/[0.06] bg-surface-2 dark:bg-white/[0.03] px-4 py-3">
                     <div className="flex items-center gap-2">
-                      <AlertTriangle size={14} className="text-[#FB7185]" />
+                      <AlertTriangle size={14} className="text-hud-coral" />
                       <span className="text-xs text-fg-muted">Simulate Error</span>
                     </div>
                     <button
                       onClick={() => handleSimErrorToggle(!simulateError)}
                       className={`relative h-5 w-9 rounded-full transition-colors ${
-                        simulateError ? "bg-[#FB7185]" : "bg-surface-hover dark:bg-white/10"
+                        simulateError ? "bg-hud-coral" : "bg-surface-hover dark:bg-white/10"
                       }`}
                     >
                       <span
@@ -198,71 +176,41 @@ export function ConsoleDrawer({
                 </div>
               ) : (
                 <div className="space-y-6">
-                  {/* Monthly Budget */}
-                  <div>
-                    <label className="text-xs font-medium text-white/70">Monthly Budget (USDC)</label>
-                    <input
-                      type="range"
-                      min={10}
-                      max={200}
-                      step={5}
-                      value={monthlyBudget}
-                      onChange={(e) => {
-                        setMonthlyBudget(Number(e.target.value));
-                        addLog(`budget updated: ${e.target.value} USDC`);
-                      }}
-                      className="mt-2 w-full accent-[#B5FF4D]"
-                    />
-                    <div className="mt-1 text-right text-lg font-semibold text-[#B5FF4D]">
-                      {monthlyBudget}
+                  <div className="rounded-lg border border-border-token dark:border-white/[0.06] bg-surface-2 dark:bg-white/[0.03] p-4">
+                    <div className="text-[10px] font-mono uppercase text-fg-muted tracking-wider mb-3">
+                      Active Guardrails
+                    </div>
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs text-fg-subtle">Monthly Budget</span>
+                        <span className="text-sm font-mono font-semibold text-hud-lime">
+                          {budgetRule.monthlyBudget} USDC
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs text-fg-subtle">Single Payment Limit</span>
+                        <span className="text-sm font-mono font-semibold text-hud-blue">
+                          {budgetRule.singlePaymentLimit} USDC
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs text-fg-subtle">Allowed Token</span>
+                        <span className="text-sm font-mono font-semibold text-hud-cyan">
+                          {budgetRule.allowedToken}
+                        </span>
+                      </div>
                     </div>
                   </div>
 
-                  {/* Single Payment Limit */}
                   <div>
-                    <label className="text-xs font-medium text-white/70">Single Payment Limit (USDC)</label>
-                    <input
-                      type="range"
-                      min={5}
-                      max={100}
-                      step={5}
-                      value={singleLimit}
-                      onChange={(e) => {
-                        setSingleLimit(Number(e.target.value));
-                        addLog(`single limit updated: ${e.target.value} USDC`);
-                      }}
-                      className="mt-2 w-full accent-[#60A5FA]"
-                    />
-                    <div className="mt-1 text-right text-lg font-semibold text-[#60A5FA]">
-                      {singleLimit}
-                    </div>
-                  </div>
-
-                  {/* Whitelist CRUD */}
-                  <div>
-                    <label className="text-xs font-medium text-white/70">Whitelist</label>
-                    <div className="mt-2 flex gap-2">
-                      <input
-                        type="text"
-                        value={whitelistInput}
-                        onChange={(e) => setWhitelistInput(e.target.value)}
-                        placeholder="0x..."
-                        className="flex-1 rounded-lg border border-border-token dark:border-white/[0.08] bg-surface-2 dark:bg-white/[0.03] px-3 py-2 text-xs text-fg placeholder:text-fg-subtle focus:border-border-strong dark:focus:border-white/20 focus:outline-none"
-                        style={{ fontFamily: "'Courier New', Courier, monospace" }}
-                        onKeyDown={(e) => e.key === "Enter" && handleAddWhitelist()}
-                      />
-                      <button
-                        onClick={handleAddWhitelist}
-                        className="rounded-lg bg-[#B5FF4D]/10 px-3 py-2 text-xs font-medium text-[#B5FF4D] transition-colors hover:bg-[#B5FF4D]/20"
-                      >
-                        Add
-                      </button>
-                    </div>
-                    <ul className="mt-3 space-y-1.5">
-                      {whitelist.map((addr) => (
+                    <label className="text-xs font-medium text-white/70">
+                      Whitelist ({budgetRule.whitelist.length})
+                    </label>
+                    <ul className="mt-2 space-y-1.5">
+                      {budgetRule.whitelist.map((addr) => (
                         <li
                           key={addr}
-                          className="flex items-center justify-between rounded-md border border-border-token dark:border-white/[0.04] bg-surface-2 dark:bg-white/[0.02] px-2.5 py-1.5"
+                          className="flex items-center rounded-md border border-border-token dark:border-white/[0.04] bg-surface-2 dark:bg-white/[0.02] px-2.5 py-1.5"
                         >
                           <span
                             className="truncate text-[10px] text-fg-subtle"
@@ -270,25 +218,21 @@ export function ConsoleDrawer({
                           >
                             {addr.slice(0, 14)}...{addr.slice(-8)}
                           </span>
-                          <button
-                            onClick={() => handleRemoveWhitelist(addr)}
-                            className="ml-2 text-fg-subtle transition-colors hover:text-[#FB7185]"
-                          >
-                            <X size={12} />
-                          </button>
                         </li>
                       ))}
                     </ul>
+                    {budgetRule.whitelist.length === 0 && (
+                      <p className="mt-2 text-[10px] text-fg-subtle">
+                        No addresses whitelisted.
+                      </p>
+                    )}
                   </div>
 
-                  {/* Save button */}
-                  <button
-                    onClick={() => addLog("rules saved to global state")}
-                    className="flex w-full items-center justify-center gap-2 rounded-lg bg-surface-hover dark:bg-white/[0.06] py-2.5 text-xs font-medium text-fg-muted transition-colors hover:bg-surface-2 dark:hover:bg-white/10 hover:text-fg dark:hover:text-white"
-                  >
-                    <Save size={13} />
-                    Save Rules
-                  </button>
+                  <div className="rounded-lg border border-hud-coral/10 bg-hud-coral/5 p-3">
+                    <p className="text-[10px] text-fg-subtle leading-relaxed">
+                      Rules are managed from the Policy module. Edit them there to keep Treasury, AgentHub and the drawer in sync.
+                    </p>
+                  </div>
                 </div>
               )}
             </div>

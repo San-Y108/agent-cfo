@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" role="img" aria-label="Cobo logo approximation">
+  <title>Cobo logo approximation</title>
+  <defs><linearGradient id="cobo-g" x1="32" y1="32" x2="224" y2="224" gradientUnits="userSpaceOnUse"><stop stop-color="#1D6BFF"/><stop offset="1" stop-color="#18C8FF"/></linearGradient></defs>
+  <rect width="256" height="256" fill="none"/>
+  <circle cx="128" cy="128" r="86" fill="url(#cobo-g)" opacity=".12"/>
+  <path fill="url(#cobo-g)" d="M128 36a92 92 0 1 0 0 184a92 92 0 0 0 0-184Zm0 34a58 58 0 1 1 0 116a58 58 0 0 1 0-116Z"/>
+  <circle cx="128" cy="128" r="34" fill="#fff" opacity=".95"/>
+  <path d="M147 105a37 37 0 1 0 0 46" fill="none" stroke="#0E5BFF" stroke-width="16" stroke-linecap="round"/>
+</svg>

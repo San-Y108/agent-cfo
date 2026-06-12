@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" role="img" aria-label="MetaMask fox logo approximation">
+  <title>MetaMask fox logo approximation</title>
+  <rect width="256" height="256" fill="none"/>
+  <path d="M39 47l62 47-12 31-50-21V47Z" fill="#E2761B"/>
+  <path d="M217 47l-62 47 12 31 50-21V47Z" fill="#E2761B"/>
+  <path d="M101 94l27-20 27 20-11 61h-32L101 94Z" fill="#F6851B"/>
+  <path d="M89 125l23 30-26 13-47-64 50 21Z" fill="#763D16"/>
+  <path d="M167 125l-23 30 26 13 47-64-50 21Z" fill="#763D16"/>
+  <path d="M112 155h32l12 33-28 22-28-22 12-33Z" fill="#C0AD9E"/>
+  <path d="M86 168l26-13-12 33-37-10 23-10Z" fill="#E2761B"/>
+  <path d="M170 168l-26-13 12 33 37-10-23-10Z" fill="#E2761B"/>
+  <path d="M105 125l15 8-13 7-18-15h16Z" fill="#FFF" opacity=".9"/>
+  <path d="M151 125l-15 8 13 7 18-15h-16Z" fill="#FFF" opacity=".9"/>
+  <path d="M116 139h24l-12 9-12-9Z" fill="#161616"/>
+</svg>

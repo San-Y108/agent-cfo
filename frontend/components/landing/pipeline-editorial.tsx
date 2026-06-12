@@ -189,7 +189,7 @@ function PipelineStage({
 
         {/* Lead */}
         <div
-          className="animate-in mt-6 text-lg leading-relaxed text-white/85 sm:text-xl"
+          className="animate-in mt-8 text-base leading-[1.8] text-white/85 sm:text-lg"
           style={{ fontFamily: "Inter, sans-serif" }}
         >
           {stage.lead}
@@ -199,15 +199,15 @@ function PipelineStage({
         {stage.paragraphs.map((para, i) => (
           <div
             key={i}
-            className="animate-in mt-4 text-base leading-relaxed text-white/55 sm:text-lg italic"
+            className="animate-in mt-6 text-sm leading-[1.9] text-white/55 sm:text-base italic"
             style={{ fontFamily: "Inter, sans-serif" }}
           >
             {para}
           </div>
         ))}
 
-        {/* Capabilities */}
-        <div className="animate-in mt-6 grid gap-3 sm:grid-cols-2">
+        {/* Capabilities — single column masonry-like stack */}
+        <div className="animate-in mt-10 grid gap-4">
           {stage.capabilities.map((cap, i) => (
             <CapabilityItem key={i} cap={cap} accent={stage.accent} />
           ))}
@@ -219,9 +219,9 @@ function PipelineStage({
         </div>
       </div>
 
-      {/* Separator between stages (except last) */}
+      {/* Separator between stages (except last) — visible only on mobile */}
       {index < STAGES.length - 1 && (
-        <div className="mt-20 mb-4 flex items-center gap-4">
+        <div className="mt-16 mb-4 flex items-center gap-4 lg:hidden">
           <div className="h-px flex-1" style={{ backgroundColor: "rgba(255,255,255,0.06)" }} />
           <span
             className="text-[10px] font-mono uppercase tracking-[0.2em] text-white/30"
@@ -559,15 +559,25 @@ export function PipelineEditorial() {
       {/* Intro */}
       <PipelineIntro />
 
-      {/* 5 Stages —纵向排列，自然高度，不截断 */}
-      <div className="relative mx-auto max-w-4xl px-6 py-12 lg:px-8 lg:py-16">
-        <div className="space-y-0">
+      {/* 5 Stages — true masonry on desktop, single column on mobile */}
+      <div className="relative mx-auto max-w-6xl px-6 py-12 lg:px-8 lg:py-16">
+        <div
+          className="grid grid-cols-1 gap-x-16 gap-y-20 lg:grid-cols-2 lg:items-start"
+          style={{ rowGap: "5rem" }}
+        >
           {STAGES.map((stage, i) => (
             <div
               key={stage.key}
               ref={(el) => {
                 stageRefs.current[i] = el;
               }}
+              className={
+                i === STAGES.length - 1
+                  ? "lg:col-span-2"
+                  : i % 2 === 1
+                    ? "lg:mt-20"
+                    : ""
+              }
             >
               <PipelineStage
                 stage={stage}

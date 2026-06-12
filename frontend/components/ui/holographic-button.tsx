@@ -5,39 +5,39 @@ import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 
 /* =============================================================================
- * COLOR TOKENS
+ * COLOR TOKENS — mapped to globals.css HUD variables
  * ===========================================================================*/
 
 const COLOR_MAP = {
   lime: {
-    border: "border-[#B5FF4D]/30",
-    text: "text-[#B5FF4D]",
-    glow: "rgba(181,255,77,0.15)",
-    glowStrong: "rgba(181,255,77,0.25)",
+    border: "border-hud-lime/30",
+    text: "text-hud-lime",
+    glow: "var(--glow-lime)",
+    glowStrong: "var(--glow-lime)",
   },
   blue: {
-    border: "border-[#60A5FA]/30",
-    text: "text-[#60A5FA]",
-    glow: "rgba(96,165,250,0.15)",
-    glowStrong: "rgba(96,165,250,0.25)",
+    border: "border-hud-blue/30",
+    text: "text-hud-blue",
+    glow: "var(--glow-blue)",
+    glowStrong: "var(--glow-blue)",
   },
   coral: {
-    border: "border-[#FB7185]/30",
-    text: "text-[#FB7185]",
-    glow: "rgba(251,113,133,0.15)",
-    glowStrong: "rgba(251,113,133,0.25)",
+    border: "border-hud-coral/30",
+    text: "text-hud-coral",
+    glow: "var(--glow-coral)",
+    glowStrong: "var(--glow-coral)",
   },
   violet: {
-    border: "border-[#C084FC]/30",
-    text: "text-[#C084FC]",
-    glow: "rgba(192,132,252,0.15)",
-    glowStrong: "rgba(192,132,252,0.25)",
+    border: "border-hud-violet/30",
+    text: "text-hud-violet",
+    glow: "var(--glow-violet)",
+    glowStrong: "var(--glow-violet)",
   },
   cyan: {
-    border: "border-[#5EEAD4]/30",
-    text: "text-[#5EEAD4]",
-    glow: "rgba(94,234,212,0.15)",
-    glowStrong: "rgba(94,234,212,0.25)",
+    border: "border-hud-cyan/30",
+    text: "text-hud-cyan",
+    glow: "var(--glow-cyan)",
+    glowStrong: "var(--glow-cyan)",
   },
 } as const;
 
@@ -50,6 +50,7 @@ export interface HolographicButtonProps {
   size?: "sm" | "md" | "lg";
   icon?: React.ReactNode;
   glowOnHover?: boolean;
+  tilt3d?: boolean;
   className?: string;
   disabled?: boolean;
   onClick?: React.MouseEventHandler<HTMLButtonElement>;
@@ -63,6 +64,7 @@ export function HolographicButton({
   size = "md",
   icon,
   glowOnHover = true,
+  tilt3d = false,
   className,
   disabled,
   onClick,
@@ -76,21 +78,25 @@ export function HolographicButton({
     lg: "px-8 py-3 text-base gap-2.5",
   }[size];
 
+  const hoverState = !disabled
+    ? {
+        scale: 1.02,
+        ...(glowOnHover
+          ? { boxShadow: `0 0 30px ${c.glowStrong}, 0 0 60px ${c.glow}` }
+          : {}),
+        ...(tilt3d ? { rotateX: -12, transformPerspective: 600 } : {}),
+      }
+    : {};
+
   return (
     <motion.button
       type={type}
       onClick={onClick}
-      whileHover={
-        glowOnHover && !disabled
-          ? {
-              scale: 1.02,
-              boxShadow: `0 0 30px ${c.glowStrong}, 0 0 60px ${c.glow}`,
-            }
-          : { scale: 1.02 }
-      }
+      style={tilt3d ? { transformStyle: "preserve-3d" } : undefined}
+      whileHover={hoverState}
       whileTap={!disabled ? { scale: 0.98 } : {}}
       className={cn(
-        "relative inline-flex items-center justify-center rounded-xl font-semibold backdrop-blur-sm transition-colors",
+        "relative inline-flex items-center justify-center rounded-control font-semibold backdrop-blur-sm transition-colors",
         "bg-white/[0.03] hover:bg-white/[0.06]",
         "border",
         c.border,
@@ -104,7 +110,7 @@ export function HolographicButton({
       {/* Subtle inner glow */}
       <div
         className={cn(
-          "pointer-events-none absolute inset-0 rounded-xl opacity-0 transition-opacity",
+          "pointer-events-none absolute inset-0 rounded-control opacity-0 transition-opacity",
           "bg-gradient-to-br from-white/[0.05] to-transparent"
         )}
       />
@@ -151,7 +157,7 @@ export function HolographicLink({
       }}
       whileTap={{ scale: 0.98 }}
       className={cn(
-        "relative inline-flex items-center justify-center rounded-xl font-semibold backdrop-blur-sm transition-colors",
+        "relative inline-flex items-center justify-center rounded-control font-semibold backdrop-blur-sm transition-colors",
         "bg-white/[0.03] hover:bg-white/[0.06]",
         "border",
         c.border,

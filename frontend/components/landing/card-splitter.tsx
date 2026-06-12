@@ -61,7 +61,7 @@ export function CardSplitter() {
   return (
     <section
       ref={scrollContainerRef}
-      className="w-full h-full py-16 px-6 border rounded-3xl relative overflow-hidden border-white/18 bg-neutral-900/80 backdrop-blur-xl"
+      className="w-full h-full py-16 px-6 border rounded-2xl relative overflow-hidden border-white/10 bg-[#0D0D0D]/90 shadow-2xl"
     >
       <div className="absolute top-0 right-0 w-80 h-80 bg-[#B5FF4D]/5 rounded-full blur-3xl pointer-events-none" />
       <div className="absolute bottom-0 left-0 w-80 h-80 bg-blue-500/5 rounded-full blur-3xl pointer-events-none" />
@@ -71,10 +71,10 @@ export function CardSplitter() {
           <MousePointerClick className="w-3 h-3 text-[#B5FF4D]" />
           {t("cardSplitter.eyebrow")}
         </div>
-        <h2 className="text-3xl md:text-4xl font-extrabold tracking-tight mb-4 text-white">
+        <h2 className="text-3xl md:text-4xl font-extrabold tracking-tight mb-4 text-white drop-shadow-[0_0_24px_rgba(255,255,255,0.12)]">
           {t("cardSplitter.title")}
         </h2>
-        <p className="text-sm md:text-base text-white/75">
+        <p className="text-sm md:text-base text-white/[0.92] italic">
           {t("cardSplitter.subtitle")}
         </p>
       </div>
@@ -84,7 +84,7 @@ export function CardSplitter() {
           {/* CARD A: Alice */}
           <motion.div
             style={{ x: cardAX, y: cardAY, rotate: cardARotate, zIndex: cardProgress > 22 ? 30 : 10 }}
-            className="absolute w-80 h-52 bg-gradient-to-br from-neutral-800 to-neutral-950 border border-white/20 rounded-xl p-5 shadow-2xl flex flex-col justify-between text-left"
+            className="absolute w-80 h-52 bg-gradient-to-br from-[#141414] to-[#0a0a0a] border border-white/10 rounded-xl p-5 shadow-2xl flex flex-col justify-between text-left"
           >
             <div>
               <div className="flex justify-between items-start">
@@ -116,7 +116,7 @@ export function CardSplitter() {
           {/* CARD B: Charlie */}
           <motion.div
             style={{ y: cardBY, rotate: cardBRotate, zIndex: cardProgress > 22 ? 25 : 9 }}
-            className="absolute w-80 h-52 bg-gradient-to-br from-neutral-900 via-neutral-950 to-[#0D0D0D] border border-white/18 rounded-xl p-5 shadow-xl flex flex-col justify-between text-left"
+            className="absolute w-80 h-52 bg-gradient-to-br from-[#111111] via-[#0a0a0a] to-[#050505] border border-white/10 rounded-xl p-5 shadow-xl flex flex-col justify-between text-left"
           >
             <div>
               <div className="flex justify-between items-start">
@@ -145,7 +145,7 @@ export function CardSplitter() {
           {/* CARD C: Data API */}
           <motion.div
             style={{ x: cardCX, y: cardCY, rotate: cardCRotate, zIndex: cardProgress > 22 ? 20 : 8 }}
-            className="absolute w-80 h-52 bg-gradient-to-br from-slate-950 to-neutral-900 border border-white/18 rounded-xl p-5 shadow-lg flex flex-col justify-between text-left"
+            className="absolute w-80 h-52 bg-gradient-to-br from-[#0f172a] to-[#0a0a0a] border border-white/10 rounded-xl p-5 shadow-lg flex flex-col justify-between text-left"
           >
             <div>
               <div className="flex justify-between items-start">
@@ -180,7 +180,7 @@ export function CardSplitter() {
               zIndex: 40,
               pointerEvents: cardProgress > 22 ? "none" : "auto",
             }}
-            className="absolute w-80 h-52 bg-gradient-to-br from-neutral-900 via-[#0D0D0D] to-black border-2 border-[#B5FF4D]/40 rounded-xl p-5 shadow-[0_30px_60px_rgba(0,0,0,0.8)] flex flex-col justify-between text-left"
+            className="absolute w-80 h-52 bg-gradient-to-br from-[#111111] via-[#0D0D0D] to-black border-2 border-[#B5FF4D]/35 rounded-xl p-5 shadow-[0_30px_60px_rgba(0,0,0,0.8)] flex flex-col justify-between text-left"
           >
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_100%_0%,rgba(181,255,77,0.06),transparent_65%)] rounded-xl pointer-events-none" />
             <div className="flex justify-between items-start relative z-10">
