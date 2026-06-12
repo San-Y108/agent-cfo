@@ -414,7 +414,51 @@ export default function WalletsPage() {
               {t("console.wallets.disburseTitle" as any)}
             </h3>
 
-            <form onSubmit={handleTransferSubmit} className="space-y-4">
+            <form onSubmit={handleTransferSubmit} className="space-y-4 relative">
+              {/* Fund-flow particle (Framer Motion substitute for GSAP MotionPath) */}
+              {isTransferring && (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="pointer-events-none absolute inset-0 z-10 overflow-hidden rounded-xl"
+                >
+                  <motion.div
+                    className="absolute w-2 h-2 rounded-full shadow-[0_0_14px_rgba(96,165,250,0.9)]"
+                    style={{ backgroundColor: BLUE }}
+                    initial={{ left: "18%", top: "58%", opacity: 0, scale: 0.6 }}
+                    animate={{
+                      left: ["18%", "48%", "82%"],
+                      top: ["58%", "26%", "54%"],
+                      opacity: [0, 1, 0],
+                      scale: [0.6, 1.1, 0.8],
+                    }}
+                    transition={{
+                      duration: 1.4,
+                      repeat: Infinity,
+                      ease: "easeInOut",
+                    }}
+                  />
+                  {/* Trail spark */}
+                  <motion.div
+                    className="absolute w-1 h-1 rounded-full opacity-60"
+                    style={{ backgroundColor: BLUE }}
+                    initial={{ left: "18%", top: "58%" }}
+                    animate={{
+                      left: ["18%", "48%", "82%"],
+                      top: ["58%", "26%", "54%"],
+                      opacity: [0, 0.6, 0],
+                    }}
+                    transition={{
+                      duration: 1.4,
+                      repeat: Infinity,
+                      ease: "easeInOut",
+                      delay: 0.12,
+                    }}
+                  />
+                </motion.div>
+              )}
+
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div>
                   <label className="block text-[10px] font-mono uppercase font-bold mb-1 text-fg-subtle">
@@ -503,14 +547,24 @@ export default function WalletsPage() {
           </div>
 
           {/* Signers Matrix */}
-          <div className="border border-border-token dark:border-white/[0.06] rounded-xl shadow-sm p-6 space-y-4 bg-surface dark:bg-white/[0.02]">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5, duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+            className="border border-border-token dark:border-white/[0.06] rounded-xl shadow-sm p-6 space-y-4 bg-surface dark:bg-white/[0.02]"
+          >
             <div className="flex justify-between items-center border-b border-border-token dark:border-white/[0.04] pb-3">
               <h3 className="text-sm font-bold flex items-center gap-2 text-fg">
                 <Key className="w-4 h-4 text-[#60A5FA]" />
                 {t("console.wallets.activeSignersMatrix" as any)}
               </h3>
-              <span className="text-[10px] font-mono bg-surface-2 dark:bg-white/[0.05] text-[#60A5FA] px-2 py-0.5 rounded font-bold uppercase tracking-widest">
+              <span className="relative text-[10px] font-mono bg-surface-2 dark:bg-white/[0.05] text-[#60A5FA] px-2 py-0.5 rounded font-bold uppercase tracking-widest">
                 HSM SECURED
+                <SparklesFX
+                  count={4}
+                  color={BLUE}
+                  className="absolute -inset-1"
+                />
               </span>
             </div>
             <div className="space-y-2.5">
@@ -518,11 +572,22 @@ export default function WalletsPage() {
                 { label: t("console.wallets.signerRole1" as any), addr: "0x76B5A1Aad9040C58A91E1EdE...", status: "ACTIVE AGENT_KEY", color: "emerald" },
                 { label: t("console.wallets.signerRole2" as any), addr: "0x09FCD8a280cE1dEFeE90eaD20ee...", status: "ACTIVE MASTER_KEY", color: "indigo" },
               ].map((s, i) => (
-                <div
+                <motion.div
                   key={i}
-                  className="flex items-center justify-between p-3 rounded-xl border border-border-token dark:border-white/[0.04] bg-surface-2 dark:bg-white/[0.03]"
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.6 + i * 0.08, duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+                  whileHover={{ scale: 1.005 }}
+                  className="group relative flex items-center justify-between p-3 rounded-xl border border-border-token dark:border-white/[0.04] bg-surface-2 dark:bg-white/[0.03] overflow-hidden cursor-default transition-colors hover:border-[#60A5FA]/30"
                 >
-                  <div className="flex items-center gap-3">
+                  {/* Bento-style hover glow */}
+                  <div
+                    className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
+                    style={{
+                      background: "radial-gradient(circle at 50% 0%, rgba(96,165,250,0.06), transparent 70%)",
+                    }}
+                  />
+                  <div className="relative z-10 flex items-center gap-3">
                     <div className={`w-8 h-8 rounded-full border flex items-center justify-center font-bold font-mono text-xs ${
                       s.color === "emerald"
                         ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/20"
@@ -535,17 +600,17 @@ export default function WalletsPage() {
                       <div className="text-[11px] font-mono mt-0.5 text-fg-subtle">{s.addr}</div>
                     </div>
                   </div>
-                  <div className={`flex items-center gap-1.5 text-[10px] font-bold border px-2 py-0.5 rounded font-mono ${
+                  <div className={`relative z-10 flex items-center gap-1.5 text-[10px] font-bold border px-2 py-0.5 rounded font-mono ${
                     s.color === "emerald"
                       ? "text-green-400 bg-green-500/10 border-green-500/20"
                       : "text-indigo-400 bg-indigo-500/10 border-indigo-500/20"
                   }`}>
                     {s.status}
                   </div>
-                </div>
+                </motion.div>
               ))}
             </div>
-          </div>
+          </motion.div>
         </div>
       </div>
 

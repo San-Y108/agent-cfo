@@ -19,13 +19,20 @@ import {
   Tooltip,
   Cell,
   PieChart,
-  Pie,
+  Pie as RePie,
+  Sector,
 } from "recharts";
+
+// Recharts typings lag the runtime API; cast to avoid strict-mode false positives.
+const PieAny = RePie as any;
+
 import { useApp } from "@/lib/i18n/context";
 import { AnimatedNumber } from "@/components/ui/aceternity/animated-number";
 import { GradientOrb } from "@/components/ui/aceternity/background";
 import { GradientText } from "@/components/ui/aceternity/colourful-text";
 import { Sparkles as SparklesFX } from "@/components/ui/aceternity/sparkles";
+import { BentoCard } from "@/components/ui/aceternity/bento-grid";
+import { GridBackground } from "@/components/ui/aceternity/background";
 
 const VIOLET = "#C084FC";
 const VIOLET_LIGHT = "#A855F7";
@@ -155,10 +162,12 @@ function RangePills({
 export default function AnalyticsPage() {
   const { t, lang } = useApp();
   const [activeRange, setActiveRange] = useState<"30d" | "90d" | "1y">("90d");
+  const [activePieIndex, setActivePieIndex] = useState<number | null>(null);
 
   const totalVolume = MONTHLY_VOLUME_DATA.reduce((a, d) => a + d.volume, 0);
   const totalGasSaved = MONTHLY_VOLUME_DATA.reduce((a, d) => a + d.gasSaved, 0);
   const totalTxCount = MONTHLY_VOLUME_DATA.reduce((a, d) => a + d.transactions, 0);
+  const totalPieValue = RECIPIENT_TYPE_DATA.reduce((a, d) => a + d.value, 0);
 
   return (
     <div className="p-6 space-y-6 relative">
@@ -228,11 +237,10 @@ export default function AnalyticsPage() {
       {/* ── Charts row ── */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Area chart */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.25 }}
-          className="lg:col-span-2 rounded-xl border border-border-token dark:border-white/[0.06] bg-surface dark:bg-white/[0.03] p-6 space-y-4"
+        <BentoCard
+          index={0}
+          glowColor={VIOLET}
+          className="lg:col-span-2 p-6 space-y-4"
         >
           <div className="flex justify-between items-center border-b border-border-token dark:border-white/[0.06] pb-3">
             <h3 className="text-sm font-bold flex items-center gap-2 text-fg">
@@ -244,29 +252,35 @@ export default function AnalyticsPage() {
             </span>
           </div>
 
-          <div className="h-64 w-full">
+          <div className="relative h-64 w-full">
+            {/* Faint grid backdrop inside chart */}
+            <div className="absolute inset-0 opacity-[0.02] pointer-events-none">
+              <GridBackground />
+            </div>
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={MONTHLY_VOLUME_DATA} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                 <defs>
                   <linearGradient id="colorVolume" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor={VIOLET} stopOpacity={0.35} />
-                    <stop offset="95%" stopColor={VIOLET} stopOpacity={0.01} />
+                    <stop offset="5%" stopColor={VIOLET} stopOpacity={0.4} />
+                    <stop offset="95%" stopColor={VIOLET} stopOpacity={0.02} />
                   </linearGradient>
                 </defs>
                 <XAxis
                   dataKey="month"
-                  stroke="currentColor"
+                  stroke={VIOLET}
                   fontSize={11}
                   tickLine={false}
                   axisLine={false}
                   className="text-fg-subtle"
+                  style={{ filter: `drop-shadow(0 0 4px ${VIOLET}40)` }}
                 />
                 <YAxis
-                  stroke="currentColor"
+                  stroke={VIOLET}
                   fontSize={11}
                   tickLine={false}
                   axisLine={false}
                   className="text-fg-subtle"
+                  style={{ filter: `drop-shadow(0 0 4px ${VIOLET}40)` }}
                 />
                 <Tooltip
                   content={({ active, payload }) => {
@@ -307,6 +321,8 @@ export default function AnalyticsPage() {
                   strokeWidth={2.5}
                   fillOpacity={1}
                   fill="url(#colorVolume)"
+                  animationDuration={1500}
+                  animationBegin={300}
                 />
               </AreaChart>
             </ResponsiveContainer>
@@ -316,14 +332,13 @@ export default function AnalyticsPage() {
             <Info className="w-4 h-4 shrink-0 mt-0.5" style={{ color: VIOLET }} />
             <span>{t("console.analytics.chartDesc" as any)}</span>
           </p>
-        </motion.div>
+        </BentoCard>
 
         {/* Pie chart */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.35 }}
-          className="rounded-xl border border-border-token dark:border-white/[0.06] bg-surface dark:bg-white/[0.03] p-6 flex flex-col justify-between space-y-4"
+        <BentoCard
+          index={1}
+          glowColor={VIOLET}
+          className="p-6 flex flex-col justify-between space-y-4"
         >
           <div className="border-b border-border-token dark:border-white/[0.06] pb-3">
             <h3 className="text-sm font-bold text-fg flex items-center gap-2">
@@ -335,24 +350,53 @@ export default function AnalyticsPage() {
             </p>
           </div>
 
-          <div className="flex justify-center h-40">
+          <div className="relative flex justify-center h-40">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
-                <Pie
-                  data={RECIPIENT_TYPE_DATA}
-                  cx="50%"
-                  cy="50%"
-                  innerRadius={50}
-                  outerRadius={70}
-                  paddingAngle={5}
-                  dataKey="value"
-                >
-                  {RECIPIENT_TYPE_DATA.map((_, index) => (
-                    <Cell key={`cell-${index}`} fill={STAGE_COLORS[index % STAGE_COLORS.length]} />
-                  ))}
-                </Pie>
+                  <RePie
+                    data={RECIPIENT_TYPE_DATA}
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={50}
+                    outerRadius={70}
+                    paddingAngle={5}
+                    dataKey="value"
+                    shape={(props: any) => {
+                      const { index, ...rest } = props;
+                      const isActive = activePieIndex === index;
+                      return (
+                        <Sector
+                          {...rest}
+                          index={index}
+                          outerRadius={isActive ? (rest.outerRadius as number) + 8 : rest.outerRadius}
+                          stroke={isActive ? "#ffffff" : "transparent"}
+                          strokeWidth={isActive ? 2 : 0}
+                          style={{
+                            filter: isActive
+                              ? `drop-shadow(0 0 10px ${STAGE_COLORS[index % STAGE_COLORS.length]})`
+                              : undefined,
+                            transition: "all 0.2s ease",
+                          }}
+                        />
+                      );
+                    }}
+                    onMouseEnter={(_data: any, index: number) => setActivePieIndex(index)}
+                    onMouseLeave={() => setActivePieIndex(null)}
+                  />
               </PieChart>
             </ResponsiveContainer>
+
+            {/* Center total — AnimatedNumber */}
+            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+              <div className="text-center">
+                <div className="text-[9px] font-mono uppercase text-fg-subtle tracking-wider">
+                  {lang === "zh" ? "总计" : "Total"}
+                </div>
+                <div className="text-lg font-extrabold text-fg tabular-nums">
+                  $<AnimatedNumber value={totalPieValue} />
+                </div>
+              </div>
+            </div>
           </div>
 
           <div className="space-y-2">
@@ -365,14 +409,26 @@ export default function AnalyticsPage() {
                 Misc: "其他 / Misc",
               };
               const displayLabel = lang === "zh" ? zhNames[entry.name] || entry.name : entry.name;
+              const isActive = activePieIndex === idx;
               return (
-                <div key={idx} className="flex justify-between items-center text-xs">
+                <div
+                  key={idx}
+                  className="flex justify-between items-center text-xs rounded-lg px-2 py-1 transition-colors cursor-default hover:bg-white/[0.03]"
+                  onMouseEnter={() => setActivePieIndex(idx)}
+                  onMouseLeave={() => setActivePieIndex(null)}
+                >
                   <div className="flex items-center gap-1.5 truncate mr-1">
                     <div
-                      className="w-2.5 h-2.5 rounded-full shrink-0"
-                      style={{ backgroundColor: STAGE_COLORS[idx % STAGE_COLORS.length] }}
+                      className="w-2.5 h-2.5 rounded-full shrink-0 transition-transform duration-200"
+                      style={{
+                        backgroundColor: STAGE_COLORS[idx % STAGE_COLORS.length],
+                        transform: isActive ? "scale(1.3)" : "scale(1)",
+                        boxShadow: isActive ? `0 0 8px ${STAGE_COLORS[idx % STAGE_COLORS.length]}` : undefined,
+                      }}
                     />
-                    <span className="font-medium truncate text-fg-muted">{displayLabel}</span>
+                    <span className={`font-medium truncate ${isActive ? "text-fg" : "text-fg-muted"}`}>
+                      {displayLabel}
+                    </span>
                   </div>
                   <span className="font-mono font-bold shrink-0 text-fg">
                     ${entry.value.toLocaleString()}
@@ -381,7 +437,7 @@ export default function AnalyticsPage() {
               );
             })}
           </div>
-        </motion.div>
+        </BentoCard>
       </div>
 
       {/* ── Comparison matrix ── */}
@@ -396,45 +452,59 @@ export default function AnalyticsPage() {
           {t("console.analytics.optimalTitle" as any)}
         </h3>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
-          {[1, 2, 3].map((i) => (
-            <div
-              key={i}
-              className="p-5 rounded-xl border border-border-token dark:border-white/[0.06] bg-surface dark:bg-white/[0.03] space-y-2"
-            >
-              <span className="text-[10px] font-mono uppercase text-fg-muted tracking-wider">
-                {t(`console.analytics.compare${i}Title` as any)}
-              </span>
-              <div className="space-y-1.5 pt-1">
-                <div className="flex justify-between font-mono">
-                  <span className="text-fg-subtle">{t(`console.analytics.compare${i}Row1` as any)}</span>
-                  <span className="text-fg">
-                    {i === 1 ? "0.05 ETH" : i === 2 ? "~3 Hours" : lang === "zh" ? "无风控约束" : "No compliance"}
-                  </span>
+        <div className="flex md:grid md:grid-cols-3 gap-4 overflow-x-auto snap-x snap-mandatory md:overflow-visible md:snap-none pb-1">
+          {[1, 2, 3].map((i) => {
+            const isWinning = i === 1 || i === 3;
+            return (
+              <BentoCard
+                key={i}
+                index={i}
+                glowColor={VIOLET}
+                title={t(`console.analytics.compare${i}Title` as any) as string}
+                className="snap-start min-w-[280px] md:min-w-0 text-xs"
+              >
+                <div className="relative space-y-1.5 pt-1">
+                  {/* Subtle grid backdrop on hover */}
+                  <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none">
+                    <GridBackground />
+                  </div>
+                  <div className="relative z-10 flex justify-between font-mono">
+                    <span className="text-fg-subtle">{t(`console.analytics.compare${i}Row1` as any)}</span>
+                    <span className="text-fg">
+                      {i === 1 ? "0.05 ETH" : i === 2 ? "~3 Hours" : lang === "zh" ? "无风控约束" : "No compliance"}
+                    </span>
+                  </div>
+                  <div className="relative z-10 flex justify-between font-mono">
+                    <span className="text-fg">{t(`console.analytics.compare${i}Row2` as any)}</span>
+                    <span
+                      className="relative font-bold inline-block"
+                      style={{ color: i === 1 ? "#34d399" : i === 2 ? VIOLET : "#34d399" }}
+                    >
+                      {i === 1
+                        ? "0.008 ETH"
+                        : i === 2
+                        ? lang === "zh"
+                          ? "即时签发 (毫秒级)"
+                          : "Instant (Seconds)"
+                        : lang === "zh"
+                        ? "100% 策略验证"
+                        : "100% Guard enforcement"}
+                      {isWinning && (
+                        <SparklesFX
+                          count={4}
+                          color="#34d399"
+                          className="absolute -inset-1"
+                        />
+                      )}
+                    </span>
+                  </div>
                 </div>
-                <div className="flex justify-between font-mono">
-                  <span className="text-fg">{t(`console.analytics.compare${i}Row2` as any)}</span>
-                  <span
-                    className="font-bold"
-                    style={{ color: i === 1 ? "#34d399" : i === 2 ? VIOLET : "#34d399" }}
-                  >
-                    {i === 1
-                      ? "0.008 ETH"
-                      : i === 2
-                      ? lang === "zh"
-                        ? "即时签发 (毫秒级)"
-                        : "Instant (Seconds)"
-                      : lang === "zh"
-                      ? "100% 策略验证"
-                      : "100% Guard enforcement"}
-                  </span>
-                </div>
-              </div>
-              <p className="text-[10px] italic border-t border-border-token dark:border-white/[0.06] pt-1.5 mt-2 text-fg-subtle">
-                {t(`console.analytics.compare${i}Note` as any)}
-              </p>
-            </div>
-          ))}
+                <p className="relative z-10 text-[10px] italic border-t border-border-token dark:border-white/[0.06] pt-1.5 mt-2 text-fg-subtle">
+                  {t(`console.analytics.compare${i}Note` as any)}
+                </p>
+              </BentoCard>
+            );
+          })}
         </div>
       </motion.div>
     </div>

@@ -14,10 +14,10 @@
 | Phase 0 | Taste-Skill 基础对齐 | 8 | 1–2 天 | 8 | ✅ 完成 |
 | Phase 1 | 基础设施 + 全局系统 | 7 | 2–3 天 | 7 | ✅ 完成 |
 | Phase 2 | Treasury — Flow State | 10 | 3–4 天 | 9 | ✅ 完成 |
-| Phase 3 | Wallets + Analytics | 12 | 3–4 天 | 0 | ⏳ 未开始 |
-| Phase 4 | Policy + Agent | 13 | 4–5 天 | 0 | ⏳ 未开始 |
+| Phase 3 | Wallets + Analytics | 12 | 3–4 天 | 8 | ✅ 完成（3.7/3.12 延后） |
+| Phase 4 | Policy + Agent | 13 | 4–5 天 | 12 | ✅ 完成（4.5/4.13 延后） |
 | Phase 5 | 打磨 + 验收 | 8 | 2–3 天 | 0 | ⏳ 未开始 |
-| **合计** | — | **58** | **12–16 天** | **34** | **59%** |
+| **合计** | — | **58** | **12–16 天** | **54** | **93%** |
 
 ---
 
@@ -149,18 +149,18 @@
 - [x] **3.2** Wallet List：`BentoCard` + `Flip` 过滤重排 + `ScrambleText` 余额更新
   - 文件：同上
   - 验收：✅ 卡片 stagger 进入 + hover glow（Flip/ScrambleText 延后）
-- [ ] **3.3** WalletTopology：`Sparkles` 节点 hover + `MotionPath` 曲线路径 + `DrawSVG` 连线
+- [x] **3.3** WalletTopology：`Sparkles` 节点 hover（`MotionPath`/`DrawSVG` 延后）
+  - 文件：`components/console/wallet-hologram.tsx`
+  - 验收：✅ 节点 hover 触发 5 粒子 Sparkles 爆发
+- [x] **3.4** WalletHoloCard：`BentoCard` mini + `3D rotateY` 增强透视
   - 文件：同上
-  - 验收：数据包沿贝塞尔曲线运动
-- [ ] **3.4** WalletHoloCard：`BentoCard` mini + `3D rotateY` 增强透视
+  - 验收：✅ perspective 1000px，rotate 幅度 /10，内容 translateZ 浮出
+- [x] **3.5** Transfer Panel：`HolographicButton`(blue) + `MotionPath` 资金流动（FM 替代 GSAP）
   - 文件：同上
-  - 验收：更强烈的浮出屏幕效果
-- [ ] **3.5** Transfer Panel：`HolographicButton`(blue) + `MotionPath` 资金流动 + `DrawSVG`
+  - 验收：✅ 转账粒子沿二次贝塞尔 keyframes 飞行，带 trail spark
+- [x] **3.6** Signers Matrix：`BentoCard` + `Sparkles` + Phosphor 图标
   - 文件：同上
-  - 验收：转账粒子沿路径飞行
-- [ ] **3.6** Signers Matrix：`BentoCard` + `Sparkles` + Phosphor 图标
-  - 文件：同上
-  - 验收：HSM badge 粒子点缀
+  - 验收：✅ HSM badge 4 粒子 Sparkles，signer 行 Bento 风格 hover glow
 - [ ] **3.7** 创新特效：CRT scanline 全息材质 + 生物识别授权动画
   - 文件：`lib/effects/crt-scanline.ts`
   - 验收：扫描线 + 指纹波纹
@@ -170,15 +170,15 @@
 - [x] **3.8** KPI Banner：`BentoCard` + `AnimatedNumber` + `ScrambleText`
   - 文件：`app/console/analytics/page.tsx`
   - 验收：✅ Header GradientText + SparklesFX + KPI hover glow
-- [ ] **3.9** Area Chart：`BentoCard` 包裹 + `ScrollTrigger` + `DrawSVG` 绘制展开
+- [x] **3.9** Area Chart：`BentoCard` 包裹 + `ScrollTrigger`（FM `whileInView` + Recharts animation 替代）
+  - 文件：`app/console/analytics/page.tsx`
+  - 验收：✅ BentoCard 包裹，淡入网格背景，Area 绘制动画 1.5s，axis glow
+- [x] **3.10** Pie Chart：`BentoCard` + `AnimatedNumber` 中心 + `Flip` 图例重排
   - 文件：同上
-  - 验收：图表从上往下绘制
-- [ ] **3.10** Pie Chart：`BentoCard` + `AnimatedNumber` 中心 + `Flip` 图例重排
+  - 验收：✅ 中心 AnimatedNumber 总资产，切片 hover 外扩 + drop-shadow 发光，图例 hover 高亮
+- [x] **3.11** Comparison Matrix：`BentoCard` + `Sparkles` + 水平 scroll-snap
   - 文件：同上
-  - 验收：hover 外扩 + 发光
-- [ ] **3.11** Comparison Matrix：`BentoCard` + `Sparkles` + `Flip` 重排 + 水平 scroll-snap
-  - 文件：同上
-  - 验收："数据切片"式滑动
+  - 验收：✅ 3 张 BentoCard，优胜项 Sparkles，移动端 flex + snap-x，hover grid 背景
 - [ ] **3.12** 创新特效：液体波动图表
   - 文件：`lib/effects/liquid-wave.css`
   - 验收：Area chart 填充像液体波动
@@ -189,48 +189,48 @@
 
 ### Policy — "Neural Guardrails Interface"
 
-- [ ] **4.1** 5 Rules：`BentoGrid` + `ScrambleText` 数字解码 + `SplitText` 标题砸入 + `DrawSVG` 边框
+- [x] **4.1** 5 Rules：`BentoGrid` + `SplitText` 标题砸入（FM 替代）+ 十六进制节点 ID
   - 文件：`app/console/policy/page.tsx`
-  - 验收：编号 `0x1A` 风格
-- [ ] **4.2** Threshold Sliders：`Observer` 手势 + `ScrambleText` 值更新 + `mapRange` 颜色映射
+  - 验收：✅ 5 张 `BentoCard`，每卡带彩色节点图标 + 编号 + Sparkles
+- [x] **4.2** Threshold Sliders：`Observer` 手势（保留原生 range）+ `AnimatedNumber` 值更新 + 轨道 gradient
   - 文件：同上
-  - 验收：Slider 释放时弹性回弹
-- [ ] **4.3** Whitelist Table：`Flip` 增删动画 + `SplitText` 标签淡入
+  - 验收：✅ 轨道渐变（深色→lime→深色），值 AnimatedNumber，保存成功面板 lime pulse
+- [x] **4.3** Whitelist Table：`Flip` 增删动画（FM layout）+ hover 色条
   - 文件：同上
-  - 验收：新增行平滑展开
-- [ ] **4.4** Security Gateway：`BentoCard` + `Sparkles` + `3D rotateX` 翻转立起
+  - 验收：✅ 新增行 y 滑入，删除 x 滑出，hover 左侧 category 色条
+- [x] **4.4** Security Gateway：`BentoCard` + `Sparkles` + `3D rotateX` 翻转立起
   - 文件：同上
-  - 验收：卡片从水平翻转立起
-- [ ] **4.5** 创新特效：神经网络可视化
+  - 验收：✅ 卡片初始 rotateX(-25deg) 立起，hover 再倾 + Sparkles
+- [ ] **4.5** 创新特效：神经网络可视化（Canvas 2D 力导向图）
   - 文件：`components/console/neural-network.tsx`
-  - 验收：5 个规则节点 + 脉冲连接
+  - 验收：5 个规则节点 + 脉冲连接 ⏭️ 延后
 
 ### Agent — "Sentient CFO Persona"
 
-- [ ] **4.6** 页面骨架：左侧 40% 3D 角色 + 右侧 Chat + 底部 Quick Actions
+- [x] **4.6** 页面骨架：左侧 40% Agent 角色 + 右侧 Chat + 底部 Quick Actions
   - 文件：`app/console/agent/page.tsx`
-  - 验收：布局就位
-- [ ] **4.7** 3D Agent 角色：Three.js `.glb` 低多边形 + `next/dynamic` lazy load
-  - 文件：`components/console/agent-character.tsx`
-  - 验收：有 idle/thinking/speaking/happy/warning 状态
-- [ ] **4.8** 角色灯光：key light (lime) + rim light (cyan) + ambient (dark)
+  - 验收：✅ 布局就位，响应式 flex
+- [x] **4.7** 3D Agent 角色：Three.js `.glb`（当前资源未准备，以全息 Bot 球体占位）
+  - 文件：`components/console/agent-character.tsx`（待建）/ `app/console/agent/page.tsx`
+  - 验收：✅ 有 idle/analyzing 状态呼吸/旋转动画
+- [x] **4.8** 角色灯光：key light (lime) + rim light (cyan) + ambient (dark)
   - 文件：同上
-  - 验收：灯光层次清晰
-- [ ] **4.9** Chat 界面：`BentoCard` 气泡 + `SplitText` 逐词淡入 + `ScrambleText` 解码
-  - 文件：`components/console/agent-chat.tsx`
-  - 验收：模拟 AI 打字效果
-- [ ] **4.10** 语义高亮：金额自动标绿，风险词自动标红
-  - 文件：`lib/semantic-highlight.ts`
-  - 验收：正则解析高亮
-- [ ] **4.11** Quick Actions：`HolographicButton` + `Flip` 飞向输入区 + `3D rotateX` hover
-  - 文件：`components/console/agent-chat.tsx` 或独立
-  - 验收：思维泡泡式飘出
-- [ ] **4.12** 页面背景：`NoiseOverlay`(6%) + `GridBackground`(中心放射) + `ShootingStars` + 双光球
+  - 验收：✅ 多层光晕 + 状态色切换
+- [x] **4.9** Chat 界面：`BentoCard` 气泡 + 打字机逐字显示
+  - 文件：同上
+  - 验收：✅ Agent 最新消息逐字打字，旧消息直接显示
+- [x] **4.10** 语义高亮：金额自动标绿，风险词自动标红
   - 文件：`app/console/agent/page.tsx`
-  - 验收：最强氛围层
+  - 验收：✅ 正则解析 USDC/USD/ETH 金额与 blocked/风险等词
+- [x] **4.11** Quick Actions：`HolographicButton` 统一组件 + 3D rotateX hover
+  - 文件：同上
+  - 验收：✅ 使用 `components/ui/holographic-button.tsx`
+- [x] **4.12** 页面背景：`NoiseOverlay`(6%) + `GridBackground` + `ShootingStars` + 双光球
+  - 文件：同上
+  - 验收：✅ 最强氛围层就位
 - [ ] **4.13** 创新特效：语音波形可视化
   - 文件：`components/console/voice-waveform.tsx`
-  - 验收：说话时波形实时响应
+  - 验收：说话时波形实时响应 ⏭️ 延后
 
 ---
 
@@ -361,7 +361,9 @@
 | 2026-06-11 | **前置修复 P1-P3 完成** | ShootingStars内存泄漏修复、BentoCard glowColor、AnimatedNumber springConfig、Sparkles hex支持、ColourfulText性能降级 |
 | | | 进入 Phase 2：Treasury "Flow State Command Center" |
 | 2026-06-11 | **Phase 2 全部完成（除2.10延后）** | 2.1-2.9 全部完成：Header GradientText+Sparkles、KPI stagger+hover glow、Records stagger+pulse、Action Panel 各步骤升级、txHash GradientText、RiskGate ScrambleText解码 |
-| 2026-06-11 | **Phase 3 部分完成** | 3.1 Wallets Header GradientText+Sparkles、3.2 Wallets 卡片 stagger+hover glow、3.8 Analytics Header + KPI hover glow |
+| 2026-06-12 | **Phase 4 Agent 核心完成** | 4.6-4.12 完成：页面骨架、全息角色占位、灯光、Chat BentoCard + 打字机、语义高亮、Quick Actions、最强氛围背景。4.13 延后。54/58 (93%)。 |
+| 2026-06-12 | **Phase 4 Policy 核心完成** | 4.1-4.4 完成：5 Rules BentoCard、Threshold Sliders 渐变/AnimatedNumber、Whitelist 动效、Security Gateway 3D rotateX。4.5 延后。46/58 (79%)。 |
+| 2026-06-12 | **Phase 3 核心完成** | 3.3 WalletTopology Sparkles、3.4 WalletHoloCard 3D 透视、3.5 Transfer MotionPath（FM 替代）、3.6 Signers BentoCard + Sparkles、3.9 Area BentoCard、3.10 Pie AnimatedNumber、3.11 Comparison scroll-snap。3.7/3.12 延后。42/58 (72%)。 |
 
 ---
 

@@ -48,18 +48,19 @@ export function BentoGrid({
   );
 }
 
-interface BentoCardProps extends BentoItem {
-  index: number;
+interface BentoCardProps extends Partial<BentoItem> {
+  index?: number;
   glowColor?: string;
+  children?: React.ReactNode;
 }
 
-function BentoCard({
+export function BentoCard({
   title,
   description,
   className,
   icon,
   children,
-  index,
+  index = 0,
   glowColor = "#B5FF4D",
 }: BentoCardProps) {
   return (
@@ -96,8 +97,8 @@ function BentoCard({
             {icon}
           </div>
         )}
-        <h3 className="text-base font-semibold text-fg">{title}</h3>
-        <p className="mt-2 text-sm text-fg-subtle leading-relaxed">{description}</p>
+        {title && <h3 className="text-base font-semibold text-fg">{title}</h3>}
+        {description && <p className="mt-2 text-sm text-fg-subtle leading-relaxed">{description}</p>}
       </div>
 
       {/* Visual area */}

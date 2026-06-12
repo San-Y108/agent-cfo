@@ -10,6 +10,7 @@ import {
 } from "framer-motion";
 import { Orbit, Bot, ShieldCheck, Snowflake } from "lucide-react";
 import { useApp } from "@/lib/i18n/context";
+import { Sparkles as SparklesFX } from "@/components/ui/aceternity/sparkles";
 
 /* =============================================================================
  * WALLET HOLOGRAM — console-side enhanced takes on two landing visuals.
@@ -36,9 +37,19 @@ export function WalletHoloCard({ children }: { children: React.ReactNode }) {
   const springX = useSpring(rawX, SPRING);
   const springY = useSpring(rawY, SPRING);
 
-  // Slightly stronger tilt than the landing card (/12 vs /15)
-  const rotateX = useTransform(springY, (v) => -v / 12);
-  const rotateY = useTransform(springX, (v) => v / 12);
+  // Stronger tilt than the landing card (/10 vs /15) for holographic pop-out
+  const rotateX = useTransform(springY, (v) => -v / 10);
+  const rotateY = useTransform(springX, (v) => v / 10);
+
+  // Lift inner content off the card surface for extra depth
+  const contentZ = useTransform(
+    [springX, springY],
+    (values) => {
+      const [sx, sy] = values as [number, number];
+      const dist = Math.sqrt(sx * sx + sy * sy);
+      return Math.min(30, dist / 8);
+    }
+  );
 
   const glare = useTransform(
     [glareX, glareY],
@@ -65,19 +76,26 @@ export function WalletHoloCard({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <div style={{ perspective: "1400px" }}>
+    <div style={{ perspective: "1000px" }}>
       <motion.div
         onMouseMove={onMove}
         onMouseLeave={onLeave}
-        whileHover={reduce ? undefined : { scale: 1.008 }}
+        whileHover={reduce ? undefined : { scale: 1.012, z: 10 }}
         style={{
           rotateX: reduce ? 0 : rotateX,
           rotateY: reduce ? 0 : rotateY,
           transformStyle: "preserve-3d",
         }}
-        className="relative will-change-transform rounded-xl transition-shadow duration-500 hover:shadow-[0_18px_60px_rgba(96,165,250,0.14)]"
+        className="relative will-change-transform rounded-xl transition-shadow duration-500 hover:shadow-[0_24px_80px_rgba(96,165,250,0.18)]"
       >
-        {children}
+        <motion.div
+          style={{
+            translateZ: reduce ? 0 : contentZ,
+            transformStyle: "preserve-3d",
+          }}
+        >
+          {children}
+        </motion.div>
         {/* Cursor-tracked glare — sits above content, never blocks input */}
         <motion.div
           aria-hidden
@@ -312,6 +330,15 @@ export function WalletTopology({
                     style={{ color: lit ? BLUE : "rgba(255,255,255,0.55)" }}
                     strokeWidth={1.5}
                   />
+
+                  {/* Hover sparkles burst */}
+                  {isHovered && !reduce && (
+                    <SparklesFX
+                      count={5}
+                      color={BLUE}
+                      className="absolute -inset-2"
+                    />
+                  )}
 
                   {isHovered && (
                     <motion.div

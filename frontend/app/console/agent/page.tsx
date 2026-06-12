@@ -14,6 +14,14 @@ import {
 } from "lucide-react";
 import { useApp } from "@/lib/i18n/context";
 import { cn } from "@/lib/utils";
+import { HolographicButton } from "@/components/ui/holographic-button";
+import {
+  NoiseOverlay,
+  GridBackground,
+  GradientOrb,
+} from "@/components/ui/aceternity/background";
+import { ShootingStars } from "@/components/ui/aceternity/shooting-stars";
+import { BentoCard } from "@/components/ui/aceternity/bento-grid";
 
 /* =============================================================================
  * AGENT CHAT PAGE — DAO AI CFO conversational interface
@@ -109,40 +117,101 @@ function TypingIndicator() {
   );
 }
 
-/* ── Holographic quick-action button ── */
-function HolographicButton({
-  icon: Icon,
-  label,
-  onClick,
-  color = LIME,
-}: {
-  icon: React.ElementType;
-  label: string;
-  onClick: () => void;
-  color?: string;
-}) {
+/* ── Typewriter bubble for agent messages ── */
+function TypewriterBubble({ text, onDone }: { text: string; onDone?: () => void }) {
+  const [displayed, setDisplayed] = useState("");
+  const indexRef = useRef(0);
+
+  useEffect(() => {
+    indexRef.current = 0;
+    setDisplayed("");
+    const timer = setInterval(() => {
+      indexRef.current += 1;
+      setDisplayed(text.slice(0, indexRef.current));
+      if (indexRef.current >= text.length) {
+        clearInterval(timer);
+        onDone?.();
+      }
+    }, 22);
+    return () => clearInterval(timer);
+  }, [text, onDone]);
+
+  return <span>{displayed}</span>;
+}
+
+/* ── Agent message bubble ── */
+function AgentBubble({ text, isLatest }: { text: string; isLatest: boolean }) {
+  const [done, setDone] = useState(!isLatest);
+
   return (
-    <motion.button
-      onClick={onClick}
-      whileHover={{ scale: 1.03 }}
-      whileTap={{ scale: 0.97 }}
-      className="group relative flex items-center gap-2.5 px-5 py-3 rounded-xl border border-white/[0.08] bg-white/[0.02] text-sm font-semibold text-fg transition-all duration-300 overflow-hidden"
-      onMouseEnter={(e) => {
-        e.currentTarget.style.borderColor = `${color}40`;
-        e.currentTarget.style.boxShadow = `0 0 24px ${color}15, inset 0 1px 1px ${color}10`;
-      }}
-      onMouseLeave={(e) => {
-        e.currentTarget.style.borderColor = "rgba(255,255,255,0.08)";
-        e.currentTarget.style.boxShadow = "none";
-      }}
+    <BentoCard
+      glowColor={LIME}
+      className="max-w-[80%] px-4 py-2.5 rounded-2xl rounded-tl-sm border border-white/[0.06] bg-white/[0.03] text-[13px] leading-relaxed text-fg"
     >
-      <Icon
-        size={16}
-        style={{ color }}
-        className="transition-transform duration-300 group-hover:scale-110"
-      />
-      <span>{label}</span>
-    </motion.button>
+      {isLatest && !done ? (
+        <TypewriterBubble text={text} onDone={() => setDone(true)} />
+      ) : (
+        <SemanticText text={text} />
+      )}
+    </BentoCard>
+  );
+}
+/* ── Semantic highlight: amounts green, risk words red ── */
+function SemanticText({ text }: { text: string }) {
+  const tokens = React.useMemo(() => {
+    const parts: { text: string; type: "amount" | "risk" | "normal" }[] = [];
+    const amountRegex = /(\$?\d+(?:\.\d+)?(?:\s*\/\s*\$?\d+(?:\.\d+)?)?\s*(?:USDC|USD|ETH|gwei|txns?))/gi;
+    const riskRegex = /\b(blocked|risk|拦截|风险|警告|warning|danger|failed|失败)\b/gi;
+
+    const pushSegment = (seg: string) => {
+      if (!seg) return;
+      let riskLast = 0;
+      let riskMatch;
+      while ((riskMatch = riskRegex.exec(seg)) !== null) {
+        if (riskMatch.index > riskLast) {
+          parts.push({ text: seg.slice(riskLast, riskMatch.index), type: "normal" });
+        }
+        parts.push({ text: riskMatch[0], type: "risk" });
+        riskLast = riskMatch.index + riskMatch[0].length;
+      }
+      if (riskLast < seg.length) {
+        parts.push({ text: seg.slice(riskLast), type: "normal" });
+      }
+      riskRegex.lastIndex = 0;
+    };
+
+    let lastIndex = 0;
+    let match;
+    while ((match = amountRegex.exec(text)) !== null) {
+      if (match.index > lastIndex) {
+        pushSegment(text.slice(lastIndex, match.index));
+      }
+      parts.push({ text: match[0], type: "amount" });
+      lastIndex = match.index + match[0].length;
+    }
+    if (lastIndex < text.length) {
+      pushSegment(text.slice(lastIndex));
+    }
+    return parts;
+  }, [text]);
+
+  return (
+    <>
+      {tokens.map((part, i) => (
+        <span
+          key={i}
+          className={
+            part.type === "amount"
+              ? "text-[#B5FF4D] font-semibold"
+              : part.type === "risk"
+              ? "text-[#FB7185] font-semibold"
+              : undefined
+          }
+        >
+          {part.text}
+        </span>
+      ))}
+    </>
   );
 }
 
@@ -246,7 +315,23 @@ export default function AgentPage() {
       : "Analyzing...";
 
   return (
-    <div className="flex flex-col h-[calc(100vh-64px)] p-6 gap-6">
+    <div className="flex flex-col h-[calc(100vh-64px)] p-6 gap-6 relative">
+      {/* ── Strongest atmosphere layer on console ── */}
+      <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden">
+        <NoiseOverlay className="!absolute inset-0 opacity-[0.06]" />
+        <GridBackground className="!absolute inset-0" />
+        <div
+          className="absolute inset-0"
+          style={{
+            background:
+              "radial-gradient(circle at 50% 50%, rgba(181,255,77,0.04) 0%, transparent 55%)",
+          }}
+        />
+      </div>
+      <GradientOrb color="lime" className="-top-40 -left-40 opacity-60" />
+      <GradientOrb color="cyan" className="-bottom-40 -right-40 opacity-50" />
+      <ShootingStars />
+
       {/* Main content: left agent + right chat */}
       <div className="flex flex-1 gap-6 min-h-0">
         {/* ── Left Panel: Agent Character ── */}
@@ -262,20 +347,32 @@ export default function AgentPage() {
 
           {/* Large blurred ambient orbs */}
           <div
-            className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[320px] h-[320px] rounded-full pointer-events-none"
+            className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[360px] h-[360px] rounded-full pointer-events-none"
             style={{
               background:
-                "radial-gradient(circle, rgba(181,255,77,0.12) 0%, rgba(94,234,212,0.06) 40%, transparent 70%)",
-              filter: "blur(40px)",
+                "radial-gradient(circle at 40% 35%, rgba(181,255,77,0.14) 0%, rgba(94,234,212,0.07) 35%, transparent 65%)",
+              filter: "blur(50px)",
             }}
+          />
+
+          {/* Holographic base ring */}
+          <motion.div
+            className="absolute bottom-[18%] left-1/2 -translate-x-1/2 w-[260px] h-[80px] rounded-[100%] pointer-events-none"
+            style={{
+              background:
+                "radial-gradient(ellipse at 50% 50%, rgba(94,234,212,0.12) 0%, transparent 70%)",
+              border: "1px solid rgba(94,234,212,0.12)",
+            }}
+            animate={{ opacity: [0.4, 0.8, 0.4], scaleX: [1, 1.05, 1] }}
+            transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
           />
 
           {/* Agent circle with breathing animation */}
           <motion.div
             className="relative z-10 flex items-center justify-center"
-            animate={{ scale: [1, 1.03, 1] }}
+            animate={agentStatus === "analyzing" ? { scale: [1, 1.02, 1], rotate: [0, 1, -1, 0] } : { scale: [1, 1.03, 1] }}
             transition={{
-              duration: 4,
+              duration: agentStatus === "analyzing" ? 1.2 : 4,
               repeat: Infinity,
               ease: "easeInOut",
             }}
@@ -284,17 +381,30 @@ export default function AgentPage() {
             <motion.div
               className="absolute rounded-full"
               style={{
-                width: 200,
-                height: 200,
+                width: 220,
+                height: 220,
                 background:
-                  "radial-gradient(circle, rgba(181,255,77,0.15) 0%, transparent 70%)",
+                  "radial-gradient(circle, rgba(181,255,77,0.18) 0%, transparent 70%)",
               }}
-              animate={{ opacity: [0.4, 0.8, 0.4], scale: [1, 1.1, 1] }}
+              animate={{ opacity: agentStatus === "analyzing" ? [0.5, 1, 0.5] : [0.4, 0.8, 0.4], scale: [1, 1.1, 1] }}
               transition={{
-                duration: 3,
+                duration: agentStatus === "analyzing" ? 1.2 : 3,
                 repeat: Infinity,
                 ease: "easeInOut",
               }}
+            />
+
+            {/* Cyan rim light ring */}
+            <motion.div
+              className="absolute rounded-full"
+              style={{
+                width: 176,
+                height: 176,
+                border: "1px solid rgba(94,234,212,0.25)",
+                boxShadow: "0 0 30px rgba(94,234,212,0.15), inset 0 0 20px rgba(94,234,212,0.08)",
+              }}
+              animate={{ rotate: 360 }}
+              transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
             />
 
             {/* Main gradient circle */}
@@ -302,17 +412,17 @@ export default function AgentPage() {
               className="relative flex items-center justify-center w-40 h-40 rounded-full"
               style={{
                 background:
-                  "radial-gradient(circle at 35% 35%, rgba(181,255,77,0.25), rgba(94,234,212,0.12) 50%, rgba(94,234,212,0.05) 100%)",
-                border: "1px solid rgba(181,255,77,0.2)",
+                  "radial-gradient(circle at 35% 35%, rgba(181,255,77,0.28), rgba(94,234,212,0.14) 50%, rgba(94,234,212,0.06) 100%)",
+                border: "1px solid rgba(181,255,77,0.25)",
                 boxShadow:
-                  "0 0 60px rgba(181,255,77,0.15), inset 0 0 40px rgba(94,234,212,0.08)",
+                  "0 0 80px rgba(181,255,77,0.18), inset 0 0 50px rgba(94,234,212,0.1)",
               }}
             >
               <Bot
                 size={56}
                 style={{
-                  color: LIME,
-                  filter: "drop-shadow(0 0 12px rgba(181,255,77,0.4))",
+                  color: agentStatus === "analyzing" ? CYAN : LIME,
+                  filter: `drop-shadow(0 0 16px ${agentStatus === "analyzing" ? "rgba(94,234,212,0.5)" : "rgba(181,255,77,0.4)"})`,
                 }}
                 strokeWidth={1.2}
               />
@@ -393,7 +503,12 @@ export default function AgentPage() {
             className="flex-1 overflow-y-auto px-5 py-4 space-y-4 min-h-0"
           >
             <AnimatePresence initial={false}>
-              {messages.map((msg, idx) => (
+              {messages.map((msg, idx) => {
+                const isLatestAgent =
+                  msg.role === "agent" &&
+                  idx === messages.length - 1 &&
+                  !isThinking;
+                return (
                 <motion.div
                   key={idx}
                   initial={{ opacity: 0, y: 12, scale: 0.97 }}
@@ -425,19 +540,19 @@ export default function AgentPage() {
                   </div>
 
                   {/* Bubble */}
-                  <div
-                    className={cn(
-                      "max-w-[80%] px-4 py-2.5 rounded-2xl text-[13px] leading-relaxed",
-                      msg.role === "agent"
-                        ? "rounded-tl-sm border border-white/[0.06] bg-white/[0.03] text-fg"
-                        : "rounded-tr-sm bg-white/[0.08] text-fg"
-                    )}
-                                >
-                    {msg.text}
-                  </div>
+                  {msg.role === "agent" ? (
+                    <AgentBubble text={msg.text} isLatest={isLatestAgent} />
+                  ) : (
+                    <div
+                      className="max-w-[80%] px-4 py-2.5 rounded-2xl rounded-tr-sm bg-white/[0.08] text-[13px] leading-relaxed text-fg"
+                    >
+                      {msg.text}
+                    </div>
+                  )}
                 </motion.div>
-              ))}
-            </AnimatePresence>
+              );
+            })}
+          </AnimatePresence>
 
             {/* Typing indicator */}
             <AnimatePresence>
@@ -509,37 +624,43 @@ export default function AgentPage() {
       </div>
 
       {/* ── Quick Actions ── */}
-      <div className="flex items-center justify-center gap-4 pt-2 pb-1">
+      <div className="relative z-10 flex items-center justify-center gap-4 pt-2 pb-1">
         <HolographicButton
-          icon={FileText}
-          label={lang === "zh" ? "生成计划" : "Generate Plan"}
+          icon={<FileText className="w-4 h-4" />}
+          variant="lime"
+          size="sm"
           onClick={() =>
             handleQuickAction(
               lang === "zh" ? "生成付款计划" : "Generate payment plan"
             )
           }
-          color={LIME}
-        />
+        >
+          {lang === "zh" ? "生成计划" : "Generate Plan"}
+        </HolographicButton>
         <HolographicButton
-          icon={Shield}
-          label={lang === "zh" ? "检查风险" : "Check Risk"}
+          icon={<Shield className="w-4 h-4" />}
+          variant="cyan"
+          size="sm"
           onClick={() =>
             handleQuickAction(
               lang === "zh" ? "检查风险" : "Check risk"
             )
           }
-          color={CYAN}
-        />
+        >
+          {lang === "zh" ? "检查风险" : "Check Risk"}
+        </HolographicButton>
         <HolographicButton
-          icon={TrendingUp}
-          label={lang === "zh" ? "查看审计" : "View Audit"}
+          icon={<TrendingUp className="w-4 h-4" />}
+          variant="violet"
+          size="sm"
           onClick={() =>
             handleQuickAction(
               lang === "zh" ? "查看审计报告" : "View audit report"
             )
           }
-          color={VIOLET}
-        />
+        >
+          {lang === "zh" ? "查看审计" : "View Audit"}
+        </HolographicButton>
       </div>
     </div>
   );

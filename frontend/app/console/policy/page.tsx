@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { cn } from "@/lib/utils";
 import {
   Plus,
   Trash2,
@@ -15,6 +16,10 @@ import {
 import { useApp } from "@/lib/i18n/context";
 import { HolographicButton } from "@/components/ui/holographic-button";
 import { GradientOrb } from "@/components/ui/aceternity/background";
+import { BentoCard } from "@/components/ui/aceternity/bento-grid";
+import { AnimatedNumber } from "@/components/ui/aceternity/animated-number";
+import { Sparkles as SparklesFX } from "@/components/ui/aceternity/sparkles";
+import { GradientText } from "@/components/ui/aceternity/colourful-text";
 
 const CORAL = "#FB7185";
 const CORAL_LIGHT = "#F43F5E";
@@ -28,6 +33,15 @@ const RULES = [
   { num: "0x4D", titleKey: "risk.4.title", bodyKey: "risk.4.body", color: "#60A5FA" },
   { num: "0x5E", titleKey: "risk.5.title", bodyKey: "risk.5.body", color: "#C084FC" },
 ];
+
+function RuleIcon({ color }: { color: string }) {
+  return (
+    <div
+      className="w-2 h-2 rounded-full"
+      style={{ backgroundColor: color, boxShadow: `0 0 8px ${color}` }}
+    />
+  );
+}
 
 interface WhitelistItem {
   id: string;
@@ -85,7 +99,7 @@ function useFlashingValue(value: number) {
   return flash;
 }
 
-/* ─── Slider with lime thumb + flashing value ─── */
+/* ─── Slider with lime thumb + flashing value + gradient track ─── */
 function ThresholdSlider({
   label,
   tip,
@@ -104,6 +118,7 @@ function ThresholdSlider({
   unit: string;
 }) {
   const flash = useFlashingValue(value);
+  const pct = ((value - min) / (max - min)) * 100;
 
   return (
     <div className="space-y-2">
@@ -114,10 +129,10 @@ function ThresholdSlider({
         <motion.span
           animate={flash ? { scale: [1, 1.2, 1], color: [LIME, "#fff", LIME] } : {}}
           transition={{ duration: 0.4 }}
-          className="text-xs font-mono font-bold tabular-nums"
+          className="text-xs font-mono font-bold tabular-nums flex items-center gap-1"
           style={{ color: flash ? undefined : CORAL }}
         >
-          {value} {unit}
+          <AnimatedNumber value={value} /> {unit}
         </motion.span>
       </div>
       <input
@@ -128,7 +143,7 @@ function ThresholdSlider({
         onChange={(e) => onChange(Number(e.target.value))}
         className="w-full h-1.5 rounded-lg appearance-none cursor-pointer"
         style={{
-          background: `linear-gradient(to right, ${LIME} 0%, ${LIME} ${((value - min) / (max - min)) * 100}%, rgba(255,255,255,0.1) ${((value - min) / (max - min)) * 100}%, rgba(255,255,255,0.1) 100%)`,
+          background: `linear-gradient(to right, rgba(255,255,255,0.08) 0%, ${LIME} ${pct}%, rgba(255,255,255,0.08) ${pct}%, rgba(255,255,255,0.08) 100%)`,
         }}
       />
       <p className="text-[10px] leading-tight text-fg-subtle">{tip}</p>
@@ -141,8 +156,12 @@ function ThresholdSlider({
           border-radius: 50%;
           background: ${LIME};
           cursor: pointer;
-          box-shadow: 0 0 8px ${LIME}80;
+          box-shadow: 0 0 10px ${LIME}99, 0 0 20px ${LIME}40;
           border: 2px solid #0D0D0D;
+          transition: transform 0.15s ease;
+        }
+        input[type="range"]::-webkit-slider-thumb:hover {
+          transform: scale(1.15);
         }
         input[type="range"]::-moz-range-thumb {
           width: 16px;
@@ -150,7 +169,7 @@ function ThresholdSlider({
           border-radius: 50%;
           background: ${LIME};
           cursor: pointer;
-          box-shadow: 0 0 8px ${LIME}80;
+          box-shadow: 0 0 10px ${LIME}99, 0 0 20px ${LIME}40;
           border: 2px solid #0D0D0D;
         }
       `}</style>
@@ -233,28 +252,28 @@ export default function PolicyPage() {
       {/* ── 5 Rules big-number showcase ── */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
         {RULES.map((rule, i) => (
-          <motion.div
+          <BentoCard
             key={rule.num}
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: i * 0.05 }}
-            className="p-4 rounded-xl border border-border-token dark:border-white/[0.06] bg-surface dark:bg-white/[0.03] relative overflow-hidden group"
+            index={i}
+            glowColor={rule.color}
+            title={t(rule.titleKey as any)}
+            description={t(rule.bodyKey as any)}
+            icon={<RuleIcon color={rule.color} />}
+            className="relative overflow-hidden"
           >
-            <div
-              className="absolute top-0 right-0 w-20 h-20 opacity-[0.06] rounded-bl-full transition-opacity group-hover:opacity-[0.12]"
-              style={{ backgroundColor: rule.color }}
-            />
-            <span
-              className="block text-[42px] font-bold leading-none tracking-tighter opacity-[0.15] group-hover:opacity-[0.25] transition-opacity"
-              style={{ color: rule.color }}
-            >
-              {rule.num}
-            </span>
-            <h4 className="mt-1 text-sm font-bold text-fg">{t(rule.titleKey as any)}</h4>
-            <p className="mt-0.5 text-[11px] text-fg-subtle leading-relaxed">
-              {t(rule.bodyKey as any)}
-            </p>
-          </motion.div>
+            <div className="flex items-end justify-between mt-2">
+              <motion.span
+                initial={{ opacity: 0, x: -8 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.2, duration: 0.5 }}
+                className="text-[34px] font-bold leading-none tracking-tighter font-mono"
+                style={{ color: rule.color }}
+              >
+                {rule.num}
+              </motion.span>
+              <SparklesFX count={4} color={rule.color} className="w-12 h-8" />
+            </div>
+          </BentoCard>
         ))}
       </div>
 
@@ -307,37 +326,55 @@ export default function PolicyPage() {
                 </thead>
                 <tbody className="divide-y divide-border-token dark:divide-white/[0.04]">
                   <AnimatePresence>
-                    {whitelist.map((item) => (
+                    {whitelist.map((item, idx) => (
                       <motion.tr
                         key={item.id}
-                        initial={{ opacity: 0, scale: 0.98 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        exit={{ opacity: 0, scale: 0.95 }}
-                        className="hover:bg-surface-2/50 dark:hover:bg-white/[0.02] transition-colors"
+                        layout
+                        initial={{ opacity: 0, y: -8 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, x: -20 }}
+                        transition={{ delay: idx * 0.04, duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+                        className="group relative hover:bg-surface-2/50 dark:hover:bg-white/[0.02] transition-colors"
                       >
-                        <td className="py-3 px-3">
+                        {/* Hover left color bar */}
+                        <div
+                          className="absolute left-0 top-0 bottom-0 w-[2px] opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                          style={{
+                            backgroundColor:
+                              item.category === "Developer"
+                                ? "#B5FF4D"
+                                : item.category === "API Provider"
+                                ? "#60A5FA"
+                                : item.category === "Ad Network"
+                                ? "#C084FC"
+                                : "#FB7185",
+                          }}
+                        />
+                        <td className="py-3 px-3 relative z-10">
                           <div className="font-bold text-fg text-xs">{item.name}</div>
                           <div className="font-mono text-[10px] mt-0.5 text-fg-subtle">
                             {item.address.substring(0, 10)}...
                             {item.address.substring(item.address.length - 8)}
                           </div>
                         </td>
-                        <td className="py-3 px-3">
+                        <td className="py-3 px-3 relative z-10">
                           <span className="px-2 py-0.5 rounded text-[10px] font-mono leading-none border border-border-token dark:border-white/[0.08] bg-surface-2 dark:bg-white/[0.04] text-fg-muted">
                             {item.category}
                           </span>
                         </td>
-                        <td className="py-3 px-3 text-right font-mono text-fg-subtle">
+                        <td className="py-3 px-3 text-right font-mono text-fg-subtle relative z-10">
                           {item.dateRegistered}
                         </td>
-                        <td className="py-3 px-3 text-center">
-                          <button
+                        <td className="py-3 px-3 text-center relative z-10">
+                          <motion.button
+                            whileHover={{ scale: 1.15 }}
+                            whileTap={{ scale: 0.9 }}
                             onClick={() => handleDelete(item.id)}
-                            className="p-1 rounded transition-colors hover:bg-red-500/10 text-fg-subtle hover:text-danger cursor-pointer"
+                            className="p-1.5 rounded-full transition-colors hover:bg-red-500/10 text-fg-subtle hover:text-danger cursor-pointer"
                             title="Delete"
                           >
                             <Trash2 className="w-3.5 h-3.5" />
-                          </button>
+                          </motion.button>
                         </td>
                       </motion.tr>
                     ))}
@@ -358,28 +395,41 @@ export default function PolicyPage() {
               <Workflow className="w-4 h-4" style={{ color: CORAL }} />
               {t("console.policy.guardIntegrity" as any)}
             </h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4" style={{ perspective: "1000px" }}>
               {[
                 { label: t("console.policy.guardItem1" as any), sub: t("console.policy.guardItem1Sub" as any) },
                 { label: t("console.policy.guardItem2" as any), sub: t("console.policy.guardItem2Sub" as any) },
               ].map((g, i) => (
-                <div
+                <motion.div
                   key={i}
-                  className="p-4 rounded-xl border border-border-token dark:border-white/[0.06] bg-surface-2 dark:bg-white/[0.02] flex items-center justify-between"
+                  initial={{ opacity: 0, rotateX: -25, y: 20 }}
+                  animate={{ opacity: 1, rotateX: 0, y: 0 }}
+                  transition={{ delay: 0.4 + i * 0.1, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+                  whileHover={{ rotateX: -8, scale: 1.02, z: 20 }}
+                  className="group relative p-4 rounded-xl border border-border-token dark:border-white/[0.06] bg-surface-2 dark:bg-white/[0.02] flex items-center justify-between overflow-hidden"
+                  style={{ transformStyle: "preserve-3d" }}
                 >
-                  <div className="space-y-0.5">
+                  {/* Hover glow */}
+                  <div
+                    className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
+                    style={{
+                      background: "radial-gradient(circle at 80% 20%, rgba(251,113,133,0.08), transparent 70%)",
+                    }}
+                  />
+                  <div className="relative z-10 space-y-0.5">
                     <span className="text-[10px] uppercase font-mono font-bold text-fg-muted tracking-wider">
                       {g.label}
                     </span>
                     <p className="text-xs font-bold text-fg">{g.sub}</p>
                   </div>
                   <div
-                    className="w-5 h-5 rounded-full flex items-center justify-center shrink-0"
+                    className="relative z-10 w-6 h-6 rounded-full flex items-center justify-center shrink-0"
                     style={{ backgroundColor: `${CORAL}20`, color: CORAL }}
                   >
                     <CheckCircle className="w-3.5 h-3.5" />
+                    <SparklesFX count={3} color={CORAL} className="absolute -inset-1 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                   </div>
-                </div>
+                </motion.div>
               ))}
             </div>
           </motion.div>
@@ -390,7 +440,13 @@ export default function PolicyPage() {
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.35 }}
-          className="rounded-xl border border-border-token dark:border-white/[0.06] bg-surface dark:bg-white/[0.03] p-6 space-y-5"
+          className={cn(
+            "rounded-xl border p-6 space-y-5 transition-colors duration-300",
+            "bg-surface dark:bg-white/[0.03]",
+            saveSuccess
+              ? "border-lime-400/60 shadow-[0_0_30px_rgba(181,255,77,0.15)]"
+              : "border-border-token dark:border-white/[0.06]"
+          )}
         >
           <div className="flex items-center gap-2 border-b border-border-token dark:border-white/[0.06] pb-4 mb-2">
             <Sliders className="w-5 h-5" style={{ color: CORAL }} />
