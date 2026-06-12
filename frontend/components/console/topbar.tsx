@@ -79,10 +79,10 @@ export function ConsoleTopbar({ onOpenDrawer }: { onOpenDrawer: () => void }) {
           className="group flex items-center gap-2 rounded-lg border border-border-token dark:border-white/[0.08] bg-surface-2 dark:bg-white/[0.03] px-3 py-2 text-xs text-fg-muted transition-all hover:border-border-strong dark:hover:border-white/20 hover:bg-surface-hover dark:hover:bg-white/[0.06] hover:text-fg"
           style={{ fontFamily: "Inter, sans-serif" }}
         >
-          <FlaskConical size={14} className="text-[#5EEAD4]" />
+          <FlaskConical size={14} className="text-hud-cyan" />
           <span className="hidden sm:inline">Sandbox</span>
           <span className="mx-0.5 text-fg-subtle dark:text-white/20">|</span>
-          <SlidersHorizontal size={14} className="text-[#FB7185]" />
+          <SlidersHorizontal size={14} className="text-hud-coral" />
           <span className="hidden sm:inline">Rules</span>
         </button>
       </div>

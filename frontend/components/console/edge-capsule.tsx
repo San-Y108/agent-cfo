@@ -42,7 +42,7 @@ export function EdgeCapsuleGroup({
   return (
     <div
       className={cn(
-        "fixed top-1/2 -translate-y-1/2 z-50 hidden md:flex",
+        "fixed top-1/2 -translate-y-1/2 z-[45] hidden md:flex",
         isLeft ? "left-0" : "right-0"
       )}
       onMouseEnter={() => setHovered(true)}

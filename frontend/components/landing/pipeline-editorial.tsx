@@ -189,7 +189,7 @@ function PipelineStage({
 
         {/* Lead */}
         <div
-          className="animate-in mt-6 text-lg leading-[1.7] text-white/85 sm:text-xl"
+          className="animate-in mt-8 text-base leading-[1.8] text-white/85 sm:text-lg"
           style={{ fontFamily: "Inter, sans-serif" }}
         >
           {stage.lead}
@@ -199,7 +199,7 @@ function PipelineStage({
         {stage.paragraphs.map((para, i) => (
           <div
             key={i}
-            className="animate-in mt-5 text-base leading-[1.8] text-white/55 sm:text-lg italic"
+            className="animate-in mt-6 text-sm leading-[1.9] text-white/55 sm:text-base italic"
             style={{ fontFamily: "Inter, sans-serif" }}
           >
             {para}
@@ -207,7 +207,7 @@ function PipelineStage({
         ))}
 
         {/* Capabilities — single column masonry-like stack */}
-        <div className="animate-in mt-8 grid gap-4">
+        <div className="animate-in mt-10 grid gap-4">
           {stage.capabilities.map((cap, i) => (
             <CapabilityItem key={i} cap={cap} accent={stage.accent} />
           ))}
@@ -560,10 +560,10 @@ export function PipelineEditorial() {
       <PipelineIntro />
 
       {/* 5 Stages — true masonry on desktop, single column on mobile */}
-      <div className="relative mx-auto max-w-7xl px-6 py-12 lg:px-8 lg:py-16">
+      <div className="relative mx-auto max-w-6xl px-6 py-12 lg:px-8 lg:py-16">
         <div
-          className="grid grid-cols-1 gap-x-10 gap-y-16 lg:grid-cols-2 lg:items-start"
-          style={{ rowGap: "4rem" }}
+          className="grid grid-cols-1 gap-x-16 gap-y-20 lg:grid-cols-2 lg:items-start"
+          style={{ rowGap: "5rem" }}
         >
           {STAGES.map((stage, i) => (
             <div
@@ -575,7 +575,7 @@ export function PipelineEditorial() {
                 i === STAGES.length - 1
                   ? "lg:col-span-2"
                   : i % 2 === 1
-                    ? "lg:mt-24"
+                    ? "lg:mt-20"
                     : ""
               }
             >

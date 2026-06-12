@@ -5,39 +5,39 @@ import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 
 /* =============================================================================
- * COLOR TOKENS
+ * COLOR TOKENS — mapped to globals.css HUD variables
  * ===========================================================================*/
 
 const COLOR_MAP = {
   lime: {
-    border: "border-[#B5FF4D]/30",
-    text: "text-[#B5FF4D]",
-    glow: "rgba(181,255,77,0.15)",
-    glowStrong: "rgba(181,255,77,0.25)",
+    border: "border-hud-lime/30",
+    text: "text-hud-lime",
+    glow: "var(--glow-lime)",
+    glowStrong: "var(--glow-lime)",
   },
   blue: {
-    border: "border-[#60A5FA]/30",
-    text: "text-[#60A5FA]",
-    glow: "rgba(96,165,250,0.15)",
-    glowStrong: "rgba(96,165,250,0.25)",
+    border: "border-hud-blue/30",
+    text: "text-hud-blue",
+    glow: "var(--glow-blue)",
+    glowStrong: "var(--glow-blue)",
   },
   coral: {
-    border: "border-[#FB7185]/30",
-    text: "text-[#FB7185]",
-    glow: "rgba(251,113,133,0.15)",
-    glowStrong: "rgba(251,113,133,0.25)",
+    border: "border-hud-coral/30",
+    text: "text-hud-coral",
+    glow: "var(--glow-coral)",
+    glowStrong: "var(--glow-coral)",
   },
   violet: {
-    border: "border-[#C084FC]/30",
-    text: "text-[#C084FC]",
-    glow: "rgba(192,132,252,0.15)",
-    glowStrong: "rgba(192,132,252,0.25)",
+    border: "border-hud-violet/30",
+    text: "text-hud-violet",
+    glow: "var(--glow-violet)",
+    glowStrong: "var(--glow-violet)",
   },
   cyan: {
-    border: "border-[#5EEAD4]/30",
-    text: "text-[#5EEAD4]",
-    glow: "rgba(94,234,212,0.15)",
-    glowStrong: "rgba(94,234,212,0.25)",
+    border: "border-hud-cyan/30",
+    text: "text-hud-cyan",
+    glow: "var(--glow-cyan)",
+    glowStrong: "var(--glow-cyan)",
   },
 } as const;
 
