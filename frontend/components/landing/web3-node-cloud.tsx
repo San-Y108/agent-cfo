@@ -4,10 +4,12 @@ import React, { useState, useRef, useEffect, useMemo } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 
 /* ========================================================================
- * Web3NodeCloud — Network Constellation v2
+ * Web3NodeCloud — Orbital Trust Stack v4
  * ========================================================================
- * Compact organic node distribution that fits two-column layout.
- * Border style unified with HolographicCard (white/15, blur, gradient).
+ * Three independently rotating rings make protocols orbit the central
+ * Cobo core like satellites around a sun. Inner rings move faster, outer
+ * rings slower. Nodes counter-rotate so their icons and labels stay upright.
+ * Orbits pause on hover for readability and respect reduced motion.
  */
 
 type Tier = "core" | "mid" | "tool";
@@ -20,43 +22,60 @@ type NodeData = {
   color: string;
   tier: Tier;
   angle: number;
-  distance: number; // pixels at base scale
+  logo: string;
 };
 
+const LOGO_BASE = "/logos/agentcfo-logo-pack/node-svg";
+
 const NODES: NodeData[] = [
-  // Core — closest to center
-  { id: "cobo", label: "Cobo Agentic", shortLabel: "Cobo", desc: "Autonomous API execution via CAW", color: "#4A9BFF", tier: "core", angle: -15, distance: 52 },
-  { id: "gnosis", label: "Gnosis Safe", shortLabel: "Gnosis", desc: "Multi-sig vault protection", color: "#00D084", tier: "core", angle: 165, distance: 55 },
-  // Mid
-  { id: "metamask", label: "MetaMask SDK", shortLabel: "MetaMask", desc: "Owner cryptographic signing", color: "#F6851B", tier: "mid", angle: 55, distance: 100 },
-  { id: "sepolia", label: "Sepolia", shortLabel: "Sepolia", desc: "Isolated testnet execution", color: "#8B5CF6", tier: "mid", angle: 205, distance: 98 },
-  { id: "sablier", label: "Sablier", shortLabel: "Sablier", desc: "Continuous payroll streams", color: "#FF6B9D", tier: "mid", angle: 285, distance: 105 },
-  // Tool — outer ring
-  { id: "drizzle", label: "Drizzle ORM", shortLabel: "Drizzle", desc: "Type-safe database layer", color: "#C5F74F", tier: "tool", angle: 110, distance: 150 },
-  { id: "framer", label: "Framer", shortLabel: "Framer", desc: "Motion & interaction design", color: "#60A5FA", tier: "tool", angle: 245, distance: 148 },
-  { id: "github", label: "GitHub", shortLabel: "GitHub", desc: "CI/CD & version control", color: "#E2E8F0", tier: "tool", angle: 340, distance: 155 },
+  // Inner ring — core trust anchors
+  { id: "caw", label: "CAW Core", shortLabel: "CAW", desc: "Cobo Agentic Wallet execution core", color: "#B5FF4D", tier: "core", angle: 30, logo: `${LOGO_BASE}/09-execution-core.svg` },
+  { id: "gnosis", label: "Gnosis Safe", shortLabel: "Gnosis", desc: "Multi-sig vault protection", color: "#00D084", tier: "core", angle: 210, logo: `${LOGO_BASE}/02-safe-wallet.svg` },
+  // Middle ring — execution layer
+  { id: "metamask", label: "MetaMask SDK", shortLabel: "MetaMask", desc: "Owner cryptographic signing", color: "#F6851B", tier: "mid", angle: 90, logo: `${LOGO_BASE}/03-metamask.svg` },
+  { id: "sepolia", label: "Sepolia", shortLabel: "Sepolia", desc: "Isolated testnet execution", color: "#8B5CF6", tier: "mid", angle: 270, logo: `${LOGO_BASE}/04-ethereum-sepolia-fallback.svg` },
+  { id: "sablier", label: "Sablier", shortLabel: "Sablier", desc: "Continuous payroll streams", color: "#FF6B9D", tier: "mid", angle: 180, logo: `${LOGO_BASE}/05-sablier.svg` },
+  // Outer ring — tooling & integration (spread to the right/bottom, away from left copy)
+  { id: "drizzle", label: "Drizzle ORM", shortLabel: "Drizzle", desc: "Type-safe database layer", color: "#C5F74F", tier: "tool", angle: 60, logo: `${LOGO_BASE}/06-drizzle-orm.svg` },
+  { id: "framer", label: "Framer", shortLabel: "Framer", desc: "Motion & interaction design", color: "#60A5FA", tier: "tool", angle: 200, logo: `${LOGO_BASE}/07-framer.svg` },
+  { id: "github", label: "GitHub", shortLabel: "GitHub", desc: "CI/CD & version control", color: "#E2E8F0", tier: "tool", angle: 340, logo: `${LOGO_BASE}/08-github-octocat.svg` },
 ];
 
-const TIER_SIZE: Record<Tier, number> = { core: 38, mid: 28, tool: 22 };
-const TIER_GLOW: Record<Tier, number> = { core: 18, mid: 12, tool: 8 };
+// Radii spread out so nodes do not visually overlap, while still fitting
+// comfortably inside the 360×360 card. The inner ring is kept tight to the
+// Cobo core, mid and tool rings are pushed outward with larger gaps.
+const TIER_DISTANCE: Record<Tier, number> = { core: 60, mid: 115, tool: 160 };
+const TIER_SIZE: Record<Tier, number> = { core: 42, mid: 33, tool: 26 };
+const TIER_GLOW: Record<Tier, number> = { core: 17, mid: 13, tool: 9 };
+// Kepler-style orbital periods: angular speed falls with distance from the
+// center, so inner satellites race ahead and outer ones drift slowly.
+const ORBIT_PERIOD: Record<Tier, number> = { core: 32, mid: 72, tool: 125 };
 
 function polarToCartesian(angleDeg: number, radius: number) {
   const rad = ((angleDeg - 90) * Math.PI) / 180;
   return { x: Math.cos(rad) * radius, y: Math.sin(rad) * radius };
 }
 
-/* ── Background particles ─────────────────────────────────────────────── */
-function NebulaParticles({ count = 16 }: { count?: number }) {
+/* ── Background particles (subtle, dark-adapted) ───────────────────────── */
+function seededRandom(seed: number) {
+  return function () {
+    seed = (seed * 9301 + 49297) % 233280;
+    return seed / 233280;
+  };
+}
+
+function NebulaParticles({ count = 12 }: { count?: number }) {
   const reduce = useReducedMotion();
   const particles = useMemo(() => {
+    const rand = seededRandom(42);
     return Array.from({ length: count }, (_, i) => ({
       id: i,
-      x: Math.random() * 100,
-      y: Math.random() * 100,
-      size: 1 + Math.random() * 2,
-      opacity: 0.1 + Math.random() * 0.2,
-      duration: 8 + Math.random() * 10,
-      delay: Math.random() * 5,
+      x: Math.floor(rand() * 100),
+      y: Math.floor(rand() * 100),
+      size: 1 + Math.floor(rand() * 15) / 10,
+      opacity: 0.05 + Math.floor(rand() * 8) / 100,
+      duration: 10 + Math.floor(rand() * 10),
+      delay: Math.floor(rand() * 5 * 10) / 10,
     }));
   }, [count]);
 
@@ -71,12 +90,12 @@ function NebulaParticles({ count = 16 }: { count?: number }) {
             top: `${p.y}%`,
             width: p.size,
             height: p.size,
-            background: "rgba(255,255,255,0.5)",
-            boxShadow: `0 0 ${p.size * 3}px rgba(255,255,255,0.1)`,
+            background: "rgba(255,255,255,0.35)",
+            boxShadow: `0 0 ${p.size * 2}px rgba(255,255,255,0.06)`,
           }}
           animate={reduce ? {} : {
             opacity: [p.opacity * 0.4, p.opacity, p.opacity * 0.4],
-            scale: [1, 1.3, 1],
+            scale: [1, 1.2, 1],
           }}
           transition={{
             duration: p.duration,
@@ -90,77 +109,155 @@ function NebulaParticles({ count = 16 }: { count?: number }) {
   );
 }
 
-/* ── Connection lines (SVG) ──────────────────────────────────────────── */
-function ConnectionLines({
+/* ── Orbital ring: SVG path + radial ties + counter-rotated nodes ──────── */
+function OrbitRing({
+  tier,
+  nodes,
   hoveredId,
   centerPulse,
+  anyHovered,
+  onHover,
+  onLeave,
 }: {
+  tier: Tier;
+  nodes: NodeData[];
   hoveredId: string | null;
   centerPulse: boolean;
+  anyHovered: boolean;
+  onHover: (id: string) => void;
+  onLeave: () => void;
 }) {
   const reduce = useReducedMotion();
+  const radius = TIER_DISTANCE[tier];
+  const period = ORBIT_PERIOD[tier];
+  const isPaused = reduce || anyHovered;
+  const active = hoveredId === null ? centerPulse : nodes.some((n) => n.id === hoveredId);
+  const ringOpacity = tier === "core" ? 0.22 : tier === "mid" ? 0.14 : 0.08;
 
   return (
-    <svg
-      viewBox="-200 -200 400 400"
-      className="absolute inset-0 h-full w-full pointer-events-none"
-      style={{ zIndex: 1 }}
+    <motion.div
+      className="absolute inset-0"
+      style={{ transformOrigin: "center center" }}
+      animate={isPaused ? {} : { rotate: 360 }}
+      transition={{ duration: period, repeat: Infinity, ease: "linear" }}
     >
-      <defs>
-        {NODES.map((node) => (
-          <linearGradient key={node.id} id={`grad-${node.id}`} x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor={node.color} stopOpacity="0.45" />
-            <stop offset="60%" stopColor={node.color} stopOpacity="0.1" />
-            <stop offset="100%" stopColor={node.color} stopOpacity="0" />
-          </linearGradient>
-        ))}
-      </defs>
+      {/* Ring + radial ties */}
+      <svg
+        viewBox="-200 -200 400 400"
+        className="absolute inset-0 h-full w-full pointer-events-none"
+        style={{ zIndex: 1 }}
+      >
+        <defs>
+          {nodes.map((node) => (
+            <linearGradient key={node.id} id={`grad-${node.id}`} x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stopColor={node.color} stopOpacity="0.45" />
+              <stop offset="60%" stopColor={node.color} stopOpacity="0.1" />
+              <stop offset="100%" stopColor={node.color} stopOpacity="0" />
+            </linearGradient>
+          ))}
+        </defs>
 
-      {NODES.map((node) => {
-        const pos = polarToCartesian(node.angle, node.distance);
-        const isActive = hoveredId === node.id || centerPulse;
-        const isDimmed = hoveredId !== null && hoveredId !== node.id && !centerPulse;
+        <g>
+          <circle
+            cx={0}
+            cy={0}
+            r={radius}
+            fill="none"
+            stroke="rgba(255,255,255,0.06)"
+            strokeWidth={1}
+            opacity={ringOpacity}
+          />
+          <circle
+            cx={0}
+            cy={0}
+            r={radius}
+            fill="none"
+            stroke="#B5FF4D"
+            strokeWidth={1.5}
+            strokeDasharray={active ? "0" : `${radius * 0.25} ${radius * 0.75}`}
+            opacity={active ? 0.18 : 0.05}
+            style={{
+              filter: active ? "drop-shadow(0 0 4px rgba(181,255,77,0.25))" : "none",
+              transition: "all 0.5s cubic-bezier(0.16,1,0.3,1)",
+            }}
+          />
+        </g>
 
-        return (
-          <g key={node.id}>
-            <line
-              x1={0}
-              y1={0}
-              x2={pos.x}
-              y2={pos.y}
-              stroke={isActive ? node.color : `url(#grad-${node.id})`}
-              strokeWidth={isActive ? 2 : node.tier === "core" ? 1.5 : node.tier === "mid" ? 1 : 0.6}
-              strokeLinecap="round"
-              opacity={isDimmed ? 0.06 : isActive ? 0.85 : node.tier === "core" ? 0.4 : 0.2}
-              style={{
-                filter: isActive ? `drop-shadow(0 0 5px ${node.color})` : "none",
-                transition: "all 0.5s cubic-bezier(0.16,1,0.3,1)",
-              }}
-            />
-            {!reduce && !isActive && (
+        {nodes.map((node) => {
+          const pos = polarToCartesian(node.angle, radius);
+          const isActive = hoveredId === node.id || centerPulse;
+          const isDimmed = hoveredId !== null && hoveredId !== node.id && !centerPulse;
+
+          return (
+            <g key={node.id}>
               <line
                 x1={0}
                 y1={0}
                 x2={pos.x}
                 y2={pos.y}
-                stroke={node.color}
-                strokeWidth={3}
+                stroke={isActive ? node.color : `url(#grad-${node.id})`}
+                strokeWidth={isActive ? 2 : node.tier === "core" ? 1.5 : node.tier === "mid" ? 1 : 0.6}
                 strokeLinecap="round"
-                opacity={0}
-              >
-                <animate
-                  attributeName="opacity"
-                  values={`0;${node.tier === "core" ? 0.12 : 0.06};0`}
-                  dur={`${4 + ((node.angle * 7) % 3)}s`}
-                  repeatCount="indefinite"
-                  begin={`${(node.angle * 3) % 2}s`}
-                />
-              </line>
-            )}
-          </g>
+                opacity={isDimmed ? 0.04 : isActive ? 0.85 : node.tier === "core" ? 0.35 : 0.15}
+                style={{
+                  filter: isActive ? `drop-shadow(0 0 5px ${node.color})` : "none",
+                  transition: "all 0.5s cubic-bezier(0.16,1,0.3,1)",
+                }}
+              />
+              {!reduce && (
+                <line
+                  x1={0}
+                  y1={0}
+                  x2={pos.x}
+                  y2={pos.y}
+                  stroke={node.color}
+                  strokeWidth={isActive ? 3 : 3}
+                  strokeLinecap="round"
+                  opacity={isActive ? 0 : 0}
+                >
+                  <animate
+                    attributeName="opacity"
+                    values={`0;${isActive ? 0.18 : node.tier === "core" ? 0.12 : 0.06};0`}
+                    dur={`${3 + ((node.angle * 7) % 2)}s`}
+                    repeatCount="indefinite"
+                    begin={`${(node.angle * 3) % 2}s`}
+                  />
+                </line>
+              )}
+            </g>
+          );
+        })}
+      </svg>
+
+      {/* Counter-rotated nodes so labels stay upright while orbiting */}
+      {nodes.map((node) => {
+        const pos = polarToCartesian(node.angle, radius);
+        const originalIndex = NODES.findIndex((n) => n.id === node.id);
+
+        return (
+          <motion.div
+            key={node.id}
+            className="absolute"
+            style={{
+              left: `calc(50% + ${pos.x}px)`,
+              top: `calc(50% + ${pos.y}px)`,
+              transform: "translate(-50%, -50%)",
+            }}
+            animate={isPaused ? {} : { rotate: -360 }}
+            transition={{ duration: period, repeat: Infinity, ease: "linear" }}
+          >
+            <NetworkNode
+              node={node}
+              index={originalIndex}
+              isHovered={hoveredId === node.id}
+              anyHovered={anyHovered}
+              onHover={() => onHover(node.id)}
+              onLeave={onLeave}
+            />
+          </motion.div>
         );
       })}
-    </svg>
+    </motion.div>
   );
 }
 
@@ -171,42 +268,68 @@ function CoboCoreCenter({ isHovered }: { isHovered: boolean }) {
   return (
     <motion.div
       className="absolute left-1/2 top-1/2 z-20 flex items-center justify-center"
-      style={{ width: 64, height: 64, marginLeft: -32, marginTop: -32 }}
-      animate={reduce ? {} : { scale: isHovered ? 1.1 : [1, 1.03, 1] }}
+      style={{ width: 80, height: 80, marginLeft: -40, marginTop: -40 }}
+      animate={reduce ? {} : { scale: isHovered ? 1.12 : [1, 1.03, 1] }}
       transition={isHovered ? { duration: 0.4 } : { duration: 3, repeat: Infinity, ease: "easeInOut" }}
     >
+      {/* Permanent soft glow */}
+      <div
+        className="absolute inset-[-12px] rounded-full"
+        style={{
+          background: "radial-gradient(circle at 50% 50%, rgba(74,155,255,0.18) 0%, transparent 65%)",
+        }}
+      />
+
+      {/* Ripple rings */}
       <motion.div
-        className="absolute inset-[-4px] rounded-full"
+        className="absolute inset-[-8px] rounded-full"
+        style={{ border: "1px solid rgba(74,155,255,0.25)" }}
+        animate={reduce ? {} : { scale: [1, 1.6], opacity: [0.4, 0] }}
+        transition={{ duration: 2.5, repeat: Infinity, ease: "easeOut" }}
+      />
+      <motion.div
+        className="absolute inset-[-8px] rounded-full"
+        style={{ border: "1px solid rgba(74,155,255,0.18)" }}
+        animate={reduce ? {} : { scale: [1, 2], opacity: [0.25, 0] }}
+        transition={{ duration: 2.5, repeat: Infinity, ease: "easeOut", delay: 0.8 }}
+      />
+      <motion.div
+        className="absolute inset-[-8px] rounded-full"
         style={{ border: "1px solid rgba(74,155,255,0.12)" }}
-        animate={reduce ? {} : { scale: [1, 1.5], opacity: [0.25, 0] }}
-        transition={{ duration: 3, repeat: Infinity, ease: "easeOut" }}
+        animate={reduce ? {} : { scale: [1, 2.4], opacity: [0.15, 0] }}
+        transition={{ duration: 2.5, repeat: Infinity, ease: "easeOut", delay: 1.6 }}
       />
-      <motion.div
-        className="absolute inset-[-4px] rounded-full"
-        style={{ border: "1px solid rgba(74,155,255,0.08)" }}
-        animate={reduce ? {} : { scale: [1, 1.8], opacity: [0.15, 0] }}
-        transition={{ duration: 3, repeat: Infinity, ease: "easeOut", delay: 1.5 }}
-      />
+
       <div
         className="absolute inset-0 rounded-full"
-        style={{ background: "radial-gradient(circle at 50% 50%, rgba(74,155,255,0.2) 0%, transparent 70%)" }}
+        style={{ background: "radial-gradient(circle at 50% 50%, rgba(74,155,255,0.22) 0%, transparent 70%)" }}
       />
+
+      {/* Core icon + tight outer ring */}
       <div
-        className="relative flex h-12 w-12 items-center justify-center rounded-full"
-        style={{
-          background: "radial-gradient(circle at 35% 35%, rgba(74,155,255,0.25), rgba(30,100,200,0.1))",
-          backdropFilter: "blur(8px)",
-          border: "1px solid rgba(74,155,255,0.3)",
-          boxShadow: `
-            0 0 24px rgba(74,155,255,0.25),
-            inset 0 0 16px rgba(74,155,255,0.08),
-            inset 0 1px 1px rgba(255,255,255,0.15)
-          `,
-        }}
+        className="relative flex h-[60px] w-[60px] items-center justify-center rounded-full"
       >
-        <span className="text-[6px] font-mono font-bold uppercase tracking-[0.12em] text-[#6BA8FF]">
-          Cobo
-        </span>
+        {/* Outer thin ring with glow */}
+        <div
+          className="absolute rounded-full transition-all duration-300"
+          style={{
+            inset: -2,
+            border: `1px solid ${isHovered ? "#4A9BFF" : "rgba(74,155,255,0.55)"}`,
+            boxShadow: isHovered
+              ? "0 0 20px rgba(74,155,255,0.55), 0 0 34px rgba(74,155,255,0.28)"
+              : "0 0 12px rgba(74,155,255,0.35)",
+          }}
+        />
+
+        <img
+          src="/logos/agentcfo-logo-pack/node-svg/01-cobo.svg"
+          alt="Cobo"
+          className="h-full w-full object-contain"
+          style={{
+            filter: isHovered ? "drop-shadow(0 0 12px rgba(74,155,255,0.8))" : "none",
+            transition: "filter 0.3s ease",
+          }}
+        />
       </div>
     </motion.div>
   );
@@ -228,76 +351,75 @@ function NetworkNode({
   onLeave: () => void;
   index: number;
 }) {
-  const pos = polarToCartesian(node.angle, node.distance);
   const size = TIER_SIZE[node.tier];
   const glowSize = TIER_GLOW[node.tier];
   const isDimmed = anyHovered && !isHovered;
+  const reduce = useReducedMotion();
 
   return (
     <motion.div
-      className="absolute z-10 flex flex-col items-center"
-      style={{
-        left: `calc(50% + ${pos.x}px)`,
-        top: `calc(50% + ${pos.y}px)`,
-        transform: "translate(-50%, -50%)",
-      }}
+      className="relative flex flex-col items-center"
       initial={{ opacity: 0, scale: 0.3 }}
-      animate={{ opacity: isDimmed ? 0.2 : 1, scale: 1 }}
+      animate={{ opacity: isDimmed ? 0.4 : 1, scale: 1 }}
       transition={{ duration: 0.5, delay: index * 0.08, ease: [0.16, 1, 0.3, 1] }}
       onMouseEnter={onHover}
       onMouseLeave={onLeave}
     >
-      {/* Glow behind node */}
+      {/* Back glow */}
       <motion.div
         className="absolute rounded-full"
         style={{
-          width: size + glowSize * 2,
-          height: size + glowSize * 2,
-          marginLeft: -(size + glowSize * 2) / 2,
-          marginTop: -(size + glowSize * 2) / 2,
-          background: `radial-gradient(circle at 50% 50%, ${node.color}25, transparent 70%)`,
-          opacity: isHovered ? 1 : 0.35,
+          width: size + glowSize * 2.4,
+          height: size + glowSize * 2.4,
+          marginLeft: -(size + glowSize * 2.4) / 2,
+          marginTop: -(size + glowSize * 2.4) / 2,
+          background: `radial-gradient(circle at 50% 50%, ${node.color}22, transparent 70%)`,
+          opacity: isHovered ? 0.85 : 0.25,
         }}
-        animate={isHovered ? { scale: 1.2 } : { scale: [1, 1.12, 1] }}
+        animate={isHovered ? { scale: 1.15 } : { scale: [1, 1.06, 1], opacity: isDimmed ? 0.25 : 0.4 }}
         transition={isHovered ? { duration: 0.3 } : { duration: 3 + index * 0.5, repeat: Infinity, ease: "easeInOut" }}
       />
 
-      {/* Node circle */}
+      {/* Node: icon fills the circle + tight outer ring with glow */}
       <motion.div
         className="relative flex items-center justify-center rounded-full cursor-pointer"
-        style={{
-          width: size,
-          height: size,
-          background: isHovered
-            ? `radial-gradient(circle at 35% 35%, ${node.color}35, ${node.color}10)`
-            : `radial-gradient(circle at 35% 35%, ${node.color}15, ${node.color}03)`,
-          border: `1.5px solid ${isHovered ? node.color : `${node.color}35`}`,
-          boxShadow: isHovered
-            ? `0 0 ${glowSize}px ${node.color}40, inset 0 1px 1px rgba(255,255,255,0.15)`
-            : `inset 0 1px 1px rgba(255,255,255,0.10)`,
-          opacity: isDimmed ? 0.2 : 1,
-        }}
-        whileHover={{ scale: 1.15 }}
+        style={{ width: size, height: size }}
+        whileHover={{ scale: 1.1 }}
         transition={{ type: "spring", stiffness: 400, damping: 20 }}
       >
+        {/* Outer thin ring — sits very close to the icon edge */}
         <div
-          className="rounded-full transition-all duration-300"
+          className="absolute rounded-full transition-all duration-300"
           style={{
-            width: size * 0.32,
-            height: size * 0.32,
-            background: isHovered ? node.color : `${node.color}70`,
-            boxShadow: isHovered ? `0 0 6px ${node.color}` : "none",
+            inset: -2,
+            border: `1px solid ${isHovered ? node.color : `${node.color}50`}`,
+            boxShadow: isHovered
+              ? `0 0 ${glowSize}px ${node.color}45, 0 0 ${glowSize * 1.4}px ${node.color}25`
+              : `0 0 ${glowSize * 0.5}px ${node.color}30`,
+            opacity: isDimmed ? 0.4 : 1,
+          }}
+        />
+
+        {/* Icon fills the inner circle */}
+        <img
+          src={node.logo}
+          alt={node.shortLabel}
+          className="h-full w-full object-contain"
+          style={{
+            filter: isHovered ? `drop-shadow(0 0 10px ${node.color})` : "none",
+            transition: "filter 0.3s ease",
+            opacity: isDimmed ? 0.45 : 1,
           }}
         />
       </motion.div>
 
-      {/* Label */}
+      {/* Label — bright enough to read on dark background */}
       <span
-        className="mt-1.5 text-[7px] font-mono uppercase tracking-[0.1em] whitespace-nowrap transition-all duration-400"
+        className="mt-2 text-[6px] font-mono uppercase tracking-[0.12em] whitespace-nowrap transition-all duration-400"
         style={{
-          color: isHovered ? node.color : `${node.color}60`,
-          opacity: isDimmed ? 0.12 : isHovered ? 1 : 0.45,
-          textShadow: isHovered ? `0 0 8px ${node.color}50` : "none",
+          color: isHovered ? node.color : `${node.color}CC`,
+          opacity: isDimmed ? 0.5 : isHovered ? 1 : 0.85,
+          textShadow: isHovered ? `0 0 10px ${node.color}80` : `0 0 6px ${node.color}40`,
         }}
       >
         {node.shortLabel}
@@ -315,9 +437,9 @@ function NetworkNode({
           <div
             className="rounded-lg border p-2 text-center"
             style={{
-              background: "linear-gradient(135deg, rgba(13,13,13,0.97), rgba(18,18,18,0.94))",
+              background: "linear-gradient(135deg, rgba(10,10,10,0.98), rgba(18,18,18,0.96))",
               borderColor: `${node.color}35`,
-              boxShadow: `0 6px 24px rgba(0,0,0,0.4), 0 0 16px ${node.color}12`,
+              boxShadow: `0 6px 24px rgba(0,0,0,0.5), 0 0 16px ${node.color}12`,
             }}
           >
             <div className="text-[8px] font-bold" style={{ color: node.color }}>
@@ -361,36 +483,44 @@ export function Web3NodeCloud() {
     return () => window.removeEventListener("mousemove", onMove);
   }, []);
 
+  const grouped = useMemo(() => {
+    return NODES.reduce(
+      (acc, node) => {
+        acc[node.tier].push(node);
+        return acc;
+      },
+      { core: [] as NodeData[], mid: [] as NodeData[], tool: [] as NodeData[] }
+    );
+  }, []);
+
   return (
     <section
       ref={containerRef}
-      className="relative w-full overflow-hidden rounded-2xl border border-white/25 p-6 lg:p-8 backdrop-blur-md shadow-2xl"
-      style={{
-        background: "linear-gradient(180deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.01) 50%, rgba(255,255,255,0.02) 100%)",
-      }}
+      className="relative w-full overflow-hidden rounded-2xl border border-white/10 bg-[#0D0D0D]/90 p-6 lg:p-8 shadow-2xl"
     >
-      {/* Glossy overlay — matches HolographicCard */}
+      {/* Subtle top sheen — low opacity so the card stays dark */}
       <div
-        className="absolute inset-0 rounded-2xl bg-gradient-to-tr from-transparent via-[#B5FF4D]/[0.06] to-transparent pointer-events-none opacity-60"
+        className="absolute inset-x-0 top-0 h-px pointer-events-none"
+        style={{ background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.12), transparent)" }}
         aria-hidden="true"
       />
 
-      {/* Background corner glows — matches CardSplitter */}
+      {/* Soft corner glows — matches CardSplitter depth language */}
       <div
         aria-hidden
-        className="pointer-events-none absolute -top-20 -right-20 w-64 h-64 rounded-full opacity-35"
-        style={{ background: "radial-gradient(circle, rgba(74,155,142,0.15), transparent 70%)" }}
+        className="pointer-events-none absolute -top-20 -right-20 w-64 h-64 rounded-full opacity-25"
+        style={{ background: "radial-gradient(circle, rgba(74,155,142,0.12), transparent 70%)" }}
       />
       <div
         aria-hidden
-        className="pointer-events-none absolute -bottom-16 -left-16 w-48 h-48 rounded-full opacity-30"
-        style={{ background: "radial-gradient(circle, rgba(0,86,210,0.12), transparent 70%)" }}
+        className="pointer-events-none absolute -bottom-16 -left-16 w-48 h-48 rounded-full opacity-20"
+        style={{ background: "radial-gradient(circle, rgba(0,86,210,0.10), transparent 70%)" }}
       />
 
-      <div className="relative z-10 flex flex-col lg:flex-row items-center gap-8 lg:gap-10">
-        {/* Left: Copy */}
+      <div className="relative z-10 flex flex-col lg:flex-row items-center gap-6 lg:gap-8">
+        {/* Left: Copy — sits above the orbit canvas so satellites pass behind it */}
         <motion.div
-          className="flex-shrink-0 lg:w-[300px] xl:w-[340px] space-y-3 text-center lg:text-left"
+          className="relative z-30 flex-shrink-0 lg:w-[180px] flex flex-col justify-center space-y-3 text-center lg:text-left"
           initial={reduce ? false : { opacity: 0, x: -16 }}
           whileInView={{ opacity: 1, x: 0 }}
           viewport={{ once: true, amount: 0.5 }}
@@ -402,25 +532,53 @@ export function Web3NodeCloud() {
           <h2 className="text-xl font-extrabold tracking-tight text-white md:text-2xl">
             Web3 Trusted Infrastructure
           </h2>
-          <p className="text-xs leading-relaxed text-white/45">
+          <p className="text-xs leading-relaxed text-white/45 italic">
             AgentCFO weaves multi-sig suites, automation modules and Cobo HSM
             into a closed-loop trusted capital allocation network.
           </p>
-          <p className="text-[9px] text-white/50 font-mono">
+          <p className="text-[9px] text-white/50 font-mono italic">
             Hover nodes to explore protocols…
           </p>
         </motion.div>
 
-        {/* Right: Constellation — compact, fits in remaining space */}
-        <div className="relative flex-1 w-full" style={{ height: 340, maxWidth: 400 }}>
+        {/* Right: Constellation — kept below the left copy layer */}
+        <div className="relative z-0" style={{ height: 360, width: 360 }}>
           {/* Parallax layer */}
           <motion.div
             className="absolute inset-0"
             animate={{ x: mousePos.x, y: mousePos.y }}
             transition={{ type: "spring", stiffness: 100, damping: 30 }}
           >
-            {/* Connection lines */}
-            <ConnectionLines hoveredId={hoveredId} centerPulse={centerHovered} />
+            <NebulaParticles count={12} />
+
+            {/* Tiered orbital rings */}
+            <OrbitRing
+              tier="core"
+              nodes={grouped.core}
+              hoveredId={hoveredId}
+              centerPulse={centerHovered}
+              anyHovered={anyHovered}
+              onHover={setHoveredId}
+              onLeave={() => setHoveredId(null)}
+            />
+            <OrbitRing
+              tier="mid"
+              nodes={grouped.mid}
+              hoveredId={hoveredId}
+              centerPulse={centerHovered}
+              anyHovered={anyHovered}
+              onHover={setHoveredId}
+              onLeave={() => setHoveredId(null)}
+            />
+            <OrbitRing
+              tier="tool"
+              nodes={grouped.tool}
+              hoveredId={hoveredId}
+              centerPulse={centerHovered}
+              anyHovered={anyHovered}
+              onHover={setHoveredId}
+              onLeave={() => setHoveredId(null)}
+            />
 
             {/* Cobo Core center */}
             <div
@@ -430,19 +588,6 @@ export function Web3NodeCloud() {
             >
               <CoboCoreCenter isHovered={centerHovered} />
             </div>
-
-            {/* Network nodes — index-based stagger */}
-            {NODES.map((node, i) => (
-              <NetworkNode
-                key={node.id}
-                node={node}
-                index={i}
-                isHovered={hoveredId === node.id}
-                anyHovered={anyHovered}
-                onHover={() => setHoveredId(node.id)}
-                onLeave={() => setHoveredId(null)}
-              />
-            ))}
           </motion.div>
         </div>
       </div>
