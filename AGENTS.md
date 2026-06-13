@@ -25,6 +25,8 @@ Contribution Records → Payment Plan → Risk Check → Human Approval
 
 契约真相：`app/models.py` · `app/routers/payments.py` · `tests/test_mvp_flow.py`
 
+Agent Hub 聊天（MiniMax 代理）：`POST /api/agent/chat` · `app/routers/agent.py` · `app/services/agent_chat.py` · `tests/test_agent_chat.py` · 前端 `frontend/lib/api/agent.ts`。Key 仅在后端 `MINIMAX_API_KEY`，不进入前端 env。
+
 ## 3. 仓库地图
 
 ```text
@@ -62,6 +64,11 @@ agent-cfo/
 # 后端
 uvicorn app.main:app --reload --port 8000
 pytest
+
+# Agent Hub 聊天冒烟（需 MINIMAX_API_KEY）
+curl -X POST http://127.0.0.1:8000/api/agent/chat \
+  -H "Content-Type: application/json" \
+  -d "{\"messages\":[{\"role\":\"user\",\"content\":\"hi\"}],\"lang\":\"zh\"}"
 
 # 前端（在 frontend/ 下）
 PORT=3100 pnpm dev

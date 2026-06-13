@@ -55,6 +55,7 @@ Contribution Records → AI Payment Plan → Risk Check → Human Approval
 | 功能                  | 说明                             |
 | ------------------- | ------------------------------ |
 | **AI Payment Plan** | 根据贡献记录生成结构化付款计划和付款原因           |
+| **Agent Hub Chat**  | Console Agent 页对话，经后端代理 MiniMax（`POST /api/agent/chat`） |
 | **Risk Check**      | 检查预算、白名单、单笔限额、token 和重复付款      |
 | **Human Approval**  | 付款执行前必须有人类确认                   |
 | **CAW Execution**   | 真实付款路径必须经过 Cobo Agentic Wallet |
@@ -229,6 +230,7 @@ git log --oneline --max-count=3
 | 生产 CORS | `CORS_ALLOWED_ORIGINS=https://agentcfo-frontend.vercel.app` |
 | CAW real mode | 需显式设置 `CAW_ADAPTER_MODE=real` + `CAW_ENABLE_TRANSFERS=true` 及全套 CAW env vars |
 | OpenAI planner | `PAYMENT_PLANNER_MODE=openai` + `OPENAI_API_KEY`（默认 `mock`） |
+| Agent Hub 聊天 | `MINIMAX_API_KEY` + 可选 `MINIMAX_BASE_URL` / `MINIMAX_MODEL`（默认 `MiniMax-M2.5-highspeed`） |
 | 持久化 | 本地默认 SQLite `agentcfo_demo.sqlite3`；Render 需挂载 persistent disk |
 
 完整说明：
@@ -317,9 +319,10 @@ Frontend (Next.js)
 | `/api/execute-payment`              | POST   | 人工确认后，通过 CAW 执行可付款项         |
 | `/api/audit-report/{auditReportId}` | GET    | 返回最终 Audit Report           |
 | `/api/caw-status/{cawRequestId}`    | GET    | 返回 mock/CAW 请求状态            |
+| `/api/agent/chat`                   | POST   | Agent Hub 对话（MiniMax 代理，Key 仅在后端） |
 
 
-契约真相源：`app/models.py` · `app/routers/payments.py` · `tests/test_mvp_flow.py`
+契约真相源：`app/models.py` · `app/routers/payments.py` · `app/routers/agent.py` · `tests/test_mvp_flow.py` · `tests/test_agent_chat.py`
 
 <details>
 <summary>curl 验证示例（本地 mock）</summary>

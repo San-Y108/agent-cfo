@@ -70,7 +70,7 @@ README 合并记录：[`docs/plans/README-merge-plan.md`](docs/plans/README-merg
 - `app/routers/payments.py`
 - `tests/test_mvp_flow.py`
 
-P0 端点（4+1）：
+P0 端点（4+1）+ Agent 聊天：
 
 | 方法 | 路径 |
 |---|---|
@@ -79,6 +79,9 @@ P0 端点（4+1）：
 | POST | `/api/execute-payment` |
 | GET | `/api/audit-report/{auditReportId}` |
 | GET | `/api/caw-status/{cawRequestId}` |
+| POST | `/api/agent/chat` |
+
+Agent Hub 聊天经后端代理 [MiniMax OpenAI 兼容 API](https://platform.minimaxi.com/docs/guides/models-intro)。Render / 本地配置 `MINIMAX_API_KEY`（可选 `MINIMAX_BASE_URL`、`MINIMAX_MODEL`）。**不依赖** Treasury mock/real 模式。
 
 前端 adapter 镜像：`frontend/lib/api/*` · 禁止自行发明 endpoint / field / wrapper。
 
