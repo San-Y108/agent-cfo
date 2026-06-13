@@ -19,6 +19,8 @@
 console/
   agent-hub.tsx           Agent 中心 + 聊天
   agent-character.tsx     Agent 角色视觉
+  agent-cfo-mascot.tsx    主吉祥物 + 聊天头像
+  module-hero-slot.tsx    模块 Hero 区（grid 嵌入吉祥物，非贴纸）
   edge-capsule.tsx        左右边缘胶囊导航
   module-panel.tsx        分屏面板壳
   navbar.tsx              顶部 pill 导航

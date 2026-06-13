@@ -26,21 +26,29 @@
 |---|---|
 | 分支 | `main` |
 | 产品入口 | `/console`（Agent Hub 默认首页） |
-| 已完成 | Landing ✅ · Phase 7 Console **66/66** ✅ · Treasury **real mode API 接入** ✅ |
-| 进行中 | Render 部署 + Vercel real env |
-| 阻塞项 | Render backend URL（线上） |
+| 已完成 | Landing ✅ · Phase 7 Console **66/66** ✅ · Treasury **real mode API 接入** ✅ · Console 精修 polish pass ✅ |
+| 进行中 | **Phase 8** — Console 五模块视觉升级 + 全链路联调（逐模块 review） |
+| 阻塞项 | Render backend URL 线上 env（Treasury real 收尾）；M1 Agent 待开工 |
 
 ---
 
-## 2. 最新 handoff（必读）
+## 2. 最新 handoff / 当前计划（必读）
 
-**Phase 7.3–7.4 Console Stage + 视觉统一** — `docs/plans/console-stage-layout-plan.md`
+**Phase 8 — 五模块视觉升级 + 联调**（逐模块审查，一个打磨好再进下一个）
 
-要点：
-- 四模块共用 `ModuleStageLayout`（左轨 | 舞台 | 右轨 | DetailDeck）
-- Command Deck primitive：`ConsoleTelemetryGrid` · `ConsolePanelHeader` · `ConsoleGhostButton`
-- 组装逻辑：`components/console/stages/*-stage.tsx`；`app/console/*/page.tsx` 仅 wiring
-- 对齐报告：`docs/reports/console-module-alignment-audit-2026-06-13.md`
+| 文档 | 路径 |
+|---|---|
+| **Plan** | `docs/plans/console-module-visual-upgrade-plan.md` |
+| **Checklist** | `docs/plans/console-module-visual-upgrade-checklist.md` |
+| **联调** | `backend-integration.md` · `docs/backend/TESTING.md` · `docs/backend/CAW_ADAPTER.md` |
+| **参考图** | `assets/images/console/references/ref-*.png` |
+
+**模块顺序**：Agent → Treasury → Wallets → Analytics → Policy  
+**Review 门**：每模块用户 sign-off 后才进入下一模块。
+
+**Phase 0 已完成**：旧吉祥物 plan 删除 · 贴纸方案回滚 · 部分亮色对比度修复。
+
+**Console Stage 历史（Phase 7.3–7.4）** — `docs/plans/console-stage-layout-plan.md` · `docs/reports/console-module-alignment-audit-2026-06-13.md`
 
 **设计思想源** — `docs/reports/console-design-report-2026-06-13.md`
 

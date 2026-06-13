@@ -112,6 +112,18 @@
 
 **原则**：规范跟着代码走；chat 里口头约定不算数，必须写入文档。
 
+### 2.3 MCP 资源共享 — Chrome DevTools
+
+> Chrome DevTools MCP 使用单一 Chrome profile（`~/.cache/chrome-devtools-mcp/chrome-profile`）。**多个 Claude Code Session 不能同时操作同一个浏览器实例**；若冲突会报 "browser already running"。
+
+| 场景 | 规则 |
+|---|---|
+| 本 Session 需要浏览器验证 | 用完后 **主动释放**：`close_page` 关闭页面；如不再使用浏览器，关闭浏览器实例。 |
+| 本 Session 遇到浏览器被占用 | **停止争夺**，先推进不需要浏览器的任务，或等占用方释放。 |
+| 需要并行浏览器验证 | 当前 MCP 工具不支持独立 `userDataDir`，不要强行双开；改为串行或由同一 Agent统一截图。 |
+
+**Why**：避免 Agent 之间互相踢掉浏览器导致验证中断或截图丢失。
+
 ---
 
 ## 3. 项目定位
@@ -214,7 +226,7 @@ docs/
   - 对齐报告：`docs/reports/console-module-alignment-audit-2026-06-13.md`
 - ⚠️ **线上 mock mode**（`NEXT_PUBLIC_DEMO_MODE=mock`）
 - ❌ **real mode 线上** — Treasury 已接 API（`console-state`）；Vercel 仍为 mock；Render URL 待填
-- 🔜 **下一主任务**：本地 real 冒烟 → Render URL → Vercel env 切换
+- 🔜 **下一主任务**：Phase 8 — 五模块视觉升级 + 全链路联调（见 `docs/plans/console-module-visual-upgrade-plan.md`）；逐模块 review：Agent → Treasury → …
 
 > 进度细节以 `docs/plans/console-stage-layout-checklist.md` 为准。Phase 完成后由 Agent 更新本节并写 HANDOFF。
 
