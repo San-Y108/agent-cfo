@@ -24,6 +24,18 @@ assets/images/readme/
 
 归类来源：队友投递 [`inbox/`](../../inbox/) → 复制/重命名到本目录 → 更新 README → 删除 `inbox/` 原文件。
 
+## Console 设计资产
+
+模块吉祥物与多模块聚合参考页见 **[`console/README.md`](console/README.md)**：
+
+```text
+assets/images/console/
+├── module-mascots/     # 五模块页 3D 吉祥物（Agent / Treasury / Wallets / Analytics / Policy）
+└── references/         # 四张多模块混排参考页（非单页截图）
+```
+
+运行时镜像：`frontend/public/console/mascots/modules/*.png`
+
 ## 其他截图（可选）
 
 - Demo 流程分步图（低优先级）

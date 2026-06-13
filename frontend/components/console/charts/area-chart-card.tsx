@@ -85,7 +85,7 @@ export function AreaChartCard({ lang, title, hint, description, embedded = false
         </div>
       )}
 
-      <div ref={wrapperRef} className="relative h-72 w-full">
+      <div ref={wrapperRef} className="relative h-72 w-full [&_.recharts-wrapper]:focus:outline-none [&_svg]:focus:outline-none">
         <div className="absolute inset-0 opacity-[0.02] pointer-events-none">
           <GridBackground />
         </div>

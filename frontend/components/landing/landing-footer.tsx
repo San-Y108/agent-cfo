@@ -191,14 +191,14 @@ export function LandingFooter() {
             <div className="flex items-center gap-3">
               <img src="/logo.png" alt="AgentCFO" className="h-10 w-10" style={{ filter: "drop-shadow(0 0 8px rgba(181,255,77,0.6))" }} />
               <span
-                className="text-[10px] font-mono uppercase tracking-[0.2em] text-white/40"
+                className="text-[10px] font-mono uppercase tracking-[0.2em] text-white/65"
                 style={{ fontFamily: "'Courier New', Courier, monospace" }}
               >
                 v0.1 · 2026
               </span>
             </div>
             <p
-              className="mt-4 max-w-sm text-sm italic leading-relaxed text-white/80"
+              className="mt-4 max-w-sm text-sm italic leading-relaxed text-white/85"
               style={{ fontFamily: "Inter, sans-serif" }}
             >
               {t("footer.brandDesc")}
@@ -228,7 +228,7 @@ export function LandingFooter() {
 
             {/* Trust microcopy */}
             <div
-              className="mt-6 flex flex-wrap items-center gap-3 text-[10px] text-white/35"
+              className="mt-6 flex flex-wrap items-center gap-3 text-[10px] text-white/60"
               style={{ fontFamily: "'Courier New', Courier, monospace" }}
             >
               <span>{t("footer.trust.testnet")}</span>
@@ -493,17 +493,17 @@ export function LandingFooter() {
         {/* Bottom info row */}
         <div className="flex flex-col items-center justify-between gap-3 border-t border-white/[0.10] py-6 sm:flex-row">
           <div
-            className="flex flex-wrap items-center gap-2 text-[11px] text-white/40"
+            className="flex flex-wrap items-center gap-2 text-[11px] text-white/60"
             style={{ fontFamily: "'Courier New', Courier, monospace" }}
           >
             <span>{t("footer.copyright")}</span>
-            <span className="text-white/15">·</span>
+            <span className="text-white/25">·</span>
             <span>{t("footer.hackathon")}</span>
-            <span className="text-white/15">·</span>
+            <span className="text-white/25">·</span>
             <span>{t("footer.mockNote")}</span>
           </div>
           <div
-            className="flex items-center gap-2 text-[11px] text-white/40"
+            className="flex items-center gap-2 text-[11px] text-white/60"
             style={{ fontFamily: "'Courier New', Courier, monospace" }}
           >
             <span className="inline-flex h-1.5 w-1.5 animate-pulse rounded-full bg-[#B5FF4D]" />

@@ -1,0 +1,1 @@
+我们的核心边界很清晰：Agent 负责规划和解释，Risk Engine 做确定性风控，Human Approval 保留确认权，CAW 负责受控执行，Audit Report 串联全链路证据。

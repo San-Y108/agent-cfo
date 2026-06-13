@@ -1,0 +1,24 @@
+{
+  "project": "agentcfo-pitch",
+  "generated_at": "2026-06-13T00:00:00Z",
+  "deck_rendering": "vector-illustration",
+  "deck_palette": "cool-corporate",
+  "color_scheme": {
+    "primary": "#22D3EE",
+    "secondary": "#0B1220",
+    "accent": "#8B5CF6"
+  },
+  "items": [
+    {
+      "filename": "cover_bg.jpg",
+      "purpose": "Cover decorative atmosphere (Slide 01)",
+      "page_role": "hero_page",
+      "text_policy": "none",
+      "aspect_ratio": "16:9",
+      "image_size": "2K",
+      "prompt": "Atmospheric abstract fintech Web3 backdrop for a presentation cover. Deep navy void #0B1220 with soft cyan #22D3EE and violet #8B5CF6 light trails, subtle blockchain node mesh, flowing digital treasury waves, no text, no logos, no people, cinematic depth, clean vector-illustration feel, cool-corporate palette, generous negative space on the left third for title overlay.",
+      "alt_text": "Abstract dark fintech Web3 background with cyan and violet light trails",
+      "status": "Pending"
+    }
+  ]
+}

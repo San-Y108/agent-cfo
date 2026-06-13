@@ -8,3 +8,6 @@ __pycache__/
 *.db
 cobo-agentic-wallet-backend-quickstart.md
 
+# Claude Code worktree artifacts
+.claude/worktrees/
+Untitled

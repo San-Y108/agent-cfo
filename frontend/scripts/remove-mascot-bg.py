@@ -7,7 +7,7 @@ import numpy as np
 from PIL import Image
 
 ROOT = Path(__file__).resolve().parents[2]
-SRC = ROOT / "inbox" / "agent-cfo.png"
+SRC = ROOT / "inbox" / "3d-assets" / "agent-cfo-mascot-source.png"
 OUT = ROOT / "frontend" / "public" / "console" / "mascots" / "agent-cfo-mascot.png"
 
 

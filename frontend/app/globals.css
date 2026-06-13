@@ -270,6 +270,25 @@ body {
   background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
 }
 
+/* Console form field — shared input/select dialect across modules */
+.console-field {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-field);
+  background-color: color-mix(in srgb, var(--surface-2) 40%, transparent);
+  padding: 0.5rem 0.75rem;
+  font-size: 0.75rem;
+  line-height: 1.25;
+  color: var(--fg);
+  outline: none;
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+.console-field::placeholder {
+  color: var(--fg-subtle);
+}
+.console-field:focus {
+  background-color: color-mix(in srgb, var(--surface-2) 60%, transparent);
+}
+
 /* Metric number font */
 .font-mono-numbers {
   font-variant-numeric: tabular-nums;

@@ -1,6 +1,8 @@
 # AgentCFO Frontend — Checklist
 
-> **更新 2026-06-13**：入口规范见 `CLAUDE.md` / `HANDOFF.md`。Console Phase 6/7 细粒度进度见 `docs/plans/console-upgrade-checklist.md`。
+> **更新 2026-06-13**：入口规范见 `CLAUDE.md` / `HANDOFF.md`。  
+> **当前主任务（Phase 8）**：[`docs/plans/console-module-visual-upgrade-plan.md`](docs/plans/console-module-visual-upgrade-plan.md) + [`console-module-visual-upgrade-checklist.md`](docs/plans/console-module-visual-upgrade-checklist.md)（逐模块 review）。  
+> Console Phase 7 细粒度进度见 `docs/plans/console-stage-layout-checklist.md`。
 > 来源：项目规划文档 + 当前 `frontend/` 实现状态。
 > 状态标记：`[x]` 已完成 · `[~]` 部分完成 / 进行中 · `[ ]` 未完成。
 > 本清单只覆盖 **frontend** 范围。产品入口已从 `/demo` 迁移至 `/console`。

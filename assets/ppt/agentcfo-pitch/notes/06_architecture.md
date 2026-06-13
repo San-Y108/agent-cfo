@@ -1,0 +1,1 @@
+架构分层：前端、FastAPI 后端、LLM Planner、Risk Engine、Human Gate、CAW Adapter、Audit Report。每层职责单一，LLM 不是最终授权层。

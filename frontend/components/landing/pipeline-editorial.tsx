@@ -75,7 +75,7 @@ function CapabilityItem({ cap, accent }: { cap: Capability; accent: string }) {
       </div>
       <div>
         <div className="text-sm font-medium text-white/90">{cap.label}</div>
-        <div className="mt-0.5 text-xs text-white/50">{cap.desc}</div>
+        <div className="mt-0.5 text-xs text-white/70">{cap.desc}</div>
       </div>
     </div>
   );
@@ -510,7 +510,7 @@ function PipelineIntro({ stages, lang }: { stages: Stage[]; lang: "en" | "zh" })
         </h2>
 
         <p
-          className="intro-animate mx-auto mt-6 max-w-xl text-base italic leading-relaxed text-white/60 sm:text-lg"
+          className="intro-animate mx-auto mt-6 max-w-xl text-base italic leading-relaxed text-white/80 sm:text-lg"
           style={{
             fontFamily: "Inter, sans-serif",
             opacity: prefersReducedMotion ? 1 : 0,
@@ -550,7 +550,7 @@ function PipelineIntro({ stages, lang }: { stages: Stage[]; lang: "en" | "zh" })
 
 function PipelineMascots() {
   return (
-    <div className="hidden flex-col items-center justify-center py-8 lg:flex">
+    <div className="hidden flex-col items-center justify-center py-12 lg:flex">
       <div className="flex items-end justify-center gap-4">
         <motion.img
           src="/console/mascots/agent-pipeline.png"

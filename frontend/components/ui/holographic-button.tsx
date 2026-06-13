@@ -51,6 +51,8 @@ export interface HolographicButtonProps {
   icon?: React.ReactNode;
   glowOnHover?: boolean;
   tilt3d?: boolean;
+  /** Light 模式填充 lime 底黑字；dark 模式保留 variant 颜色。用于主 CTA。 */
+  primary?: boolean;
   className?: string;
   disabled?: boolean;
   onClick?: React.MouseEventHandler<HTMLButtonElement>;
@@ -66,6 +68,7 @@ export function HolographicButton({
   icon,
   glowOnHover = true,
   tilt3d = false,
+  primary = false,
   className,
   disabled,
   onClick,
@@ -100,11 +103,16 @@ export function HolographicButton({
       whileTap={!disabled ? { scale: 0.98 } : {}}
       className={cn(
         "relative inline-flex items-center justify-center rounded-control font-semibold backdrop-blur-sm transition-colors",
-        "bg-white/[0.03] hover:bg-white/[0.06]",
         "border",
-        c.border,
-        c.text,
         sizeClass,
+        primary
+          ? // 主 CTA：light 填充 lime 底黑字，dark 保持 variant 风格
+            "bg-accent text-accent-fg hover:bg-accent/90 border-transparent dark:bg-white/[0.03] dark:text-hud-lime dark:border-hud-lime/30 dark:hover:bg-white/[0.06]"
+          : cn(
+              "bg-surface hover:bg-surface-hover dark:bg-surface-2/40 dark:hover:bg-surface-hover",
+              c.border,
+              c.text
+            ),
         disabled && "opacity-40 cursor-not-allowed",
         className
       )}
@@ -161,7 +169,7 @@ export function HolographicLink({
       whileTap={{ scale: 0.98 }}
       className={cn(
         "relative inline-flex items-center justify-center rounded-control font-semibold backdrop-blur-sm transition-colors",
-        "bg-white/[0.03] hover:bg-white/[0.06]",
+        "bg-surface hover:bg-surface-hover dark:bg-surface-2/40 dark:hover:bg-surface-hover",
         "border",
         c.border,
         c.text,

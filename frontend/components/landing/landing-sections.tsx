@@ -50,6 +50,16 @@ export function LandingSections() {
         <GuardrailsCTA />
       </section>
 
+      {/* Soft transition from guardrails CTA into team constellation */}
+      <div
+        className="w-full h-16 pointer-events-none"
+        style={{
+          background:
+            "linear-gradient(to bottom, rgba(10,10,10,1) 0%, rgba(13,13,13,0.85) 50%, rgba(13,13,13,1) 100%)",
+        }}
+        aria-hidden="true"
+      />
+
       {/* Built-by team */}
       <section id="team" className="w-full">
         <TeamShowcase />
