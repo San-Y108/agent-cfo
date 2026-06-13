@@ -261,3 +261,36 @@ export interface TreasuryBudgetPartition {
   partitions: Array<Record<string, any>>;
   safetyNotes: string[];
 }
+
+// ---- Agent chat (mirrors app/models.py AgentChat*) ----
+
+export interface AgentChatMessage {
+  role: "user" | "assistant";
+  content: string;
+}
+
+export interface AgentChatContext {
+  monthlyBudget?: number;
+  singlePaymentLimit?: number;
+  allowedToken?: string;
+  whitelist?: string[];
+  recordCount?: number;
+  planItemCount?: number;
+  planSummary?: string;
+  flowStep?: number;
+}
+
+export interface AgentChatRequest {
+  messages: AgentChatMessage[];
+  lang?: "en" | "zh";
+  context?: AgentChatContext;
+}
+
+export interface AgentChatResponseMessage {
+  role: "assistant";
+  content: string;
+}
+
+export interface AgentChatResponse {
+  message: AgentChatResponseMessage;
+}

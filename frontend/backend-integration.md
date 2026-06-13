@@ -33,6 +33,9 @@ http://localhost:3100
 | POST | `/api/risk-check` | `risk.ts` `runRiskCheck` | `RiskCheckRequest` → `RiskCheckResult` |
 | POST | `/api/execute-payment` | `caw.ts` `executePayment` | `ExecutePaymentRequest` → `PaymentExecutionResult` |
 | GET | `/api/audit-report/{auditReportId}` | `audit.ts` `getAuditReport` | → `AuditReport` |
+| POST | `/api/agent/chat` | `agent.ts` `agentChat` | `AgentChatRequest` → `AgentChatResponse` |
+
+Agent Hub 聊天走 `/api/agent/chat`，**不依赖** `NEXT_PUBLIC_DEMO_MODE`（Treasury 仍可按 mock/real 切换）。后端需配置 `MINIMAX_API_KEY`。
 
 调用链：`lib/workflow/run-demo-flow.ts` → `runDemoFlow()`  
 顺序：`payment-plan → risk-check → execute-payment → audit-report`
@@ -57,12 +60,13 @@ http://localhost:3100
 - ✅ Treasury API 错误横幅 + `flowError` 状态
 - ✅ Console Navbar：**EN/中** 语言切换 + Mock/Real 模式徽章
 - ✅ 后端 CORS 默认含 `localhost:3100` 与 Vercel 生产域
+- ✅ **Agent Hub Chat** — `agent-hub.tsx` → `POST /api/agent/chat`（MiniMax 代理，Key 仅在后端）
 
 ## 6. 未完成
 
 - ❌ Render backend URL 未知（线上 real mode）
 - ❌ 线上 Vercel env 仍为 mock；需设 `NEXT_PUBLIC_DEMO_MODE=real` + Render URL 后重部署
-- ⚠️ Agent Hub Chat / QuickActions 仍为 mock（P1）
+- ⚠️ Render 需配置 `MINIMAX_API_KEY` 后 Agent 聊天才可用
 
 ## 7. 下一步联调任务
 
@@ -73,5 +77,5 @@ http://localhost:3100
    # terminal 2
    cd frontend && set NEXT_PUBLIC_DEMO_MODE=real&& set NEXT_PUBLIC_API_BASE_URL=http://127.0.0.1:8000&& set PORT=3100&& pnpm dev
    ```
-2. Render URL 就绪后更新 Vercel env 并部署
+2. Render URL 就绪后更新 Vercel env 并部署；Render 同步设置 `MINIMAX_API_KEY`
 3. Agent Hub QuickActions 与 Treasury 流程联动（P1）
