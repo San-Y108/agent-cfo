@@ -12,7 +12,6 @@ import { cn } from "@/lib/utils";
 
 const LIME = "#B5FF4D";
 const CYAN = "#5EEAD4";
-const FG_SUBTLE = "rgba(255,255,255,0.6)";
 
 export interface FlowTimelineProps {
   currentStep: number; // 0–4
@@ -89,16 +88,12 @@ export function FlowTimeline({ currentStep, steps }: FlowTimelineProps) {
                     </motion.div>
                   )}
 
-                  {/* Future: gray empty circle */}
+                  {/* Future: empty circle */}
                   {isFuture && (
                     <div
-                      className="flex h-10 w-10 items-center justify-center rounded-full border-2"
-                      style={{
-                        borderColor: "rgba(255,255,255,0.15)",
-                        backgroundColor: "transparent",
-                      }}
+                      className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-fg-subtle/30 dark:border-white/15 bg-transparent"
                     >
-                      <div style={{ color: FG_SUBTLE }}>{step.icon}</div>
+                      <div className="text-fg-subtle dark:text-white/60">{step.icon}</div>
                     </div>
                   )}
                 </div>
@@ -107,15 +102,10 @@ export function FlowTimeline({ currentStep, steps }: FlowTimelineProps) {
                 <span
                   className={cn(
                     "text-[11px] font-medium whitespace-nowrap",
-                    isCompleted && "font-semibold"
+                    isCompleted && "font-semibold text-hud-lime",
+                    isCurrent && "text-hud-cyan",
+                    isFuture && "text-fg-subtle dark:text-white/60"
                   )}
-                  style={{
-                    color: isCompleted
-                      ? LIME
-                      : isCurrent
-                        ? CYAN
-                        : FG_SUBTLE,
-                  }}
                 >
                   {step.label}
                 </span>
@@ -126,8 +116,7 @@ export function FlowTimeline({ currentStep, steps }: FlowTimelineProps) {
                 <div className="relative mx-2 h-[2px] flex-1 overflow-hidden rounded-full">
                   {/* Background track */}
                   <div
-                    className="absolute inset-0 rounded-full"
-                    style={{ backgroundColor: "rgba(255,255,255,0.08)" }}
+                    className="absolute inset-0 rounded-full bg-fg-subtle/10 dark:bg-white/[0.08]"
                   />
                   {/* Animated fill */}
                   <motion.div

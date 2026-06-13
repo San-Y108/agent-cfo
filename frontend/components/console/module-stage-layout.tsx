@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import { motion } from "framer-motion";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { HudLabel, StatusPulse } from "@/components/console/command-deck";
@@ -59,6 +60,8 @@ export interface ModuleStageLayoutProps extends ModuleStageHeaderProps {
   detailDefaultOpen?: boolean;
   /** Allow collapsing DetailDeck on mobile only. */
   detailCollapsible?: boolean;
+  /** Unbounded mode: page-level scroll, no internal scrollbars. Used by Treasury. */
+  unbounded?: boolean;
   className?: string;
 }
 
@@ -104,6 +107,7 @@ export function ModuleStageLayout({
   detailLabel = "Details",
   detailDefaultOpen = true,
   detailCollapsible = true,
+  unbounded = false,
   className,
   ...headerProps
 }: ModuleStageLayoutProps) {
@@ -118,7 +122,7 @@ export function ModuleStageLayout({
   const hasSideRails = hasLeftRail || hasRightRail;
 
   const stageGridClass = (() => {
-    const fillClass = "min-h-0 flex-1";
+    const fillClass = unbounded ? "" : "min-h-0 flex-1";
     if (!hasSideRails) return cn("flex flex-col", fillClass);
     if (hasLeftRail && hasRightRail) {
       return cn(
@@ -141,9 +145,13 @@ export function ModuleStageLayout({
   const showDetailBody = detailOpen || !detailCollapsible;
 
   return (
-    <div
+    <motion.div
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
       className={cn(
-        "console-stage-root flex h-full min-h-0 w-full max-w-none flex-col overflow-hidden px-3 py-3 md:px-5 md:py-3",
+        "console-stage-root flex w-full max-w-none flex-col px-3 py-3 md:px-5 md:py-3",
+        unbounded ? "min-h-[calc(100dvh-4rem)] overflow-visible pt-0" : "h-full min-h-0 overflow-hidden",
         className
       )}
     >
@@ -155,24 +163,27 @@ export function ModuleStageLayout({
             <RailAccordion label={leftRailLabel} defaultOpen={false}>
               {leftRail}
             </RailAccordion>
-            <div className="hidden h-full min-h-0 overflow-hidden lg:block">{leftRail}</div>
+            <div className={cn("hidden lg:block", unbounded ? "" : "h-full min-h-0 overflow-hidden")}>{leftRail}</div>
           </>
         )}
 
-        <div className="console-stage-hero min-h-0 overflow-hidden">{stage}</div>
+        <div className={cn("console-stage-hero", unbounded ? "" : "min-h-0 overflow-hidden")}>{stage}</div>
 
         {rightRail && (
           <>
             <RailAccordion label={rightRailLabel} defaultOpen={false}>
               {rightRail}
             </RailAccordion>
-            <div className="hidden h-full min-h-0 overflow-hidden lg:block">{rightRail}</div>
+            <div className={cn("hidden lg:block", unbounded ? "" : "h-full min-h-0 overflow-hidden")}>{rightRail}</div>
           </>
         )}
       </div>
 
       {detail && (
-        <div className="console-detail-deck mt-2 flex max-h-[min(34vh,280px)] shrink-0 flex-col border-t border-border-token pt-2 lg:max-h-[min(32vh,260px)]">
+        <div className={cn(
+          "console-detail-deck mt-2 flex shrink-0 flex-col border-t border-border-token pt-2",
+          unbounded ? "" : "max-h-[min(42vh,360px)] lg:max-h-[min(40vh,340px)]"
+        )}>
           {detailCollapsible ? (
             <button
               type="button"
@@ -209,6 +220,6 @@ export function ModuleStageLayout({
           </div>
         </div>
       )}
-    </div>
+    </motion.div>
   );
 }

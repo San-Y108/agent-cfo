@@ -110,15 +110,15 @@ export function PieChartCard({
 
   const isCompact = variant === "compact";
   const isRail = variant === "rail";
-  const innerR = isRail ? 38 : isCompact ? 34 : 50;
-  const outerR = isRail ? 54 : isCompact ? 48 : 70;
+  const innerR = isRail ? 30 : isCompact ? 34 : 50;
+  const outerR = isRail ? 44 : isCompact ? 48 : 70;
 
   const chartBlock = (
     <div
       ref={wrapperRef}
       className={cn(
         "relative flex justify-center",
-        isRail ? "min-h-[108px] flex-1" : isCompact ? "h-28" : "h-40"
+        isRail ? "min-h-[72px] flex-1" : isCompact ? "h-28" : "h-40"
       )}
     >
         {size ? (
@@ -172,7 +172,7 @@ export function PieChartCard({
             <div className="text-[9px] font-mono uppercase text-fg-subtle tracking-wider">
               {totalLabel}
             </div>
-            <div className={cn("font-extrabold text-fg tabular-nums", isCompact ? "text-sm" : "text-lg")}>
+            <div className={cn("font-extrabold text-fg tabular-nums", isRail ? "text-sm" : isCompact ? "text-sm" : "text-lg")}>
               $<AnimatedNumber value={totalPieValue} />
             </div>
           </div>
@@ -181,14 +181,17 @@ export function PieChartCard({
   );
 
   const legendBlock = (
-      <div className={cn("space-y-2", isCompact && "space-y-1 text-[11px]", isRail && "min-h-0 flex-1 space-y-1.5 overflow-y-auto pr-0.5")}>
+      <div className={cn("space-y-2", isCompact && "space-y-1 text-[11px]", isRail && "min-h-0 flex-1 space-y-0.5 overflow-y-auto pr-0.5")}>
         {RECIPIENT_TYPE_DATA.map((entry, idx) => {
           const displayLabel = lang === "zh" ? zhNames[entry.name] || entry.name : entry.name;
           const isActive = activePieIndex === idx;
           return (
             <div
               key={idx}
-              className="flex justify-between items-center text-xs rounded-lg px-2 py-1 transition-colors cursor-default hover:bg-surface-2/40"
+              className={cn(
+                "flex justify-between items-center text-xs rounded-lg px-2 transition-colors cursor-default hover:bg-surface-2/40",
+                isRail ? "py-0" : "py-1"
+              )}
               onMouseEnter={() => setActivePieIndex(idx)}
               onMouseLeave={() => setActivePieIndex(null)}
             >
@@ -232,7 +235,7 @@ export function PieChartCard({
           {legendBlock}
         </div>
       ) : isRail ? (
-        <div className="flex min-h-0 flex-1 flex-col gap-3">
+        <div className="flex min-h-0 flex-1 flex-col gap-1">
           {chartBlock}
           {legendBlock}
         </div>

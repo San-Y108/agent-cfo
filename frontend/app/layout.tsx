@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Script from "next/script";
 import "./globals.css";
 import localFont from "next/font/local";
 import { AppProvider } from "@/lib/i18n/context";
@@ -45,12 +46,10 @@ export default function RootLayout({
     <html lang="en" className={`dark ${geist.variable} ${geistMono.variable}`} suppressHydrationWarning>
       <head />
       <body className="min-h-screen bg-bg text-fg antialiased font-sans">
-        {/* Anti-FOUC theme script — placed at body top so React doesn't warn
-            about scripts inside <head>. Runs synchronously before paint. */}
-        <script
-          suppressHydrationWarning
-          dangerouslySetInnerHTML={{ __html: themeScript }}
-        />
+        {/* Anti-FOUC theme script — beforeInteractive so it runs synchronously before paint. */}
+        <Script id="theme-script" strategy="beforeInteractive">
+          {themeScript}
+        </Script>
         <AppProvider>{children}</AppProvider>
       </body>
     </html>

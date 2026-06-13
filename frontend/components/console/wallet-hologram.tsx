@@ -171,17 +171,21 @@ export function WalletTopology({
     });
   };
 
+  // Percentage-based hub layout: scales with the card width while keeping labels in bounds.
+  const rx = compact ? 36 : 35;
+  const ry = compact ? 20 : 28;
   const nodes = wallets.map((w, i) => {
     const angle = (360 / wallets.length) * i;
-    const radius = compact ? 72 : 105;
-    const base = polar(angle, radius);
-    const pos = reduce
-      ? base
+    const base = polar(angle, 1);
+    const x = 50 + rx * base.x;
+    const y = 50 + ry * base.y;
+    const parallax = reduce
+      ? { x: 0, y: 0 }
       : {
-          x: base.x + mouse.x * (base.x > 0 ? 1 : -1) * 0.8,
-          y: base.y + mouse.y * (base.y > 0 ? 1 : -1) * 0.8,
+          x: mouse.x * (base.x > 0 ? 1 : -1) * 0.8,
+          y: mouse.y * (base.y > 0 ? 1 : -1) * 0.8,
         };
-    return { wallet: w, pos };
+    return { wallet: w, x, y, parallax };
   });
 
   const lineDrawKey = `${activeId}:${wallets.map((w) => w.id).join(",")}`;
@@ -232,19 +236,16 @@ export function WalletTopology({
         <div
           className={cn(
             "relative mx-auto w-full p-4",
-            compact ? "aspect-[3/1] max-h-[140px] p-2" : "aspect-square max-w-[320px]"
+            compact ? "aspect-[3/1] max-h-[140px] p-2" : "min-h-[260px]"
           )}
         >
-          {/* Concentric pulse rings */}
-          {[55, 85, 120].map((r, i) => (
+          {/* Concentric pulse rings — percentage-sized so they scale with the card */}
+          {[0.45, 0.7, 0.95].map((scale, i) => (
             <motion.div
-              key={r}
-              className="absolute left-1/2 top-1/2 rounded-full border"
+              key={scale}
+              className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full border aspect-square"
               style={{
-                width: r * 2,
-                height: r * 2,
-                marginLeft: -r,
-                marginTop: -r,
+                width: `${scale * 100}%`,
                 borderColor: isDark
                   ? i === 1
                     ? "rgba(96,165,250,0.12)"
@@ -261,7 +262,8 @@ export function WalletTopology({
           {/* Connection lines + animated data packets */}
           <svg
             ref={svgRef}
-            viewBox="-160 -160 320 320"
+            viewBox="0 0 100 100"
+            preserveAspectRatio="none"
             className="absolute inset-0 h-full w-full pointer-events-none"
           >
             <defs>
@@ -270,14 +272,14 @@ export function WalletTopology({
                 <stop offset="100%" stopColor={BLUE} stopOpacity="0.06" />
               </linearGradient>
             </defs>
-            {nodes.map(({ wallet, pos }) => (
+            {nodes.map(({ wallet, x, y }) => (
               <g key={wallet.id}>
                 <line
                   data-draw-svg
-                  x1="0"
-                  y1="0"
-                  x2={pos.x}
-                  y2={pos.y}
+                  x1="50"
+                  y1="50"
+                  x2={x}
+                  y2={y}
                   stroke="url(#walletLineGrad)"
                   strokeWidth={wallet.id === activeId ? 1.6 : 1}
                   opacity={wallet.id === activeId || hovered === wallet.id ? 0.9 : 0.4}
@@ -289,8 +291,8 @@ export function WalletTopology({
                     fill={BLUE}
                     initial={false}
                     animate={{
-                      cx: [0, pos.x],
-                      cy: [0, pos.y],
+                      cx: [50, x],
+                      cy: [50, y],
                       opacity: [0, 0.9, 0],
                     }}
                     transition={{
@@ -331,7 +333,7 @@ export function WalletTopology({
           </motion.div>
 
           {/* Wallet nodes */}
-          {nodes.map(({ wallet, pos }) => {
+          {nodes.map(({ wallet, x, y, parallax }) => {
             const Icon = TYPE_ICON[wallet.type] ?? ShieldCheck;
             const isActive = wallet.id === activeId;
             const isHovered = hovered === wallet.id;
@@ -342,9 +344,9 @@ export function WalletTopology({
                 key={wallet.id}
                 className="absolute z-10 flex flex-col items-center"
                 style={{
-                  left: `calc(50% + ${pos.x}px)`,
-                  top: `calc(50% + ${pos.y}px)`,
-                  transform: "translate(-50%, -50%)",
+                  left: `${x}%`,
+                  top: `${y}%`,
+                  transform: `translate(calc(-50% + ${parallax.x}px), calc(-50% + ${parallax.y}px))`,
                 }}
               >
                 <motion.button
@@ -352,7 +354,10 @@ export function WalletTopology({
                   onClick={() => onSelect(wallet.id)}
                   onMouseEnter={() => setHovered(wallet.id)}
                   onMouseLeave={() => setHovered(null)}
-                  className="relative flex h-11 w-11 cursor-pointer items-center justify-center rounded-full outline-none"
+                  className={cn(
+                    "relative flex cursor-pointer items-center justify-center rounded-full outline-none",
+                    compact ? "h-8 w-8" : "h-11 w-11"
+                  )}
                   style={{
                     background: lit
                       ? isDark

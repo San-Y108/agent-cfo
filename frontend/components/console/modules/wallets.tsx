@@ -242,7 +242,14 @@ export function WalletsModule() {
                 {_("金库拓扑", "Vault Topology")}
               </h2>
             </div>
-            <StatusPulse color="blue" label="HSM SECURED" size="sm" />
+            <div className="flex items-center gap-3">
+              <img
+                src="/console/mascots/modules/wallets-module.png"
+                alt="Wallet guardian"
+                className="h-16 w-auto object-contain drop-shadow-[0_0_20px_rgba(96,165,250,0.35)]"
+              />
+              <StatusPulse color="blue" label="HSM SECURED" size="sm" />
+            </div>
           </div>
 
           <Scanline color="blue" className="relative z-10 mb-4" />

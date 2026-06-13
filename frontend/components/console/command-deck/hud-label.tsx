@@ -39,7 +39,7 @@ const sizeMap = {
 export function HudLabel({ prefix, value, color = "lime", size = "md", className }: HudLabelProps) {
   return (
     <div className={cn("inline-flex items-baseline gap-1.5 font-mono", className)}>
-      <span className={cn("uppercase tracking-wider text-fg-subtle", sizeMap[size].prefix)}>
+      <span className={cn("uppercase tracking-wider text-fg-muted", sizeMap[size].prefix)}>
         {prefix}
       </span>
       <span className={cn("font-semibold tabular-nums", colorMap[color], sizeMap[size].value)}>

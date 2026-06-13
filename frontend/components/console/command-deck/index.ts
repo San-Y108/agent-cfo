@@ -10,6 +10,7 @@ export {
 } from "./telemetry-cell";
 export { ConsolePanelHeader } from "./panel-header";
 export { ConsoleGhostButton } from "./ghost-button";
+export { ConsoleModal } from "./console-modal";
 export { StageCornerAccent } from "./stage-corner-accent";
 export { BeamBurst } from "./beam-burst";
 export {

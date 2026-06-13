@@ -94,7 +94,7 @@ export function AgentCfoMascot({
         <img
           src={src}
           alt="AgentCFO"
-          className="h-full w-full select-none object-contain object-bottom"
+          className="h-full w-full select-none object-contain object-center"
           draggable={false}
         />
       ) : (
@@ -199,11 +199,11 @@ export function AgentChatAvatar({
         )}
       >
         {src ? (
-          <div className="flex h-full w-full items-center justify-center p-1.5">
+          <div className="flex h-full w-full items-center justify-center overflow-hidden p-[2px]">
             <img
               src={src}
               alt="AgentCFO"
-              className="pointer-events-none h-full w-full select-none object-contain object-center scale-[0.88]"
+              className="pointer-events-none h-full w-full select-none object-cover object-[center_30%] scale-[1.45]"
               draggable={false}
             />
           </div>

@@ -31,6 +31,7 @@ import {
   ConsolePanelHeader,
   ConsoleGhostButton,
   ConsoleTelemetryGrid,
+  ConsoleModal,
   HudLabel,
   StageCornerAccent,
   DetailDeckShell,
@@ -274,7 +275,7 @@ export function WalletsStage() {
                         <div className="font-semibold text-hud-coral">
                           {lang === "zh" ? "转账被拦截" : "Transfer Blocked"}
                         </div>
-                        <div className="mt-0.5 text-fg-subtle">
+                        <div className="mt-0.5 text-fg-muted">
                           {lang === "zh"
                             ? `单笔限额 25 USDC，您尝试转账 ${transferAmount} USDC 已超出安全边界。`
                             : `Single payment limit is 25 USDC. Your attempt to transfer ${transferAmount} USDC exceeds the safety boundary.`}
@@ -333,6 +334,7 @@ export function WalletsStage() {
                 _={_}
               />
             </div>
+
           </FrostedPanel>
         }
         detailLabel={_("拓扑与结算日志", "Topology & Settlement Log")}
@@ -378,7 +380,7 @@ export function WalletsStage() {
                 value="25 USDC"
                 status="ok"
               />
-              <p className="mt-2 text-[10px] text-fg-subtle">
+              <p className="mt-2 text-[10px] text-fg-muted">
                 {_("提交划拨后，此处会追加 CAW 路由与 tx 摘要。", "After broadcast, CAW routing and tx summaries append here.")}
               </p>
             </DetailDeckShell>
@@ -387,92 +389,87 @@ export function WalletsStage() {
       />
 
       {/* ─── Add Wallet Modal ─── */}
-      <AnimatePresence>
-        {isAddingWallet && (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-fg/25 backdrop-blur-sm">
-            <motion.div
-              initial={{ scale: 0.95, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.95, opacity: 0 }}
-              className="border border-border-token rounded-xl max-w-md w-full p-6 shadow-2xl bg-surface"
+      <ConsoleModal
+        open={isAddingWallet}
+        onClose={() => setIsAddingWallet(false)}
+        title={t("console.wallets.dialogTitle" as any)}
+        description={t("console.wallets.dialogDesc" as any)}
+        footer={
+          <>
+            <HolographicButton
+              type="button"
+              onClick={() => setIsAddingWallet(false)}
+              variant="cyan"
+              size="sm"
             >
-              <h3 className="text-base font-bold text-fg">{t("console.wallets.dialogTitle" as any)}</h3>
-              <p className="text-xs mb-4 text-fg-subtle">{t("console.wallets.dialogDesc" as any)}</p>
-              <form onSubmit={handleCreateWallet} className="space-y-4">
-                <div>
-                  <label className="block text-[10px] font-mono uppercase font-bold mb-1 text-fg-subtle">
-                    {t("console.wallets.dialogName" as any)}
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="E.g. Marketing Multisig"
-                    value={newWalletName}
-                    onChange={(e) => setNewWalletName(e.target.value)}
-                    className="w-full border border-border-token rounded-lg px-3 py-2 text-xs bg-surface text-fg focus:border-[#60A5FA] focus:outline-none"
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="block text-[10px] font-mono uppercase font-bold mb-1 text-fg-subtle">
-                    {t("console.wallets.dialogType" as any)}
-                  </label>
-                  <select
-                    value={newWalletType}
-                    onChange={(e) => setNewWalletType(e.target.value as "Multi-sig" | "Agent Vault")}
-                    className="w-full border border-border-token rounded-lg px-3 py-2 text-xs font-semibold bg-surface text-fg focus:border-[#60A5FA] focus:outline-none"
-                  >
-                    <option value="Agent Vault">{t("console.wallets.dialogType1" as any)}</option>
-                    <option value="Multi-sig">{t("console.wallets.dialogType2" as any)}</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-[10px] font-mono uppercase font-bold mb-1 text-fg-subtle">
-                    {t("console.wallets.dialogAddr" as any)}
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="0x..."
-                    value={newWalletAddress}
-                    onChange={(e) => setNewWalletAddress(e.target.value)}
-                    className="w-full border border-border-token rounded-lg px-3 py-2 text-xs font-mono bg-surface text-fg focus:border-[#60A5FA] focus:outline-none"
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="block text-[10px] font-mono uppercase font-bold mb-1 text-fg-subtle">
-                    {t("console.wallets.dialogThresh" as any)}
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="E.g. 1 / 2 Agents"
-                    value={newWalletThreshold}
-                    onChange={(e) => setNewWalletThreshold(e.target.value)}
-                    className="w-full border border-border-token rounded-lg px-3 py-2 text-xs bg-surface text-fg focus:border-[#60A5FA] focus:outline-none"
-                    required
-                  />
-                </div>
-                <div className="flex justify-end gap-2.5 pt-2">
-                  <HolographicButton
-                    type="button"
-                    onClick={() => setIsAddingWallet(false)}
-                    variant="cyan"
-                    size="sm"
-                  >
-                    {t("console.wallets.dialogCancel" as any)}
-                  </HolographicButton>
-                  <HolographicButton
-                    type="submit"
-                    variant="blue"
-                    size="sm"
-                  >
-                    {t("console.wallets.dialogConfirm" as any)}
-                  </HolographicButton>
-                </div>
-              </form>
-            </motion.div>
+              {t("console.wallets.dialogCancel" as any)}
+            </HolographicButton>
+            <HolographicButton
+              type="submit"
+              form="add-wallet-form"
+              variant="blue"
+              size="sm"
+            >
+              {t("console.wallets.dialogConfirm" as any)}
+            </HolographicButton>
+          </>
+        }
+      >
+        <form id="add-wallet-form" onSubmit={handleCreateWallet} className="space-y-4">
+          <div>
+            <label className="block text-[10px] font-mono uppercase font-bold mb-1 text-fg-muted">
+              {t("console.wallets.dialogName" as any)}
+            </label>
+            <input
+              type="text"
+              placeholder="E.g. Marketing Multisig"
+              value={newWalletName}
+              onChange={(e) => setNewWalletName(e.target.value)}
+              className="console-field w-full focus:border-hud-blue"
+              required
+            />
           </div>
-        )}
-      </AnimatePresence>
+          <div>
+            <label className="block text-[10px] font-mono uppercase font-bold mb-1 text-fg-muted">
+              {t("console.wallets.dialogType" as any)}
+            </label>
+            <select
+              value={newWalletType}
+              onChange={(e) => setNewWalletType(e.target.value as "Multi-sig" | "Agent Vault")}
+              className="console-field w-full font-semibold focus:border-hud-blue"
+            >
+              <option value="Agent Vault">{t("console.wallets.dialogType1" as any)}</option>
+              <option value="Multi-sig">{t("console.wallets.dialogType2" as any)}</option>
+            </select>
+          </div>
+          <div>
+            <label className="block text-[10px] font-mono uppercase font-bold mb-1 text-fg-muted">
+              {t("console.wallets.dialogAddr" as any)}
+            </label>
+            <input
+              type="text"
+              placeholder="0x..."
+              value={newWalletAddress}
+              onChange={(e) => setNewWalletAddress(e.target.value)}
+              className="console-field w-full font-mono focus:border-hud-blue"
+              required
+            />
+          </div>
+          <div>
+            <label className="block text-[10px] font-mono uppercase font-bold mb-1 text-fg-muted">
+              {t("console.wallets.dialogThresh" as any)}
+            </label>
+            <input
+              type="text"
+              placeholder="E.g. 1 / 2 Agents"
+              value={newWalletThreshold}
+              onChange={(e) => setNewWalletThreshold(e.target.value)}
+              className="console-field w-full focus:border-hud-blue"
+              required
+            />
+          </div>
+        </form>
+      </ConsoleModal>
     </>
   );
 }
@@ -523,21 +520,22 @@ function WalletListSatellite({
           <span className="text-sm font-semibold text-fg">
             {_("注册金库", "Vaults")}
           </span>
-          <span className="text-[10px] text-fg-subtle font-mono px-1.5 py-0.5 rounded-full bg-surface-hover">
+          <span className="text-[10px] text-fg-muted font-mono px-1.5 py-0.5 rounded-full bg-surface-hover">
             {filteredWallets.length}
           </span>
         </div>
         <div className="flex items-center gap-2">
-          <button
+          <ConsoleGhostButton
             onClick={onAdd}
-            className="text-fg-subtle hover:text-fg transition-colors"
+            accentHover="blue"
+            className="h-7 w-7 p-0"
             title={t("console.wallets.addBtn" as any)}
           >
             <Plus className="w-3.5 h-3.5" />
-          </button>
+          </ConsoleGhostButton>
           <button
             onClick={() => setCollapsed((v) => !v)}
-            className="text-fg-subtle hover:text-fg transition-colors lg:hidden"
+            className="text-fg-muted hover:text-fg transition-colors lg:hidden"
           >
             {collapsed ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronUp className="w-3.5 h-3.5" />}
           </button>
@@ -573,7 +571,6 @@ function WalletListSatellite({
             <motion.button
               key={w.id}
               type="button"
-              layout
               initial={{ opacity: 0, x: -8 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.25 }}
@@ -582,7 +579,7 @@ function WalletListSatellite({
                 "w-full text-left p-3 rounded-lg border transition-colors",
                 isActive
                   ? "bg-hud-blue/10 border-hud-blue/30"
-                  : "bg-surface-2/40 border-border-token hover:bg-surface-hover"
+                  : "bg-surface-2/40 border-border-token hover:bg-surface-hover hover:border-hud-blue/25"
               )}
             >
               <div className="flex justify-between items-start gap-2">
@@ -593,18 +590,18 @@ function WalletListSatellite({
                     w.type === "Agent Vault"
                       ? "bg-hud-blue/10 text-hud-blue border-hud-blue/20"
                       : w.type === "Multi-sig"
-                      ? "bg-indigo-500/10 text-indigo-400 border-indigo-500/20"
-                      : "bg-zinc-500/10 text-zinc-400 border-zinc-500/20"
+                      ? "bg-hud-violet/10 text-hud-violet border-hud-violet/20"
+                      : "bg-surface-2 text-fg-muted border-border-token"
                   )}
                 >
                   {w.type}
                 </span>
               </div>
-              <div className="mt-1 text-[10px] font-mono text-fg-subtle truncate">
+              <div className="mt-1 text-[10px] font-mono text-fg-muted truncate">
                 {w.address.substring(0, 8)}...{w.address.substring(w.address.length - 6)}
               </div>
               <div className="mt-2 flex items-center justify-between">
-                <span className="text-[10px] text-fg-subtle truncate max-w-[110px]">{w.threshold}</span>
+                <span className="text-[10px] text-fg-muted truncate max-w-[110px]">{w.threshold}</span>
                 <span className="text-[12px] font-mono font-semibold text-fg">
                   ${totalVal.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
                 </span>
@@ -639,7 +636,9 @@ function WalletDetailSatellite({
   return (
     <div className="flex h-full min-h-0 flex-col gap-3 overflow-hidden">
       <FrostedPanel glowColor="blue" sheen className="shrink-0 rounded-card p-4">
-        <HudLabel prefix="ACTIVE::" value={wallet.name} color="blue" size="sm" />
+        <div className="flex items-start justify-between gap-3">
+          <HudLabel prefix="ACTIVE::" value={wallet.name} color="blue" size="sm" />
+        </div>
         <div className="mt-2 flex items-center gap-2">
           <span className="rounded px-2 py-0.5 font-mono text-[10px] bg-surface-hover text-fg-muted">
             {wallet.type}
@@ -771,7 +770,7 @@ function WalletsDetailDeck({
             onClick={() => setTab(item.id)}
             className={cn(
               "flex-1 rounded-md px-3 py-1.5 text-xs font-semibold transition-colors",
-              tab === item.id ? "bg-hud-blue/20 text-fg" : "text-fg-subtle hover:text-fg"
+              tab === item.id ? "bg-hud-blue/20 text-fg" : "text-fg-muted hover:text-fg"
             )}
           >
             {item.label}
@@ -844,43 +843,40 @@ function TransferPanel({
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
-                    className="pointer-events-none absolute inset-0 z-10 overflow-hidden rounded-xl"
+                    className="pointer-events-none absolute inset-x-0 bottom-8 z-10 h-6 overflow-hidden"
                   >
                     <motion.div
-                      className="absolute w-2 h-2 rounded-full shadow-[0_0_14px_rgba(96,165,250,0.9)]"
+                      className="absolute top-1/2 h-1 w-16 -translate-y-1/2 rounded-full shadow-[0_0_18px_rgba(96,165,250,0.85)]"
                       style={{ backgroundColor: BLUE }}
-                      initial={{ left: "18%", top: "58%", opacity: 0, scale: 0.6 }}
+                      initial={{ left: "-4rem", opacity: 0 }}
                       animate={{
-                        left: ["18%", "48%", "82%"],
-                        top: ["58%", "26%", "54%"],
+                        left: ["-4rem", "50%", "calc(100% + 4rem)"],
                         opacity: [0, 1, 0],
-                        scale: [0.6, 1.1, 0.8],
                       }}
-                      transition={{ duration: 1.4, repeat: Infinity, ease: "easeInOut" }}
+                      transition={{ duration: 1.6, repeat: Infinity, ease: "easeInOut" }}
                     />
                     <motion.div
-                      className="absolute w-1 h-1 rounded-full opacity-60"
+                      className="absolute top-1/2 h-px w-24 -translate-y-1/2 rounded-full opacity-60"
                       style={{ backgroundColor: BLUE }}
-                      initial={{ left: "18%", top: "58%" }}
+                      initial={{ left: "-6rem", opacity: 0 }}
                       animate={{
-                        left: ["18%", "48%", "82%"],
-                        top: ["58%", "26%", "54%"],
-                        opacity: [0, 0.6, 0],
+                        left: ["-6rem", "50%", "calc(100% + 6rem)"],
+                        opacity: [0, 0.5, 0],
                       }}
-                      transition={{ duration: 1.4, repeat: Infinity, ease: "easeInOut", delay: 0.12 }}
+                      transition={{ duration: 1.6, repeat: Infinity, ease: "easeInOut", delay: 0.15 }}
                     />
                   </motion.div>
                 )}
 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   <div>
-                    <label className="block text-[10px] font-mono uppercase font-bold mb-1 text-fg-subtle">
+                    <label className="block text-[10px] font-mono uppercase font-bold mb-1 text-fg-muted">
                       {t("console.wallets.assetToken" as any)}
                     </label>
                     <select
                       value={selectedToken}
                       onChange={(e) => setSelectedToken(e.target.value)}
-                      className="w-full border border-border-token rounded-lg px-3 py-2 text-xs font-semibold bg-surface/50 text-fg focus:border-hud-blue focus:outline-none"
+                      className="console-field w-full font-semibold focus:border-hud-blue"
                     >
                       {activeWallet.tokens.map((tok) => (
                         <option key={tok.symbol} value={tok.symbol}>
@@ -890,7 +886,7 @@ function TransferPanel({
                     </select>
                   </div>
                   <div>
-                    <label className="block text-[10px] font-mono uppercase font-bold mb-1 text-fg-subtle">
+                    <label className="block text-[10px] font-mono uppercase font-bold mb-1 text-fg-muted">
                       {t("console.wallets.outAmount" as any)}
                     </label>
                     <input
@@ -899,12 +895,12 @@ function TransferPanel({
                       step="any"
                       value={transferAmount}
                       onChange={(e) => setTransferAmount(e.target.value)}
-                      className="w-full border border-border-token rounded-lg px-3 py-2 text-xs font-mono bg-surface/50 text-fg focus:border-hud-blue focus:outline-none"
+                      className="console-field w-full font-mono focus:border-hud-blue"
                       required
                     />
                   </div>
                   <div>
-                    <label className="block text-[10px] font-mono uppercase font-bold mb-1 text-fg-subtle">
+                    <label className="block text-[10px] font-mono uppercase font-bold mb-1 text-fg-muted">
                       {t("console.wallets.recipientKey" as any)}
                     </label>
                     <input
@@ -912,14 +908,14 @@ function TransferPanel({
                       placeholder="0x..."
                       value={transferRecipient}
                       onChange={(e) => setTransferRecipient(e.target.value)}
-                      className="w-full border border-border-token rounded-lg px-3 py-2 text-xs font-mono bg-surface/50 text-fg focus:border-hud-blue focus:outline-none"
+                      className="console-field w-full font-mono focus:border-hud-blue"
                       required
                     />
                   </div>
                 </div>
 
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 pt-2">
-                  <p className="text-[11px] italic text-fg-subtle">
+                  <p className="text-[11px] italic text-fg-muted">
                     {lang === "zh"
                       ? "注意：划拨行为必须完全契合白名单配置，否则将中断并直接回落到多签防线。"
                       : "Note: Disbursals must conform to whitelisted destinations or trigger multi-signed holds."}
@@ -1010,7 +1006,7 @@ function SignersMatrixStrip({
               </div>
               <div>
                 <div className="font-bold text-xs text-fg">{s.label}</div>
-                <div className="text-[11px] font-mono mt-0.5 text-fg-subtle">{s.addr}</div>
+                <div className="text-[11px] font-mono mt-0.5 text-fg-muted">{s.addr}</div>
               </div>
             </div>
             <div

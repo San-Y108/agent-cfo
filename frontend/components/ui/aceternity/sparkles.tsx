@@ -4,6 +4,15 @@ import React from "react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 
+function seededRandom(seed: number) {
+  let s = seed % 2147483647;
+  if (s <= 0) s += 2147483646;
+  return () => {
+    s = (s * 16807) % 2147483647;
+    return (s - 1) / 2147483646;
+  };
+}
+
 /**
  * Sparkles — 随机分布的闪烁粒子，用于执行/高亮区域点缀。
  * 适配 Aceternity 风格，纯 Framer Motion 实现，无图片依赖。
@@ -19,21 +28,26 @@ export function Sparkles({
 }) {
   const particles = React.useMemo(
     () =>
-      Array.from({ length: count }, (_, i) => ({
-        id: i,
-        top: Math.random() * 100,
-        left: Math.random() * 100,
-        size: Math.random() * 2 + 1,
-        duration: Math.random() * 2 + 2,
-        delay: Math.random() * 2,
-      })),
+      Array.from({ length: count }, (_, i) => {
+        const rng = seededRandom(i + 1);
+        return {
+          id: i,
+          top: rng() * 100,
+          left: rng() * 100,
+          size: rng() * 2 + 1,
+          duration: rng() * 2 + 2,
+          delay: rng() * 2,
+        };
+      }),
     [count]
   );
 
   const isHex = color.startsWith("#");
 
   return (
-    <div className={cn("pointer-events-none absolute inset-0 overflow-hidden", className)}>
+    <div
+      className={cn("pointer-events-none absolute inset-0 overflow-hidden", className)}
+    >
       {particles.map((p) => (
         <motion.span
           key={p.id}

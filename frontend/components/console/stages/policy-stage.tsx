@@ -10,7 +10,6 @@ import {
   Sliders,
   CheckCircle,
   Workflow,
-  X,
 } from "lucide-react";
 import { useApp } from "@/lib/i18n/context";
 import { useConsoleState } from "@/lib/console/console-state";
@@ -24,6 +23,7 @@ import {
   CornerGlow,
   FrostedPanel,
   ConsolePanelHeader,
+  ConsoleModal,
   StageCornerAccent,
   DetailDeckShell,
   PreflightRow,
@@ -141,7 +141,7 @@ function ThresholdSlider({
           } as React.CSSProperties
         }
       />
-      <p className="text-[10px] leading-tight text-fg-subtle">{tip}</p>
+      <p className="text-[10px] leading-tight text-fg-muted">{tip}</p>
     </div>
   );
 }
@@ -333,14 +333,14 @@ export function PolicyStage() {
             )}
 
             <div className="relative z-10 flex min-h-0 flex-1 flex-col gap-3 p-4 md:p-5">
-              <div className="mx-auto flex w-full flex-1 items-stretch">
+              <div className="mx-auto flex min-h-0 w-full flex-1 overflow-y-auto">
                 <NeuralGuardrailsGraph
                   activeRuleId={activeRuleId}
                   onRuleHover={setActiveRuleId}
-                  className="w-full"
+                  className="w-full min-h-0"
                 />
               </div>
-              <div className="grid grid-cols-2 gap-2 md:grid-cols-4">
+              <div className="grid shrink-0 grid-cols-2 gap-2 md:grid-cols-4">
                 {[
                   { id: "max-single", label: _("单笔上限", "Single limit"), value: `${maxSingle} USDC` },
                   { id: "daily-cum", label: _("日累计", "Daily cap"), value: `${dailyCum} USDC` },
@@ -363,6 +363,7 @@ export function PolicyStage() {
                 ))}
               </div>
             </div>
+
           </FrostedPanel>
         }
         detailLabel={_("完整性校验", "Integrity & Audit")}
@@ -395,7 +396,7 @@ export function PolicyStage() {
                   {whitelistBlockedNames.join(", ")}
                 </p>
               )}
-              <p className="mt-2 text-[10px] text-fg-subtle">
+              <p className="mt-2 text-[10px] text-fg-muted">
                 {_("提交阈值修改后，CAW 安全层会同步策略版本。", "After commit, CAW secure layer syncs policy revision.")}
               </p>
             </DetailDeckShell>
@@ -404,98 +405,83 @@ export function PolicyStage() {
       />
 
       {/* ── Add whitelist modal ── */}
-      <AnimatePresence>
-        {isAddingItem && (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-fg/25 backdrop-blur-sm">
-            <motion.div
-              initial={{ scale: 0.95, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.95, opacity: 0 }}
-              className="border border-border-token rounded-xl max-w-sm w-full p-6 shadow-2xl relative bg-surface"
+      <ConsoleModal
+        open={isAddingItem}
+        onClose={() => setIsAddingItem(false)}
+        title={lang === "zh" ? "注册白名单地址" : "Register Whitelisted Address"}
+        description={
+          lang === "zh"
+            ? "在 AgentCFO 安全扫描任务之前绑定链上公钥公开地址。"
+            : "Register a cryptographic public address to verify transactions within AgentCFO scan batches."
+        }
+        maxWidth="sm"
+        footer={
+          <>
+            <HolographicButton
+              type="button"
+              onClick={() => setIsAddingItem(false)}
+              variant="cyan"
+              size="sm"
             >
-              <button
-                onClick={() => setIsAddingItem(false)}
-                className="absolute top-3 right-3 p-1 rounded hover:bg-surface-hover text-fg-subtle transition-colors cursor-pointer"
-              >
-                <X className="w-4 h-4" />
-              </button>
-
-              <h3 className="text-base font-bold text-fg mb-1">
-                {lang === "zh" ? "注册白名单地址" : "Register Whitelisted Address"}
-              </h3>
-              <p className="text-xs text-fg-subtle mb-4">
-                {lang === "zh"
-                  ? "在 AgentCFO 安全扫描任务之前绑定链上公钥公开地址。"
-                  : "Register a cryptographic public address to verify transactions within AgentCFO scan batches."}
-              </p>
-
-              <form onSubmit={handleAdd} className="space-y-4">
-                <div>
-                  <label className="block text-[10px] font-mono uppercase font-bold mb-1 text-fg-muted">
-                    {lang === "zh" ? "备注标签/姓名" : "Friendly Label"}
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="E.g. Bob UI Designer"
-                    value={newName}
-                    onChange={(e) => setNewName(e.target.value)}
-                    className="w-full border border-border-token rounded-lg px-3 py-2 text-xs bg-surface-2/40 text-fg focus:border-coral-400 outline-none transition-colors"
-                    required
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-[10px] font-mono uppercase font-bold mb-1 text-fg-muted">
-                    {lang === "zh" ? "身份类别" : "Category Type"}
-                  </label>
-                  <select
-                    value={newCategory}
-                    onChange={(e) => setNewCategory(e.target.value as WhitelistItem["category"])}
-                    className="w-full border border-border-token rounded-lg px-3 py-2 text-xs font-semibold bg-surface-2/40 text-fg focus:border-coral-400 outline-none transition-colors"
-                  >
-                    <option value="Developer">Developer</option>
-                    <option value="Ad Network">Ad Network</option>
-                    <option value="API Provider">API Provider</option>
-                    <option value="SaaS">SaaS</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-[10px] font-mono uppercase font-bold mb-1 text-fg-muted">
-                    {lang === "zh" ? "链上公钥地址 (0x...)" : "On-chain Address"}
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="0x90A81D234..."
-                    value={newAddress}
-                    onChange={(e) => setNewAddress(e.target.value)}
-                    className="w-full border border-border-token rounded-lg px-3 py-2 text-xs font-mono bg-surface-2/40 text-fg focus:border-coral-400 outline-none transition-colors"
-                    required
-                  />
-                </div>
-
-                <div className="flex justify-end gap-2.5 pt-2">
-                  <HolographicButton
-                    type="button"
-                    onClick={() => setIsAddingItem(false)}
-                    variant="cyan"
-                    size="sm"
-                  >
-                    {lang === "zh" ? "取消" : "Cancel"}
-                  </HolographicButton>
-                  <HolographicButton
-                    type="submit"
-                    variant="coral"
-                    size="sm"
-                  >
-                    {lang === "zh" ? "确立注册" : "Confirm Registry"}
-                  </HolographicButton>
-                </div>
-              </form>
-            </motion.div>
+              {lang === "zh" ? "取消" : "Cancel"}
+            </HolographicButton>
+            <HolographicButton
+              type="submit"
+              form="add-whitelist-form"
+              variant="coral"
+              size="sm"
+            >
+              {lang === "zh" ? "确立注册" : "Confirm Registry"}
+            </HolographicButton>
+          </>
+        }
+      >
+        <form id="add-whitelist-form" onSubmit={handleAdd} className="space-y-4">
+          <div>
+            <label className="block text-[10px] font-mono uppercase font-bold mb-1 text-fg-muted">
+              {lang === "zh" ? "备注标签/姓名" : "Friendly Label"}
+            </label>
+            <input
+              type="text"
+              placeholder="E.g. Bob UI Designer"
+              value={newName}
+              onChange={(e) => setNewName(e.target.value)}
+              className="console-field w-full focus:border-hud-coral"
+              required
+            />
           </div>
-        )}
-      </AnimatePresence>
+
+          <div>
+            <label className="block text-[10px] font-mono uppercase font-bold mb-1 text-fg-muted">
+              {lang === "zh" ? "身份类别" : "Category Type"}
+            </label>
+            <select
+              value={newCategory}
+              onChange={(e) => setNewCategory(e.target.value as WhitelistItem["category"])}
+              className="console-field w-full font-semibold focus:border-hud-coral"
+            >
+              <option value="Developer">Developer</option>
+              <option value="Ad Network">Ad Network</option>
+              <option value="API Provider">API Provider</option>
+              <option value="SaaS">SaaS</option>
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-[10px] font-mono uppercase font-bold mb-1 text-fg-muted">
+              {lang === "zh" ? "链上公钥地址 (0x...)" : "On-chain Address"}
+            </label>
+            <input
+              type="text"
+              placeholder="0x90A81D234..."
+              value={newAddress}
+              onChange={(e) => setNewAddress(e.target.value)}
+              className="console-field w-full font-mono focus:border-hud-coral"
+              required
+            />
+          </div>
+        </form>
+      </ConsoleModal>
     </>
   );
 }
@@ -570,27 +556,31 @@ function ThresholdSatellite({
   const { t } = useApp();
 
   return (
-    <FrostedPanel
-      glowColor="coral"
-      sheen
-      className={cn(
-        "flex h-full min-h-0 flex-col rounded-card p-3.5 transition-colors duration-300",
-        saveSuccess && "border-lime-400/60 shadow-[0_0_30px_rgba(181,255,77,0.15)]"
-      )}
-    >
+    <div className="flex h-full min-h-0 flex-col overflow-hidden">
+      <FrostedPanel
+        glowColor="coral"
+        sheen
+        className={cn(
+          "flex h-full min-h-0 flex-col overflow-hidden rounded-card p-3.5 transition-colors duration-300",
+          saveSuccess && "border-lime-400/60 shadow-[0_0_30px_rgba(181,255,77,0.15)]"
+        )}
+      >
         <div className="flex shrink-0 items-center gap-2 border-b border-border-token pb-3">
           <Sliders className="h-4 w-4 shrink-0" style={{ color: CORAL }} />
           <div className="min-w-0">
             <h4 className="text-[13px] font-bold leading-tight text-fg">
               {t("console.policy.adjusterTitle" as any)}
             </h4>
-            <p className="mt-0.5 text-[10px] leading-snug text-fg-subtle">
+            <p className="mt-0.5 text-[10px] leading-snug text-fg-muted">
               {t("console.policy.adjusterDesc" as any)}
             </p>
           </div>
         </div>
 
-        <form onSubmit={onSave} className="flex min-h-0 flex-1 flex-col pt-3">
+        <form
+          onSubmit={onSave}
+          className="flex min-h-0 flex-1 flex-col overflow-hidden pt-3"
+        >
           <div className="min-h-0 flex-1 space-y-4 overflow-y-auto pr-1">
             <ThresholdSlider
               label={t("console.policy.maxSingle" as any)}
@@ -630,7 +620,7 @@ function ThresholdSatellite({
                 type="text"
                 value={slackWebhook}
                 onChange={(e) => setSlackWebhook(e.target.value)}
-                className="w-full border border-border-token rounded-lg px-3 py-2 text-xs font-mono bg-surface-2/40 text-fg-subtle focus:text-fg focus:border-coral-400 outline-none transition-colors"
+                className="console-field w-full font-mono focus:border-hud-coral"
               />
             </div>
           </div>
@@ -654,9 +644,9 @@ function ThresholdSatellite({
                   initial={{ opacity: 0, y: 5 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0 }}
-                  className="p-3 rounded-lg text-xs flex items-center gap-1.5 border bg-success/10 border-success/20 text-success"
+                  className="flex items-center gap-1.5 rounded-lg border border-success/20 bg-success/10 p-3 text-xs text-success"
                 >
-                  <CheckCircle className="w-4 h-4 shrink-0" />
+                  <CheckCircle className="h-4 w-4 shrink-0" />
                   <span>{t("console.policy.success" as any)}</span>
                 </motion.div>
               )}
@@ -664,6 +654,7 @@ function ThresholdSatellite({
           </div>
         </form>
       </FrostedPanel>
+    </div>
   );
 }
 
@@ -717,12 +708,12 @@ function WhitelistLeftRail({
           {whitelist.map((item) => {
             const categoryColor =
               item.category === "Developer"
-                ? "#B5FF4D"
+                ? "var(--hud-lime)"
                 : item.category === "API Provider"
-                ? "#60A5FA"
+                ? "var(--hud-blue)"
                 : item.category === "Ad Network"
-                ? "#C084FC"
-                : "#FB7185";
+                ? "var(--hud-violet)"
+                : "var(--hud-coral)";
             return (
               <motion.div
                 key={item.id}
@@ -730,7 +721,7 @@ function WhitelistLeftRail({
                 initial={{ opacity: 0, x: -6 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -10 }}
-                className="group relative rounded-lg border border-border-token bg-surface-2/40 p-2.5"
+                className="group relative rounded-lg border border-border-token bg-surface-2/40 p-2.5 transition-colors hover:border-hud-coral/25"
               >
                 <span
                   className="absolute left-0 top-0 bottom-0 w-[2px] rounded-l-lg"
@@ -739,7 +730,7 @@ function WhitelistLeftRail({
                 <div className="flex items-start justify-between gap-1 pl-1">
                   <div className="min-w-0">
                     <p className="truncate text-[11px] font-bold text-fg">{item.name}</p>
-                    <p className="mt-0.5 font-mono text-[9px] text-fg-subtle">
+                    <p className="mt-0.5 font-mono text-[9px] text-fg-muted">
                       {item.address.slice(0, 8)}…{item.address.slice(-6)}
                     </p>
                     <span className="mt-1 inline-block rounded border border-border-token px-1.5 py-0.5 text-[9px] text-fg-muted">
@@ -749,7 +740,7 @@ function WhitelistLeftRail({
                   <motion.button
                     whileTap={{ scale: 0.9 }}
                     onClick={() => onDelete(item.id)}
-                    className="shrink-0 rounded p-1 text-fg-subtle hover:bg-red-500/10 hover:text-danger"
+                    className="shrink-0 rounded p-1 text-fg-muted hover:bg-red-500/10 hover:text-danger"
                   >
                     <Trash2 className="h-3 w-3" />
                   </motion.button>
@@ -806,12 +797,12 @@ function WhitelistStrip({
           {whitelist.map((item) => {
             const categoryColor =
               item.category === "Developer"
-                ? "#B5FF4D"
+                ? "var(--hud-lime)"
                 : item.category === "API Provider"
-                ? "#60A5FA"
+                ? "var(--hud-blue)"
                 : item.category === "Ad Network"
-                ? "#C084FC"
-                : "#FB7185";
+                ? "var(--hud-violet)"
+                : "var(--hud-coral)";
             return (
               <motion.div
                 key={item.id}
