@@ -25,7 +25,8 @@ import {
   GitCommit,
   type LucideIcon,
 } from "lucide-react";
-import { STAGES, type Stage, type Capability } from "./pipeline-stage-data";
+import { getPipelineStages, type Stage, type Capability } from "./pipeline-stage-data";
+import { useApp } from "@/lib/i18n/context";
 import { DataSnippet } from "./pipeline-data-snippets";
 import { DecodeHeadline } from "./decode-headline";
 import { BreathingText } from "./breathing-text";
@@ -87,10 +88,14 @@ function PipelineStage({
   stage,
   index,
   isActive,
+  stageCount,
+  nextLabel,
 }: {
   stage: Stage;
   index: number;
   isActive: boolean;
+  stageCount: number;
+  nextLabel: string;
 }) {
   const sectionRef = useRef<HTMLDivElement>(null);
   const prefersReducedMotion = useReducedMotion();
@@ -245,13 +250,13 @@ function PipelineStage({
       </div>
 
       {/* Separator between stages (except last) — visible only on mobile */}
-      {index < STAGES.length - 1 && (
+      {index < stageCount - 1 && (
         <div className="mt-16 mb-4 flex items-center gap-4 lg:hidden">
           <div className="h-px flex-1" style={{ backgroundColor: "rgba(255,255,255,0.06)" }} />
           <span
             className="text-[10px] font-mono uppercase tracking-[0.2em] text-white/30"
           >
-            Next stage
+            {nextLabel}
           </span>
           <div className="h-px flex-1" style={{ backgroundColor: "rgba(255,255,255,0.06)" }} />
         </div>
@@ -267,17 +272,19 @@ function PipelineStage({
  * ===========================================================================*/
 
 function StageSideNav({
+  stages,
   activeIndex,
   onTabClick,
   visible,
 }: {
+  stages: Stage[];
   activeIndex: number;
   onTabClick: (idx: number) => void;
   visible: boolean;
 }) {
-  const activeStage = STAGES[activeIndex];
+  const activeStage = stages[activeIndex];
   const progressPercent =
-    activeIndex === 0 ? 0 : (activeIndex / (STAGES.length - 1)) * 100;
+    activeIndex === 0 ? 0 : (activeIndex / (stages.length - 1)) * 100;
 
   return (
     <div
@@ -339,12 +346,12 @@ function StageSideNav({
             className="absolute top-2 w-[2px] transition-all duration-500"
             style={{
               height: `calc(${progressPercent}% )`,
-              background: `linear-gradient(to bottom, ${STAGES[0].accent}, ${activeStage.accent})`,
+              background: `linear-gradient(to bottom, ${stages[0].accent}, ${activeStage.accent})`,
               opacity: 0.6,
             }}
           />
 
-          {STAGES.map((s, i) => {
+          {stages.map((s, i) => {
             const isActive = i === activeIndex;
             const isVisited = i < activeIndex;
 
@@ -393,7 +400,7 @@ function StageSideNav({
 
         {/* Mini stage list — only show non-active stages */}
         <div className="flex flex-col items-center gap-1.5">
-          {STAGES.map((s, i) => {
+          {stages.map((s, i) => {
             if (i === activeIndex) return null;
             return (
               <button
@@ -421,9 +428,16 @@ function StageSideNav({
  * INTRO
  * ===========================================================================*/
 
-function PipelineIntro() {
+function PipelineIntro({ stages, lang }: { stages: Stage[]; lang: "en" | "zh" }) {
   const ref = useRef<HTMLDivElement>(null);
   const prefersReducedMotion = useReducedMotion();
+  const eyebrow = lang === "zh" ? "五阶段流程" : "The 5-Stage Pipeline";
+  const headline = lang === "zh" ? "从贡献记录\n到审计追踪。" : "From contribution\nto audit trail.";
+  const accentWords = lang === "zh" ? ["审计", "追踪"] : ["audit", "trail"];
+  const subtitle =
+    lang === "zh"
+      ? "一条可见闭环，五个阶段——从原始信号到链上凭证。"
+      : "One visible loop, five stages. Each one tells a story — from raw signal to on-chain proof.";
 
   useGSAP(
     () => {
@@ -459,7 +473,7 @@ function PipelineIntro() {
             opacity: prefersReducedMotion ? 1 : 0,
           }}
         >
-          The 5-Stage Pipeline
+          {eyebrow}
         </span>
 
         <h2
@@ -472,8 +486,8 @@ function PipelineIntro() {
           }}
         >
           <BreathingText
-            text={"From contribution\nto audit trail."}
-            accentWords={["audit", "trail"]}
+            text={headline}
+            accentWords={accentWords}
             accentColor="#B5FF4D"
           />
         </h2>
@@ -485,15 +499,14 @@ function PipelineIntro() {
             opacity: prefersReducedMotion ? 1 : 0,
           }}
         >
-          One visible loop, five stages. Each one tells a story — from raw
-          signal to on-chain proof.
+          {subtitle}
         </p>
 
         <div
           className="intro-animate mt-10 flex flex-wrap items-center justify-center gap-2"
           style={{ opacity: prefersReducedMotion ? 1 : 0 }}
         >
-          {STAGES.map((s) => (
+          {stages.map((s) => (
             <div
               key={s.key}
               className="inline-flex items-center gap-2 rounded-full border px-3.5 py-1.5 text-[11px] font-mono uppercase tracking-[0.16em]"
@@ -518,6 +531,9 @@ function PipelineIntro() {
  * ===========================================================================*/
 
 export function PipelineEditorial() {
+  const { lang } = useApp();
+  const stages = getPipelineStages(lang);
+  const nextLabel = lang === "zh" ? "下一阶段" : "Next stage";
   const [activeIndex, setActiveIndex] = useState(0);
   const [sideNavVisible, setSideNavVisible] = useState(false);
   const stageRefs = useRef<(HTMLDivElement | null)[]>([]);
@@ -579,7 +595,7 @@ export function PipelineEditorial() {
       }}
       className={className}
     >
-      <PipelineStage stage={STAGES[i]} index={i} isActive={i === activeIndex} />
+      <PipelineStage stage={stages[i]} index={i} isActive={i === activeIndex} stageCount={stages.length} nextLabel={nextLabel} />
     </div>
   );
 
@@ -590,13 +606,14 @@ export function PipelineEditorial() {
 
       {/* Side nav — fixed left/right, toggles visibility */}
       <StageSideNav
+        stages={stages}
         activeIndex={activeIndex}
         onTabClick={scrollToStage}
         visible={sideNavVisible}
       />
 
       {/* Intro */}
-      <PipelineIntro />
+      <PipelineIntro stages={stages} lang={lang} />
 
       {/* 5 Stages — true masonry on desktop, single column on mobile.
         * Two independent flex rails (left: 01/03, right: 02/04) so stages stack

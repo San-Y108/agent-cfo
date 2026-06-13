@@ -3,6 +3,8 @@
  * Extended content for the 5-stage pipeline section.
  * ===========================================================================*/
 
+import { STAGES_ZH } from "./pipeline-stage-data-zh";
+
 export type StageKey = "records" | "risk" | "approval" | "wallet" | "audit";
 
 export type Capability = {
@@ -169,3 +171,7 @@ RISK: 4 pass · 1 block
 APPROVER: human`,
   },
 ];
+
+export function getPipelineStages(lang: "en" | "zh"): Stage[] {
+  return lang === "zh" ? STAGES_ZH : STAGES;
+}

@@ -2,6 +2,7 @@
 
 import React, { useState, useRef, useEffect, useMemo } from "react";
 import { motion, useReducedMotion, useMotionValue, useSpring } from "framer-motion";
+import { useT } from "@/lib/i18n/context";
 
 /* ========================================================================
  * Web3NodeCloud — Orbital Trust Stack v4
@@ -461,6 +462,7 @@ function NetworkNode({
 
 /* ── Main Component ──────────────────────────────────────────────────── */
 export function Web3NodeCloud() {
+  const t = useT();
   const reduce = useReducedMotion();
   const [hoveredId, setHoveredId] = useState<string | null>(null);
   const [centerHovered, setCenterHovered] = useState(false);
@@ -529,17 +531,16 @@ export function Web3NodeCloud() {
           transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
         >
           <span className="inline-flex items-center gap-1.5 rounded-full border border-white/[0.08] bg-white/[0.07] px-3 py-1 text-[10px] font-mono uppercase tracking-wider text-white/40">
-            Web3 Trust Stack
+            {t("web3Cloud.eyebrow")}
           </span>
           <h2 className="text-xl font-extrabold tracking-tight text-white md:text-2xl">
-            Web3 Trusted Infrastructure
+            {t("web3Cloud.title")}
           </h2>
           <p className="text-xs leading-relaxed text-white/45 italic">
-            AgentCFO weaves multi-sig suites, automation modules and Cobo HSM
-            into a closed-loop trusted capital allocation network.
+            {t("web3Cloud.desc")}
           </p>
           <p className="text-[9px] text-white/50 font-mono italic">
-            Hover nodes to explore protocols…
+            {t("web3Cloud.hint")}
           </p>
         </motion.div>
 
