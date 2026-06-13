@@ -6,9 +6,9 @@ import { Play, X } from "lucide-react";
 import { useApp, useT } from "@/lib/i18n/context";
 
 // ── Demo video slot ──
-// Materials team: drop the final demo video URL here (e.g. "/demo.mp4" or a CDN
-// link) and optionally a poster frame. The card below renders a styled
-// placeholder until DEMO_VIDEO_SRC is non-empty — no other change needed.
+// Plan: docs/plans/demo-video-landing-integration-plan.md
+// Team asset (drop here): assets/video/agentcfo-demo.mp4
+// Auto-synced to public/video/ via scripts/sync-demo-video.mjs on pnpm dev/build
 const DEMO_VIDEO_SRC = "";
 const DEMO_VIDEO_POSTER = "";
 
