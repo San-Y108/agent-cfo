@@ -10,7 +10,9 @@ import {
 } from "framer-motion";
 import { Orbit, Bot, ShieldCheck, Snowflake } from "lucide-react";
 import { useApp } from "@/lib/i18n/context";
+import { cn } from "@/lib/utils";
 import { Sparkles as SparklesFX } from "@/components/ui/aceternity/sparkles";
+import { useDrawSvgLines } from "@/lib/console/motion/use-draw-svg-lines";
 
 /* =============================================================================
  * WALLET HOLOGRAM — console-side enhanced takes on two landing visuals.
@@ -144,10 +146,12 @@ export function WalletTopology({
   wallets,
   activeId,
   onSelect,
+  compact = false,
 }: {
   wallets: TopologyWallet[];
   activeId: string;
   onSelect: (id: string) => void;
+  compact?: boolean;
 }) {
   const { lang } = useApp();
   const _ = (zh: string, en: string) => (lang === "zh" ? zh : en);
@@ -168,7 +172,8 @@ export function WalletTopology({
 
   const nodes = wallets.map((w, i) => {
     const angle = (360 / wallets.length) * i;
-    const base = polar(angle, 105);
+    const radius = compact ? 72 : 105;
+    const base = polar(angle, radius);
     const pos = reduce
       ? base
       : {
@@ -178,28 +183,36 @@ export function WalletTopology({
     return { wallet: w, pos };
   });
 
+  const lineDrawKey = `${activeId}:${wallets.map((w) => w.id).join(",")}`;
+  const svgRef = useDrawSvgLines([lineDrawKey, reduce], "[data-draw-svg]");
+
   return (
     <div
-      className="rounded-xl border border-border-token dark:border-white/[0.06] overflow-hidden"
+      className={cn(
+        "rounded-xl border border-border-token overflow-hidden",
+        compact && "border-border-token"
+      )}
       onMouseMove={onMove}
       onMouseLeave={() => setMouse({ x: 0, y: 0 })}
       ref={containerRef}
     >
       {/* Header */}
-      <div className="px-4 py-3 border-b border-border-token dark:border-white/[0.06] bg-surface dark:bg-white/[0.02]">
-        <div className="flex items-center gap-2">
-          <Orbit className="w-3.5 h-3.5" style={{ color: BLUE }} />
-          <span className="text-xs font-bold text-fg">
-            {_("资金拓扑", "Treasury Topology")}
-          </span>
+      {!compact && (
+        <div className="px-4 py-3 border-b border-border-token bg-surface-2/40">
+          <div className="flex items-center gap-2">
+            <Orbit className="w-3.5 h-3.5" style={{ color: BLUE }} />
+            <span className="text-xs font-bold text-fg">
+              {_("资金拓扑", "Treasury Topology")}
+            </span>
+          </div>
+          <p className="text-[10px] text-fg-subtle mt-0.5 font-mono">
+            {_("点击节点切换金库", "Click a node to switch vaults")}
+          </p>
         </div>
-        <p className="text-[10px] text-fg-subtle mt-0.5 font-mono">
-          {_("点击节点切换金库", "Click a node to switch vaults")}
-        </p>
-      </div>
+      )}
 
       {/* Dark radar viewport — intentionally dark in both themes */}
-      <div className="relative bg-[#0A0F18]">
+      <div className={cn("relative bg-[#0A0F18]", compact && "bg-[#080c14]")}>
         <div
           aria-hidden
           className="pointer-events-none absolute inset-0 opacity-50"
@@ -209,7 +222,12 @@ export function WalletTopology({
           }}
         />
 
-        <div className="relative mx-auto aspect-square w-full max-w-[320px] p-4">
+        <div
+          className={cn(
+            "relative mx-auto w-full p-4",
+            compact ? "aspect-[3/1] max-h-[140px] p-2" : "aspect-square max-w-[320px]"
+          )}
+        >
           {/* Concentric pulse rings */}
           {[55, 85, 120].map((r, i) => (
             <motion.div
@@ -229,7 +247,11 @@ export function WalletTopology({
           ))}
 
           {/* Connection lines + animated data packets */}
-          <svg viewBox="-160 -160 320 320" className="absolute inset-0 h-full w-full pointer-events-none">
+          <svg
+            ref={svgRef}
+            viewBox="-160 -160 320 320"
+            className="absolute inset-0 h-full w-full pointer-events-none"
+          >
             <defs>
               <linearGradient id="walletLineGrad" x1="0%" y1="0%" x2="100%" y2="100%">
                 <stop offset="0%" stopColor={BLUE} stopOpacity="0.35" />
@@ -239,6 +261,7 @@ export function WalletTopology({
             {nodes.map(({ wallet, pos }) => (
               <g key={wallet.id}>
                 <line
+                  data-draw-svg
                   x1="0"
                   y1="0"
                   x2={pos.x}
@@ -353,10 +376,10 @@ export function WalletTopology({
                     <motion.div
                       initial={{ opacity: 0, y: 4 }}
                       animate={{ opacity: 1, y: 0 }}
-                      className="absolute top-12 left-1/2 z-30 w-32 -translate-x-1/2 rounded-lg border border-white/[0.1] bg-[#0A0F18]/95 p-2 text-center shadow-2xl backdrop-blur-md"
+                      className="absolute top-12 left-1/2 z-30 w-32 -translate-x-1/2 rounded-lg border border-border-token bg-[#0A0F18]/95 p-2 text-center shadow-2xl backdrop-blur-md"
                     >
-                      <div className="text-[9px] font-bold text-white">{wallet.name}</div>
-                      <div className="mt-0.5 text-[7px] font-mono leading-tight text-white/55">
+                      <div className="text-[9px] font-bold text-fg">{wallet.name}</div>
+                      <div className="mt-0.5 text-[7px] font-mono leading-tight text-fg-muted">
                         {wallet.type} · {fmtUsd(wallet.valueUsd)}
                       </div>
                     </motion.div>

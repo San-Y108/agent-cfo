@@ -10,6 +10,7 @@ import {
 } from "recharts";
 import { AnimatedNumber } from "@/components/ui/aceternity/animated-number";
 import { BentoCard } from "@/components/ui/aceternity/bento-grid";
+import { cn } from "@/lib/utils";
 
 const VIOLET = "#C084FC";
 
@@ -37,9 +38,17 @@ export interface PieChartCardProps {
   description: string;
   totalLabel: string;
   embedded?: boolean;
+  variant?: "full" | "compact";
 }
 
-export function PieChartCard({ lang, title, description, totalLabel, embedded = false }: PieChartCardProps) {
+export function PieChartCard({
+  lang,
+  title,
+  description,
+  totalLabel,
+  embedded = false,
+  variant = "full",
+}: PieChartCardProps) {
   const wrapperRef = useRef<HTMLDivElement>(null);
   const [size, setSize] = useState<{ width: number; height: number } | null>(null);
   const [activePieIndex, setActivePieIndex] = useState<number | null>(null);
@@ -80,19 +89,12 @@ export function PieChartCard({ lang, title, description, totalLabel, embedded = 
     Misc: "其他 / Misc",
   };
 
-  const content = (
-    <>
-      {!embedded && (
-        <div className="border-b border-border-token dark:border-white/[0.06] pb-3">
-          <h3 className="text-sm font-bold text-fg flex items-center gap-2">
-            <PieChartIcon className="w-4 h-4" style={{ color: VIOLET }} />
-            {title}
-          </h3>
-          <p className="text-[11px] mt-0.5 text-fg-subtle">{description}</p>
-        </div>
-      )}
+  const isCompact = variant === "compact";
+  const innerR = isCompact ? 34 : 50;
+  const outerR = isCompact ? 48 : 70;
 
-      <div ref={wrapperRef} className="relative flex justify-center h-40">
+  const chartBlock = (
+    <div ref={wrapperRef} className={cn("relative flex justify-center", isCompact ? "h-28" : "h-40")}>
         {size ? (
           <ResponsiveContainer width={size.width} height={size.height}>
             <PieChart>
@@ -100,8 +102,8 @@ export function PieChartCard({ lang, title, description, totalLabel, embedded = 
                 data={RECIPIENT_TYPE_DATA}
                 cx="50%"
                 cy="50%"
-                innerRadius={50}
-                outerRadius={70}
+                innerRadius={innerR}
+                outerRadius={outerR}
                 paddingAngle={5}
                 dataKey="value"
                 shape={(props: any) => {
@@ -112,7 +114,7 @@ export function PieChartCard({ lang, title, description, totalLabel, embedded = 
                       {...rest}
                       index={index}
                       outerRadius={isActive ? (rest.outerRadius as number) + 8 : rest.outerRadius}
-                      stroke={isActive ? "#ffffff" : "transparent"}
+                      stroke={isActive ? "var(--surface)" : "transparent"}
                       strokeWidth={isActive ? 2 : 0}
                       style={{
                         filter: isActive
@@ -129,7 +131,7 @@ export function PieChartCard({ lang, title, description, totalLabel, embedded = 
             </PieChart>
           </ResponsiveContainer>
         ) : (
-          <div className="h-full w-full rounded-lg bg-white/[0.03] animate-pulse" />
+          <div className="h-full w-full rounded-lg bg-surface-2/40 animate-pulse" />
         )}
 
         {/* Center total — AnimatedNumber */}
@@ -138,21 +140,23 @@ export function PieChartCard({ lang, title, description, totalLabel, embedded = 
             <div className="text-[9px] font-mono uppercase text-fg-subtle tracking-wider">
               {totalLabel}
             </div>
-            <div className="text-lg font-extrabold text-fg tabular-nums">
+            <div className={cn("font-extrabold text-fg tabular-nums", isCompact ? "text-sm" : "text-lg")}>
               $<AnimatedNumber value={totalPieValue} />
             </div>
           </div>
         </div>
       </div>
+  );
 
-      <div className="space-y-2">
+  const legendBlock = (
+      <div className={cn("space-y-2", isCompact && "space-y-1 text-[11px]")}>
         {RECIPIENT_TYPE_DATA.map((entry, idx) => {
           const displayLabel = lang === "zh" ? zhNames[entry.name] || entry.name : entry.name;
           const isActive = activePieIndex === idx;
           return (
             <div
               key={idx}
-              className="flex justify-between items-center text-xs rounded-lg px-2 py-1 transition-colors cursor-default hover:bg-white/[0.03]"
+              className="flex justify-between items-center text-xs rounded-lg px-2 py-1 transition-colors cursor-default hover:bg-surface-2/40"
               onMouseEnter={() => setActivePieIndex(idx)}
               onMouseLeave={() => setActivePieIndex(null)}
             >
@@ -176,6 +180,31 @@ export function PieChartCard({ lang, title, description, totalLabel, embedded = 
           );
         })}
       </div>
+  );
+
+  const content = (
+    <>
+      {!embedded && (
+        <div className="border-b border-border-token pb-3">
+          <h3 className="text-sm font-bold text-fg flex items-center gap-2">
+            <PieChartIcon className="w-4 h-4" style={{ color: VIOLET }} />
+            {title}
+          </h3>
+          <p className="text-[11px] mt-0.5 text-fg-subtle">{description}</p>
+        </div>
+      )}
+
+      {isCompact ? (
+        <div className="grid grid-cols-[120px_1fr] gap-3 items-center">
+          {chartBlock}
+          {legendBlock}
+        </div>
+      ) : (
+        <>
+          {chartBlock}
+          {legendBlock}
+        </>
+      )}
     </>
   );
 

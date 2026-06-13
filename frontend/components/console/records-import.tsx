@@ -183,7 +183,7 @@ export function RecordsImport({
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 z-[80] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+          className="fixed inset-0 z-[80] flex items-center justify-center p-4 bg-fg/25 backdrop-blur-sm"
           onClick={onClose}
         >
           <motion.div
@@ -191,11 +191,11 @@ export function RecordsImport({
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.96, y: 12 }}
             transition={{ duration: 0.25, ease: "easeOut" }}
-            className="w-full max-w-2xl max-h-[85vh] flex flex-col rounded-xl border border-border-token dark:border-white/[0.08] bg-surface dark:bg-[#121212] shadow-2xl overflow-hidden"
+            className="w-full max-w-2xl max-h-[85vh] flex flex-col rounded-xl border border-border-token bg-surface shadow-2xl overflow-hidden"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Header */}
-            <div className="px-5 py-4 border-b border-border-token dark:border-white/[0.06] flex items-center justify-between shrink-0">
+            <div className="px-5 py-4 border-b border-border-token flex items-center justify-between shrink-0">
               <div className="flex items-center gap-2">
                 <Upload className="w-4 h-4 text-[#B5FF4D]" />
                 <span className="text-sm font-semibold text-fg">
@@ -204,7 +204,7 @@ export function RecordsImport({
               </div>
               <button
                 onClick={onClose}
-                className="w-7 h-7 rounded-lg flex items-center justify-center text-fg-subtle hover:text-fg hover:bg-surface-2 dark:hover:bg-white/[0.06] transition-colors cursor-pointer"
+                className="w-7 h-7 rounded-lg flex items-center justify-center text-fg-subtle hover:text-fg hover:bg-surface-hover transition-colors cursor-pointer"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -212,7 +212,7 @@ export function RecordsImport({
 
             <div className="p-5 space-y-4 overflow-y-auto">
               {/* Mode tabs */}
-              <div className="flex items-center gap-1 rounded-lg p-1 bg-surface-2 dark:bg-white/[0.04] w-fit">
+              <div className="flex items-center gap-1 rounded-lg p-1 bg-surface-2 w-fit">
                 {(
                   [
                     { key: "csv", icon: <FileSpreadsheet className="w-3.5 h-3.5" />, label: "CSV" },
@@ -280,7 +280,7 @@ export function RecordsImport({
                   placeholder={mode === "csv" ? CSV_EXAMPLE : JSON_EXAMPLE}
                   spellCheck={false}
                   rows={6}
-                  className="w-full px-3 py-2.5 text-[12px] font-mono rounded-lg border border-border-token dark:border-white/[0.08] bg-surface dark:bg-white/[0.03] text-fg outline-none focus:border-[#B5FF4D] transition-colors resize-y placeholder:text-fg-subtle/50"
+                  className="w-full px-3 py-2.5 text-[12px] font-mono rounded-lg border border-border-token bg-surface-2/40 text-fg outline-none focus:border-[#B5FF4D] transition-colors resize-y placeholder:text-fg-subtle/50"
                 />
               </div>
 
@@ -298,8 +298,8 @@ export function RecordsImport({
 
               {/* Preview table */}
               {rows.length > 0 && !headerError && (
-                <div className="rounded-lg border border-border-token dark:border-white/[0.06] overflow-hidden">
-                  <div className="px-4 py-2.5 bg-surface-2 dark:bg-white/[0.03] border-b border-border-token dark:border-white/[0.06] flex items-center justify-between">
+                <div className="rounded-lg border border-border-token overflow-hidden">
+                  <div className="px-4 py-2.5 bg-surface-2/40 border-b border-border-token flex items-center justify-between">
                     <span className="text-[11px] font-mono uppercase text-fg-muted">
                       {_("预览", "Preview")}
                     </span>
@@ -314,7 +314,7 @@ export function RecordsImport({
                   </div>
                   <div className="max-h-[200px] overflow-y-auto">
                     <table className="w-full text-left text-[12px]">
-                      <tbody className="divide-y divide-border-token dark:divide-white/[0.04]">
+                      <tbody className="divide-y divide-border-token">
                         {rows.map((row, i) => (
                           <tr key={i} className={row.errors.length > 0 ? "bg-[#FB7185]/5" : ""}>
                             <td className="py-2 px-4 w-8">
@@ -352,7 +352,7 @@ export function RecordsImport({
             </div>
 
             {/* Footer */}
-            <div className="px-5 py-4 border-t border-border-token dark:border-white/[0.06] flex items-center justify-between shrink-0">
+            <div className="px-5 py-4 border-t border-border-token flex items-center justify-between shrink-0">
               <span className="text-[11px] text-fg-subtle">
                 {_("仅导入有效行；无效行会被跳过。", "Only valid rows import; invalid rows are skipped.")}
               </span>

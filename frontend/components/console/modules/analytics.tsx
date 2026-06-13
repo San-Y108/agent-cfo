@@ -1,3 +1,4 @@
+/** @deprecated Superseded by app/console/analytics/page.tsx — migrate to stages/ */
 "use client";
 
 import React, { useState } from "react";

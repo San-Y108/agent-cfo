@@ -3,9 +3,8 @@
 import React, { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  Bot,
   Send,
-  Sparkles,
+  Sparkles as SparklesIcon,
   Shield,
   FileText,
   TrendingUp,
@@ -15,17 +14,25 @@ import {
   ArrowUpRight,
 } from "lucide-react";
 import { useApp } from "@/lib/i18n/context";
+import { localizeActivityMessage } from "@/lib/console/activity-messages";
 import { cn } from "@/lib/utils";
 import { useConsoleState } from "@/lib/console/console-state";
 import type { PaymentPlanItem, BudgetRules } from "@/lib/types/console";
 import type { CawStatus } from "@/lib/api/types";
 import {
-  HudLabel,
   StatusPulse,
   Scanline,
-  CornerGlow,
   FrostedPanel,
+  DetailDeckShell,
+  PreflightRow,
 } from "@/components/console/command-deck";
+import { AgentCfoMascot, AgentChatAvatar } from "@/components/console/agent-cfo-mascot";
+import { QuickActionButton } from "@/components/console/quick-action-button";
+import { AnimatedNumber } from "@/components/ui/aceternity/animated-number";
+import { BentoCard } from "@/components/ui/aceternity/bento-grid";
+import { GradientText } from "@/components/ui/aceternity/colourful-text";
+import { GradientOrb } from "@/components/ui/aceternity/background";
+import { Sparkles as SparklesFX } from "@/components/ui/aceternity/sparkles";
 
 const LIME = "#B5FF4D";
 const CYAN = "#5EEAD4";
@@ -35,21 +42,39 @@ interface ChatMessage {
   text: string;
 }
 
-const MOCK_MESSAGES: ChatMessage[] = [
-  {
-    role: "agent",
-    text: "Hello! I'm AgentCFO, your DAO treasury assistant.",
-  },
-  {
-    role: "user",
-    text: "Generate a payment plan for this month's contributors.",
-  },
-  {
-    role: "agent",
-    text:
-      "I've analyzed 4 records. 3 passed risk checks, 1 blocked (Bob - not whitelisted).",
-  },
-];
+function getSeedMessages(lang: "en" | "zh"): ChatMessage[] {
+  if (lang === "zh") {
+    return [
+      {
+        role: "agent",
+        text: "你好！我是 AgentCFO，你的 DAO 财务智能体。",
+      },
+      {
+        role: "user",
+        text: "为本月贡献者生成付款计划。",
+      },
+      {
+        role: "agent",
+        text: "已分析 4 条记录。3 笔通过风控检查，1 笔被拦截（Bob — 不在白名单）。",
+      },
+    ];
+  }
+  return [
+    {
+      role: "agent",
+      text: "Hello! I'm AgentCFO, your DAO treasury assistant.",
+    },
+    {
+      role: "user",
+      text: "Generate a payment plan for this month's contributors.",
+    },
+    {
+      role: "agent",
+      text:
+        "I've analyzed 4 records. 3 passed risk checks, 1 blocked (Bob - not whitelisted).",
+    },
+  ];
+}
 
 function TypingIndicator() {
   return (
@@ -96,7 +121,7 @@ function AgentBubble({ text, isLatest }: { text: string; isLatest: boolean }) {
   const [done, setDone] = useState(!isLatest);
 
   return (
-    <div className="max-w-[85%] rounded-2xl rounded-tl-sm border border-hud-lime/15 bg-hud-lime/[0.04] px-4 py-3 text-[13.5px] leading-relaxed text-fg shadow-[0_0_24px_-12px_var(--glow-lime)]">
+    <div className="max-w-[85%] rounded-2xl rounded-tl-sm border border-hud-lime/15 bg-hud-lime/[0.04] px-4 py-3 text-[14px] leading-relaxed text-fg shadow-[0_0_24px_-12px_var(--glow-lime)]">
       {isLatest && !done ? (
         <TypewriterBubble text={text} onDone={() => setDone(true)} />
       ) : (
@@ -165,208 +190,196 @@ function SemanticText({ text }: { text: string }) {
 }
 
 /* =============================================================================
- * AGENT ORB — compact breathing avatar (sidebar scale)
+ * PERSONA RAIL — left column: mascot + identity + telemetry (Plan A)
  * ===========================================================================*/
 
-function AgentOrb({
-  size = 120,
-  analyzing,
-}: {
-  size?: number;
-  analyzing: boolean;
-}) {
-  return (
-    <motion.div
-      className="relative flex items-center justify-center"
-      style={{ width: size, height: size }}
-      animate={analyzing ? { scale: [1, 1.03, 1] } : { scale: [1, 1.02, 1] }}
-      transition={{
-        duration: analyzing ? 1.2 : 4,
-        repeat: Infinity,
-        ease: "easeInOut",
-      }}
-    >
-      {/* halo (kept tight so it never washes out nearby text) */}
-      <div
-        className="absolute inset-[-30%] rounded-full pointer-events-none"
-        style={{
-          background:
-            "radial-gradient(circle, rgba(181,255,77,0.16) 0%, rgba(94,234,212,0.06) 45%, transparent 68%)",
-          filter: "blur(18px)",
-        }}
-      />
-      {/* rotating orbit ring */}
-      <motion.div
-        className="absolute inset-1 rounded-full"
-        style={{
-          border: "1px solid rgba(94,234,212,0.3)",
-          boxShadow:
-            "0 0 18px rgba(94,234,212,0.16), inset 0 0 14px rgba(94,234,212,0.08)",
-        }}
-        animate={{ rotate: 360 }}
-        transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-      >
-        <span
-          className="absolute -top-[3px] left-1/2 h-1.5 w-1.5 rounded-full"
-          style={{ backgroundColor: CYAN, boxShadow: `0 0 8px ${CYAN}` }}
-        />
-      </motion.div>
-      {/* glass core */}
-      <div
-        className="relative flex items-center justify-center rounded-full"
-        style={{
-          width: size * 0.78,
-          height: size * 0.78,
-          background:
-            "radial-gradient(circle at 35% 35%, rgba(255,255,255,0.16), rgba(181,255,77,0.08) 45%, rgba(94,234,212,0.05) 100%)",
-          backdropFilter: "blur(16px)",
-          border: "1px solid rgba(255,255,255,0.2)",
-          boxShadow:
-            "inset 0 0 28px rgba(255,255,255,0.08), 0 0 44px rgba(181,255,77,0.16)",
-        }}
-      >
-        <Bot
-          size={size * 0.34}
-          style={{
-            color: analyzing ? CYAN : LIME,
-            filter: `drop-shadow(0 0 12px ${analyzing ? "rgba(94,234,212,0.5)" : "rgba(181,255,77,0.45)"})`,
-          }}
-          strokeWidth={1.4}
-        />
-      </div>
-    </motion.div>
-  );
-}
-
-/* =============================================================================
- * AGENT SIDEBAR — compact persona + live telemetry + recent activity
- * ===========================================================================*/
-
-function AgentSidebar({ analyzing }: { analyzing: boolean }) {
+function useAgentTelemetry() {
   const { lang } = useApp();
-  const _ = (zh: string, en: string) => (lang === "zh" ? zh : en);
-  const { budgetRule, records, plan, activityLog, openDrawer } = useConsoleState();
-
+  const { budgetRule, records, plan } = useConsoleState();
   const ready = plan.filter((i) => i.status === "Ready").length;
   const blocked = plan.filter((i) => i.status === "Blocked").length;
   const executed = plan.filter((i) => i.status === "Executed");
   const spent = executed.reduce((a, c) => a + c.record.amount, 0);
   const remaining = budgetRule.monthlyBudget - spent;
 
-  const telemetry = [
-    { label: _("预算余额", "BUDGET LEFT"), value: `${remaining}`, unit: "USDC", color: LIME },
-    { label: _("贡献记录", "RECORDS"), value: `${records.length}`, unit: "ROWS", color: CYAN },
-    { label: _("待执行", "READY"), value: `${ready}`, unit: "TX", color: "#60A5FA" },
-    { label: _("已拦截", "BLOCKED"), value: `${blocked}`, unit: "TX", color: "#FB7185" },
+  return [
+    { labelKey: ["预算余额", "BUDGET LEFT"] as const, value: remaining, unit: "USDC", color: LIME },
+    {
+      labelKey: ["贡献记录", "RECORDS"] as const,
+      value: records.length,
+      unit: lang === "zh" ? "条" : "ROWS",
+      color: CYAN,
+    },
+    {
+      labelKey: ["待执行", "READY"] as const,
+      value: ready,
+      unit: lang === "zh" ? "笔" : "TX",
+      color: "#60A5FA",
+    },
+    {
+      labelKey: ["已拦截", "BLOCKED"] as const,
+      value: blocked,
+      unit: lang === "zh" ? "笔" : "TX",
+      color: "#FB7185",
+    },
   ];
+}
 
-  const recent = activityLog.slice(0, 3);
-
+function TelemetryBentoCard({
+  label,
+  value,
+  unit,
+  color,
+  index,
+  compact,
+}: {
+  label: string;
+  value: number;
+  unit: string;
+  color: string;
+  index: number;
+  compact?: boolean;
+}) {
   return (
-    <FrostedPanel
-      glowColor="lime"
-      sheen
-      className="flex h-full flex-col p-5"
+    <BentoCard
+      glowColor={color}
+      padding="sm"
+      index={index}
+      className={cn(
+        "!border-border-token !bg-surface-2/60",
+        compact ? "!p-2 text-center" : "!p-3"
+      )}
     >
-      <CornerGlow color="lime" className="-top-20 -right-20" intensity={0.14} />
-
-      {/* identity */}
-      <div className="relative z-10 flex items-start justify-between">
-        <HudLabel prefix="AGENT::" value="AgentCFO" color="lime" size="sm" />
-        <StatusPulse
-          color={analyzing ? "cyan" : "lime"}
-          label={analyzing ? "BUSY" : "ONLINE"}
-          size="sm"
-        />
-      </div>
-
-      <div className="relative z-10 mt-5 flex flex-col items-center">
-        <AgentOrb size={116} analyzing={analyzing} />
-        <h2 className="mt-4 text-lg font-bold tracking-tight text-fg">AgentCFO</h2>
-        <p className="mt-1 text-center text-[11px] leading-relaxed text-fg-muted">
-          {_("DAO 财务智能体 · CAW 边界内执行", "DAO treasury agent, executing within CAW guardrails")}
+      {!compact && (
+        <p className="font-mono text-[10px] font-medium uppercase tracking-[0.1em] text-fg-muted">
+          {label}
         </p>
+      )}
+      <div
+        className={cn(
+          "flex items-baseline gap-1",
+          compact ? "justify-center" : "mt-1.5"
+        )}
+        style={{ color }}
+      >
+        <AnimatedNumber
+          value={value}
+          className={cn(
+            "font-mono font-bold tabular-nums",
+            compact ? "text-[10px]" : "text-base"
+          )}
+          springConfig={{ stiffness: 90, damping: 28 }}
+        />
+        {!compact && (
+          <span className="font-mono text-[10px] text-fg-subtle">{unit}</span>
+        )}
       </div>
-
-      <Scanline color="lime" className="relative z-10 my-5 opacity-40" />
-
-      {/* telemetry */}
-      <div className="relative z-10">
-        <div className="mb-2.5 font-mono text-[9px] uppercase tracking-[0.2em] text-fg-subtle">
-          {_("实时遥测", "Telemetry")}
-        </div>
-        <div className="grid grid-cols-2 gap-2">
-          {telemetry.map((item) => (
-            <div
-              key={item.label}
-              className="rounded-xl border border-white/[0.06] bg-white/[0.02] px-3 py-2.5"
-            >
-              <div className="font-mono text-[8.5px] uppercase tracking-[0.14em] text-fg-subtle">
-                {item.label}
-              </div>
-              <div className="mt-1 flex items-baseline gap-1">
-                <span
-                  className="font-mono text-base font-bold tabular-nums"
-                  style={{ color: item.color }}
-                >
-                  {item.value}
-                </span>
-                <span className="font-mono text-[8.5px] text-fg-subtle">{item.unit}</span>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* recent activity */}
-      <div className="relative z-10 mt-5 flex min-h-0 flex-1 flex-col">
-        <div className="mb-2.5 flex items-center justify-between">
-          <span className="font-mono text-[9px] uppercase tracking-[0.2em] text-fg-subtle">
-            {_("最近执行", "Recent runs")}
-          </span>
-          <button
-            onClick={() => openDrawer("activity")}
-            className="group flex items-center gap-1 text-[10px] text-fg-subtle transition-colors hover:text-hud-lime"
-          >
-            <History size={10} />
-            {_("全部", "View all")}
-            <ArrowUpRight size={9} className="transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
-          </button>
-        </div>
-        <div className="space-y-1.5 overflow-y-auto">
-          {recent.map((entry) => (
-            <div
-              key={entry.id}
-              className="rounded-lg border border-white/[0.05] bg-white/[0.02] px-3 py-2"
-            >
-              <p className="truncate text-[11px] text-fg-muted">{entry.message}</p>
-              <p className="mt-0.5 font-mono text-[9px] text-fg-subtle">
-                {new Date(entry.ts).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
-              </p>
-            </div>
-          ))}
-        </div>
-      </div>
-    </FrostedPanel>
+    </BentoCard>
   );
 }
 
-/* =============================================================================
- * MOBILE PERSONA STRIP — compact identity bar for < lg viewports
- * ===========================================================================*/
-
-function MobilePersonaStrip({ analyzing }: { analyzing: boolean }) {
+function PersonaRail({ analyzing }: { analyzing: boolean }) {
   const { lang } = useApp();
+  const _ = (zh: string, en: string) => (lang === "zh" ? zh : en);
+  const { openDrawer } = useConsoleState();
+  const telemetry = useAgentTelemetry();
+
   return (
-    <FrostedPanel glowColor="lime" sheen className="flex items-center gap-3 px-4 py-3">
-      <AgentOrb size={44} analyzing={analyzing} />
-      <div className="min-w-0 flex-1">
-        <div className="text-sm font-bold text-fg">AgentCFO</div>
-        <div className="truncate text-[10px] text-fg-muted">
-          {lang === "zh" ? "DAO 财务智能体" : "DAO treasury agent"}
+    <FrostedPanel
+      glowColor="violet"
+      sheen
+      className="relative flex h-full min-h-0 shrink-0 flex-col overflow-hidden border-border-token p-0 lg:min-h-0"
+    >
+      <GradientOrb
+        color="violet"
+        className="pointer-events-none absolute -left-20 -top-24 z-0 h-[260px] w-[260px] opacity-30 blur-[100px]"
+      />
+
+      {/* Mobile: compact horizontal strip */}
+      <div className="relative z-10 flex items-center gap-3 p-4 lg:hidden">
+        <div className="w-[72px] shrink-0">
+          <AgentCfoMascot analyzing={analyzing} size="sm" interactive={false} embedded />
+        </div>
+        <div className="min-w-0 flex-1">
+          <GradientText className="text-sm font-bold tracking-tight">AgentCFO</GradientText>
+          <div className="mt-1 flex flex-wrap items-center gap-2">
+            <StatusPulse
+              color={analyzing ? "cyan" : "lime"}
+              label={analyzing ? _("忙碌", "BUSY") : _("在线", "ONLINE")}
+              size="sm"
+            />
+          </div>
+        </div>
+        <div className="grid shrink-0 grid-cols-2 gap-1.5">
+          {telemetry.slice(0, 2).map((item, i) => (
+            <TelemetryBentoCard
+              key={item.labelKey[1]}
+              index={i}
+              label={_(item.labelKey[0], item.labelKey[1])}
+              value={item.value}
+              unit={item.unit}
+              color={item.color}
+              compact
+            />
+          ))}
         </div>
       </div>
-      <StatusPulse color={analyzing ? "cyan" : "lime"} label={analyzing ? "BUSY" : "ONLINE"} size="sm" />
+
+      {/* Desktop: full vertical persona rail */}
+      <div className="relative z-10 hidden flex-col lg:flex lg:h-full">
+        <AgentCfoMascot analyzing={analyzing} size="md" interactive className="rounded-none border-x-0 border-t-0" />
+
+        <div className="flex flex-1 flex-col gap-4 px-4 pb-4 pt-4">
+          <div className="text-center">
+            <h2 className="text-lg font-bold tracking-tight">
+              <GradientText>AgentCFO</GradientText>
+            </h2>
+            <p className="mt-1 text-[12px] leading-relaxed text-fg-muted">
+              {_("DAO 财务智能体", "DAO treasury agent")}
+            </p>
+            <div className="mt-2.5 flex justify-center">
+              <StatusPulse
+                color={analyzing ? "cyan" : "lime"}
+                label={analyzing ? _("忙碌", "BUSY") : _("在线", "ONLINE")}
+                size="sm"
+              />
+            </div>
+          </div>
+
+          <Scanline color="violet" className="opacity-20" />
+
+          <div className="flex-1">
+            <p className="mb-2.5 text-[12px] font-medium text-fg-muted">
+              {_("预算与状态", "Budget & status")}
+            </p>
+            <div className="grid grid-cols-2 gap-2.5">
+              {telemetry.map((item, i) => (
+                <TelemetryBentoCard
+                  key={item.labelKey[1]}
+                  index={i}
+                  label={_(item.labelKey[0], item.labelKey[1])}
+                  value={item.value}
+                  unit={item.unit}
+                  color={item.color}
+                />
+              ))}
+            </div>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => openDrawer("activity")}
+            className="group flex w-full items-center justify-center gap-2 rounded-xl border border-border-token bg-surface-2/70 px-3 py-3 text-[12px] font-medium text-fg-muted transition-all hover:border-hud-lime/35 hover:bg-surface-hover hover:text-hud-lime active:scale-[0.98]"
+          >
+            <History size={13} />
+            {_("查看执行记录", "View activity log")}
+            <ArrowUpRight
+              size={11}
+              className="transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
+            />
+          </button>
+        </div>
+      </div>
     </FrostedPanel>
   );
 }
@@ -374,6 +387,59 @@ function MobilePersonaStrip({ analyzing }: { analyzing: boolean }) {
 /* =============================================================================
  * CHAT PANEL — the primary work surface, quick commands integrated
  * ===========================================================================*/
+
+function DemoPreflightPanel({ lang }: { lang: "en" | "zh" }) {
+  const { plan, records, budgetRule, activityLog } = useConsoleState();
+  const ready = plan.filter((i) => i.status === "Ready").length;
+  const blocked = plan.filter((i) => i.status === "Blocked").length;
+  const hasPlan = plan.length > 0;
+
+  return (
+    <DetailDeckShell glowColor="lime" className="mx-auto mt-2 max-w-lg">
+      <p className="mb-2 text-[11px] font-bold uppercase tracking-wider text-fg-muted">
+        {lang === "zh" ? "演示预检面板" : "Demo preflight panel"}
+      </p>
+      <PreflightRow
+        label={lang === "zh" ? "贡献记录" : "Contribution records"}
+        value={lang === "zh" ? `${records.length} 条` : `${records.length} rows`}
+        status="ok"
+      />
+      <PreflightRow
+        label={lang === "zh" ? "月预算" : "Monthly budget"}
+        value={`${budgetRule.monthlyBudget} USDC`}
+        status="ok"
+      />
+      <PreflightRow
+        label={lang === "zh" ? "付款计划" : "Payment plan"}
+        value={
+          hasPlan
+            ? lang === "zh"
+              ? `${ready} 通过 / ${blocked} 拦截`
+              : `${ready} ok / ${blocked} blocked`
+            : lang === "zh"
+              ? "待生成"
+              : "Pending"
+        }
+        status={hasPlan ? (blocked > 0 ? "warn" : "ok") : "idle"}
+      />
+      {activityLog.length > 0 ? (
+        <div className="mt-2 max-h-24 space-y-1 overflow-y-auto border-t border-border-token pt-2">
+          {activityLog.slice(-4).map((entry) => (
+            <p key={entry.id} className="font-mono text-[10px] text-fg-subtle">
+              {localizeActivityMessage(entry.message, lang)}
+            </p>
+          ))}
+        </div>
+      ) : (
+        <p className="mt-2 text-[10px] text-fg-subtle">
+          {lang === "zh"
+            ? "点击「生成计划」后，此处会追加风险扫描与 CAW 执行日志。"
+            : "After Generate Plan, risk scan and CAW execution logs appear here."}
+        </p>
+      )}
+    </DetailDeckShell>
+  );
+}
 
 function ChatPanel({
   messages,
@@ -407,38 +473,53 @@ function ChatPanel({
       label: lang === "zh" ? "生成计划" : "Generate Plan",
       icon: FileText,
       color: LIME,
+      primary: true,
     },
     {
       key: lang === "zh" ? "检查风险" : "Check risk",
       label: lang === "zh" ? "检查风险" : "Check Risk",
       icon: Shield,
       color: CYAN,
+      primary: false,
     },
     {
       key: lang === "zh" ? "查看审计报告" : "View audit report",
       label: lang === "zh" ? "查看审计" : "View Audit",
       icon: TrendingUp,
       color: "#C084FC",
+      primary: false,
     },
   ];
 
   return (
-    <FrostedPanel glowColor="lime" sheen scanline className="flex h-full flex-col">
+    <FrostedPanel
+      glowColor="lime"
+      sheen
+      scanline
+      className="relative flex h-full min-h-0 flex-col overflow-hidden shadow-[0_0_48px_-16px_var(--glow-lime)]"
+    >
+      <GradientOrb
+        color="lime"
+        className="pointer-events-none absolute -right-16 -top-20 z-0 h-[240px] w-[240px] opacity-20 blur-[100px]"
+      />
+
       {/* header */}
-      <div className="flex items-center gap-2.5 border-b border-white/[0.06] px-5 py-3.5">
-        <Zap size={15} style={{ color: LIME }} />
-        <span className="text-[13px] font-bold text-fg">
-          {lang === "zh" ? "指挥对话" : "Command Conversation"}
+      <div className="relative z-10 flex shrink-0 items-center gap-2.5 border-b border-border-token px-5 py-4">
+        <Zap size={16} style={{ color: LIME }} />
+        <span className="text-[14px] font-bold">
+          <GradientText>
+            {lang === "zh" ? "指挥对话" : "Command Conversation"}
+          </GradientText>
         </span>
-        <span className="ml-auto font-mono text-[10px] text-fg-subtle">
+        <span className="ml-auto font-mono text-[11px] text-fg-muted">
           {messages.length} {lang === "zh" ? "条消息" : "messages"}
         </span>
       </div>
 
-      {/* messages */}
+      {/* messages — grows to fill, keeps input at bottom */}
       <div
         ref={scrollRef}
-        className="min-h-0 flex-1 space-y-4 overflow-y-auto px-5 py-5"
+        className="relative z-10 min-h-0 flex-1 space-y-4 overflow-y-auto px-5 py-5"
       >
         <AnimatePresence initial={false}>
           {messages.map((msg, idx) => {
@@ -457,29 +538,22 @@ function ChatPanel({
                   ease: "easeOut",
                 }}
                 className={cn(
-                  "flex gap-3",
-                  msg.role === "user" ? "flex-row-reverse" : "flex-row"
+                  "flex gap-2.5",
+                  msg.role === "user" ? "flex-row-reverse items-center" : "flex-row items-start"
                 )}
               >
-                <div
-                  className={cn(
-                    "flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full",
-                    msg.role === "agent"
-                      ? "border border-lime-500/20 bg-lime-500/10"
-                      : "border border-white/[0.08] bg-white/[0.06]"
-                  )}
-                >
-                  {msg.role === "agent" ? (
-                    <Bot size={14} style={{ color: LIME }} />
-                  ) : (
-                    <User size={14} className="text-fg-muted" />
-                  )}
-                </div>
+                {msg.role === "agent" ? (
+                  <AgentChatAvatar />
+                ) : (
+                  <div className="flex h-[46px] w-[46px] shrink-0 items-center justify-center rounded-full border border-border-token bg-surface-2">
+                    <User size={15} className="text-fg-muted" />
+                  </div>
+                )}
 
                 {msg.role === "agent" ? (
                   <AgentBubble text={msg.text} isLatest={isLatestAgent} />
                 ) : (
-                  <div className="max-w-[85%] rounded-2xl rounded-tr-sm border border-white/[0.06] bg-white/[0.07] px-4 py-3 text-[13.5px] leading-relaxed text-fg">
+                  <div className="max-w-[85%] rounded-2xl rounded-tr-sm border border-border-token bg-surface-2 px-4 py-3 text-[14px] leading-relaxed text-fg">
                     {msg.text}
                   </div>
                 )}
@@ -494,45 +568,45 @@ function ChatPanel({
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: 8 }}
-              className="flex gap-3"
+              className="flex items-start gap-2.5"
             >
-              <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full border border-lime-500/20 bg-lime-500/10">
-                <Bot size={14} style={{ color: LIME }} />
-              </div>
-              <div className="rounded-2xl rounded-tl-sm border border-white/[0.06] bg-white/[0.03] px-4 py-2">
-                <TypingIndicator />
+              <AgentChatAvatar analyzing />
+              <div className="relative overflow-hidden rounded-2xl rounded-tl-sm border border-border-token bg-surface-2/70 px-4 py-2">
+                <SparklesFX count={10} color={CYAN} className="opacity-50" />
+                <div className="relative">
+                  <TypingIndicator />
+                </div>
               </div>
             </motion.div>
           )}
         </AnimatePresence>
+
+        {messages.length <= 3 && !isThinking && (
+          <div className="space-y-3 pt-2">
+            <p className="text-center text-[12px] text-fg-muted">
+              {lang === "zh"
+                ? "试试点击下方「生成计划」开始 Demo"
+                : "Try Generate Plan below to start the demo"}
+            </p>
+            <DemoPreflightPanel lang={lang} />
+          </div>
+        )}
       </div>
 
-      {/* quick commands + input */}
-      <div className="border-t border-white/[0.06] px-5 pb-4 pt-3">
-        <div className="mb-3 flex flex-wrap items-center gap-2">
-          <span className="mr-0.5 hidden font-mono text-[9px] uppercase tracking-[0.18em] text-fg-subtle sm:block">
-            {lang === "zh" ? "快速指令" : "Quick"}
-          </span>
-          {quickActions.map((a) => {
-            const Icon = a.icon;
-            return (
-              <motion.button
-                key={a.label}
-                onClick={() => onQuickAction(a.key)}
-                disabled={isThinking}
-                whileTap={{ scale: 0.96 }}
-                className="group flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-[11.5px] font-medium transition-all disabled:cursor-not-allowed disabled:opacity-40"
-                style={{
-                  borderColor: `${a.color}2E`,
-                  backgroundColor: `${a.color}0D`,
-                  color: a.color,
-                }}
-              >
-                <Icon size={12} />
-                {a.label}
-              </motion.button>
-            );
-          })}
+      {/* quick commands + input — pinned to bottom */}
+      <div className="relative z-10 mt-auto shrink-0 border-t border-border-token bg-surface/90 px-5 pb-4 pt-4 backdrop-blur-md">
+        <div className="mb-3 flex flex-wrap items-center gap-2.5">
+          {quickActions.map((a) => (
+            <QuickActionButton
+              key={a.label}
+              label={a.label}
+              icon={a.icon}
+              color={a.color}
+              primary={a.primary}
+              disabled={isThinking}
+              onClick={() => onQuickAction(a.key)}
+            />
+          ))}
         </div>
 
         <div className="flex items-center gap-3">
@@ -548,32 +622,30 @@ function ChatPanel({
                   : "Type a command or question..."
               }
               disabled={isThinking}
-              className="w-full rounded-xl border border-white/[0.08] bg-white/[0.03] px-4 py-3 pr-11 text-[13px] text-fg placeholder:text-fg-subtle/60 transition-all focus:border-lime-500/30 focus:outline-none focus:ring-1 focus:ring-lime-500/10 disabled:opacity-50"
+              className="w-full rounded-xl border border-border-token bg-surface-2/70 px-4 py-3.5 pr-11 text-[14px] text-fg placeholder:text-fg-subtle transition-all focus:border-lime-500/45 focus:outline-none focus:ring-2 focus:ring-lime-500/20 disabled:opacity-50"
             />
-            <Sparkles
-              size={14}
-              className="absolute right-3.5 top-1/2 -translate-y-1/2 text-fg-subtle/40"
+            <SparklesIcon
+              size={15}
+              className="absolute right-3.5 top-1/2 -translate-y-1/2 text-fg-subtle"
             />
           </div>
           <motion.button
+            type="button"
             onClick={onSend}
             disabled={!inputValue.trim() || isThinking}
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-xl transition-all disabled:cursor-not-allowed disabled:opacity-30"
-            style={{
-              backgroundColor: inputValue.trim()
-                ? `${LIME}15`
-                : "rgba(255,255,255,0.03)",
-              border: inputValue.trim()
-                ? `1px solid ${LIME}30`
-                : "1px solid rgba(255,255,255,0.08)",
-            }}
+            whileHover={{ scale: 1.04 }}
+            whileTap={{ scale: 0.96 }}
+            className={cn(
+              "flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl border transition-all",
+              inputValue.trim() && !isThinking
+                ? "border-lime-400/50 bg-lime-400/20 shadow-[0_0_16px_-4px_rgba(181,255,77,0.45)]"
+                : "border-border-token bg-surface-2/60"
+            )}
           >
             <Send
-              size={16}
+              size={17}
               style={{
-                color: inputValue.trim() ? LIME : "rgba(255,255,255,0.3)",
+                color: inputValue.trim() ? LIME : "var(--fg-subtle)",
               }}
             />
           </motion.button>
@@ -633,9 +705,7 @@ function formatAuditSummary(
 }
 
 /**
- * AgentHub — Console home. Chat-first layout: compact persona sidebar on the
- * left, the conversation as the primary surface, quick commands integrated
- * above the input.
+ * AgentHub — Plan A: left persona rail + right conversation (primary).
  */
 export function AgentHub() {
   const { lang } = useApp();
@@ -646,9 +716,13 @@ export function AgentHub() {
     generatePlan,
     executePlan,
   } = useConsoleState();
-  const [messages, setMessages] = useState<ChatMessage[]>(MOCK_MESSAGES);
+  const [messages, setMessages] = useState<ChatMessage[]>(() => getSeedMessages(lang));
   const [inputValue, setInputValue] = useState("");
   const [isThinking, setIsThinking] = useState(false);
+
+  useEffect(() => {
+    setMessages(getSeedMessages(lang));
+  }, [lang]);
 
   const pushAgentMessage = (text: string) => {
     setMessages((prev) => [...prev, { role: "agent", text }]);
@@ -718,27 +792,18 @@ export function AgentHub() {
   };
 
   return (
-    <div className="mx-auto flex h-[calc(100dvh-7.5rem)] w-full max-w-6xl flex-col gap-4 px-4 py-4 md:h-[calc(100dvh-4rem)] md:px-6 md:py-6">
-      {/* mobile compact persona */}
-      <div className="lg:hidden">
-        <MobilePersonaStrip analyzing={isThinking} />
-      </div>
-
-      <div className="grid min-h-0 flex-1 grid-cols-1 gap-4 lg:grid-cols-[300px_minmax(0,1fr)]">
-        <div className="hidden min-h-0 lg:block">
-          <AgentSidebar analyzing={isThinking} />
-        </div>
-        <div className="min-h-0">
-          <ChatPanel
-            messages={messages}
-            isThinking={isThinking}
-            inputValue={inputValue}
-            setInputValue={setInputValue}
-            onSend={handleSend}
-            onKeyDown={handleKeyDown}
-            onQuickAction={handleQuickAction}
-          />
-        </div>
+    <div className="flex h-[calc(100dvh-7.5rem)] w-full max-w-none flex-col gap-3 overflow-hidden px-3 py-3 md:h-[calc(100dvh-4rem)] md:gap-4 md:px-5 md:py-4 lg:grid lg:grid-cols-[minmax(260px,288px)_1fr] lg:grid-rows-1 lg:items-stretch">
+      <PersonaRail analyzing={isThinking} />
+      <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
+        <ChatPanel
+          messages={messages}
+          isThinking={isThinking}
+          inputValue={inputValue}
+          setInputValue={setInputValue}
+          onSend={handleSend}
+          onKeyDown={handleKeyDown}
+          onQuickAction={handleQuickAction}
+        />
       </div>
     </div>
   );

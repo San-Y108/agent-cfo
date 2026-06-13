@@ -1,7 +1,10 @@
 "use client";
 
-import React, { useRef, useEffect } from "react";
+import React, { useRef, useEffect, useState } from "react";
+import { motion } from "framer-motion";
 import { gsap } from "@/lib/gsap";
+import { SplitText } from "gsap/SplitText";
+import { prefersReducedMotion } from "@/lib/console/motion/use-flip-layout";
 
 /* =============================================================================
  * GSAP TEXT EFFECTS — SplitText + ScrambleText wrappers
@@ -79,31 +82,43 @@ export function ScrambleValue({
   duration = 1.2,
 }: ScrambleValueProps) {
   const ref = useRef<HTMLSpanElement>(null);
-  const hasAnimated = useRef(false);
+  const [reduceMotion, setReduceMotion] = useState(false);
+  const prevValue = useRef<string | null>(null);
+
+  useEffect(() => {
+    setReduceMotion(prefersReducedMotion());
+  }, []);
 
   useEffect(() => {
     const el = ref.current;
-    if (!el || hasAnimated.current) return;
-    hasAnimated.current = true;
+    if (!el) return;
 
     const text = String(value);
+    if (prevValue.current === text) return;
+    prevValue.current = text;
 
+    if (reduceMotion || prefersReducedMotion()) {
+      el.textContent = text;
+      return;
+    }
+
+    gsap.killTweensOf(el);
     gsap.to(el, {
       duration,
       delay,
       scrambleText: {
         text,
-        chars: "upperAndLowerCase",
-        revealDelay: 0.2,
+        chars: "0123456789ABCDEF",
+        revealDelay: 0.15,
+        speed: 0.45,
       },
       ease: "none",
     });
-  }, [value, delay, duration]);
+  }, [value, delay, duration, reduceMotion]);
 
   return (
     <span ref={ref} className={className}>
-      {/* initial placeholder — will be overwritten by GSAP */}
-      {Array(String(value).length).fill("?").join("")}
+      {String(value)}
     </span>
   );
 }
@@ -111,8 +126,6 @@ export function ScrambleValue({
 /* =============================================================================
  * Framer Motion fallback — 当 GSAP Club 不可用时使用
  * ===========================================================================*/
-
-import { motion } from "framer-motion";
 
 interface FadeInTextProps {
   children: string;

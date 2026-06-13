@@ -76,7 +76,7 @@ export function AreaChartCard({ lang, title, hint, description, embedded = false
   const content = (
     <>
       {!embedded && (
-        <div className="flex justify-between items-center border-b border-border-token dark:border-white/[0.06] pb-3">
+        <div className="flex justify-between items-center border-b border-border-token pb-3">
           <h3 className="text-sm font-bold flex items-center gap-2 text-fg">
             <TrendingUp className="w-4 h-4" style={{ color: VIOLET }} />
             {title}
@@ -124,8 +124,8 @@ export function AreaChartCard({ lang, title, hint, description, embedded = false
                         ? MONTH_NAMES_ZH[data.month] || data.month
                         : `${data.month} Payouts`;
                     return (
-                      <div className="p-3 border rounded-lg shadow-xl text-[11px] font-mono space-y-1 bg-surface dark:bg-[#0b1120] border-border-token dark:border-white/[0.08] text-fg">
-                        <div className="font-bold border-b border-border-token dark:border-white/[0.08] pb-1 mb-1">
+                      <div className="p-3 border rounded-lg shadow-xl text-[11px] font-mono space-y-1 bg-surface border-border-token text-fg">
+                        <div className="font-bold border-b border-border-token pb-1 mb-1">
                           {monthName}
                         </div>
                         <div>
@@ -160,11 +160,11 @@ export function AreaChartCard({ lang, title, hint, description, embedded = false
             </AreaChart>
           </ResponsiveContainer>
         ) : (
-          <div className="h-full w-full rounded-lg bg-white/[0.03] animate-pulse" />
+          <div className="h-full w-full rounded-lg bg-surface-2/40 animate-pulse" />
         )}
       </div>
 
-      <p className="text-[11px] flex items-start gap-1.5 p-3 rounded-lg border border-border-token dark:border-white/[0.06] bg-surface-2 dark:bg-white/[0.02] text-fg-subtle">
+      <p className="text-[11px] flex items-start gap-1.5 p-3 rounded-lg border border-border-token bg-surface-2 text-fg-subtle">
         <Info className="w-4 h-4 shrink-0 mt-0.5" style={{ color: VIOLET }} />
         <span>{description}</span>
       </p>

@@ -1,3 +1,4 @@
+/** @deprecated Page-local implementation in app/console/wallets/page.tsx — migrate to stages/ */
 "use client";
 
 import React, { useState } from "react";

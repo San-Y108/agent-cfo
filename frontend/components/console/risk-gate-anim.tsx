@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ShieldAlert } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ScrambleValue } from "@/components/ui/gsap-text-effects";
+import { useApp } from "@/lib/i18n/context";
 
 /* =============================================================================
  * RISK GATE ANIMATION — Animated blocked payment indicator.
@@ -19,6 +20,9 @@ export interface RiskGateAnimationProps {
 }
 
 export function RiskGateAnimation({ isBlocked, reason }: RiskGateAnimationProps) {
+  const { lang } = useApp();
+  const title = lang === "zh" ? "付款被拦截" : "Payment Blocked";
+
   return (
     <AnimatePresence mode="wait">
       {isBlocked && (
@@ -41,8 +45,7 @@ export function RiskGateAnimation({ isBlocked, reason }: RiskGateAnimationProps)
             },
           }}
           className={cn(
-            "flex items-center gap-3 rounded-xl border px-4 py-3",
-            "bg-[#0D0D0D]"
+            "flex items-center gap-3 rounded-xl border border-border-token bg-surface px-4 py-3",
           )}
           style={{
             borderColor: `${CORAL}40`,
@@ -74,7 +77,7 @@ export function RiskGateAnimation({ isBlocked, reason }: RiskGateAnimationProps)
               className="text-sm font-bold"
               style={{ color: CORAL }}
             >
-              Payment Blocked
+              {title}
             </span>
             {reason && (
               <span
