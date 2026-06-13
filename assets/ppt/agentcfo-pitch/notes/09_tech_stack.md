@@ -1,0 +1,1 @@
+技术栈：Python + FastAPI + Pydantic + pytest + SQLite + cobo-agentic-wallet SDK。Planner 默认 mock，可显式启用 OpenAI Structured Outputs。

@@ -1,0 +1,1 @@
+Demo 场景四名对象：Alice 和 Charlie 可执行，Bob 因白名单被 Blocked，Data API 是工具订阅。前端可展示 risk badge 和 blocked 原因。

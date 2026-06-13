@@ -1,0 +1,1 @@
+大家好，我们是 AgentCFO——给每个 DAO 一个带受控钱包的 AI 财务官。参赛赛道是 Cobo Agentic Commerce。接下来用 3 分钟展示：问题、方案、Demo 和 CAW 证据。

@@ -1,0 +1,1 @@
+Phase 4C 已完成 1 笔 Sepolia testnet 低额转账，有真实 tx hash 和 request_id。但默认线上仍是 mock mode，真实转账需显式配置和人工批准。

@@ -1,0 +1,1 @@
+P0/P1 核心能力已完成并部署。P2 是 demo-safe 扩展，包括 Request Finance、Sablier、Safe 等参考能力，live integration 需明确批准。

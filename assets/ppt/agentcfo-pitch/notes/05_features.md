@@ -1,0 +1,1 @@
+六大能力：AI Payment Plan、Risk Check、Human Approval、CAW Execution、Audit Report、Mock Mode。前后端已分别部署到 Vercel 和 Render。
