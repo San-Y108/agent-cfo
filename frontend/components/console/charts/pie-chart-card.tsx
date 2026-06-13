@@ -38,7 +38,7 @@ export interface PieChartCardProps {
   description: string;
   totalLabel: string;
   embedded?: boolean;
-  variant?: "full" | "compact";
+  variant?: "full" | "compact" | "rail";
 }
 
 export function PieChartCard({
@@ -90,11 +90,18 @@ export function PieChartCard({
   };
 
   const isCompact = variant === "compact";
-  const innerR = isCompact ? 34 : 50;
-  const outerR = isCompact ? 48 : 70;
+  const isRail = variant === "rail";
+  const innerR = isRail ? 38 : isCompact ? 34 : 50;
+  const outerR = isRail ? 54 : isCompact ? 48 : 70;
 
   const chartBlock = (
-    <div ref={wrapperRef} className={cn("relative flex justify-center", isCompact ? "h-28" : "h-40")}>
+    <div
+      ref={wrapperRef}
+      className={cn(
+        "relative flex justify-center",
+        isRail ? "min-h-[108px] flex-1" : isCompact ? "h-28" : "h-40"
+      )}
+    >
         {size ? (
           <ResponsiveContainer width={size.width} height={size.height}>
             <PieChart>
@@ -149,7 +156,7 @@ export function PieChartCard({
   );
 
   const legendBlock = (
-      <div className={cn("space-y-2", isCompact && "space-y-1 text-[11px]")}>
+      <div className={cn("space-y-2", isCompact && "space-y-1 text-[11px]", isRail && "min-h-0 flex-1 space-y-1.5 overflow-y-auto pr-0.5")}>
         {RECIPIENT_TYPE_DATA.map((entry, idx) => {
           const displayLabel = lang === "zh" ? zhNames[entry.name] || entry.name : entry.name;
           const isActive = activePieIndex === idx;
@@ -199,6 +206,11 @@ export function PieChartCard({
           {chartBlock}
           {legendBlock}
         </div>
+      ) : isRail ? (
+        <div className="flex min-h-0 flex-1 flex-col gap-3">
+          {chartBlock}
+          {legendBlock}
+        </div>
       ) : (
         <>
           {chartBlock}
@@ -210,7 +222,7 @@ export function PieChartCard({
 
   if (embedded) {
     return (
-      <div className="space-y-4 h-full flex flex-col">
+      <div className={cn("flex h-full min-h-0 flex-col", isRail ? "gap-0" : "space-y-4")}>
         {content}
       </div>
     );
