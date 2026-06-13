@@ -7,19 +7,31 @@ import {
   PieChart,
   Pie as RePie,
   Sector,
+  Cell,
 } from "recharts";
 import { AnimatedNumber } from "@/components/ui/aceternity/animated-number";
 import { BentoCard } from "@/components/ui/aceternity/bento-grid";
+import { useApp } from "@/lib/i18n/context";
 import { cn } from "@/lib/utils";
 
 const VIOLET = "#C084FC";
 
-const STAGE_COLORS = [
-  "#5EEAD4", // cyan
-  "#FB7185", // coral
-  "#B5FF4D", // lime
-  "#60A5FA", // blue
-  "#C084FC", // violet
+/** Neon palette — dark console */
+const SLICE_COLORS_DARK = [
+  "#5EEAD4",
+  "#FB7185",
+  "#B5FF4D",
+  "#60A5FA",
+  "#C084FC",
+];
+
+/** Saturated palette — light console (readable on white) */
+const SLICE_COLORS_LIGHT = [
+  "#0e7490",
+  "#be123c",
+  "#4d7c0f",
+  "#1d4ed8",
+  "#6d28d9",
 ];
 
 const RECIPIENT_TYPE_DATA = [
@@ -31,6 +43,10 @@ const RECIPIENT_TYPE_DATA = [
 ];
 
 const PieAny = RePie as any;
+
+function sliceColors(isDark: boolean) {
+  return isDark ? SLICE_COLORS_DARK : SLICE_COLORS_LIGHT;
+}
 
 export interface PieChartCardProps {
   lang: "en" | "zh";
@@ -49,6 +65,9 @@ export function PieChartCard({
   embedded = false,
   variant = "full",
 }: PieChartCardProps) {
+  const { theme } = useApp();
+  const isDark = theme === "dark";
+  const colors = sliceColors(isDark);
   const wrapperRef = useRef<HTMLDivElement>(null);
   const [size, setSize] = useState<{ width: number; height: number } | null>(null);
   const [activePieIndex, setActivePieIndex] = useState<number | null>(null);
@@ -113,20 +132,22 @@ export function PieChartCard({
                 outerRadius={outerR}
                 paddingAngle={5}
                 dataKey="value"
+                stroke="var(--surface)"
+                strokeWidth={2}
                 shape={(props: any) => {
-                  const { index, ...rest } = props;
+                  const { index, outerRadius, ...rest } = props;
                   const isActive = activePieIndex === index;
+                  const fill = colors[index % colors.length];
                   return (
                     <Sector
                       {...rest}
                       index={index}
-                      outerRadius={isActive ? (rest.outerRadius as number) + 8 : rest.outerRadius}
-                      stroke={isActive ? "var(--surface)" : "transparent"}
-                      strokeWidth={isActive ? 2 : 0}
+                      fill={fill}
+                      outerRadius={isActive ? (outerRadius as number) + 8 : outerRadius}
+                      stroke={isActive ? "var(--surface)" : "var(--surface)"}
+                      strokeWidth={2}
                       style={{
-                        filter: isActive
-                          ? `drop-shadow(0 0 10px ${STAGE_COLORS[index % STAGE_COLORS.length]})`
-                          : undefined,
+                        filter: isActive ? `drop-shadow(0 0 10px ${fill})` : undefined,
                         transition: "all 0.2s ease",
                       }}
                     />
@@ -134,7 +155,11 @@ export function PieChartCard({
                 }}
                 onMouseEnter={(_data: any, index: number) => setActivePieIndex(index)}
                 onMouseLeave={() => setActivePieIndex(null)}
-              />
+              >
+                {RECIPIENT_TYPE_DATA.map((_, idx) => (
+                  <Cell key={idx} fill={colors[idx % colors.length]} stroke="var(--surface)" />
+                ))}
+              </PieAny>
             </PieChart>
           </ResponsiveContainer>
         ) : (
@@ -171,9 +196,9 @@ export function PieChartCard({
                 <div
                   className="w-2.5 h-2.5 rounded-full shrink-0 transition-transform duration-200"
                   style={{
-                    backgroundColor: STAGE_COLORS[idx % STAGE_COLORS.length],
+                    backgroundColor: colors[idx % colors.length],
                     transform: isActive ? "scale(1.3)" : "scale(1)",
-                    boxShadow: isActive ? `0 0 8px ${STAGE_COLORS[idx % STAGE_COLORS.length]}` : undefined,
+                    boxShadow: isActive ? `0 0 8px ${colors[idx % colors.length]}` : undefined,
                   }}
                 />
                 <span className={`font-medium truncate ${isActive ? "text-fg" : "text-fg-muted"}`}>
