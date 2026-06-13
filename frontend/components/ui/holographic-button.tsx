@@ -55,6 +55,7 @@ export interface HolographicButtonProps {
   disabled?: boolean;
   onClick?: React.MouseEventHandler<HTMLButtonElement>;
   type?: "button" | "submit" | "reset";
+  form?: string;
   children?: React.ReactNode;
 }
 
@@ -69,6 +70,7 @@ export function HolographicButton({
   disabled,
   onClick,
   type = "button",
+  form,
 }: HolographicButtonProps) {
   const c = COLOR_MAP[variant];
 
@@ -91,6 +93,7 @@ export function HolographicButton({
   return (
     <motion.button
       type={type}
+      form={form}
       onClick={onClick}
       style={tilt3d ? { transformStyle: "preserve-3d" } : undefined}
       whileHover={hoverState}

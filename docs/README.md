@@ -10,6 +10,7 @@
 | [`backend/`](backend/) | 后端技术深文档（CAW、部署、P2；合并时从 README 拆出） |
 | [`plans/`](plans/) | 规划文档（含 [README 合并规划](plans/README-merge-plan.md)） |
 | [`pm/`](pm/) | 任务看板、站会、风险、提交清单、彩排、交付报告 |
+| [`speak/`](speak/) | 路演 / Demo 陈述稿、团队分工口述、录制大纲 |
 | [`p2/`](p2/) | P2 扩展能力边界与设计说明 |
 | [`reports/`](reports/) | 阶段性状态 / handoff 报告 |
 
@@ -21,6 +22,9 @@
 - [任务看板](pm/TASK_BOARD.md)
 - [交付总控报告](pm/DELIVERY_MASTER_REPORT_2026-06-08.md)
 - [P2 Demo Handoff](pm/P2_DEMO_HANDOFF.md)
+- [路演陈述稿索引](speak/README.md)
+- [Demo 视频录制指南](speak/demo-video-guide.md)
+- [Demo 视频 Landing 接入规划](plans/demo-video-landing-integration-plan.md)
 
 ## 前端专项文档
 

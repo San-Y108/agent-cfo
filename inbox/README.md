@@ -8,7 +8,7 @@
 | --- | --- | --- |
 | 路演 PPT / PDF | `assets/ppt/` 或 `assets/ppt/material/` | `agentcfo-pitch-material-team-vN.pdf` |
 | ppt-master 源工程导出 | `assets/ppt/agentcfo-pitch/` | 见 `assets/README.md` |
-| 答辩 / Demo 视频 | `assets/video/` | `agentcfo-demo-vN.mp4` |
+| 答辩 / Demo 视频 | **`assets/video/`**（全队投放点） | `agentcfo-demo.mp4`；接入见 `docs/plans/demo-video-landing-integration-plan.md` |
 | 截图、海报、流程图 | `assets/images/` | README 用图 → `assets/images/readme/`；其他 → `images/` 根下按用途命名 |
 | Logo、设计稿源文件 | `assets/design/` | `logo.svg`、`poster.fig` 等 |
 | 文字草稿、清单 | `docs/` 对应子目录 | 按现有 pm / reports 规范 |

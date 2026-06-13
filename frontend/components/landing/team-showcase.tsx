@@ -28,6 +28,7 @@ type Member = {
   icon: React.ElementType;
   ringSpeed: number;
   avatar: string;
+  mascot: string;
   isMentor?: boolean;
 };
 
@@ -42,6 +43,7 @@ const MEMBERS: Member[] = [
     icon: Rocket,
     ringSpeed: 4,
     avatar: "/team/avatar-san-y108.jpg",
+    mascot: "/console/mascots/huan-mascot.png",
   },
   {
     roleZh: "后端 / Agent",
@@ -53,6 +55,7 @@ const MEMBERS: Member[] = [
     icon: Server,
     ringSpeed: 5,
     avatar: "/team/avatar-w5w8l9jlu.jpg",
+    mascot: "/console/mascots/jiujiu-mascot.png",
   },
   {
     roleZh: "前端",
@@ -64,6 +67,7 @@ const MEMBERS: Member[] = [
     icon: Layout,
     ringSpeed: 6,
     avatar: "/team/avatar-aafff623.jpg",
+    mascot: "/console/mascots/threetwoa-mascot.png",
   },
   {
     roleZh: "合约 / CAW",
@@ -75,6 +79,7 @@ const MEMBERS: Member[] = [
     icon: Wallet,
     ringSpeed: 7,
     avatar: "/team/avatar-gitgdut.jpg",
+    mascot: "/console/mascots/purple-sun-mascot.png",
   },
   {
     roleZh: "物料 / 设计",
@@ -86,6 +91,7 @@ const MEMBERS: Member[] = [
     icon: Palette,
     ringSpeed: 8,
     avatar: "/team/avatar-eloise-qiu.jpg",
+    mascot: "/console/mascots/guagua-mascot.png",
   },
 ];
 
@@ -99,6 +105,7 @@ const MENTOR: Member = {
   icon: Crown,
   ringSpeed: 3,
   avatar: "/team/avatar-mentor-zanyk.jpg",
+  mascot: "/console/mascots/zanyk-mascot.png",
   isMentor: true,
 };
 
@@ -148,10 +155,11 @@ const PENTAGON_COORDS = [
   { x: -257, y: -84 },                // Top-left
 ];
 
-/* ── Avatar with rotating ring ───────────────────────────────────────── */
+/* ── Avatar with rotating ring + mascot reveal ─────────────────────────── */
 function AvatarRing({
   accent,
   avatar,
+  mascot,
   icon: Icon,
   speed,
   active,
@@ -159,6 +167,7 @@ function AvatarRing({
 }: {
   accent: string;
   avatar: string;
+  mascot?: string;
   icon: React.ElementType;
   speed: number;
   active: boolean;
@@ -177,9 +186,32 @@ function AvatarRing({
           opacity: active ? 1 : 0.6,
         }}
       />
+
+      {/* Mascot — hidden by default, revealed on hover */}
+      {mascot && (
+        <motion.img
+          src={mascot}
+          alt=""
+          className="absolute z-30 h-full w-full object-contain p-1"
+          initial={false}
+          animate={
+            active
+              ? { opacity: 1, scale: 1.1, y: -6 }
+              : { opacity: 0, scale: 0.6, y: 8 }
+          }
+          transition={{ type: "spring", stiffness: 260, damping: 18 }}
+          style={{
+            filter: active ? `drop-shadow(0 0 16px ${accent}90)` : "none",
+          }}
+        />
+      )}
+
       {/* Avatar image */}
-      <div
-        className="relative z-10 overflow-hidden rounded-full"
+      <motion.div
+        className="relative z-20 overflow-hidden rounded-full"
+        initial={false}
+        animate={active ? { opacity: 0, scale: 0.7 } : { opacity: 1, scale: 1 }}
+        transition={{ type: "spring", stiffness: 260, damping: 18 }}
         style={{
           width: size,
           height: size,
@@ -203,7 +235,7 @@ function AvatarRing({
             }
           }}
         />
-      </div>
+      </motion.div>
     </div>
   );
 }
@@ -322,6 +354,7 @@ function MemberCard({
           <AvatarRing
             accent={member.accent}
             avatar={member.avatar}
+            mascot={member.mascot}
             icon={member.icon}
             speed={member.ringSpeed}
             active={isHovered}
@@ -425,6 +458,7 @@ function MentorCard({
         <AvatarRing
           accent={MENTOR.accent}
           avatar={MENTOR.avatar}
+          mascot={MENTOR.mascot}
           icon={MENTOR.icon}
           speed={MENTOR.ringSpeed}
           active={isHovered}
@@ -493,6 +527,12 @@ function MobileCard({
         <div className="relative h-12 w-12 overflow-hidden rounded-full">
           <img src={member.avatar} alt="" className="h-full w-full object-cover" />
         </div>
+        <img
+          src={member.mascot}
+          alt=""
+          className="absolute -bottom-1 -right-2 h-7 w-7 object-contain rounded-full"
+          style={{ filter: `drop-shadow(0 0 4px ${member.accent}60)` }}
+        />
       </div>
 
       <div className="min-w-0">

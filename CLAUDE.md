@@ -1,6 +1,20 @@
 # AgentCFO — Claude Code 仓库指南
 
-> 团队 monorepo 入口。做**前端**工作时，读完本节后转到 **`frontend/CLAUDE.md`**（前端总纲，优先级更高）。
+> 团队 monorepo 入口。做**前端**工作时，读完本节后转到 **`frontend/CLAUDE.md`**（前端总纲，优先级更高）。  
+> **工作流 Skills**（description Session 常驻，正文动态）：`.claude/skills/agent-cfo-monorepo-workflow/` · `.claude/skills/frontend-agent-workflow/`（`paths: frontend/**`）  
+> **加载披露**：`frontend/docs/agent-context-loading.md`
+
+## Context 加载（Claude Code）
+
+| 层级 | 机制 | 是否 Session 必载 |
+|---|---|---|
+| **宪法** | `CLAUDE.md`（向上 walk cwd；子目录按需） | ✅ 根 `CLAUDE.md`；`frontend/CLAUDE.md` 触达 frontend 或 cwd 在 `frontend/` |
+| **Rules** | `.claude/rules/*.md`（可 `paths:`  scoped） | ✅ 无 paths 的规则；`frontend/**` 触达时载入 `rules/frontend.md` |
+| **Skill 列表** | `.claude/skills/*/SKILL.md` 的 name + description | ✅ 描述常驻，Agent **知道有哪些 skill** |
+| **Skill 正文** | 模型 invoke 或 `/skill-name` | ⚠️ **动态加载**，非全文默认注入 |
+| **README** | 非全局；`frontend/CLAUDE.md` 通过 `@README.md` import | frontend 宪法载入时 |
+
+HANDOFF 等状态文件：**不 inject**，由宪法 / rules 要求 Agent **主动 Read**。
 
 ## 项目一句话
 
@@ -34,20 +48,22 @@ README 首页已于 2026-06-13 按 [`docs/plans/README-merge-plan.md`](docs/plan
 
 ### 全仓库概览（任何角色）
 
-1. `README.md` — 项目首页、Demo、Quick Start、API 摘要（深文档见 `docs/backend/`）
-2. `AGENTS.md` — 全 agent 仓库地图与 GitNexus 纪律
-3. 本文件 — Claude Code 团队边界
-4. `docs/README.md` / `assets/README.md` / `inbox/README.md` — 文档、交付资产与投递区入口
-5. 本角色专属文档（见上表）
+1. 启用 skill **`agent-cfo-monorepo-workflow`**（`.claude/skills/agent-cfo-monorepo-workflow/`）
+2. `README.md` — 项目首页、Demo、Quick Start、API 摘要（深文档见 `docs/backend/`）
+3. `AGENTS.md` — 全 agent 仓库地图与 GitNexus 纪律
+4. 本文件 — Claude Code 团队边界
+5. `docs/README.md` / `assets/README.md` / `inbox/README.md` — 文档、交付资产与投递区入口
+6. 本角色专属文档（见上表）
 
 README 合并记录：[`docs/plans/README-merge-plan.md`](docs/plans/README-merge-plan.md) · 备份：[`docs/backup/README-20260613-pre-polish.md`](docs/backup/README-20260613-pre-polish.md)
 
 ### 前端开发（我们）
 
-1. **`frontend/CLAUDE.md`** — 总纲（必读）
-2. `frontend/HANDOFF.md` → `frontend/docs/handoff/phase-7-1-console-handoff.md`
-3. `frontend/docs/plans/console-upgrade-checklist.md`
-4. `frontend/backend-integration.md`（联调时）
+1. 启用 skill **`frontend-agent-workflow`**（根 `.claude/skills/frontend-agent-workflow/`）
+2. **`frontend/CLAUDE.md`** — 总纲（必读）
+3. `frontend/HANDOFF.md` → 最新 `frontend/docs/handoff/*`
+4. `frontend/docs/plans/console-upgrade-checklist.md`
+5. `frontend/backend-integration.md`（联调时）
 
 ### 物料开发
 

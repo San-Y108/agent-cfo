@@ -30,6 +30,7 @@ import { useApp } from "@/lib/i18n/context";
 import { DataSnippet } from "./pipeline-data-snippets";
 import { DecodeHeadline } from "./decode-headline";
 import { BreathingText } from "./breathing-text";
+import { motion } from "framer-motion";
 
 /* =============================================================================
  * ICON MAPPING
@@ -84,18 +85,28 @@ function CapabilityItem({ cap, accent }: { cap: Capability; accent: string }) {
  * PIPELINE STAGE — one stage block (not full-screen)
  * ===========================================================================*/
 
+/** Paragraph body copy — per-token sine breathing + opacity pulse. */
+const PARAGRAPH_BREATH = {
+  amplitude: 0.08,
+  period: 2.6,
+  stagger: 0.05,
+  opacityPulse: { from: 0.65, to: 0.95 },
+} as const;
+
 function PipelineStage({
   stage,
   index,
   isActive,
   stageCount,
   nextLabel,
+  lang,
 }: {
   stage: Stage;
   index: number;
   isActive: boolean;
   stageCount: number;
   nextLabel: string;
+  lang: "en" | "zh";
 }) {
   const sectionRef = useRef<HTMLDivElement>(null);
   const prefersReducedMotion = useReducedMotion();
@@ -217,22 +228,27 @@ function PipelineStage({
           style={{ backgroundColor: stage.accent, opacity: 0.4 }}
         />
 
-        {/* Lead */}
-        <div
-          className="animate-in mt-8 text-base leading-[1.8] text-white/85 sm:text-lg"
-          style={{ fontFamily: "Inter, sans-serif" }}
-        >
-          {stage.lead}
-        </div>
-
-        {/* Paragraphs */}
-        {stage.paragraphs.map((para, i) => (
-          <div
-            key={i}
-            className="animate-in mt-6 text-sm leading-[1.9] text-white/55 sm:text-base italic"
+        {/* Lead — static editorial body copy */}
+        <div className="animate-in mt-8">
+          <p
+            className="text-base leading-[1.8] text-white/85 sm:text-lg"
             style={{ fontFamily: "Inter, sans-serif" }}
           >
-            {para}
+            {stage.lead}
+          </p>
+        </div>
+
+        {/* Paragraphs — per-token sine breathing */}
+        {stage.paragraphs.map((para, i) => (
+          <div key={i} className="animate-in mt-6">
+            <BreathingText
+              text={para}
+              lang={lang}
+              scrollTriggerRef={sectionRef}
+              {...PARAGRAPH_BREATH}
+              className="text-sm leading-[1.9] text-white/70 sm:text-base italic"
+              style={{ fontFamily: "Inter, sans-serif" }}
+            />
           </div>
         ))}
 
@@ -489,6 +505,7 @@ function PipelineIntro({ stages, lang }: { stages: Stage[]; lang: "en" | "zh" })
             text={headline}
             accentWords={accentWords}
             accentColor="#B5FF4D"
+            lang={lang}
           />
         </h2>
 
@@ -521,6 +538,37 @@ function PipelineIntro({ stages, lang }: { stages: Stage[]; lang: "en" | "zh" })
             </div>
           ))}
         </div>
+      </div>
+    </div>
+  );
+}
+
+/* =============================================================================
+ * PIPELINE MASCOTS — fill the vertical gap between Stage 03 and Stage 05
+ * Only visible on desktop where the two-rail masonry creates the gap.
+ * ===========================================================================*/
+
+function PipelineMascots() {
+  return (
+    <div className="hidden flex-col items-center justify-center py-8 lg:flex">
+      <div className="flex items-end justify-center gap-4">
+        <motion.img
+          src="/console/mascots/agent-pipeline.png"
+          alt="Agent CFO mascot"
+          className="h-44 w-auto object-contain drop-shadow-[0_0_28px_rgba(181,255,77,0.22)]"
+          animate={{ y: [0, -10, 0] }}
+          transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+        />
+        <motion.img
+          src="/console/mascots/agent-cfo-avatar.png"
+          alt="Agent avatar"
+          className="h-36 w-auto object-contain drop-shadow-[0_0_28px_rgba(96,165,250,0.22)]"
+          animate={{ y: [0, -8, 0] }}
+          transition={{ duration: 3.5, repeat: Infinity, ease: "easeInOut", delay: 0.6 }}
+        />
+      </div>
+      <div className="mt-3 text-[10px] font-mono uppercase tracking-[0.2em] text-white/25">
+        Agent crew
       </div>
     </div>
   );
@@ -595,7 +643,14 @@ export function PipelineEditorial() {
       }}
       className={className}
     >
-      <PipelineStage stage={stages[i]} index={i} isActive={i === activeIndex} stageCount={stages.length} nextLabel={nextLabel} />
+      <PipelineStage
+        stage={stages[i]}
+        index={i}
+        isActive={i === activeIndex}
+        stageCount={stages.length}
+        nextLabel={nextLabel}
+        lang={lang}
+      />
     </div>
   );
 
@@ -627,6 +682,7 @@ export function PipelineEditorial() {
           <div className="contents lg:flex lg:flex-col lg:gap-y-12">
             {renderStage(0, "order-1 lg:order-none")}
             {renderStage(2, "order-3 lg:order-none")}
+            <PipelineMascots />
           </div>
 
           {/* Right rail — Stage 02 offset down, 04 tucked right beneath it */}

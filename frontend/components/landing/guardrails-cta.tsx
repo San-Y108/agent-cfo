@@ -9,7 +9,7 @@ import { useApp, useT } from "@/lib/i18n/context";
 // Plan: docs/plans/demo-video-landing-integration-plan.md
 // Team asset (drop here): assets/video/agentcfo-demo.mp4
 // Auto-synced to public/video/ via scripts/sync-demo-video.mjs on pnpm dev/build
-const DEMO_VIDEO_SRC = "/video/agentcfo-demo.mp4";
+const DEMO_VIDEO_SRC = "/video/agentcfo-demo-web.mp4";
 const DEMO_VIDEO_POSTER = "";
 
 // ── Direction-aware light helper ──

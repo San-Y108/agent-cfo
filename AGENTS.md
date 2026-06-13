@@ -53,8 +53,10 @@ agent-cfo/
 │   ├── images/         截图、海报；README 用图在 images/readme/
 │   └── design/         Logo、海报设计稿
 ├── inbox/              待归类投递区（入口 inbox/README.md）
-└── .claude/skills/     仓库级 agent skills（含 ppt-master、gitnexus）
+└── .claude/skills/     仓库级 agent skills（含 ppt-master、gitnexus、agent-cfo-monorepo-workflow）
 ```
+
+**frontend 专属 skills**：`frontend/.claude/skills/`（含 `frontend-agent-workflow`）
 
 **文档 vs 资产 vs 投递**：`docs/` 放 Markdown 与清单；`assets/` 放 PPT、视频、图片等已归类交付物；`inbox/` 放待整理投递。不要混放。
 
@@ -99,6 +101,17 @@ npx gitnexus analyze   # 索引过期时
 
 执行 README 合并时：先读 `docs/plans/README-merge-plan.md`；合并后同步 `README.md` 与 `docs/backend/`。
 
+## Claude Code Skills（工作流）
+
+| Skill | 路径 | 何时用 |
+|---|---|---|
+| **agent-cfo-monorepo-workflow** | `.claude/skills/agent-cfo-monorepo-workflow/` | 仓库任意位置；角色边界、跨目录、phase 交接 |
+| **frontend-agent-workflow** | `frontend/.claude/skills/frontend-agent-workflow/` | 仅在 `frontend/` 开发；多 Agent、scope commit、HANDOFF |
+
+宪法文档：`CLAUDE.md` · `frontend/CLAUDE.md` — skills 是可执行 checklist，与 CLAUDE.md 同步。
+
+---
+
 ## 6. 协作原则
 
 - 改 API 前先对齐契约；前端不得发明字段或端点
@@ -106,6 +119,16 @@ npx gitnexus analyze   # 索引过期时
 - 提交前跑对应角色的 typecheck / test / build
 - Demo 场景数据全团队一致（Bob = blocked）
 - 更新交付物路径或文档结构时，同步维护 `README.md`、`AGENTS.md`、`CLAUDE.md`、`docs/README.md`
+
+---
+
+## Git Workflow Discipline（全 Agent）
+
+- 多 Agent 并行时，改前先 `git pull origin main`
+- **push 前必须检查远端**：`git fetch origin main`，然后 `git log HEAD..origin/main --oneline`
+- 若远端有领先提交，必须先 `git pull` 合并后再 push
+- 出现冲突时停止，把冲突文件列给用户，由用户或负责协调的 Agent 决策
+- 不要 `--force` push，除非用户明确授权
 
 ---
 

@@ -1,0 +1,2 @@
+# Full-resolution demo lives in Git LFS (assets/video/) — not for Vercel bundle.
+public/video/agentcfo-demo.mp4
