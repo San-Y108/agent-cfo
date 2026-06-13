@@ -3,12 +3,13 @@
 import React, { useRef, useCallback } from "react";
 import { motion } from "framer-motion";
 import { Play, X } from "lucide-react";
+import { useApp, useT } from "@/lib/i18n/context";
 
 // ── Demo video slot ──
-// Materials team: drop the final demo video URL here (e.g. "/demo.mp4" or a CDN
-// link) and optionally a poster frame. The card below renders a styled
-// placeholder until DEMO_VIDEO_SRC is non-empty — no other change needed.
-const DEMO_VIDEO_SRC = "";
+// Plan: docs/plans/demo-video-landing-integration-plan.md
+// Team asset (drop here): assets/video/agentcfo-demo.mp4
+// Auto-synced to public/video/ via scripts/sync-demo-video.mjs on pnpm dev/build
+const DEMO_VIDEO_SRC = "/video/agentcfo-demo.mp4";
 const DEMO_VIDEO_POSTER = "";
 
 // ── Direction-aware light helper ──
@@ -38,6 +39,11 @@ const reveal = {
 };
 
 export function GuardrailsCTA() {
+  const { lang } = useApp();
+  const t = useT();
+  const sep = lang === "zh" ? "、" : ", ";
+  const lastSep = lang === "zh" ? "与" : ", and ";
+
   return (
     <section className="relative px-5 py-24 lg:px-10 lg:py-32">
       <div className="mx-auto max-w-6xl">
@@ -64,7 +70,7 @@ export function GuardrailsCTA() {
                 className="text-[11px] font-medium uppercase tracking-[0.18em] text-[#B5FF4D]"
                 style={{ fontFamily: "'Courier New', Courier, monospace" }}
               >
-                Move funds with confidence
+                {t("guardrails.eyebrow")}
               </span>
               <h2
                 className="mt-3 font-black leading-[1.05]"
@@ -77,7 +83,7 @@ export function GuardrailsCTA() {
                   WebkitFontSmoothing: "antialiased",
                 }}
               >
-                Every payout is{" "}
+                {t("guardrails.headlinePrefix")}{" "}
                 <span
                   className="inline-block animate-guard-word"
                   style={{
@@ -88,9 +94,9 @@ export function GuardrailsCTA() {
                     WebkitTextFillColor: "transparent",
                   }}
                 >
-                  checked
+                  {t("guardrails.checked")}
                 </span>
-                ,{" "}
+                {sep}
                 <span
                   className="inline-block animate-guard-word"
                   style={{
@@ -102,9 +108,9 @@ export function GuardrailsCTA() {
                     animationDelay: "0.6s",
                   }}
                 >
-                  approved
+                  {t("guardrails.approved")}
                 </span>
-                , and{" "}
+                {lastSep}
                 <span
                   className="inline-block animate-guard-word"
                   style={{
@@ -116,7 +122,7 @@ export function GuardrailsCTA() {
                     animationDelay: "1.2s",
                   }}
                 >
-                  reported
+                  {t("guardrails.reported")}
                 </span>
                 .
               </h2>
@@ -136,8 +142,7 @@ export function GuardrailsCTA() {
                 className="mt-5 max-w-xl text-sm italic leading-relaxed text-white/80 md:text-base"
                 style={{ fontFamily: "Inter, sans-serif" }}
               >
-                AgentCFO turns messy contribution records into payout plans, blocks risky transfers,
-                waits for human approval, and produces an audit-ready settlement report.
+                {t("guardrails.subtitle")}
               </p>
 
               <div className="mt-8 flex flex-wrap items-center gap-3">
@@ -147,7 +152,7 @@ export function GuardrailsCTA() {
                   className="inline-flex items-center gap-2 rounded-[10px] border border-white/25 px-5 py-3 text-sm font-medium text-white transition-all duration-200 hover:border-white/25 hover:text-white hover:shadow-[0_0_20px_rgba(181,255,77,0.08)]"
                   style={{ fontFamily: "Inter, sans-serif" }}
                 >
-                  View audit report
+                  {t("guardrails.cta")}
                 </DirectionAwareLink>
               </div>
 
@@ -155,11 +160,11 @@ export function GuardrailsCTA() {
                 className="mt-6 flex flex-wrap items-center gap-4 text-[11px] text-white/70"
                 style={{ fontFamily: "'Courier New', Courier, monospace" }}
               >
-                <span>testnet-simulated</span>
+                <span>{t("guardrails.badge.testnet")}</span>
                 <span className="text-white/40">·</span>
-                <span>no real funds</span>
+                <span>{t("guardrails.badge.noFunds")}</span>
                 <span className="text-white/40">·</span>
-                <span>deterministic demo</span>
+                <span>{t("guardrails.badge.deterministic")}</span>
               </div>
             </motion.div>
 
@@ -179,7 +184,7 @@ export function GuardrailsCTA() {
           {/* Footer */}
           <div className="relative border-t border-white/12 px-8 py-6 lg:px-16">
             <div className="flex flex-col items-center justify-between gap-3 text-[11px] text-white/85 sm:flex-row" style={{ fontFamily: "'Courier New', Courier, monospace" }}>
-              <p>AgentCFO · DAO AI Treasury Officer · Cobo Agentic Commerce · Mock demo, no real transactions</p>
+              <p>{t("guardrails.cardFooter")}</p>
               <p>v0.1 · 2026</p>
             </div>
           </div>
@@ -190,6 +195,7 @@ export function GuardrailsCTA() {
 }
 
 function DemoVideoCard() {
+  const t = useT();
   const hasVideo = DEMO_VIDEO_SRC.length > 0;
 
   return (
@@ -262,13 +268,13 @@ function DemoVideoCard() {
                 </div>
                 <div className="text-center">
                   <p className="text-sm font-medium text-white/85" style={{ fontFamily: "Inter, sans-serif" }}>
-                    Demo video
+                    {t("guardrails.demo.title")}
                   </p>
                   <p
                     className="mt-1 text-[10px] uppercase tracking-[0.16em] text-white/60"
                     style={{ fontFamily: "'Courier New', Courier, monospace" }}
                   >
-                    3–5 min walkthrough · coming soon
+                    {t("guardrails.demo.subtitle")}
                   </p>
                 </div>
               </div>
@@ -323,7 +329,7 @@ function DemoVideoCard() {
               )}
             </React.Fragment>
           ))}
-          <span className="ml-auto text-[9px] text-white/40 hidden sm:inline">mock · testnet</span>
+          <span className="ml-auto text-[9px] text-white/40 hidden sm:inline">{t("guardrails.mockTestnet")}</span>
         </div>
       </div>
 
@@ -341,8 +347,8 @@ function DemoVideoCard() {
             <X className="h-3 w-3" />
           </span>
           <div style={{ fontFamily: "'Courier New', Courier, monospace" }}>
-            <div className="text-[10px] font-semibold text-red-300">1 payment blocked</div>
-            <div className="text-[9px] text-red-300/60">bob.eth · not in whitelist</div>
+            <div className="text-[10px] font-semibold text-red-300">{t("guardrails.chip.blocked")}</div>
+            <div className="text-[9px] text-red-300/60">{t("guardrails.chip.blockedDetail")}</div>
           </div>
         </div>
       </motion.div>
@@ -360,7 +366,7 @@ function DemoVideoCard() {
           style={{ fontFamily: "'Courier New', Courier, monospace" }}
         >
           <span className="text-[#B5FF4D]">✓</span>
-          <span className="text-[10px] text-[#B5FF4D]/90">3 executed · 35 USDC settled</span>
+          <span className="text-[10px] text-[#B5FF4D]/90">{t("guardrails.chip.executed")}</span>
         </div>
       </motion.div>
 

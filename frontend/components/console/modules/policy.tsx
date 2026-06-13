@@ -1,3 +1,4 @@
+/** @deprecated Superseded by app/console/policy/page.tsx — migrate to stages/ */
 "use client";
 
 import React, { useState, useEffect, useCallback } from "react";

@@ -7,18 +7,31 @@ import {
   PieChart,
   Pie as RePie,
   Sector,
+  Cell,
 } from "recharts";
 import { AnimatedNumber } from "@/components/ui/aceternity/animated-number";
 import { BentoCard } from "@/components/ui/aceternity/bento-grid";
+import { useApp } from "@/lib/i18n/context";
+import { cn } from "@/lib/utils";
 
 const VIOLET = "#C084FC";
 
-const STAGE_COLORS = [
-  "#5EEAD4", // cyan
-  "#FB7185", // coral
-  "#B5FF4D", // lime
-  "#60A5FA", // blue
-  "#C084FC", // violet
+/** Neon palette — dark console */
+const SLICE_COLORS_DARK = [
+  "#5EEAD4",
+  "#FB7185",
+  "#B5FF4D",
+  "#60A5FA",
+  "#C084FC",
+];
+
+/** Saturated palette — light console (readable on white) */
+const SLICE_COLORS_LIGHT = [
+  "#0e7490",
+  "#be123c",
+  "#4d7c0f",
+  "#1d4ed8",
+  "#6d28d9",
 ];
 
 const RECIPIENT_TYPE_DATA = [
@@ -31,15 +44,30 @@ const RECIPIENT_TYPE_DATA = [
 
 const PieAny = RePie as any;
 
+function sliceColors(isDark: boolean) {
+  return isDark ? SLICE_COLORS_DARK : SLICE_COLORS_LIGHT;
+}
+
 export interface PieChartCardProps {
   lang: "en" | "zh";
   title: string;
   description: string;
   totalLabel: string;
   embedded?: boolean;
+  variant?: "full" | "compact" | "rail";
 }
 
-export function PieChartCard({ lang, title, description, totalLabel, embedded = false }: PieChartCardProps) {
+export function PieChartCard({
+  lang,
+  title,
+  description,
+  totalLabel,
+  embedded = false,
+  variant = "full",
+}: PieChartCardProps) {
+  const { theme } = useApp();
+  const isDark = theme === "dark";
+  const colors = sliceColors(isDark);
   const wrapperRef = useRef<HTMLDivElement>(null);
   const [size, setSize] = useState<{ width: number; height: number } | null>(null);
   const [activePieIndex, setActivePieIndex] = useState<number | null>(null);
@@ -80,19 +108,19 @@ export function PieChartCard({ lang, title, description, totalLabel, embedded = 
     Misc: "其他 / Misc",
   };
 
-  const content = (
-    <>
-      {!embedded && (
-        <div className="border-b border-border-token dark:border-white/[0.06] pb-3">
-          <h3 className="text-sm font-bold text-fg flex items-center gap-2">
-            <PieChartIcon className="w-4 h-4" style={{ color: VIOLET }} />
-            {title}
-          </h3>
-          <p className="text-[11px] mt-0.5 text-fg-subtle">{description}</p>
-        </div>
-      )}
+  const isCompact = variant === "compact";
+  const isRail = variant === "rail";
+  const innerR = isRail ? 38 : isCompact ? 34 : 50;
+  const outerR = isRail ? 54 : isCompact ? 48 : 70;
 
-      <div ref={wrapperRef} className="relative flex justify-center h-40">
+  const chartBlock = (
+    <div
+      ref={wrapperRef}
+      className={cn(
+        "relative flex justify-center",
+        isRail ? "min-h-[108px] flex-1" : isCompact ? "h-28" : "h-40"
+      )}
+    >
         {size ? (
           <ResponsiveContainer width={size.width} height={size.height}>
             <PieChart>
@@ -100,24 +128,26 @@ export function PieChartCard({ lang, title, description, totalLabel, embedded = 
                 data={RECIPIENT_TYPE_DATA}
                 cx="50%"
                 cy="50%"
-                innerRadius={50}
-                outerRadius={70}
+                innerRadius={innerR}
+                outerRadius={outerR}
                 paddingAngle={5}
                 dataKey="value"
+                stroke="var(--surface)"
+                strokeWidth={2}
                 shape={(props: any) => {
-                  const { index, ...rest } = props;
+                  const { index, outerRadius, ...rest } = props;
                   const isActive = activePieIndex === index;
+                  const fill = colors[index % colors.length];
                   return (
                     <Sector
                       {...rest}
                       index={index}
-                      outerRadius={isActive ? (rest.outerRadius as number) + 8 : rest.outerRadius}
-                      stroke={isActive ? "#ffffff" : "transparent"}
-                      strokeWidth={isActive ? 2 : 0}
+                      fill={fill}
+                      outerRadius={isActive ? (outerRadius as number) + 8 : outerRadius}
+                      stroke={isActive ? "var(--surface)" : "var(--surface)"}
+                      strokeWidth={2}
                       style={{
-                        filter: isActive
-                          ? `drop-shadow(0 0 10px ${STAGE_COLORS[index % STAGE_COLORS.length]})`
-                          : undefined,
+                        filter: isActive ? `drop-shadow(0 0 10px ${fill})` : undefined,
                         transition: "all 0.2s ease",
                       }}
                     />
@@ -125,11 +155,15 @@ export function PieChartCard({ lang, title, description, totalLabel, embedded = 
                 }}
                 onMouseEnter={(_data: any, index: number) => setActivePieIndex(index)}
                 onMouseLeave={() => setActivePieIndex(null)}
-              />
+              >
+                {RECIPIENT_TYPE_DATA.map((_, idx) => (
+                  <Cell key={idx} fill={colors[idx % colors.length]} stroke="var(--surface)" />
+                ))}
+              </PieAny>
             </PieChart>
           </ResponsiveContainer>
         ) : (
-          <div className="h-full w-full rounded-lg bg-white/[0.03] animate-pulse" />
+          <div className="h-full w-full rounded-lg bg-surface-2/40 animate-pulse" />
         )}
 
         {/* Center total — AnimatedNumber */}
@@ -138,21 +172,23 @@ export function PieChartCard({ lang, title, description, totalLabel, embedded = 
             <div className="text-[9px] font-mono uppercase text-fg-subtle tracking-wider">
               {totalLabel}
             </div>
-            <div className="text-lg font-extrabold text-fg tabular-nums">
+            <div className={cn("font-extrabold text-fg tabular-nums", isCompact ? "text-sm" : "text-lg")}>
               $<AnimatedNumber value={totalPieValue} />
             </div>
           </div>
         </div>
       </div>
+  );
 
-      <div className="space-y-2">
+  const legendBlock = (
+      <div className={cn("space-y-2", isCompact && "space-y-1 text-[11px]", isRail && "min-h-0 flex-1 space-y-1.5 overflow-y-auto pr-0.5")}>
         {RECIPIENT_TYPE_DATA.map((entry, idx) => {
           const displayLabel = lang === "zh" ? zhNames[entry.name] || entry.name : entry.name;
           const isActive = activePieIndex === idx;
           return (
             <div
               key={idx}
-              className="flex justify-between items-center text-xs rounded-lg px-2 py-1 transition-colors cursor-default hover:bg-white/[0.03]"
+              className="flex justify-between items-center text-xs rounded-lg px-2 py-1 transition-colors cursor-default hover:bg-surface-2/40"
               onMouseEnter={() => setActivePieIndex(idx)}
               onMouseLeave={() => setActivePieIndex(null)}
             >
@@ -160,9 +196,9 @@ export function PieChartCard({ lang, title, description, totalLabel, embedded = 
                 <div
                   className="w-2.5 h-2.5 rounded-full shrink-0 transition-transform duration-200"
                   style={{
-                    backgroundColor: STAGE_COLORS[idx % STAGE_COLORS.length],
+                    backgroundColor: colors[idx % colors.length],
                     transform: isActive ? "scale(1.3)" : "scale(1)",
-                    boxShadow: isActive ? `0 0 8px ${STAGE_COLORS[idx % STAGE_COLORS.length]}` : undefined,
+                    boxShadow: isActive ? `0 0 8px ${colors[idx % colors.length]}` : undefined,
                   }}
                 />
                 <span className={`font-medium truncate ${isActive ? "text-fg" : "text-fg-muted"}`}>
@@ -176,12 +212,42 @@ export function PieChartCard({ lang, title, description, totalLabel, embedded = 
           );
         })}
       </div>
+  );
+
+  const content = (
+    <>
+      {!embedded && (
+        <div className="border-b border-border-token pb-3">
+          <h3 className="text-sm font-bold text-fg flex items-center gap-2">
+            <PieChartIcon className="w-4 h-4" style={{ color: VIOLET }} />
+            {title}
+          </h3>
+          <p className="text-[11px] mt-0.5 text-fg-subtle">{description}</p>
+        </div>
+      )}
+
+      {isCompact ? (
+        <div className="grid grid-cols-[120px_1fr] gap-3 items-center">
+          {chartBlock}
+          {legendBlock}
+        </div>
+      ) : isRail ? (
+        <div className="flex min-h-0 flex-1 flex-col gap-3">
+          {chartBlock}
+          {legendBlock}
+        </div>
+      ) : (
+        <>
+          {chartBlock}
+          {legendBlock}
+        </>
+      )}
     </>
   );
 
   if (embedded) {
     return (
-      <div className="space-y-4 h-full flex flex-col">
+      <div className={cn("flex h-full min-h-0 flex-col", isRail ? "gap-0" : "space-y-4")}>
         {content}
       </div>
     );

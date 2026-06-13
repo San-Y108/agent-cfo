@@ -3,6 +3,8 @@
 import React, { useCallback, useRef, useEffect, useState } from "react";
 import Link from "next/link";
 import { ExternalLink, ArrowUpRight } from "lucide-react";
+import { useApp, useT } from "@/lib/i18n/context";
+import type { Lang } from "@/lib/i18n/dict";
 
 function GithubIcon({ className }: { className?: string }) {
   return (
@@ -29,7 +31,7 @@ type FooterColumn = {
   links: FooterLink[];
 };
 
-const COLUMNS: FooterColumn[] = [
+const COLUMNS_EN: FooterColumn[] = [
   {
     title: "Workflow",
     accent: "#B5FF4D",
@@ -73,7 +75,58 @@ const COLUMNS: FooterColumn[] = [
   },
 ];
 
+const COLUMNS_ZH: FooterColumn[] = [
+  {
+    title: "工作流",
+    accent: "#B5FF4D",
+    links: [
+      { label: "01 · 贡献记录", href: "#workflow" },
+      { label: "02 · 风险检查", href: "#workflow" },
+      { label: "03 · 人工审批", href: "#workflow" },
+      { label: "04 · CAW 钱包", href: "#workflow" },
+      { label: "05 · 审计报告", href: "#workflow" },
+    ],
+  },
+  {
+    title: "资源",
+    accent: "#5EEAD4",
+    links: [
+      { label: "GitHub 仓库", href: "https://github.com/San-Y108/agent-cfo", external: true },
+      { label: "Vercel 部署", href: "https://agentcfo-frontend.vercel.app", external: true },
+      { label: "进入 Console", href: "/console" },
+      { label: "API 契约", href: "#workflow" },
+    ],
+  },
+  {
+    title: "黑客松",
+    accent: "#60A5FA",
+    links: [
+      { label: "Cobo Agentic Commerce", href: "#workflow" },
+      { label: "演示视频", href: "#workflow" },
+      { label: "路演幻灯片", href: "#workflow" },
+      { label: "赛道提交", href: "#workflow" },
+    ],
+  },
+  {
+    title: "声明",
+    accent: "#C084FC",
+    links: [
+      { label: "仅模拟演示", href: "#workflow" },
+      { label: "测试网模拟", href: "#workflow" },
+      { label: "无真实资金", href: "#workflow" },
+      { label: "v0.1 · 2026", href: "#workflow" },
+    ],
+  },
+];
+
+function getFooterColumns(lang: Lang): FooterColumn[] {
+  return lang === "zh" ? COLUMNS_ZH : COLUMNS_EN;
+}
+
 export function LandingFooter() {
+  const { lang } = useApp();
+  const t = useT();
+  const columns = getFooterColumns(lang);
   const lastWave = useRef(0);
   const wordmarkRef = useRef<HTMLDivElement | null>(null);
   const svgRef = useRef<SVGSVGElement | null>(null);
@@ -148,7 +201,7 @@ export function LandingFooter() {
               className="mt-4 max-w-sm text-sm italic leading-relaxed text-white/80"
               style={{ fontFamily: "Inter, sans-serif" }}
             >
-              DAO AI Treasury Officer — risk-checked payouts, human approval, audit-grade settlement, built on Cobo Agentic Wallet.
+              {t("footer.brandDesc")}
             </p>
 
             {/* Quick CTA */}
@@ -158,7 +211,7 @@ export function LandingFooter() {
                 className="group inline-flex items-center gap-1.5 rounded-full bg-[#B5FF4D] px-4 py-2 text-xs font-bold text-[#0D0D0D] transition-opacity hover:opacity-90"
                 style={{ fontFamily: "Inter, sans-serif" }}
               >
-                Open Console
+                {t("footer.openConsole")}
                 <ArrowUpRight className="h-3 w-3 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
               </Link>
               <a
@@ -169,7 +222,7 @@ export function LandingFooter() {
                 style={{ fontFamily: "Inter, sans-serif" }}
               >
                 <GithubIcon className="h-3 w-3" />
-                GitHub
+                {t("footer.github")}
               </a>
             </div>
 
@@ -178,17 +231,17 @@ export function LandingFooter() {
               className="mt-6 flex flex-wrap items-center gap-3 text-[10px] text-white/35"
               style={{ fontFamily: "'Courier New', Courier, monospace" }}
             >
-              <span>testnet-simulated</span>
+              <span>{t("footer.trust.testnet")}</span>
               <span className="text-white/15">·</span>
-              <span>Cobo Agentic Wallet</span>
+              <span>{t("footer.trust.caw")}</span>
               <span className="text-white/15">·</span>
-              <span>no real funds</span>
+              <span>{t("footer.trust.noFunds")}</span>
             </div>
           </div>
 
           {/* 4 columns of links */}
           <div className="grid grid-cols-2 gap-8 sm:gap-12 md:grid-cols-4">
-            {COLUMNS.map((col) => (
+            {columns.map((col) => (
               <FooterColumnView key={col.title} col={col} />
             ))}
           </div>
@@ -443,18 +496,18 @@ export function LandingFooter() {
             className="flex flex-wrap items-center gap-2 text-[11px] text-white/40"
             style={{ fontFamily: "'Courier New', Courier, monospace" }}
           >
-            <span>© 2026 AgentCFO</span>
+            <span>{t("footer.copyright")}</span>
             <span className="text-white/15">·</span>
-            <span>Cobo Agentic Commerce hackathon</span>
+            <span>{t("footer.hackathon")}</span>
             <span className="text-white/15">·</span>
-            <span>Mock demo — no real transactions</span>
+            <span>{t("footer.mockNote")}</span>
           </div>
           <div
             className="flex items-center gap-2 text-[11px] text-white/40"
             style={{ fontFamily: "'Courier New', Courier, monospace" }}
           >
             <span className="inline-flex h-1.5 w-1.5 animate-pulse rounded-full bg-[#B5FF4D]" />
-            <span>Build status · green</span>
+            <span>{t("footer.buildStatus")}</span>
           </div>
         </div>
       </div>

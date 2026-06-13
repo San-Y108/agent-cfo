@@ -1,804 +1,544 @@
-# AgentCFO | DAO AI 财务官
+<p align="center">
+  <h1 align="center">AgentCFO — DAO AI Treasury</h1>
+  <p align="center"><em>Give every DAO an AI CFO with a controlled wallet</em></p>
+  <p align="center">AgentCFO 是面向 Web3 小团队 / DAO 的 AI 财务官，让贡献结算从人工表格变为全链路自动化。它读取贡献记录与预算规则，自动生成 Payment Plan，执行确定性 Risk Check，在 Human Approval 之后通过 <strong>Cobo Agentic Wallet (CAW)</strong> 完成受控付款，最终输出完整可审计的 Audit Report。赛道：<strong>Cobo 赛道｜Agentic Economy × CAW</strong></p>
+</p>
 
-> Give every DAO an AI CFO with a controlled wallet.
+<p align="center">
+  <img src="assets/images/readme/banner.png" alt="AgentCFO Banner" width="100%">
+</p>
 
-AgentCFO 是面向 Web3 小团队 / DAO 的 AI 财务官。它读取贡献记录、预算规则和付款需求，生成 Payment Plan，执行 Risk Check，在 Human Approval 之后通过 Cobo Agentic Wallet 完成受控测试网付款，并输出 Audit Report。
+<p align="center">
+  <a href="https://agentcfo-frontend.vercel.app"><img src="https://img.shields.io/badge/Demo-Live-059669?style=for-the-badge&labelColor=0f172a" alt="Live Demo"></a>
+  <a href="https://agentcfo-backend.onrender.com/health"><img src="https://img.shields.io/badge/API-Render-3B82F6?style=for-the-badge&labelColor=0f172a" alt="Backend"></a>
+  <img src="https://img.shields.io/badge/赛道-Cobo%20Agentic%20Economy-8B5CF6?style=for-the-badge&labelColor=0f172a" alt="Track">
+  <img src="https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge" alt="License">
+  <a href="https://github.com/San-Y108/agent-cfo"><img src="https://img.shields.io/github/stars/San-Y108/agent-cfo.svg?style=for-the-badge" alt="GitHub stars"></a>
+</p>
 
-赛道：Cobo Agentic Commerce
+<p align="center">
+  <a href="#功能">功能</a> · <a href="#演示">演示</a> · <a href="#快速开始">快速开始</a> · <a href="#架构">架构</a> · <a href="#api-参考">API 参考</a> · <a href="#路线图">路线图</a> · <a href="#文档">文档</a> · <a href="#团队">团队</a> · <a href="#许可证">许可证</a>
+</p>
 
-## Key Features
+---
 
-- AI Payment Plan：根据贡献记录生成结构化付款计划和付款原因。
-- Risk Check：检查预算、白名单、单笔限额、token 和重复付款。
-- Human Approval：付款执行前必须有人类确认。
-- Cobo Agentic Wallet Execution：真实付款路径必须经过 CAW。
-- Audit Report：输出付款原因、风险结果、执行状态、剩余预算和 tx hash。
-- Mock Mode：CAW 不稳定时可演示完整流程，但必须清楚标注为 mock。
-
-## Problem
+## 为什么需要 AgentCFO
 
 DAO 小团队经常遇到：
 
-- 贡献者结算靠人工表格，容易漏发、错发、重复发。
-- DAO 支出不透明，事后很难追踪。
-- 普通多签虽然安全，但每笔小额付款都要多人确认，效率低。
-- 完全自动化又有风险，容易失控。
+- 贡献者结算靠人工表格，容易漏发、错发、重复发
+- DAO 支出不透明，事后很难追踪
+- 普通多签虽然安全，但每笔小额付款都要多人确认，效率低
+- 完全自动化又有风险，容易失控
 
-## Solution
+**AgentCFO 的核心边界：**
 
-AgentCFO 的核心边界：
 
-- Agent 负责整理贡献记录、生成付款计划和解释付款原因。
-- Risk Engine 负责确定性风控。
-- Human Approval 保留关键确认权。
-- Cobo Agentic Wallet 负责受控资金执行。
-- Audit Report 把计划、风险、审批和执行结果串成可审计记录。
+| 组件             | 职责                               |
+| -------------- | -------------------------------- |
+| Agent / LLM    | 整理贡献记录、生成付款计划、解释付款原因             |
+| Risk Engine    | 确定性风控（预算、白名单、限额、重复付款）            |
+| Human Approval | 保留关键确认权；blocked 项不可执行            |
+| CAW Adapter    | 受控资金执行，隔离 Cobo Agentic Wallet 调用 |
+| Audit Report   | 串联计划、风险、审批与执行结果，形成可审计记录          |
 
-```text
-Contribution Records
--> AI Payment Plan
--> Risk Check
--> Human Approval
--> Cobo Agentic Wallet Execution
--> Tx Hash
--> Audit Report
-```
-
-## Why Cobo Agentic Commerce
-
-| 方向 | AgentCFO 如何匹配 |
-| --- | --- |
-| Agent-Native Payments | Agent 根据贡献记录和预算规则，自动生成付款计划并发起付款 |
-| Agent Resource Procurement | Agent 可判断 DAO 需要支付哪些工具订阅、服务费用，在预算范围内完成结算 |
-| A2A Economy / Treasury Management | 后续可扩展多个 Agent 各自管理不同部门预算，统一向 DAO Treasury 汇报 |
-
-## Demo Scenario
-
-MVP Demo 场景：
-
-| 对象 | 类型 | 说明 | 金额 |
-| --- | --- | --- | --- |
-| Alice | 贡献者 | 写了一篇活动复盘 | 20 USDC |
-| Bob | 贡献者 | 设计了活动海报，可用于展示白名单风险 | 15 USDC |
-| Charlie | 贡献者 | 维护社群并整理数据 | 10 USDC |
-| Data API | 工具订阅 | 本月数据服务订阅费 | 5 USDC |
-
-AgentCFO 需要展示：哪些付款可以执行、哪些付款被 blocked、为什么 blocked、最终 CAW 返回了什么交易结果。
-
-## Repository Status
-
-当前仓库已经 scaffold 了 FastAPI 后端 MVP。它实现了默认 mock、可显式启用 OpenAI Structured Outputs 的 Payment Plan，Risk Check、Execute Payment 和 Audit Report API，并预留了 Cobo Agentic Wallet adapter。CAW 默认仍是 mock；Phase 4C 只加入 testnet-only、显式开启的 RealCawAdapter skeleton。后端部署目标是 Render，前端已部署到 Vercel：https://agentcfo-frontend.vercel.app。
-
-当前已有文件：
-
-| 文件 | 用途 |
-| --- | --- |
-| `README.md` | 项目入口、运行方式、联调方式和当前限制 |
-| `app/` | FastAPI MVP 服务代码 |
-| `tests/` | pytest API 流程测试 |
-| `requirements.txt` | Python 依赖锁定版本 |
-| `docs/pm/` | 项目管理、站会、风险、提交和彩排清单 |
-
-当前可运行 mock API 服务（本地 + Render 部署）。真实 CAW 交易没有默认启用，且不能在没有明确人工批准时执行；不要在 README 中补不存在的 Agent Wallet 地址或真实 tx hash。
-
-## How To Work In This Repo
-
-新队友或 AI agent 开始前按这个顺序读：
-
-1. `README.md`：理解项目、Demo 和当前仓库状态。
-2. `app/`：查看 FastAPI 路由、模型、风控服务和 CAW adapter。
-3. `tests/`：查看 P0 mock API 的可执行验收用例。
-4. `docs/pm/`：查看任务看板、站会、风险、提交和彩排清单。
-
-后端开发原则：
-
-- 先跑通 P0 demo loop，再考虑 P1/P2。
-- 不提前实现 Request Network、Sablier、Safe、多链、多 Agent。
-- 当前技术栈是 Python + FastAPI + Pydantic + pytest。
-- 不把 LLM 当作最终授权层。
-- 不把 mock transaction 当作真实 CAW 交易。
-
-## Backend Scope
-
-P0 APIs:
-
-| API | 目的 |
-| --- | --- |
-| `POST /api/payment-plan` | 输入贡献记录和预算规则，输出 Payment Plan |
-| `POST /api/risk-check` | 对 Payment Plan 执行确定性风险检查 |
-| `POST /api/execute-payment` | 人工确认后，通过 CAW 执行可付款项 |
-| `GET /api/audit-report/{auditReportId}` | 返回最终 Audit Report |
-| `GET /api/caw-status/{cawRequestId}` | 返回 mock/CAW 请求状态 |
-
-详细接口以 `app/routers/payments.py`、`app/models.py` 和 README 的 curl 示例为准。
-
-## Architecture
-
-当前后端按这些边界拆分：
 
 ```text
-Frontend
--> Backend API
--> Agent / LLM Planner
--> Risk Engine
--> Human Approval Gate
--> CAW Adapter
--> Audit Report
+Contribution Records → AI Payment Plan → Risk Check → Human Approval
+  → Cobo Agentic Wallet → Tx Hash → Audit Report
 ```
 
-关键原则：
+---
 
-- Agent / LLM 负责生成计划和解释原因。
-- Risk Engine 负责确定性规则检查。
-- Human Approval Gate 负责阻止未确认付款。
-- CAW Adapter 负责隔离 Cobo Agentic Wallet 调用。
-- Audit Report 负责把输入、计划、风险、批准和执行结果串起来。
+## 功能
 
-## Cobo Agentic Wallet Evidence
 
-以下内容按当前可验证状态维护。公开文档只记录脱敏地址和公开 tx hash；不要补 API key、pact-scoped key、`.env`、raw provider response 或未脱敏钱包地址。
+| 功能                  | 说明                             |
+| ------------------- | ------------------------------ |
+| **AI Payment Plan** | 根据贡献记录生成结构化付款计划和付款原因           |
+| **Agent Hub Chat**  | Console Agent 页对话，经后端代理 MiniMax（`POST /api/agent/chat`） |
+| **Risk Check**      | 检查预算、白名单、单笔限额、token 和重复付款      |
+| **Human Approval**  | 付款执行前必须有人类确认                   |
+| **CAW Execution**   | 真实付款路径必须经过 Cobo Agentic Wallet |
+| **Audit Report**    | 输出付款原因、风险结果、执行状态、剩余预算和 tx hash |
+| **Mock Mode**       | CAW 不稳定时可演示完整流程，必须清楚标注为 mock   |
 
-| 证据项 | 当前状态 |
-| --- | --- |
-| CAW API Key | ✅ 已申请并配置（不写入仓库） |
-|| Agent Wallet | ✅ 已创建；primary: `0x2cda...76da`，secondary: `0xaa55...c199`（同一 CAW 钱包） |
-| SDK | ✅ 确认 `cobo-agentic-wallet v0.1.40` |
-| Testnet / Chain | ✅ Sepolia / `SETH` |
-| Token | ✅ `SETH` |
-| Transaction Hash | ✅ `0x85a5a2e934ca0e34c7fb3e038ca06e54e15bd29b56b64e5b01ff80eb20ed4d98` |
-| CAW Request ID | ✅ `agentcfo_exec_demo_002_pay_001` |
-| Provider final status | ✅ `900` |
-| CAW audit actions | ✅ `transfer.allowed` and `transfer.initiate` were allowed |
-| CAW config notes | ✅ 已交付 518 行后端对接说明 |
-| Payment screenshots | 待补充；截图必须先脱敏 |
 
-真实付款必须通过 Cobo Agentic Wallet。Mock mode 只能用于演示兜底，必须明确标注。
+**Cobo Agentic Commerce 匹配：**
 
-Phase 4C successful testnet evidence:
 
-| Field | Public evidence |
-| --- | --- |
-| `chain` / `token` | `SETH` / `SETH` |
-| `amount` | `0.001` |
-| recipient | `0xAf3f...594B` |
-| source | `0x2cda...76da` |
-| `request_id` / `cawRequestId` | `agentcfo_exec_demo_002_pay_001` |
-| provider final status | `900` |
-| `txHash` | `0x85a5a2e934ca0e34c7fb3e038ca06e54e15bd29b56b64e5b01ff80eb20ed4d98` |
-| audit log summary | `transfer.allowed` and `transfer.initiate` were allowed |
+| 方向                         | AgentCFO 如何匹配                             |
+| -------------------------- | ----------------------------------------- |
+| Agent-Native Payments      | Agent 根据贡献记录和预算规则，自动生成付款计划并发起付款           |
+| Agent Resource Procurement | Agent 可判断 DAO 需支付的工具订阅、服务费用，在预算范围内完成结算    |
+| A2A Economy / Treasury     | 后续可扩展多 Agent 各自管理部门预算，统一向 DAO Treasury 汇报 |
 
-This proves one low-value CAW testnet transfer. It does not prove three separate tx hashes.
 
-Phase 4C additional evidence — intra-wallet transfer (same CAW wallet, secondary → primary):
+---
 
-| Field | Public evidence |
-| --- | --- |
-| `chain` / `token` | `SETH` / `SETH` |
-| `amount` | `0.001` |
-| sender | `0xaa55...c199` |
-| recipient | `0x2cda...76da` |
-| `txHash` | `0x6bd793bc3030c995245b2e73a466898e46278be092aa9f7a3c86cad21cbbae8a` |
-| block | `11019278` |
-| timestamp | `2026-06-09T01:46:00+00:00` (UTC) |
-| explorer | https://sepolia.etherscan.io/tx/0x6bd793bc3030c995245b2e73a466898e46278be092aa9f7a3c86cad21cbbae8a |
+## 演示
 
-This proves both addresses belong to the same CAW wallet and can transact on Sepolia testnet.
+### Demo 场景
 
-## CAW Adapter Contract
 
-当前代码定义了 CAW adapter contract、默认 `MockCawAdapter`，以及 testnet-only 的 opt-in `RealCawAdapter` skeleton。完整 Demo 默认仍然不需要 CAW secrets。
+| 对象       | 类型   | 说明                   | 金额      |
+| -------- | ---- | -------------------- | ------- |
+| Alice    | 贡献者  | 写了一篇活动复盘             | 20 USDC |
+| Bob      | 贡献者  | 设计了活动海报（**白名单风险演示**） | 15 USDC |
+| Charlie  | 贡献者  | 维护社群并整理数据            | 10 USDC |
+| Data API | 工具订阅 | 本月数据服务订阅费            | 5 USDC  |
 
-共同 contract：
 
-- `create_transfer(execution_id, payment)`：返回标准 `PaymentExecutionItem`。
-- `failed_transfer(execution_id, payment, error)`：返回标准失败 `PaymentExecutionItem`。
-- adapter 必须暴露 `mode`、`network`、`agent_wallet_address`。
-- 默认 factory 返回 mock adapter；只有显式设置 real mode 和 transfer flag 时才会尝试真实 testnet adapter。
+月预算 **50 USDC**，单笔限额 **25 USDC**。Bob 钱包不在白名单 → **blocked**；其余 3 笔通过检查并在人工确认后执行。
 
-`RealCawAdapter` 必须保持 P0 API 行为不变：Risk Check 仍是唯一决定 `Ready` / `NeedsApproval` / `Blocked` 的地方，Execute Payment 仍必须要求 `humanApproval.approved=true`，blocked payment 不能进入 adapter。缺少 base URL、auth、wallet id、pact active 状态、policy rules、approval flow、chain/token/recipient allowlist 或 amount limit 时必须 fail closed。
+### Showcase — Landing Page
 
-## Phase 4C Testnet CAW Adapter
+营销落地页一览（点击缩略图可放大）：
 
-Phase 4C-0 / 4C-1 adds a testnet-only `RealCawAdapter` skeleton behind the existing `CawAdapter` contract. Default mode remains mock. The real adapter is opt-in and fail-closed.
+| | | |
+|:---:|:---:|:---:|
+| [![Landing Hero](assets/images/readme/landing-hero.png)](assets/images/readme/landing-hero.png)<br><br>**Landing Hero**<br>DAO AI 财务官首屏 · 价值主张与 CTA<br>[Live Demo](https://agentcfo-frontend.vercel.app) | [![Pipeline](assets/images/readme/landing-pipeline.png)](assets/images/readme/landing-pipeline.png)<br><br>**Pipeline**<br>Contribution → Plan → Risk → Approval → CAW → Audit<br>[Live Demo](https://agentcfo-frontend.vercel.app) | [![Platform](assets/images/readme/landing-platform.png)](assets/images/readme/landing-platform.png)<br><br>**Platform**<br>AgentCFO 平台能力与模块边界<br>[Live Demo](https://agentcfo-frontend.vercel.app) |
+| [![Guardrails](assets/images/readme/landing-guardrails.png)](assets/images/readme/landing-guardrails.png)<br><br>**Guardrails**<br>预算、白名单、Human Approval · fail-closed<br>[Live Demo](https://agentcfo-frontend.vercel.app) | [![Timelines](assets/images/readme/landing-timelines.png)](assets/images/readme/landing-timelines.png)<br><br>**Timelines**<br>从 scaffold 到 CAW testnet evidence<br>[Live Demo](https://agentcfo-frontend.vercel.app) | [![Built by Teams](assets/images/readme/landing-built-by-teams.png)](assets/images/readme/landing-built-by-teams.png)<br><br>**Built by Teams**<br>多角色协作交付叙事<br>[团队](#团队) |
+| [![FAQ](assets/images/readme/landing-faq.png)](assets/images/readme/landing-faq.png)<br><br>**FAQ**<br>评委与访客常见问题<br>[Live Demo](https://agentcfo-frontend.vercel.app) | [![Footer](assets/images/readme/landing-footer.png)](assets/images/readme/landing-footer.png)<br><br>**Footer**<br>进入 Console 与产品收尾 CTA<br>[Console](https://agentcfo-frontend.vercel.app/console) | |
 
-Required environment variable names:
+### Showcase — Command Center
 
-| Name | Purpose | Secret |
-| --- | --- | --- |
-| `CAW_ADAPTER_MODE` | `mock` or `real`; default is `mock` | No |
-| `CAW_ENABLE_TRANSFERS` | must be `true` before any real transfer attempt | No |
-| `AGENT_WALLET_API_URL` | CAW API base URL | No |
-| `AGENT_WALLET_API_KEY` | Agent API key used only to submit/poll pact | Yes |
-| `AGENT_WALLET_WALLET_ID` | Agent Wallet wallet id | No |
-| `CAW_ALLOWED_CHAIN_IDS` | comma-separated testnet chain ids, for example `SETH` | No |
-| `CAW_ALLOWED_TOKEN_IDS` | comma-separated token ids | No |
-| `CAW_ALLOWED_RECIPIENTS` | comma-separated recipient allowlist | No |
-| `CAW_SOURCE_ADDRESS` | optional source address for wallets with multiple compatible addresses | No |
-| `CAW_MAX_AMOUNT` | decimal natural-unit max amount | No |
+业务功能界面（Console Command Center）：
 
-Local example with placeholders only:
+| | | |
+|:---:|:---:|:---:|
+| [![Agent Hub](assets/images/readme/console-agent-hub.png)](assets/images/readme/console-agent-hub.png)<br><br>**Agent Hub**<br>Agent-first 工作台 · Payment Plan → Risk → Approval → Execution<br>[Console Demo](https://agentcfo-frontend.vercel.app/console) | [![Treasury](assets/images/readme/console-treasury.png)](assets/images/readme/console-treasury.png)<br><br>**Treasury**<br>Payment Execution Pipeline · Records → Plan → Risk → Approval → CAW → Audit<br>[Console Demo](https://agentcfo-frontend.vercel.app/console/treasury) | [![CAW Wallets](assets/images/readme/console-wallets.png)](assets/images/readme/console-wallets.png)<br><br>**CAW Wallets**<br>Crypto Vaults Management · Agent Vault · Multi-sig · Cold Storage<br>[Console Demo](https://agentcfo-frontend.vercel.app/console/wallets) |
+| [![Analytics](assets/images/readme/console-analytics.png)](assets/images/readme/console-analytics.png)<br><br>**Analytics**<br>Gas Optimization · DAO Expenditure · Efficiency Compare · Allocated Spend<br>[Console Demo](https://agentcfo-frontend.vercel.app/console/analytics) | [![Policy](assets/images/readme/console-policy.png)](assets/images/readme/console-policy.png)<br><br>**Policy**<br>DAO Compliance Rules · Guardrail Topology · Whitelist Manager<br>[Console Demo](https://agentcfo-frontend.vercel.app/console/policy) | |
 
-```text
-CAW_ADAPTER_MODE=real
-CAW_ENABLE_TRANSFERS=true
-AGENT_WALLET_API_URL=<provided-by-caw-teammate>
-AGENT_WALLET_API_KEY=<provided-by-caw-teammate>
-AGENT_WALLET_WALLET_ID=<provided-by-caw-teammate>
-CAW_ALLOWED_CHAIN_IDS=<testnet-chain-id>
-CAW_ALLOWED_TOKEN_IDS=<testnet-token-id>
-CAW_ALLOWED_RECIPIENTS=<test-recipient-address>
-CAW_SOURCE_ADDRESS=<wallet-source-address-if-needed>
-CAW_MAX_AMOUNT=<low-testnet-amount>
-```
+### Demo Video
 
-Safety behavior:
+**[▶ 在线观看](https://agentcfo-frontend.vercel.app/#guardrails)** — Landing `#guardrails` 区手动播放（Mock 模式演示；README 中 2 笔 CAW testnet tx 为真实付款证据，与 mock fallback 并存）。
 
-- Real adapter is used only when `CAW_ADAPTER_MODE=real`.
-- Real transfer attempts are blocked unless `CAW_ENABLE_TRANSFERS=true`.
-- Missing `AGENT_WALLET_API_URL`, `AGENT_WALLET_API_KEY`, or `AGENT_WALLET_WALLET_ID` fails closed.
-- Chain, token, recipient, and amount are checked locally before any SDK transfer call.
-- Only configured testnet chain ids are allowed; mainnet is not implemented.
-- Contract calls are not implemented.
-- The adapter submits a pact, polls until active with a bounded limit, then uses only the in-memory pact-scoped API key for `transfer_tokens`.
-- Stable `request_id` is generated per payment item.
-- `txHash` stays `null` unless CAW returns a real `transaction_hash`.
-- Policy denial and provider failures are returned as redacted public error codes.
-- `caw_pact_submit_error` means pact submission failed before a transfer attempt.
-- `caw_transfer_submit_error` means pact activation passed but transfer submission failed.
-- `caw_policy_denied` means CAW policy rejected the transfer attempt.
+源文件：[`assets/video/agentcfo-demo.mp4`](assets/video/agentcfo-demo.mp4)
 
-Do not commit `cobo-agentic-wallet-backend-quickstart.md`. Do not create or commit `.env`. Do not paste `AGENT_WALLET_API_KEY` or any pact-scoped API key into code, docs, logs, tests, screenshots, or chat.
+路演 PPT（ppt-master）：[`assets/ppt/agentcfo-pitch.pptx`](assets/ppt/agentcfo-pitch.pptx) · 物料 PDF：[`assets/ppt/material/agentcfo-pitch-material-team-v1.pdf`](assets/ppt/material/agentcfo-pitch-material-team-v1.pdf)
 
-Manual live test checklist, only after explicit approval:
+---
 
-1. Confirm the test recipient address.
-2. Confirm testnet chain, token id, and low amount.
-3. Confirm the Agent Wallet has testnet balance.
-4. Confirm all env vars are set through the deployment/user environment, not `.env`.
-5. Run `python -m pytest -q`.
-6. Start the server.
-7. Execute one approved, risk-checked, low-value payment.
-8. Verify `/api/caw-status/{cawRequestId}`, `/api/caw-status/{cawRequestId}/refresh`, and `/api/audit-report/{auditReportId}`.
+## 快速开始
 
-For one-off local live-test scripts, set `AGENTCFO_DB_PATH` to an absolute repo-local path before importing `app.main`; otherwise the app process can initialize a different store than the script expects.
-
-If a live test returns `txHash=null`, first query CAW by `request_id`. If CAW returns not found, check whether pact submission reached CAW before considering another transfer. The installed SDK requires `submit_pact(..., intent="...", spec={...})`; omitting `intent` fails before CAW creates a transaction record.
-
-Evidence to capture after an approved live test:
-
-| Field | Source |
-| --- | --- |
-| `chain` | `CAW_ALLOWED_CHAIN_IDS` and CAW transaction/status view |
-| `token` | payment item token and CAW transaction/status view |
-| `request_id` | stable CAW SDK request id generated per payment |
-| `cawRequestId` | backend execution response and `/api/caw-status/{cawRequestId}` |
-| `txHash` | CAW transaction response/status when available |
-| `auditReportId` | backend execution response |
-| `CAW status` | `/api/caw-status/{cawRequestId}` and CAW status/audit log view |
-
-Render env checklist for testnet real mode:
-
-```text
-CAW_ADAPTER_MODE=real
-CAW_ENABLE_TRANSFERS=true
-AGENT_WALLET_API_URL=<provided-by-caw-teammate>
-AGENT_WALLET_API_KEY=<Render secret env var>
-AGENT_WALLET_WALLET_ID=<provided-by-caw-teammate>
-CAW_ALLOWED_CHAIN_IDS=<testnet-chain-id>
-CAW_ALLOWED_TOKEN_IDS=<testnet-token-id>
-CAW_ALLOWED_RECIPIENTS=<test-recipient-address>
-CAW_SOURCE_ADDRESS=<wallet-source-address-if-needed>
-CAW_MAX_AMOUNT=<low-testnet-amount>
-```
-
-Rollback to mock mode:
-
-```text
-CAW_ADAPTER_MODE=mock
-CAW_ENABLE_TRANSFERS=false
-```
-
-After rollback, restart the local server or redeploy Render so the app process reloads environment variables. Mock mode must return `mode="mock"` and `txHash=null`.
-
-No live transfer is run by tests. Tests use fake SDK clients only.
-
-## CAW Read-Only Observer
-
-Phase 4B 加入了 CAW read-only observer skeleton；Phase 4C closeout 暴露了只读 refresh API。它们用来固定只读查询边界：
-
-- pact status query
-- transaction by `request_id`
-- audit logs query
-- provider status normalization
-
-`GET /api/caw-status/{cawRequestId}` 读取当前本地保存的 CAW status。
-
-`GET /api/caw-status/{cawRequestId}/refresh` 先确认本地 `cawRequestId` 存在，再通过 read-only client 按 `request_id` 查询 CAW 最新交易状态，归一化 provider status，保存更新后的 `CawStatus`，并返回更新结果。它不会调用 `transfer_tokens`，不会创建新付款计划，不会触发任何转账。
-
-In mock or ephemeral Render mode, refresh can safely return `404 CAW provider transaction not found` for a mock `cawRequestId`, because no real CAW provider transaction exists for mock execution. This is expected and must not be retried by triggering a live transfer.
-
-Audit Report 是执行时快照，后续 status refresh 不能改写历史 Audit Report。Frontend should treat Audit Report as immutable evidence and CAW Status as the latest refreshable status. If the audit snapshot has `txHash=null` but refreshed CAW Status has a real `txHash`, show the real hash in a separate “Latest CAW Status” area and keep the audit snapshot unchanged.
-
-Observer 不持久化 raw provider error，只保存稳定的公开错误码。未知 provider status 必须 fail closed，API 返回安全公开错误，不回显 provider 原文。
-
-真实 CAW read-only client 只用于查询，不用于转账。启用前需要 CAW 同学确认官方 SDK/API、auth、wallet、pact、policy、approval、chain/token、status query 和 audit log 细节；未知 provider status 必须 fail closed，不能自行猜测未确认的 REST endpoint。
-
-## Tech Stack
-
-- **Language**: Python 3.14 当前本机可用；如依赖安装失败，改用 Python 3.12/3.13。
-- **Framework**: FastAPI
-- **Validation**: Pydantic
-- **Testing**: pytest + FastAPI TestClient
-- **Server**: Uvicorn
-- **Storage**: SQLite demo store with repository abstraction
-- **CAW**: Cobo Agentic Wallet SDK (`cobo-agentic-wallet==0.1.40`), default mock adapter, opt-in testnet RealCawAdapter skeleton
-
-## Local Development
-
-## Teammate Handoff
-
-如果你是前端或 CAW 同学，按下面步骤拿到后端 mock API：
+### 30 秒看 Demo（前端 mock mode）
 
 ```bash
 git clone https://github.com/San-Y108/agent-cfo.git
+cd agent-cfo/frontend
+pnpm install
+PORT=3100 pnpm dev
+```
+
+打开 [http://localhost:3100/console](http://localhost:3100/console) 查看完整 Demo 流程。
+
+### 验证线上后端
+
+```bash
+curl https://agentcfo-backend.onrender.com/health
+curl https://agentcfo-backend.onrender.com/api/demo-sample
+```
+
+预期 health 返回：`{"status":"ok","service":"agent-cfo-backend"}`
+
+### Demo Smoke Test
+
+本地或 Render 部署后，建议按此顺序做快速检查：
+
+```bash
+curl http://127.0.0.1:8000/health
+curl http://127.0.0.1:8000/version
+curl http://127.0.0.1:8000/api/demo-sample
+```
+
+| 项目 | 当前值 |
+|---|---|
+| API mode | `mock-demo` |
+| CAW mode | `mock`（Render 默认） |
+| P0 flow | `payment-plan → risk-check → execute-payment → audit-report` |
+
+### 新队友阅读顺序
+
+| 顺序 | 路径 | 目的 |
+|---|---|---|
+| 1 | `README.md` | 项目、Demo、当前限制 |
+| 2 | `AGENTS.md` / `CLAUDE.md` | 团队边界与目录职责 |
+| 3 | `app/` + `tests/` | P0 API 与验收用例 |
+| 4 | `docs/` · `assets/` · `inbox/` | PM 文档、交付物、待归类投递 |
+| 5 | `frontend/CLAUDE.md` | 前端专项（仅前端同学） |
+
+后端原则：先跑通 P0 demo loop；不把 LLM 当最终授权层；不把 mock tx 当真实 CAW 交易。
+
+<details>
+<summary>Windows — 本地后端开发</summary>
+
+```powershell
+git clone https://github.com/San-Y108/agent-cfo.git
 cd agent-cfo
-```
-
-如果你已经 clone 过仓库：
-
-```bash
-git pull
-```
-
-确认当前后端交付提交：
-
-```bash
-git log --oneline --max-count=3
-```
-
-你应该能看到类似提交：
-
-```text
-3d63bfc Implement FastAPI backend P0 mock APIs
-```
-
-然后继续执行下面的 Local Development 步骤创建虚拟环境、安装依赖、运行测试和启动服务。
-
-创建虚拟环境：
-
-```bash
 python -m venv .venv
-```
-
-安装依赖：
-
-```bash
-.venv/bin/python -m pip install -r requirements.txt
-```
-
-运行测试：
-
-```bash
-.venv/bin/python -m pytest -q
-```
-
-启动开发服务：
-
-```bash
-.venv/bin/python -m uvicorn app.main:app --reload
-```
-
-默认服务地址：
-
-```text
-http://127.0.0.1:8000
+.venv\Scripts\python -m pip install -r requirements.txt
+.venv\Scripts\python -m pytest -q
+.venv\Scripts\python -m uvicorn app.main:app --reload
 ```
 
 健康检查：
 
-```bash
-curl http://127.0.0.1:8000/health
+```powershell
+curl.exe http://127.0.0.1:8000/health
+curl.exe http://127.0.0.1:8000/api/demo-sample
 ```
 
-版本和 demo sample：
+</details>
 
-```bash
-curl http://127.0.0.1:8000/version
-curl http://127.0.0.1:8000/api/demo-sample
-```
-
-`/api/demo-sample` 只返回可复制的 mock demo payload，不创建 plan、不写入数据库、不执行付款。Alice 和 Charlie 在白名单内，Bob 故意不在白名单内，方便前端展示 blocked risk。
-
-FastAPI 自动 docs / OpenAPI 当前已关闭。运行时暴露 P0 业务 API、只读查询 API、demo sample 和部署健康检查。后续进入联调或需要文档展示时，可以在 `app/main.py` 重新开启。
-
-```text
-Core routes:
-POST /api/payment-plan
-POST /api/risk-check
-POST /api/execute-payment
-GET  /api/audit-report/{auditReportId}
-GET  /api/caw-status/{cawRequestId}
-GET  /api/caw-status/{cawRequestId}/refresh
-GET  /api/demo-sample
-GET  /version
-GET  /health
-```
-
-## Render Deployment
-
-Phase 1 demo backend can be deployed as a Render Web Service.
-
-Render settings:
-
-```text
-Build command: pip install -r requirements.txt
-Start command: python -m uvicorn app.main:app --host 0.0.0.0 --port $PORT
-```
-
-Render environment variables:
-
-```text
-PYTHON_VERSION=3.13.5
-CORS_ALLOWED_ORIGINS=https://agentcfo-frontend.vercel.app
-CAW_ADAPTER_MODE=mock
-CAW_ENABLE_TRANSFERS=false
-```
-
-Production must set `CORS_ALLOWED_ORIGINS` to the actual frontend origin. If this variable is not set, the backend only uses local development defaults:
-
-```text
-http://localhost:5173
-http://127.0.0.1:5173
-http://localhost:3000
-```
-
-Deployed health check:
-
-部署后端验证：
+<details>
+<summary>macOS / Linux — 本地后端开发</summary>
 
 ```bash
-curl https://agentcfo-backend.onrender.com/health
+git clone https://github.com/San-Y108/agent-cfo.git
+cd agent-cfo
+python -m venv .venv
+.venv/bin/python -m pip install -r requirements.txt
+.venv/bin/python -m pytest -q
+.venv/bin/python -m uvicorn app.main:app --reload
 ```
 
-Deployed smoke checks:
+</details>
+
+<details>
+<summary>队友交接 — 前端 / CAW 同学拿 mock API</summary>
 
 ```bash
-curl https://agentcfo-backend.onrender.com/version
-curl https://agentcfo-backend.onrender.com/api/demo-sample
+git clone https://github.com/San-Y108/agent-cfo.git
+cd agent-cfo
+git pull
+git log --oneline --max-count=3
 ```
 
-预期返回：
+然后按上方 Windows/macOS 步骤创建虚拟环境、安装依赖、跑测试、启动服务。`/api/demo-sample` 返回可复制 mock payload；Alice/Charlie 在白名单，Bob 故意 blocked。
 
-```json
-{"status":"ok","service":"agent-cfo-backend"}
-```
+完整路由与 handoff 说明见 [`docs/backend/DEPLOYMENT.md`](docs/backend/DEPLOYMENT.md)。
 
-This deployment is still mock backend mode by default: no real Cobo Agentic Wallet transfer, no `.env`, and no secrets in the repository. Render should set `CAW_ADAPTER_MODE=mock` and `CAW_ENABLE_TRANSFERS=false` for P1 online verification.
+</details>
 
-### Render Persistent Disk For Demo Evidence
+<details>
+<summary>边缘情况 — CAW testnet real mode、Render 部署、环境变量</summary>
 
-Use SQLite on a Render persistent disk only as durable demo evidence storage. Do not treat it as a production-grade finance ledger, multi-instance database, or final accounting source of truth.
+默认全程 **mock mode**，不需要任何 CAW secrets。
 
-Recommended Render disk settings:
+| 场景 | 说明 |
+|---|---|
+| Render 部署 | Build: `pip install -r requirements.txt` · Start: `python -m uvicorn app.main:app --host 0.0.0.0 --port $PORT` |
+| 生产 CORS | `CORS_ALLOWED_ORIGINS=https://agentcfo-frontend.vercel.app` |
+| CAW real mode | 需显式设置 `CAW_ADAPTER_MODE=real` + `CAW_ENABLE_TRANSFERS=true` 及全套 CAW env vars |
+| OpenAI planner | `PAYMENT_PLANNER_MODE=openai` + `OPENAI_API_KEY`（默认 `mock`） |
+| Agent Hub 聊天 | `MINIMAX_API_KEY` + 可选 `MINIMAX_BASE_URL` / `MINIMAX_MODEL`（默认 `MiniMax-M2.5-highspeed`） |
+| 持久化 | 本地默认 SQLite `agentcfo_demo.sqlite3`；Render 需挂载 persistent disk |
+
+完整说明：
+
+- CAW Adapter / Phase 4C / Observer → [`docs/backend/CAW_ADAPTER.md`](docs/backend/CAW_ADAPTER.md)
+- Render / Planner / Persistence → [`docs/backend/DEPLOYMENT.md`](docs/backend/DEPLOYMENT.md)
+- 环境变量全表 → [`docs/backend/ENV_VARS.md`](docs/backend/ENV_VARS.md)
+
+**安全纪律：** 不提交 `.env`、API key、pact-scoped key；不把 mock tx 当作真实链上交易。
+
+</details>
+
+---
+
+## 架构
 
 ```text
-Mount path: /var/data
-AGENTCFO_DB_PATH=/var/data/agentcfo_demo.sqlite3
+Frontend (Next.js)
+  → Backend API (FastAPI)
+    → Agent / LLM Planner
+    → Risk Engine
+    → Human Approval Gate
+    → CAW Adapter (Mock / Real testnet)
+    → Audit Report
 ```
 
-The backend already reads `AGENTCFO_DB_PATH` when creating the SQLite store. If the Render service does not have a persistent disk mounted at `/var/data`, this path will not provide durable evidence and may fail or lose data depending on the filesystem state.
 
-Before enabling this on Render, add a persistent disk in the Render Dashboard or through the Render API, then set `AGENTCFO_DB_PATH=/var/data/agentcfo_demo.sqlite3` and redeploy. Keep P1 online verification in mock mode:
+| 层        | 技术                                               | 部署                                                         |
+| -------- | ------------------------------------------------ | ---------------------------------------------------------- |
+| Frontend | Next.js 16 · React 19 · TypeScript · Tailwind v4 | [Vercel](https://agentcfo-frontend.vercel.app)（mock mode）  |
+| Backend  | Python · FastAPI · Pydantic · pytest · SQLite    | [Render](https://agentcfo-backend.onrender.com)（mock mode） |
+| CAW      | `cobo-agentic-wallet==0.1.40`                    | 默认 MockCawAdapter；opt-in testnet RealCawAdapter            |
 
-```text
-CAW_ADAPTER_MODE=mock
-CAW_ENABLE_TRANSFERS=false
-```
 
-Persistence verification checklist after the disk exists:
+**仓库状态：** 已 scaffold FastAPI P0 MVP（mock 默认 + opt-in real CAW skeleton）；前端已部署 Vercel；后端已部署 Render。真实 CAW 未在 Render 默认启用。
 
-1. Create a P0/P2 mock evidence record through the normal mock API flow.
-2. Read it back through the relevant API, such as Audit Report or CAW Status.
-3. Trigger a Render redeploy or service restart.
-4. Read the same record again and confirm the id and evidence fields are unchanged.
+**关键原则：**
 
-Current Render persistence decision: do not claim durable evidence storage until the persistent disk is attached, redeployed, and the checklist above passes.
+- LLM 只生成计划和解释；Risk Engine 是唯一决定 `Ready` / `NeedsApproval` / `Blocked` 的地方
+- Execute Payment 必须 `humanApproval.approved=true`；blocked 项不进 adapter
+- Audit Report 为执行时快照；后续 CAW status refresh 不可改写
+- RealCawAdapter 缺 env / allowlist / policy 时 fail closed
+- Read-only observer 只查询，不触发转账
 
-## Payment Planner Mode
+详见 [`docs/backend/CAW_ADAPTER.md`](docs/backend/CAW_ADAPTER.md)。
 
-The backend defaults to the deterministic mock planner:
+### CAW Testnet 证据（公开脱敏）
 
-```text
-PAYMENT_PLANNER_MODE=mock
-```
+#### Demo payment（AgentCFO 流程）
 
-OpenAI Structured Outputs can be enabled explicitly:
+| 字段              | 公开证据                                                                 |
+| --------------- | -------------------------------------------------------------------- |
+| chain / token   | `SETH` / `SETH`                                                      |
+| amount          | `0.001`                                                              |
+| recipient       | `0xAf3f...594B`                                                      |
+| source          | `0x2cda...76da`                                                      |
+| request_id      | `agentcfo_exec_demo_002_pay_001`                                     |
+| provider status | `900`                                                                |
+| txHash          | `0x85a5a2e934ca0e34c7fb3e038ca06e54e15bd29b56b64e5b01ff80eb20ed4d98` |
+| audit log       | `transfer.allowed` and `transfer.initiate` were allowed              |
 
-```text
-PAYMENT_PLANNER_MODE=openai
-OPENAI_API_KEY=<set in Render or local environment>
-OPENAI_MODEL=gpt-4.1-mini
-```
+#### Internal transfer（同钱包验证）
 
-The default is always `mock`. The backend only calls OpenAI when `PAYMENT_PLANNER_MODE=openai` and `OPENAI_API_KEY` exists. Missing keys, API errors, timeouts, schema validation failures, or draft payments that change recipient, wallet, task, token, or amount fall back to the mock planner.
+| 字段              | 公开证据                                                                 |
+| --------------- | -------------------------------------------------------------------- |
+| chain / token   | Sepolia / `SETH`                                                     |
+| amount          | `0.001`                                                              |
+| source          | `0x2cda...76da`                                                      |
+| counterparty    | `0xaa55...c199`                                                      |
+| txHash          | `0x6bd793bc3030c995245b2e73a466898e46278be092aa9f7a3c86cad21cbbae8a` |
+| note            | 同 Agent Wallet 地址下的内部划转；**不替代** demo payment 证据                    |
 
-The LLM can only draft the Payment Plan summary and payment reasons. The backend still assigns `paymentPlanId`, payment ids, `status="Ready"`, `risks=[]`, `riskLevel="Unchecked"`, and `totalAmount`. Risk Check remains the only place that can decide `Ready`, `NeedsApproval`, or `Blocked`, and Execute Payment still requires `humanApproval.approved=true`.
+> 以上证明 2 笔低额 CAW testnet transfer，不代表三笔独立商业付款 tx。线上 Render 默认仍为 mock mode。
 
-## Persistence
+---
 
-The backend now uses a repository abstraction with SQLite as the default local demo store. The database path is configured with:
+## API 参考
 
-```text
-AGENTCFO_DB_PATH=agentcfo_demo.sqlite3
-```
+### P0 核心端点
 
-If `AGENTCFO_DB_PATH` is not set, the backend writes to `agentcfo_demo.sqlite3` in the current working directory. Tests use an in-memory SQLite database and reset state before each test.
 
-For temporary local demos, you can force the old in-memory store:
+| Endpoint                            | Method | 说明                          |
+| ----------------------------------- | ------ | --------------------------- |
+| `/api/payment-plan`                 | POST   | 输入贡献记录和预算规则，输出 Payment Plan |
+| `/api/risk-check`                   | POST   | 对 Payment Plan 执行确定性风险检查    |
+| `/api/execute-payment`              | POST   | 人工确认后，通过 CAW 执行可付款项         |
+| `/api/audit-report/{auditReportId}` | GET    | 返回最终 Audit Report           |
+| `/api/caw-status/{cawRequestId}`    | GET    | 返回 mock/CAW 请求状态            |
+| `/api/agent/chat`                   | POST   | Agent Hub 对话（MiniMax 代理，Key 仅在后端） |
 
-```text
-AGENTCFO_STORE_BACKEND=memory
-```
 
-On Render, SQLite is only suitable for a single-instance demo. To keep SQLite data across deploys or restarts, first get explicit approval, then attach a Render persistent disk at `/var/data` and set `AGENTCFO_DB_PATH=/var/data/agentcfo_demo.sqlite3`. If SQLite is stored on Render's normal ephemeral filesystem, deploys or restarts can lose the database file. For long-running audit storage, multi-instance services, or production-like usage, use Postgres in a later phase instead; do not implement Postgres without explicit approval.
+契约真相源：`app/models.py` · `app/routers/payments.py` · `app/routers/agent.py` · `tests/test_mvp_flow.py` · `tests/test_agent_chat.py`
 
-Audit Reports are saved as execution-time snapshots. Later CAW status refreshes must not rewrite historical Audit Report content.
-
-## Demo Smoke Test
-
-本地或 Render 部署后，建议按这个顺序给前端 / PM / 评委做快速检查：
-
-```bash
-curl http://127.0.0.1:8000/health
-curl http://127.0.0.1:8000/version
-curl http://127.0.0.1:8000/api/demo-sample
-```
-
-联调约定：
-
-| 项目 | 当前值 |
-| --- | --- |
-| API mode | `mock-demo` |
-| CAW mode | `mock` |
-| Mock tx hash | `null` |
-| Real CAW transfer | Render mock flow 不执行；仅本地 Phase 4C 记录了 1 笔 testnet evidence |
-| Demo sample | `GET /api/demo-sample`，非写入 |
-| P0 flow | `payment-plan -> risk-check -> execute-payment -> audit-report` |
-
-## Curl Verification
-
-验证本地后端 API：
+<details>
+<summary>curl 验证示例（本地 mock）</summary>
 
 创建 Payment Plan：
 
 ```bash
-curl -X POST http://127.0.0.1:8000/api/payment-plan -H "Content-Type: application/json" -d "{\"contributions\":[{\"name\":\"Alice\",\"role\":\"Content Contributor\",\"task\":\"Wrote event recap article\",\"wallet\":\"0xAlice\",\"amount\":20,\"token\":\"USDC\"}],\"budgetRule\":{\"monthlyBudget\":50,\"singlePaymentLimit\":25,\"allowedToken\":\"USDC\",\"whitelist\":[\"0xAlice\"],\"requiresHumanApproval\":true}}"
+curl.exe -X POST http://127.0.0.1:8000/api/payment-plan -H "Content-Type: application/json" -d "{\"contributions\":[{\"name\":\"Alice\",\"role\":\"Content Contributor\",\"task\":\"Wrote event recap article\",\"wallet\":\"0xAlice\",\"amount\":20,\"token\":\"USDC\"}],\"budgetRule\":{\"monthlyBudget\":50,\"singlePaymentLimit\":25,\"allowedToken\":\"USDC\",\"whitelist\":[\"0xAlice\"],\"requiresHumanApproval\":true}}"
 ```
 
 执行 Risk Check：
 
 ```bash
-curl -X POST http://127.0.0.1:8000/api/risk-check -H "Content-Type: application/json" -d "{\"paymentPlanId\":\"plan_demo_001\",\"budgetRule\":{\"monthlyBudget\":50,\"singlePaymentLimit\":25,\"allowedToken\":\"USDC\",\"whitelist\":[\"0xAlice\"],\"requiresHumanApproval\":true}}"
+curl.exe -X POST http://127.0.0.1:8000/api/risk-check -H "Content-Type: application/json" -d "{\"paymentPlanId\":\"plan_demo_001\",\"budgetRule\":{\"monthlyBudget\":50,\"singlePaymentLimit\":25,\"allowedToken\":\"USDC\",\"whitelist\":[\"0xAlice\"],\"requiresHumanApproval\":true}}"
 ```
 
 执行 mock payment：
 
 ```bash
-curl -X POST http://127.0.0.1:8000/api/execute-payment -H "Content-Type: application/json" -d "{\"paymentPlanId\":\"plan_demo_001\",\"approvedPaymentIds\":[\"pay_001\"],\"humanApproval\":{\"approved\":true,\"approvedBy\":\"demo-operator\"}}"
+curl.exe -X POST http://127.0.0.1:8000/api/execute-payment -H "Content-Type: application/json" -d "{\"paymentPlanId\":\"plan_demo_001\",\"approvedPaymentIds\":[\"pay_001\"],\"humanApproval\":{\"approved\":true,\"approvedBy\":\"demo-operator\"}}"
 ```
 
 查看 Audit Report：
 
 ```bash
-curl http://127.0.0.1:8000/api/audit-report/audit_demo_001
+curl.exe http://127.0.0.1:8000/api/audit-report/audit_demo_001
 ```
 
-查看当前 CAW status：
+更多 curl 与验收标准见 [`docs/backend/TESTING.md`](docs/backend/TESTING.md)。
 
-```bash
-curl http://127.0.0.1:8000/api/caw-status/mock_caw_exec_demo_001_pay_001
-```
+</details>
 
-刷新 latest CAW status：
+<details>
+<summary>P2 扩展 API（demo-safe，默认不触发真实外部动作）</summary>
 
-```bash
-curl http://127.0.0.1:8000/api/caw-status/mock_caw_exec_demo_001_pay_001/refresh
-```
+P2 提供 metadata / preview / simulation 类端点，不改变 P0 授权与 Audit Report 不可变性。包括 external-references、request-invoices、sablier-stream-previews、safe-permission-references、multichain-readiness、treasury-budget-partitions 及 `/api/p2/*` 系列。
 
-验证部署后端：
+完整端点表见 [`docs/backend/P2_APIS.md`](docs/backend/P2_APIS.md) · Request Finance spike 见 [`docs/backend/REQUEST_FINANCE.md`](docs/backend/REQUEST_FINANCE.md)。
 
-```bash
-curl https://agentcfo-backend.onrender.com/health
-```
+</details>
 
-默认 mock 执行结果是 `mode="mock"`，`txHash=null`。Real CAW refresh 返回真实 `txHash` 时，前端应把它展示在 latest CAW status 区域，不要改写 Audit Report 快照。
+### 验收要点
 
-在 Render mock-demo 环境中，`/api/caw-status/{mockId}/refresh` 返回 `404 CAW provider transaction not found` 是安全预期：它只说明 mock request 没有真实 CAW provider transaction，不会调用 `transfer_tokens`。
+- Budget / 白名单 / 单笔限额 / 重复付款 → block
+- 缺 human approval → 不执行
+- Blocked payment → 不进 CAW adapter
+- Mock execution → 明确标注 `mode="mock"`
 
-## Environment Variables
+---
 
-默认 mock 模式不读取任何 CAW secrets。只有显式启用 testnet real adapter 时，后端才会从环境变量读取 CAW 配置：
+## 路线图
 
-| 变量类别 | 用途 | 状态 |
-| --- | --- | --- |
-| PAYMENT_PLANNER_MODE | `mock` 或 `openai`，默认 `mock` | 可选 |
-| OPENAI_API_KEY | 显式启用 OpenAI planner 时使用 | 不提交，必须走环境变量 |
-| OPENAI_MODEL | OpenAI planner 模型，默认 `gpt-4.1-mini` | 可选 |
-| CAW_ADAPTER_MODE | `mock` 或 `real`，默认 `mock` | 可选 |
-| CAW_ENABLE_TRANSFERS | 必须为 `true` 才允许真实 testnet transfer attempt | 可选 |
-| AGENT_WALLET_API_URL | Cobo Agentic Wallet API base URL | real mode 必需 |
-| AGENT_WALLET_API_KEY | 调用 Cobo Agentic Wallet 和申请 pact-scoped key | real mode 必需，不提交 |
-| AGENT_WALLET_WALLET_ID | 选择 Agent Wallet | real mode 必需 |
-| CAW_ALLOWED_CHAIN_IDS | 测试网 chain id allowlist | real mode 必需 |
-| CAW_ALLOWED_TOKEN_IDS | token id allowlist | real mode 必需 |
-| CAW_ALLOWED_RECIPIENTS | recipient allowlist | real mode 必需 |
-| CAW_SOURCE_ADDRESS | 多个兼容源地址时指定扣款地址 | 可选，但 live test 推荐设置 |
-| CAW_MAX_AMOUNT | 单笔最大金额 | real mode 必需 |
-| REQUEST_FINANCE_MODE | `mock` 或 `live`，默认 `mock` | 可选 |
-| REQUEST_FINANCE_API_BASE_URL | Request Finance API base URL，默认 `https://api.request.finance/` | 可选 |
-| REQUEST_FINANCE_API_KEY | Request Finance API key | live mode 必需，不提交 |
-| REQUEST_FINANCE_AUTH_SCHEME | `api_key` 或 `oauth_bearer`，默认 `api_key` | 可选；OAuth/Bearer 必须显式开启 |
-| REQUEST_FINANCE_ALLOW_INVOICE_CREATE | 预留的 invoice-create guard；默认 `false` | 可选，当前仍不得开启 |
-| AGENTCFO_DB_PATH | SQLite demo database path | 可选，本地默认 `agentcfo_demo.sqlite3` |
-| AGENTCFO_STORE_BACKEND | 可选切回 in-memory store | 仅本地临时 demo 使用 |
 
-不要提交 `.env`、API key、private key、token 或生产钱包凭证。
+| 阶段          | 状态          | 要点                                                                                                                                              |
+| ----------- | ----------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| **P0**      | ✅ 完成        | P0 核心 API · deterministic Risk Engine · MockCawAdapter · Audit Report · opt-in RealCawAdapter skeleton                                          |
+| **P1**      | ✅ 完成        | Render 部署 · SQLite 持久化 · CAW status 查询 · README 运行说明                                                                                            |
+| **P2**      | ✅ demo-safe | External references · Request Finance mock · Sablier preview · Safe refs · multichain readiness · multi-agent treasury mock · P2 demo utilities |
+| **P2 live** | 🔜 需批准      | Request Finance / Sablier / Safe / 多链 / 多 Agent 真实集成均未默认启用                                                                                      |
 
-## Testing And Acceptance
 
-后端完成前至少要验证：
+---
 
-- Payment Plan schema validation。
-- Budget exceeded 会 block。
-- Single payment limit exceeded 会 block。
-- Non-whitelisted wallet 会 block。
-- Duplicate task 或 duplicate recipient 会被识别。
-- Missing human approval 不会执行付款。
-- Blocked payment 不会发送到 CAW adapter。
-- CAW adapter failure 会进入 Audit Report。
-- Mock execution 明确标注为 mock。
+## 文档
 
-完成标准：
 
-- 核心业务 API 支持完整 Demo flow。
-- 前端可以展示 Payment Plan、Risk Check、Execution Result 和 Audit Report。
-- 至少一笔 CAW testnet transaction 有真实证据，或明确标注当前使用 mock mode。
-- README 和实际实现保持一致。
+| 文档 | 说明 |
+|---|---|
+| [`docs/backup/README-20260613-pre-polish.md`](docs/backup/README-20260613-pre-polish.md) | 合并前完整技术版备份 |
+| [`docs/backend/`](docs/backend/README.md) | 后端技术深文档（CAW、部署、env、P2、测试） |
+| [`docs/plans/README-merge-plan.md`](docs/plans/README-merge-plan.md) | README 合并规划 |
+| [`frontend/README.md`](frontend/README.md) | 前端开发、Console 路由、mock/real 边界 |
+| [`frontend/backend-integration.md`](frontend/backend-integration.md) | 前后端联调 |
+| [`AGENTS.md`](AGENTS.md) | AI Agent 工作指南 |
+| [`CLAUDE.md`](CLAUDE.md) | 团队边界与阅读顺序 |
+| [`docs/pm/TASK_BOARD.md`](docs/pm/TASK_BOARD.md) | 任务看板 |
+| [`docs/pm/SUBMISSION_CHECKLIST.md`](docs/pm/SUBMISSION_CHECKLIST.md) | 提交材料清单 |
+| [`docs/pm/DEMO_REHEARSAL_CHECKLIST.md`](docs/pm/DEMO_REHEARSAL_CHECKLIST.md) | Demo 彩排清单 |
+| [`docs/pm/P2_DEMO_HANDOFF.md`](docs/pm/P2_DEMO_HANDOFF.md) | P2 demo 交接 |
 
-## Project Management
+**文档纪律：** `README.md` 为项目入口；`docs/` 放文字文档；`assets/` 放已归类交付物；`inbox/` 放待整理投递。API 事实以 `app/models.py`、`app/routers/payments.py`、`tests/test_mvp_flow.py` 为准。
 
-- [任务看板](docs/pm/TASK_BOARD.md)
-- [每日站会模板](docs/pm/DAILY_STANDUP.md)
-- [风险日志](docs/pm/RISK_LOG.md)
-- [提交材料清单](docs/pm/SUBMISSION_CHECKLIST.md)
-- [Demo 彩排检查清单](docs/pm/DEMO_REHEARSAL_CHECKLIST.md)
-- [群消息模板库](docs/pm/TEAM_SYNC_MESSAGES.md)
-- [交付总控报告](docs/pm/DELIVERY_MASTER_REPORT_2026-06-08.md)
+---
 
-## Team
+## 团队
 
-| 角色 | 职责 |
-| --- | --- |
-| 交付 / 路演 / 总控 | 项目统筹、路演、GitHub、最终交付 |
-| 物料 / 设计 / 内容 | PPT、海报、视频、文案 |
-| 前端 | 产品界面 + Mock 模式 |
-| 后端 / Agent | FastAPI + Agent 付款计划 + 风险检查 |
-| 合约 / CAW | Cobo Agentic Wallet 集成 + 测试网付款 |
 
-## Roadmap
+| Avatar | 姓名 | 角色 | 职责 |
+|---|---|---|---|
+| <a href="assets/images/readme/team/zanyk-role.jpg"><img src="assets/images/readme/team/zanyk-role.jpg" width="80" alt="ZanyK"></a> | **ZanyK** | 指导 / 交付总控 | 项目统筹、路演、GitHub、最终交付 |
+| <a href="assets/images/readme/team/huan-role.jpg"><img src="assets/images/readme/team/huan-role.jpg" width="80" alt="欢"></a> | **欢** | PM | 需求拆解、路线管理、站会与交付协同 |
+| <a href="assets/images/readme/team/guagua-role.jpg"><img src="assets/images/readme/team/guagua-role.jpg" width="80" alt="呱呱"></a> | **呱呱** | 物料 / 设计 / 内容 | PPT、海报、视频、文案、视觉资产 |
+| <a href="assets/images/readme/team/threetwoa-role.jpg"><img src="assets/images/readme/team/threetwoa-role.jpg" width="80" alt="threetwoa"></a> | **threetwoa** | 前端 | Landing + Console 界面、Mock 模式演示 |
+| <a href="assets/images/readme/team/jiujiu-role.jpg"><img src="assets/images/readme/team/jiujiu-role.jpg" width="80" alt="九九八乂"></a> | **九九八乂** | 后端 / Agent | FastAPI、Payment Plan、Risk Check、Audit Report |
+| <a href="assets/images/readme/team/purple-sun-role.jpg"><img src="assets/images/readme/team/purple-sun-role.jpg" width="80" alt="purple sun"></a> | **purple sun** | 合约 / CAW | Cobo Agentic Wallet 集成、测试网付款证据 |
 
-P0:
 
-- Scaffold backend。已完成 mock MVP。
-- 实现 P0 核心 API。已完成 mock MVP，并补充 CAW 状态查询接口。
-- 接入 LLM planner。已完成默认 mock、显式 `openai` 模式的 structured planner。
-- 实现 deterministic Risk Engine。已完成，6 条规则。
-- 接入 CAW Adapter。当前默认 MockCawAdapter，已加入 opt-in testnet RealCawAdapter skeleton。
-- 输出 Audit Report。已完成 mock MVP。
+> GitHub 主页链接待后续补充。
 
-P1:
+### 赛事
 
-- 部署后端服务。✅ 已部署到 Render。
-- 增加持久化。✅ SQLiteStore 已实现。
-- 增加 CAW 状态轮询。✅ GET /api/caw-status/{id} 已实现。
-- 补齐运行方式和环境变量说明。✅ README 已更新。
+[AI × Web3 Agentic Builders Hackathon](https://casualhackathon.com) — [AI × Web3 School](https://web3career.build/zh/programs/AI-Web3-School?tab=learning) Bootcamp 实践阶段黑客松：围绕 AI Agent、链上资金流与 DAO 协作等真实场景，完成可演示、可复盘、可继续迭代的 Demo。
 
-P2:
+| 项目 | 内容 |
+|---|---|
+| **赛事全称** | AI × Web3 Agentic Builders Hackathon |
+| **队名** | AgentCFO \| 链上财务官小队 |
+| **报名平台** | [Casual Hackathon](https://casualhackathon.com) |
+| **培养计划** | [AI × Web3 School Bootcamp](https://web3career.build/zh/programs/AI-Web3-School?tab=learning) 实践阶段 |
+| **参赛赛道** | **Cobo 赛道｜Agentic Economy × Cobo Agentic Wallet**（简称 Agentic Commerce） |
+| **赛道合作方** | [Cobo Agentic Wallet](https://www.cobo.com/agentic-wallet) |
+| **总奖金池** | 7000 USDT（Cobo 赛道 3500 · Z.AI 赛道 3500） |
+| **报名 & 组队** | 2026-06-01 00:00 — 2026-06-13 12:00（UTC+8） |
+| **Build Period** | 2026-06-01 — 2026-06-12 |
+| **提交截止** | 2026-06-13 12:00（UTC+8） |
+| **Demo Day** | 2026-06-14 |
+| **获奖公示** | 2026-06-17 |
+| **当前状态** | ✅ 已提交 · Demo Day 2026-06-14 |
 
-- P2-0 external reference / evidence foundation。✅ Demo-safe metadata-only API 已实现。
-- P2A Request Network invoice records。✅ Mock/demo-safe invoice records 已实现；不调用 Request Finance API。
-- P2B Sablier Flow payroll。✅ Preview-only stream calculation 已实现；不创建真实 stream。
-- P2C Safe module references。✅ Reference-only metadata 已实现；不启用或部署 Safe module。
-- P2D Multi-chain readiness。✅ Readiness matrix 已实现；不新增真实链执行。
-- P2E Multi-agent treasury。✅ Mock budget partition view 已实现；不改变授权系统。
-- P2F Request Finance live integration spike。✅ Env-gated client/status/read-only path 已实现；off-chain invoice create mapper/client path 已实现但默认关闭；真实 invoice creation 仍需明确人工批准。
-- P2 backend-owned demo utilities。✅ OpenAPI-lite machine contract endpoint 与 Request Finance webhook replay mock v2 已实现；均不触发 provider、email、payment 或链上转换。
+**主办与社区网络**（据官方页面；非商业赞助声明）：
 
-P2 live integrations are not enabled by default. Do not claim Request Finance invoice creation evidence, Sablier, Safe, multichain execution, or multi-agent authorization is live without explicit approval, credentials, and new tests.
+| 角色 | 说明 |
+|---|---|
+| **活动平台** | [web3career.build](https://web3career.build) · [Casual Hackathon](https://casualhackathon.com) |
+| **培养体系** | AI × Web3 School Bootcamp |
+| **社区网络** | LXDAO · ETHPanda · AI × Web3 School 参赛社群 |
+| **赛道技术伙伴** | Cobo（Agentic Wallet 赛道）· Z.AI（另一赛道，GLM-5.1 长程任务） |
+| **开发者支持** | Workshop / Office Hour 答疑 · 有限 API 补贴（[申请](https://docs.google.com/forms/d/e/1FAIpQLSdPXXZBoos9CsP2vA_rmD6blm7a-cvAsJ6XdVvLCjepY0sNrg/viewform)） |
+| **社群入口** | Telegram: [t.me/aiweb3school](https://t.me/aiweb3school) · 微信: `clynn2024`（备注【AI × Web3 Agentic Builders Hackathon】） |
 
-Frontend/PM handoff for the demo-safe P2 surface is in [`docs/pm/P2_DEMO_HANDOFF.md`](docs/pm/P2_DEMO_HANDOFF.md). Backend owns machine-readable contracts and simulation endpoints; PM/frontend own scenario prose, presenter notes, storyboard UI, and forbidden-claims copy packaging.
+> 官方页面未单独列出商业赞助商名单；上表为活动平台、赛道合作方与社区支持方。
 
-## P2F Request Finance Live Spike
+### 赛程
 
-Request Finance integration is guarded by environment variables and defaults to mock mode:
+| 时间 | 阶段 |
+|---|---|
+| 6 月 1 日 | 正式宣发 / Kickoff · 报名开放 |
+| 6 月 2 日 20:00–21:00（UTC+8） | Open Day · 规则、赛道与组队说明 |
+| 6 月 1–12 日 | Build Period · 开发、测试与 Demo 打磨 |
+| 6 月 1–12 日 20:00–21:00（UTC+8） | Workshop · 技术资源与 Demo 表达辅导 |
+| 6 月 1–12 日 周一/三/五 19:00–20:00（UTC+8） | Office Hour · 选题与实现答疑 |
+| 6 月 13 日 12:00（UTC+8） | **提交截止** |
+| 6 月 14 日 | Demo Day · 展示、问答与点评 |
+| 6 月 17 日 | 获奖公示 |
 
-```text
-REQUEST_FINANCE_MODE=mock
-REQUEST_FINANCE_API_BASE_URL=https://api.request.finance/
-REQUEST_FINANCE_API_KEY=<Render secret env var>
-REQUEST_FINANCE_AUTH_SCHEME=api_key
-REQUEST_FINANCE_ALLOW_INVOICE_CREATE=false
-```
+Workshop & Office Hour 安排：[AI × Web3 School 学习页](https://web3career.build/zh/programs/AI-Web3-School?tab=learning)
 
-Safety behavior:
+### Cobo 赛道匹配
 
-- `/version` exposes only non-sensitive status: mode, whether a key is configured, whether the invoice-create guard is enabled, and whether invoice creation is implemented.
-- Mock mode keeps the previous `/api/request-invoices` behavior and does not create a live client.
-- Live mode fails closed if `REQUEST_FINANCE_API_KEY` or base URL is missing.
-- API key auth uses `Authorization: <REQUEST_FINANCE_API_KEY>` with no `Bearer` prefix. `oauth_bearer` is a future explicit auth scheme and is never the default.
-- Live mode with the invoice-create guard disabled still records a demo-safe linked invoice record and marks it as `requestFinanceMode=live-readonly`.
-- Live off-chain invoice creation is implemented but disabled unless `REQUEST_FINANCE_ALLOW_INVOICE_CREATE=true`; do not enable the guard or call `POST /invoices` without explicit approval and test invoice inputs.
-- One approved test/off-chain invoice was created through `POST /invoices` during P2F validation, then the guard was turned back off. This is invoice-record evidence only: no `POST /invoices/{id}`, no on-chain conversion, no CAW transfer, and no payment.
-- Live create validates required input/config fields and fails closed when buyer email, invoice number, invoice item, currency, payment option, creation date, or due date fields are missing.
-- Live create only targets Request Finance `POST /invoices`; it must not call `POST /invoices/{id}`, convert an invoice to an on-chain request, trigger CAW, or pay.
-- Local/Render live smoke may use only `GET /invoices?take=1&skip=0` for read-only validation.
-- Audit Report snapshots stay immutable; Request Finance records remain linked external metadata.
+AgentCFO 对应 Cobo 赛道建议方向：
 
-## P2 Demo-safe Extension APIs
+| 方向 | AgentCFO 如何体现 |
+|---|---|
+| **Agent-Native Payments** | Agent 根据贡献记录生成 Payment Plan，在预算与白名单约束下发起受控付款 |
+| **Agent Resource Procurement** | Demo 含 Data API 工具订阅付款；Agent 判断 DAO 应付服务费用并在规则内结算 |
+| **A2A Economy / Treasury** | P2 mock 多 Agent 预算分区；Human Approval + Risk Engine 保留 Treasury 治理边界 |
 
-These APIs are metadata, preview, or reference only. They do not change P0/P1 payment authorization, deterministic risk checks, CAW adapter behavior, or immutable Audit Report snapshots.
+**Cobo 赛道评审对齐**（摘要）：
 
-| API | Status | Live external action |
-| --- | --- | --- |
-| `POST /api/external-references` | Generic external evidence metadata | None |
-| `GET /api/external-references/{externalReferenceId}` | Read external metadata | None |
-| `GET /api/external-references?paymentPlanId=...` | List linked metadata | None |
-| `POST /api/request-invoices` | Mock Request invoice record by default; live path is env-gated and approval-gated | No live invoice creation unless explicitly approved |
-| `GET /api/request-invoices/{externalReferenceId}` | Read mock Request invoice record | None |
-| `POST /api/sablier-stream-previews` | Preview duration/rate for a future stream | No Sablier stream creation |
-| `POST /api/safe-permission-references` | Reference-only Safe permission note | No Safe module enablement/deployment |
-| `GET /api/multichain-readiness` | Design/readiness matrix | No new chain execution |
-| `GET /api/treasury-budget-partitions/{paymentPlanId}` | Mock department-agent budget view | No new authorization role |
-| `GET /api/p2/evidence-timeline/{auditReportId}` | Aggregates Audit Report, CAW status, and linked P2 references for display | None |
-| `GET /api/p2/readiness/{auditReportId}` | Machine-readable P2 integrity/readiness summary, linked reference counts, missing links, and safety flags | None |
-| `GET /api/p2/demo-scenarios` | Deterministic judge/demo scenario pack | None |
-| `POST /api/p2/risk-what-if` | Simulation-only risk guardrail preview using deterministic rules | No plan persistence or payment execution |
-| `GET /api/p2/policy-guardrails` | Non-secret demo safety flags for CAW, Request Finance, Sablier, Safe, multichain, and audit immutability | None |
-| `GET /api/p2/evidence-export/{auditReportId}` | Markdown-ready evidence package for PM/demo copy | None |
-| `POST /api/p2/request-finance/preflight` | Validates Request Finance create-invoice payload shape without creating a provider client | No Request Finance API call |
-| `GET /api/p2/planner-explainability` | LLM planner boundary, Structured Outputs posture, malformed-output fallback, and reason trace | No model call |
-| `POST /api/p2/request-finance/lifecycle-preview` | Mock invoice lifecycle/event log for created/accepted/canceled/rejected/paid | No provider call, no email, no on-chain conversion |
-| `POST /api/p2/request-finance/webhook-replay` | Request Finance invoice lifecycle webhook replay mock v2 with idempotent event timeline and terminal-state ignore policy | No provider call, no email, no on-chain conversion, no payment |
-| `POST /api/p2/sablier/payroll-simulation` | Simulation-only payroll schedule/accrual/withdrawable/runway/insolvency guardrails | No Sablier stream or transaction |
-| `POST /api/p2/safe/guard-policy-dry-run` | Safe owner threshold, module checklist, guard policy matrix, blocked operations | No Safe module/guard enablement or execution |
-| `POST /api/p2/treasury/coordination-simulation` | Mock department-agent proposals, budget caps, conflicts, approval matrix, audit timeline | No new authorization role |
-| `GET /api/demo/runbook` | Ordered demo steps, expected badges, forbidden claims | None |
-| `GET /api/demo/storyboard` | Presentation storyboard frames | None |
-| `GET /api/demo/blocked-examples` | Stable blocked examples for frontend/PM copy | None |
-| `GET /api/demo/contracts` | Frontend response-contract index and global invariants | None |
-| `GET /api/demo/contracts/openapi-lite` | Machine-readable P0/P2 endpoint contracts, required fields, examples, safety flags, and display hints | None |
+- **场景贴合度**：AI 参与 DAO 贡献结算与支出治理，CAW 为执行层而非附属展示
+- **CAW 关键性**：真实付款路径必经 CAW Adapter；mock mode 仅作演示兜底且明确标注
+- **资金流程完整度**：Contribution → Plan → Risk → Approval → CAW → Audit 全链路可演示
+- **可演示性**：[Live Demo](https://agentcfo-frontend.vercel.app) + Console Command Center
+- **风险边界**：预算、白名单、单笔限额、Human Approval、fail-closed；详见架构章节与 [`docs/backend/CAW_ADAPTER.md`](docs/backend/CAW_ADAPTER.md)
 
-`GET /api/demo/contracts/openapi-lite` is a custom contract endpoint. FastAPI public `/docs` and `/openapi.json` remain disabled; this endpoint does not expose secrets, environment values, raw provider payloads, private wallet details, or live-action configuration.
+<details>
+<summary>Cobo 赛道规则与提交要求（官方摘要）</summary>
 
-P2 implementation references:
+**赛道规则：**
 
-- Request Network / Request Finance: live client/status path is env-gated; live read-only smoke is allowed with configured credentials, and off-chain invoice create is implemented but disabled by default after the approved single test/off-chain invoice run.
-- LLM planner explainability: references OpenAI Structured Outputs concepts such as `json_schema`, strict schema adherence, and fail-closed validation, but the endpoint itself performs no model call.
-- Sablier Flow: simulation uses rate-per-second, withdrawable/accrued amount, covered/uncovered debt, and lifecycle-state vocabulary for demo math only; future live payroll requires wallet/signature approval and new risk rules before stream creation.
-- Safe modules/guards: dry-run uses owner threshold, module, and guard concepts for comparison only; future Safe work requires owner approval and security review before enablement or deployment.
-- Multi-chain: current real execution boundary remains the existing CAW testnet/token allowlist.
-- Multi-agent treasury: current mock partition view is advisory only; human approval and deterministic risk checks remain the only execution gates.
+- 项目须围绕 Agent 与资金操作场景；资金相关操作通过 CAW 完成
+- Agent 须具备真实资金执行能力（支付、转账、结算等），非纯流程设计
+- 须体现 CAW 在钱包管理、权限控制、安全隔离或自主支付方面的价值
+- 成果须为可运行或可演示的产品原型；不接受纯 PPT / Mockup
 
-## Documentation Rules
+**提交要求：**
 
-- `README.md` 是项目入口，记录运行、测试、联调方式和当前限制。
-- 代码里的 `app/models.py`、`app/routers/payments.py`、`app/services/` 是当前 P0 API 和业务规则的准确信息来源。
-- 需求变化时，先更新 README 的联调说明和对应测试，再改实现。
+- GitHub Repo + README + 项目说明文档
+- Demo 视频（建议 3–5 分钟）+ 演示链接（如有）
+- CAW 关键代码或配置说明
+- 链上证据（如适用）：测试网地址、Transaction Hash、Agent Wallet 地址、流程截图
 
-## Demo Video
+**Cobo 参考资料：**
 
-> 待录制。最终提交前必须替换为 3–5 分钟 Demo 视频链接。当前已有 1 笔低额 CAW testnet tx hash；视频需明确说明它只证明 1 笔 testnet transfer，默认 mock fallback 仍保留。
+- [Agentic Wallet 官网](https://www.cobo.com/agentic-wallet)
+- [Recipes](https://agenticwallet.cobo.com/agentic-wallet/recipes)
+- [文档](https://www.cobo.com/products/agentic-wallet/manual/start-here/introduction)
+- [SDK Quickstart](https://www.cobo.com/products/agentic-wallet/manual/developer/quickstart-overview)
+- [什么是 Agentic Wallet](https://www.cobo.com/products/agentic-wallet/manual/learn/what-is-agentic-wallet)
+- [Agentic Economy 专栏](https://www.cobo.com/blog-new-page?tag=Cobo+Agentic+Economy)
 
-## License
+</details>
 
-MIT
+### 技术生态
+
+本项目集成或参考以下生态能力（技术集成伙伴，非赞助声明）：
+
+| 名称 | 关系 |
+|---|---|
+| **Cobo Agentic Wallet** | 受控执行核心；赛道指定 SDK；已完成 2 笔 testnet evidence |
+| **Request Finance** | P2F env-gated invoice spike（默认关闭） |
+| **Sablier / Gnosis Safe** | P2 preview & reference；Landing 生态展示 |
+
+
+---
+
+## Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=San-Y108/agent-cfo&type=Date)](https://star-history.com/#San-Y108/agent-cfo&Date)
+
+## 许可证
+
+[MIT](LICENSE)
+
+---
+
+Made with ❤️ by ZanyK · 欢 · 呱呱 · threetwoa · 九九八乂 · purple sun

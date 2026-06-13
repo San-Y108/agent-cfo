@@ -27,9 +27,9 @@ const colorMap: Record<HudColor, string> = {
 };
 
 const sizeMap = {
-  sm: { prefix: "text-[10px]", value: "text-xs" },
-  md: { prefix: "text-[11px]", value: "text-sm" },
-  lg: { prefix: "text-xs", value: "text-base" },
+  sm: { prefix: "text-[11px]", value: "text-xs" },
+  md: { prefix: "text-xs", value: "text-sm" },
+  lg: { prefix: "text-sm", value: "text-base" },
 };
 
 /**

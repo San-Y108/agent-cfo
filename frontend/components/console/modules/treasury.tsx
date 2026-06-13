@@ -25,25 +25,36 @@ import {
   ChevronUp,
 } from "lucide-react";
 import { useApp } from "@/lib/i18n/context";
+import { localizeActivityMessage } from "@/lib/console/activity-messages";
 import { useConsoleState, FlowStep } from "@/lib/console/console-state";
 import type { ContributorRecord, PaymentPlanItem, BudgetRules } from "@/lib/types/console";
 import type { CawStatus } from "@/lib/api/types";
+import type { ActivityEntry } from "@/lib/console/console-state";
 import { RecordsImport } from "@/components/console/records-import";
 import { AnimatedNumber } from "@/components/ui/aceternity/animated-number";
-import { GradientText, ColourfulText } from "@/components/ui/aceternity/colourful-text";
+import { ColourfulText } from "@/components/ui/aceternity/colourful-text";
 import { Sparkles as SparklesFX } from "@/components/ui/aceternity/sparkles";
 import { GridBackground } from "@/components/ui/aceternity/background";
 import { BentoCard } from "@/components/ui/aceternity/bento-grid";
 import { HolographicButton } from "@/components/ui/holographic-button";
 import { FlowTimeline } from "@/components/console/flow-timeline";
 import { RiskGateAnimation } from "@/components/console/risk-gate-anim";
+import { ModuleStageLayout } from "@/components/console/module-stage-layout";
 import {
   HudLabel,
   StatusPulse,
   Scanline,
   CornerGlow,
   FrostedPanel,
+  ConsoleTelemetryGrid,
+  ConsolePanelHeader,
+  StageCornerAccent,
+  BeamBurst,
+  DetailDeckShell,
+  PreflightRow,
 } from "@/components/console/command-deck";
+import { ScrambleValue } from "@/components/ui/gsap-text-effects";
+import { isMockMode } from "@/lib/api/client";
 
 /* =============================================================================
  * BUSINESS LOGIC HELPERS
@@ -64,12 +75,16 @@ export function TreasuryModule() {
     plan,
     step,
     isExecuting,
+    flowError,
+    auditReportId,
     cawStatuses,
     addRecords,
     resetFlow,
     generatePlan,
     executePlan,
     refreshCawStatus,
+    clearFlowError,
+    activityLog,
   } = useConsoleState();
   const [cawRefreshing, setCawRefreshing] = useState(false);
 
@@ -131,179 +146,507 @@ export function TreasuryModule() {
     resetFlow();
   };
 
+  const stepLabels = ["STANDBY", "SCANNING", "REVIEW", "EXECUTING", "AUDIT"];
+  const stepPulseColor =
+    step === FlowStep.Executing ? "coral" : step === FlowStep.Done ? "cyan" : "cyan";
+  const stageBusy = step === FlowStep.Scanning || step === FlowStep.Executing;
+
+  const pipelineHudValue = [
+    _("待机", "IDLE"),
+    _("扫描", "SCAN"),
+    _("审核", "REVIEW"),
+    _("执行", "EXEC"),
+    _("完成", "DONE"),
+  ][step];
+
+  const detailDefaultOpen = true;
+
   return (
-    <div className="space-y-4">
-      {/* ─── KPI grid ─── */}
-      <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-        {[
-          {
-            prefix: "BUDGET::",
-            value: <AnimatedNumber value={totalBudget} />,
-            subtext: "USDC",
-            color: "lime" as const,
-          },
-          {
-            prefix: "PENDING::",
-            value: <AnimatedNumber value={totalPending} />,
-            subtext: "USDC",
-            color: "cyan" as const,
-          },
-          {
-            prefix: "BLOCKED::",
-            value: <AnimatedNumber value={totalBlocked} />,
-            subtext: "USDC",
-            color: "coral" as const,
-          },
-          {
-            prefix: "REMAIN::",
-            value: <AnimatedNumber value={budgetRemaining} />,
-            subtext: "USDC",
-            color: "blue" as const,
-          },
-        ].map((card, i) => (
-          <motion.div
-            key={card.prefix}
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4, delay: i * 0.06 }}
-          >
-            <FrostedPanel glowColor={card.color} sheen className="p-4">
-              <HudLabel prefix={card.prefix} value={card.value} color={card.color} size="sm" />
-              <div className="mt-1 text-[10px] text-fg-subtle font-mono">{card.subtext}</div>
-            </FrostedPanel>
-          </motion.div>
-        ))}
-      </div>
-
-      {/* ─── Payment Pipeline Hero ─── */}
-      <motion.div
-        initial={{ opacity: 0, y: 16 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: 0.1 }}
-      >
-        <FrostedPanel
-          glowColor="lime"
-          scanline
-          sheen
-          className="relative p-5"
-        >
-          <CornerGlow color="lime" className="-top-24 -right-24" intensity={0.2} />
-
-          <div className="relative z-10 flex items-start justify-between mb-4">
-            <div>
-              <HudLabel
-                prefix="PIPELINE::"
-                value={
-                  [
-                    _("待机", "IDLE"),
-                    _("扫描", "SCAN"),
-                    _("审核", "REVIEW"),
-                    _("执行", "EXEC"),
-                    _("完成", "DONE"),
-                  ][step]
-                }
-                color="lime"
-                size="md"
-              />
-              <h2 className="mt-1 text-base font-semibold text-fg">
-                {_("付款执行管道", "Payment Execution Pipeline")}
-              </h2>
-            </div>
-            <StatusPulse
-              color={step === FlowStep.Executing ? "coral" : step === FlowStep.Done ? "cyan" : "lime"}
-              label={
-                ["STANDBY", "SCANNING", "REVIEW", "EXECUTING", "AUDIT"][step]
-              }
-              size="sm"
-            />
-          </div>
-
-          <Scanline color="lime" className="relative z-10 mb-4" />
-
-          <div className="relative z-10 mb-4">
-            <FlowTimeline
-              currentStep={step}
-              steps={[
-                { label: _("生成计划", "Generate Plan"), icon: <Sparkles className="w-4 h-4" /> },
-                { label: _("风险检查", "Risk Check"), icon: <ShieldAlert className="w-4 h-4" /> },
-                { label: _("人工确认", "Approval"), icon: <CheckCircle className="w-4 h-4" /> },
-                { label: _("执行付款", "Execution"), icon: <Send className="w-4 h-4" /> },
-                { label: _("审计报告", "Audit"), icon: <FileSpreadsheet className="w-4 h-4" /> },
-              ]}
-            />
-          </div>
-
-          <div className="relative z-10">
-            <ActionPanel
-              step={step}
-              plan={plan}
-              records={records}
-              budgetRule={budgetRule}
-              totalReady={totalReady}
-              totalBlocked={totalBlocked}
-              isExecuting={isExecuting}
-              onGenerate={handleGenerate}
-              onExecute={handleExecute}
-              onReset={reset}
-              cawStatuses={cawStatuses}
-              cawRefreshing={cawRefreshing}
-              onRefreshCaw={handleRefreshCawStatus}
-              lang={lang}
-              _={_}
-            />
-          </div>
-        </FrostedPanel>
-      </motion.div>
-
-      {/* ─── Records satellite ─── */}
-      <motion.div
-        initial={{ opacity: 0, y: 16 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: 0.2 }}
-      >
-        <RecordsSatellite
-          records={records}
-          plan={plan}
-          onImport={() => setImportOpen(true)}
-          onReset={reset}
-          onAdd={handleAdd}
-          newName={newName}
-          setNewName={setNewName}
-          newWallet={newWallet}
-          setNewWallet={setNewWallet}
-          newAmount={newAmount}
-          setNewAmount={setNewAmount}
-          _={_}
-        />
-      </motion.div>
-
-      {/* ─── Risk Gate floating satellite ─── */}
-      <AnimatePresence>
-        {totalBlocked > 0 && (
-          <motion.div
-            initial={{ opacity: 0, y: 20, scale: 0.96 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 20, scale: 0.96 }}
-          >
-            <FrostedPanel glowColor="coral" scanline className="p-4">
-              <RiskGateAnimation
-                isBlocked={true}
-                reason={_(
-                  `${blockedItems.length} 笔付款被拦截（共 ${totalBlocked} USDC）：${blockedItems[0]?.riskReason}`,
-                  `${blockedItems.length} payment(s) blocked (${totalBlocked} USDC): ${blockedItems[0]?.riskReason}`
-                )}
-              />
-            </FrostedPanel>
-          </motion.div>
+    <>
+      <ModuleStageLayout
+        moduleColor="cyan"
+        moduleLabel="Treasury"
+        title={_("金库工作台", "Treasury Workspace")}
+        subtitle={_(
+          "生成付款计划 → 风险检查 → 人工确认 → CAW 受控执行",
+          "Generate plan, run risk checks, approve, then execute within CAW guardrails."
         )}
-      </AnimatePresence>
+        statusPulse={{ color: stepPulseColor, label: stepLabels[step] }}
+        leftRailLabel={_("贡献记录", "Records")}
+        leftRail={
+          <RecordsSatellite
+            records={records}
+            plan={plan}
+            onImport={() => setImportOpen(true)}
+            onReset={reset}
+            onAdd={handleAdd}
+            newName={newName}
+            setNewName={setNewName}
+            newWallet={newWallet}
+            setNewWallet={setNewWallet}
+            newAmount={newAmount}
+            setNewAmount={setNewAmount}
+            _={_}
+          />
+        }
+        rightRailLabel={_("实时指标", "Live Metrics")}
+        rightRail={
+          <TreasuryMetricsRail
+            totalBudget={totalBudget}
+            totalPending={totalPending}
+            totalBlocked={totalBlocked}
+            budgetRemaining={budgetRemaining}
+            _={_}
+          />
+        }
+        stage={
+          <FrostedPanel
+            glowColor="cyan"
+            scanline={stageBusy}
+            sheen
+            className="relative flex h-full min-h-0 flex-col overflow-hidden rounded-card"
+          >
+            <CornerGlow color="cyan" className="-top-24 -right-24" intensity={0.2} />
+            <StageCornerAccent color="cyan" />
 
-      {/* ─── Batch import modal ─── */}
+            <ConsolePanelHeader
+              title={_("付款执行管道", "Payment Execution Pipeline")}
+              hudPrefix="PIPELINE::"
+              hudValue={pipelineHudValue}
+              hudColor="cyan"
+              trailing={<StatusPulse color={stepPulseColor} label={stepLabels[step]} size="sm" />}
+            />
+
+            {stageBusy && <Scanline color="cyan" className="relative z-10 shrink-0" />}
+
+            <AnimatePresence>
+              {flowError && (
+                <motion.div
+                  initial={{ opacity: 0, y: -6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -6 }}
+                  className="relative z-10 mx-4 mt-2 md:mx-5"
+                >
+                  <div className="flex items-start gap-2 rounded-xl border border-hud-coral/30 bg-hud-coral/10 px-3 py-2.5">
+                    <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-hud-coral" />
+                    <div className="min-w-0 flex-1">
+                      <p className="text-xs font-semibold text-hud-coral">
+                        {_("API 请求失败", "API request failed")}
+                      </p>
+                      <p className="mt-0.5 break-all font-mono text-[10px] text-fg-muted">
+                        {flowError}
+                      </p>
+                      {!isMockMode() && (
+                        <p className="mt-1 text-[10px] text-fg-muted">
+                          {_("确认后端已启动且 CORS 允许 localhost:3100", "Ensure backend is up and CORS allows localhost:3100")}
+                        </p>
+                      )}
+                    </div>
+                    <button
+                      type="button"
+                      onClick={clearFlowError}
+                      className="shrink-0 text-fg-muted hover:text-fg"
+                      aria-label="Dismiss"
+                    >
+                      <XCircle className="h-4 w-4" />
+                    </button>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            <div className="relative z-10 min-h-0 flex-1 overflow-y-auto p-4 md:p-5">
+              <div className="mb-3 shrink-0">
+                <FlowTimeline
+                  currentStep={step}
+                  steps={[
+                    { label: _("生成计划", "Generate Plan"), icon: <Sparkles className="w-4 h-4" /> },
+                    { label: _("风险检查", "Risk Check"), icon: <ShieldAlert className="w-4 h-4" /> },
+                    { label: _("人工确认", "Approval"), icon: <CheckCircle className="w-4 h-4" /> },
+                    { label: _("执行付款", "Execution"), icon: <Send className="w-4 h-4" /> },
+                    { label: _("审计报告", "Audit"), icon: <FileSpreadsheet className="w-4 h-4" /> },
+                  ]}
+                />
+              </div>
+
+              <ActionPanel
+                step={step}
+                plan={plan}
+                records={records}
+                budgetRule={budgetRule}
+                totalReady={totalReady}
+                totalBlocked={totalBlocked}
+                isExecuting={isExecuting}
+                onGenerate={handleGenerate}
+                onExecute={handleExecute}
+                onReset={reset}
+                lang={lang}
+                _={_}
+              />
+            </div>
+          </FrostedPanel>
+        }
+        detailLabel={
+          step === FlowStep.Done
+            ? _("审计与 CAW", "Audit & CAW")
+            : _("风险与审计", "Risk & Audit")
+        }
+        detailDefaultOpen={detailDefaultOpen}
+        detail={
+          <TreasuryDetailDeck
+            step={step}
+            plan={plan}
+            records={records}
+            budgetRule={budgetRule}
+            activityLog={activityLog}
+            totalBlocked={totalBlocked}
+            blockedItems={blockedItems}
+            totalReady={totalReady}
+            cawStatuses={cawStatuses}
+            cawRefreshing={cawRefreshing}
+            auditReportId={auditReportId}
+            onRefreshCaw={handleRefreshCawStatus}
+            _={_}
+          />
+        }
+      />
+
       <RecordsImport
         open={importOpen}
         onClose={() => setImportOpen(false)}
         onImport={handleImportRecords}
       />
+    </>
+  );
+}
+
+/* =============================================================================
+ * METRICS RAIL — Right-side 2×2 live KPIs
+ * ===========================================================================*/
+
+function TreasuryMetricsRail({
+  totalBudget,
+  totalPending,
+  totalBlocked,
+  budgetRemaining,
+  _,
+}: {
+  totalBudget: number;
+  totalPending: number;
+  totalBlocked: number;
+  budgetRemaining: number;
+  _: (zh: string, en: string) => string;
+}) {
+  return (
+    <FrostedPanel glowColor="cyan" sheen className="flex h-full flex-col rounded-card p-4">
+      <p className="mb-2.5 text-[12px] font-medium text-fg-muted">
+        {_("实时指标", "Live metrics")}
+      </p>
+      <ConsoleTelemetryGrid
+        columns={1}
+        items={[
+          {
+            label: "BUDGET",
+            value: <AnimatedNumber value={totalBudget} />,
+            unit: "USDC",
+            accent: "lime",
+          },
+          {
+            label: "PENDING",
+            value: <AnimatedNumber value={totalPending} />,
+            unit: "USDC",
+            accent: "cyan",
+          },
+          {
+            label: "BLOCKED",
+            value: <AnimatedNumber value={totalBlocked} />,
+            unit: "USDC",
+            accent: "coral",
+          },
+          {
+            label: "REMAIN",
+            value: <AnimatedNumber value={budgetRemaining} />,
+            unit: "USDC",
+            accent: "blue",
+          },
+        ]}
+      />
+    </FrostedPanel>
+  );
+}
+
+/* =============================================================================
+ * DETAIL DECK — Audit, CAW, risk gate
+ * ===========================================================================*/
+
+function TreasuryDetailDeck({
+  step,
+  plan,
+  records,
+  budgetRule,
+  activityLog,
+  totalBlocked,
+  blockedItems,
+  totalReady,
+  cawStatuses,
+  cawRefreshing,
+  auditReportId,
+  onRefreshCaw,
+  _,
+}: {
+  step: FlowStep;
+  plan: PaymentPlanItem[];
+  records: ContributorRecord[];
+  budgetRule: BudgetRules;
+  activityLog: ActivityEntry[];
+  totalBlocked: number;
+  blockedItems: PaymentPlanItem[];
+  totalReady: number;
+  cawStatuses: CawStatus[];
+  cawRefreshing: boolean;
+  auditReportId: string | null;
+  onRefreshCaw: () => void;
+  _: (zh: string, en: string) => string;
+}) {
+  const { lang } = useApp();
+  const blockedCount = plan.filter((i) => i.status === "Blocked").length;
+  const executedCount = plan.filter((i) => i.status === "Executed").length;
+  const readyCount = plan.filter((i) => i.status === "Ready").length;
+  const auditTrailLabel =
+    step === FlowStep.Idle
+      ? _("等待生成计划", "Awaiting plan")
+      : step === FlowStep.Scanning
+      ? _("扫描中…", "Scanning…")
+      : step === FlowStep.Done
+      ? _("已封存", "Sealed")
+      : _("实时更新", "Live");
+
+  return (
+    <div className="space-y-3">
+      {step !== FlowStep.Done && (
+        <DetailDeckShell glowColor="cyan">
+          <div className="grid gap-4 lg:grid-cols-2">
+            <div>
+              <p className="mb-2 text-[11px] font-bold uppercase tracking-wider text-fg-muted">
+                {_("风控预检", "Risk preflight")}
+              </p>
+              <PreflightRow
+                label={_("贡献记录", "Contribution records")}
+                value={`${records.length}`}
+                status="ok"
+              />
+              <PreflightRow
+                label={_("月预算 / 单笔限额", "Budget / single limit")}
+                value={`${budgetRule.monthlyBudget} / ${budgetRule.singlePaymentLimit} USDC`}
+                status="ok"
+              />
+              <PreflightRow
+                label={_("Bob 白名单", "Bob whitelist")}
+                value={_("未列入 · 预计拦截", "Not listed · expect block")}
+                status="warn"
+              />
+              <PreflightRow
+                label={_("审计轨迹", "Audit trail")}
+                value={auditTrailLabel}
+                status={step >= FlowStep.Review ? "ok" : "idle"}
+              />
+              {plan.length > 0 && (
+                <>
+                  <PreflightRow
+                    label={_("就绪 / 拦截", "Ready / blocked")}
+                    value={`${readyCount} / ${blockedCount}`}
+                    status={blockedCount > 0 ? "warn" : "ok"}
+                  />
+                  <PreflightRow
+                    label={_("可执行金额", "Executable volume")}
+                    value={`${totalReady} USDC`}
+                    status={totalReady > 0 ? "ok" : "idle"}
+                  />
+                </>
+              )}
+            </div>
+            <div className="min-h-0">
+              <p className="mb-2 text-[11px] font-bold uppercase tracking-wider text-fg-muted">
+                {_("活动日志", "Activity log")}
+              </p>
+              <div className="max-h-[88px] space-y-1 overflow-y-auto rounded-lg border border-border-token bg-surface-2/80 px-2 py-1.5">
+                {activityLog.slice(0, 5).map((entry) => (
+                  <div
+                    key={entry.id}
+                    className="flex gap-2 font-mono text-[10px] leading-snug text-fg-subtle"
+                  >
+                    <span className="shrink-0 uppercase text-hud-cyan/80">{entry.type}</span>
+                    <span className="min-w-0 truncate">
+                      {localizeActivityMessage(entry.message, lang)}
+                    </span>
+                  </div>
+                ))}
+              </div>
+              <p className="mt-2 text-[10px] text-fg-subtle">
+                {step === FlowStep.Idle
+                  ? _("点击「生成计划」后，此处将写入风险检查与审计条目。", "After Generate Plan, risk checks and audit entries appear here.")
+                  : _("生成计划后日志会持续追加。", "Log entries append as the pipeline runs.")}
+              </p>
+            </div>
+          </div>
+        </DetailDeckShell>
+      )}
+
+      {totalBlocked > 0 && step !== FlowStep.Idle && step !== FlowStep.Scanning && (
+        <FrostedPanel glowColor="coral" scanline className="p-4">
+          <RiskGateAnimation
+            isBlocked
+            reason={_(
+              `${blockedItems.length} 笔付款被拦截（共 ${totalBlocked} USDC）：${blockedItems[0]?.riskReason}`,
+              `${blockedItems.length} payment(s) blocked (${totalBlocked} USDC): ${blockedItems[0]?.riskReason}`
+            )}
+          />
+        </FrostedPanel>
+      )}
+
+      {step === FlowStep.Done && (
+        <>
+          <div className="rounded-xl border border-border-token bg-surface-2/50 p-4">
+            <div className="mb-3 flex items-center gap-2">
+              <ShieldAlert className="h-4 w-4 text-hud-violet" />
+              <span className="text-sm font-semibold text-fg">
+                {_("审计报告快照", "Audit Report Snapshot")}
+              </span>
+              <span className="rounded-full bg-hud-violet/10 px-2 py-0.5 font-mono text-[10px] text-fg-subtle">
+                IMMUTABLE
+              </span>
+              {auditReportId && !isMockMode() && (
+                <span className="ml-auto truncate font-mono text-[10px] text-fg-muted">
+                  {auditReportId.slice(0, 12)}…
+                </span>
+              )}
+            </div>
+            <div className="overflow-hidden rounded-lg border border-border-token">
+              <table className="w-full text-left text-[12px]">
+                <thead className="bg-surface-2/60">
+                  <tr className="border-b border-border-token font-mono text-[11px] uppercase text-fg-muted">
+                    <th className="px-2 py-2">{_("实体", "Entity")}</th>
+                    <th className="px-2 py-2">{_("状态", "Status")}</th>
+                    <th className="px-2 py-2">Hash</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-white/[0.04]">
+                  {plan.map((item) => (
+                    <tr key={item.record.id}>
+                      <td className="px-2 py-2 text-[12px] font-medium text-fg">
+                        {item.record.name}
+                      </td>
+                      <td className="px-2 py-2">
+                        {item.status === "Executed" ? (
+                          <span className="flex items-center gap-1 text-[11px] font-bold text-success">
+                            <CheckCircle className="h-3 w-3" /> EXECUTED
+                          </span>
+                        ) : (
+                          <span className="flex items-center gap-1 text-[11px] font-bold text-hud-coral">
+                            <XCircle className="h-3 w-3" /> BLOCKED
+                          </span>
+                        )}
+                      </td>
+                      <td className="px-2 py-2 font-mono text-[10px]">
+                        {item.txHash ? (
+                          <ScrambleValue
+                            value={item.txHash.slice(0, 10) + "…"}
+                            className="font-mono text-[11px] text-hud-cyan"
+                          />
+                        ) : (
+                          <span className="text-fg-subtle">—</span>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div className="rounded-xl border border-border-token bg-surface-2/50 p-4">
+            <div className="mb-3 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <RefreshCw className={cn("h-4 w-4 text-hud-blue", cawRefreshing && "animate-spin")} />
+                <span className="text-sm font-semibold text-fg">
+                  {_("最新 CAW 状态", "Latest CAW Status")}
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={onRefreshCaw}
+                disabled={cawRefreshing}
+                className="flex items-center gap-1 rounded-lg border border-border-token bg-surface-2/60 px-3 py-1.5 text-[11px] text-fg transition-colors hover:bg-surface-hover disabled:opacity-50"
+              >
+                <RefreshCw className={cn("h-3 w-3", cawRefreshing && "animate-spin")} />
+                {cawRefreshing ? _("刷新中...", "Refreshing...") : _("刷新", "Refresh")}
+              </button>
+            </div>
+            {cawStatuses.length === 0 ? (
+              <p className="text-[11px] text-fg-subtle">{_("暂无 CAW 状态", "No CAW status available")}</p>
+            ) : (
+              <div className="space-y-2">
+                {cawStatuses.map((status) => (
+                  <div
+                    key={status.cawRequestId}
+                    className="rounded-lg border border-border-token bg-surface-2/40 p-3"
+                  >
+                    <div className="mb-1 flex items-center justify-between">
+                      <span className="text-[12px] font-medium text-fg">{status.paymentItemId}</span>
+                      <span
+                        className={cn(
+                          "rounded-full px-2 py-0.5 text-[10px] font-bold uppercase",
+                          status.normalizedStatus === "Executed"
+                            ? "bg-success/10 text-success"
+                            : status.normalizedStatus === "Failed"
+                            ? "bg-hud-coral/10 text-hud-coral"
+                            : "bg-amber-500/10 text-amber-500"
+                        )}
+                      >
+                        {status.normalizedStatus}
+                      </span>
+                    </div>
+                    <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-[11px]">
+                      <div className="text-fg-subtle">
+                        Provider: <span className="font-mono text-fg">{status.providerStatus}</span>
+                      </div>
+                      <div className="text-fg-subtle">
+                        Network: <span className="font-mono text-fg">{status.network}</span>
+                      </div>
+                      <div className="col-span-2 text-fg-subtle">
+                        txHash:{" "}
+                        {status.txHash ? (
+                          <ScrambleValue
+                            value={status.txHash.slice(0, 14) + "…"}
+                            className="font-mono text-[11px] text-hud-cyan"
+                          />
+                        ) : (
+                          <span>{_("等待刷新...", "Pending refresh...")}</span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <div className="grid grid-cols-3 gap-2 text-center">
+            <div className="rounded-lg bg-surface-2/60 p-2">
+              <div className="text-sm font-bold text-success">{executedCount}</div>
+              <div className="text-[10px] text-fg-subtle">{_("已执行", "Executed")}</div>
+            </div>
+            <div className="rounded-lg bg-surface-2/60 p-2">
+              <div className="text-sm font-bold text-hud-coral">{blockedCount}</div>
+              <div className="text-[10px] text-fg-subtle">{_("已拦截", "Blocked")}</div>
+            </div>
+            <div className="rounded-lg bg-surface-2/60 p-2">
+              <div className="text-sm font-bold text-hud-lime">{totalReady + totalBlocked} USDC</div>
+              <div className="text-[10px] text-fg-subtle">{_("总计", "Total")}</div>
+            </div>
+          </div>
+        </>
+      )}
     </div>
   );
 }
@@ -343,14 +686,14 @@ function RecordsSatellite({
   const displayRecords = expanded ? records : records.slice(0, 3);
 
   return (
-    <FrostedPanel glowColor="cyan" sheen className="flex flex-col overflow-hidden">
-      <div className="px-4 py-3 border-b border-white/[0.06] flex items-center justify-between">
+    <FrostedPanel glowColor="cyan" sheen className="flex h-full min-h-0 flex-col overflow-hidden">
+      <div className="px-4 py-3 border-b border-border-token flex items-center justify-between">
         <div className="flex items-center gap-2">
           <FileSpreadsheet className="w-4 h-4 text-hud-cyan" />
           <span className="text-sm font-semibold text-fg">
             {_("贡献记录", "Records")}
           </span>
-          <span className="text-[10px] text-fg-subtle font-mono px-1.5 py-0.5 rounded-full bg-white/[0.04]">
+          <span className="text-[10px] text-fg-subtle font-mono px-1.5 py-0.5 rounded-full bg-surface-2/70">
             {records.length}
           </span>
         </div>
@@ -372,7 +715,7 @@ function RecordsSatellite({
         </div>
       </div>
 
-      <div className="max-h-[260px] overflow-y-auto p-2 space-y-1">
+      <div className="min-h-0 flex-1 space-y-1 overflow-y-auto p-2">
         {displayRecords.map((r, i) => {
           const planItem = plan.find((p) => p.record.id === r.id);
           const status = planItem?.status;
@@ -383,7 +726,7 @@ function RecordsSatellite({
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: i * 0.04, duration: 0.3 }}
               className={cn(
-                "p-2.5 rounded-lg border border-white/[0.04] bg-white/[0.02] hover:bg-white/[0.04] transition-colors",
+                "p-2.5 rounded-lg border border-border-token bg-surface-2/50 hover:bg-surface-2/70 transition-colors",
                 status === "Blocked" && "border-hud-coral/20 bg-hud-coral/[0.03]"
               )}
             >
@@ -419,30 +762,30 @@ function RecordsSatellite({
         )}
       </div>
 
-      <div className="p-3 border-t border-white/[0.06] bg-white/[0.02]">
+      <div className="p-3 border-t border-border-token bg-surface-2/50">
         <form onSubmit={onAdd} className="space-y-2">
           <input
             placeholder={_("姓名", "Name")}
             value={newName}
             onChange={(e) => setNewName(e.target.value)}
-            className="w-full px-2.5 py-1.5 text-[12px] rounded-field border border-white/[0.08] bg-surface/50 text-fg outline-none focus:border-hud-cyan transition-colors"
+            className="w-full px-2.5 py-1.5 text-[12px] rounded-field border border-border-token bg-surface/50 text-fg outline-none focus:border-hud-cyan transition-colors"
           />
           <input
             placeholder="0x..."
             value={newWallet}
             onChange={(e) => setNewWallet(e.target.value)}
-            className="w-full px-2.5 py-1.5 text-[12px] rounded-field border border-white/[0.08] bg-surface/50 text-fg outline-none focus:border-hud-cyan transition-colors"
+            className="w-full px-2.5 py-1.5 text-[12px] rounded-field border border-border-token bg-surface/50 text-fg outline-none focus:border-hud-cyan transition-colors"
           />
           <div className="flex gap-2">
             <input
               type="number"
               value={newAmount}
               onChange={(e) => setNewAmount(Number(e.target.value))}
-              className="flex-1 px-2.5 py-1.5 text-[12px] rounded-field border border-white/[0.08] bg-surface/50 text-fg outline-none focus:border-hud-cyan transition-colors"
+              className="flex-1 px-2.5 py-1.5 text-[12px] rounded-field border border-border-token bg-surface/50 text-fg outline-none focus:border-hud-cyan transition-colors"
             />
             <button
               type="submit"
-              className="px-3 py-1.5 text-[12px] font-semibold rounded-field border border-white/[0.08] bg-surface hover:bg-surface-hover text-fg transition-colors flex items-center gap-1"
+              className="px-3 py-1.5 text-[12px] font-semibold rounded-field border border-border-token bg-surface hover:bg-surface-hover text-fg transition-colors flex items-center gap-1"
             >
               <Plus className="w-3 h-3" />
             </button>
@@ -514,9 +857,6 @@ function ActionPanel({
   onGenerate,
   onExecute,
   onReset,
-  cawStatuses,
-  cawRefreshing,
-  onRefreshCaw,
   lang,
   _,
 }: {
@@ -530,18 +870,23 @@ function ActionPanel({
   onGenerate: () => void;
   onExecute: () => void;
   onReset: () => void;
-  cawStatuses: CawStatus[];
-  cawRefreshing: boolean;
-  onRefreshCaw: () => void;
   lang: string;
   _: (zh: string, en: string) => string;
 }) {
   const readyCount = plan.filter((i) => i.status === "Ready").length;
   const blockedCount = plan.filter((i) => i.status === "Blocked").length;
-  const executedCount = plan.filter((i) => i.status === "Executed").length;
 
   return (
     <div className="space-y-4">
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={step}
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -8 }}
+          transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+          className="space-y-4"
+        >
       {/* Step 0: Generate Plan */}
       {step === FlowStep.Idle && (
         <motion.div
@@ -549,7 +894,7 @@ function ActionPanel({
           animate={{ opacity: 1 }}
           className="space-y-4"
         >
-          <div className="p-4 rounded-lg border border-dashed border-white/[0.08] bg-white/[0.01]">
+          <div className="p-4 rounded-lg border border-dashed border-border-token bg-surface-2/40">
             <div className="flex items-center gap-3 mb-2">
               <div className="w-8 h-8 rounded-full bg-hud-cyan/10 border border-hud-cyan/20 flex items-center justify-center text-hud-cyan text-xs font-bold">
                 1
@@ -567,13 +912,13 @@ function ActionPanel({
 
           <div className="relative">
             <SparklesFX
-              count={12}
+              count={6}
               className="absolute -inset-4 pointer-events-none"
-              color="#B5FF4D"
+              color="#5EEAD4"
             />
             <HolographicButton
               onClick={onGenerate}
-              variant="lime"
+              variant="cyan"
               size="lg"
               icon={<RefreshCw className="w-4 h-4" />}
               className="w-full relative z-10"
@@ -652,7 +997,7 @@ function ActionPanel({
             </BentoCard>
           </div>
 
-          <motion.div layout className="space-y-2 max-h-[240px] overflow-y-auto pr-1">
+          <motion.div layout className="space-y-2">
             {[...plan]
               .sort((a, b) => (a.status === "Blocked" ? 0 : 1) - (b.status === "Blocked" ? 0 : 1))
               .map((item, i) => {
@@ -730,7 +1075,7 @@ function ActionPanel({
             <HolographicButton
               onClick={onExecute}
               disabled={readyCount === 0}
-              variant="lime"
+              variant="cyan"
               size="sm"
               icon={<Send className="w-3.5 h-3.5" />}
               className="flex-[2]"
@@ -748,6 +1093,8 @@ function ActionPanel({
           animate={{ opacity: 1 }}
           className="py-10 flex flex-col items-center gap-5 text-center relative overflow-hidden rounded-xl"
         >
+          <BeamBurst color="#5EEAD4" />
+          <SparklesFX count={4} color="#5EEAD4" className="absolute inset-0 pointer-events-none opacity-45" />
           <div className="absolute inset-0 opacity-20 pointer-events-none">
             <GridBackground />
           </div>
@@ -764,7 +1111,7 @@ function ActionPanel({
             />
           </div>
 
-          <div className="relative z-10 w-full max-w-[200px] h-1 rounded-full bg-white/[0.06] overflow-hidden">
+          <div className="relative z-10 w-full max-w-[200px] h-1 rounded-full bg-surface-hover overflow-hidden">
             <div
               className="absolute inset-0 bg-gradient-to-r from-transparent via-hud-lime/60 to-transparent animate-shimmer"
               style={{ backgroundSize: "200% 100%" }}
@@ -782,137 +1129,26 @@ function ActionPanel({
         </motion.div>
       )}
 
-      {/* Step 4: Done / Audit */}
+      {/* Step 4: Done / Audit — compact; full tables in DetailDeck */}
       {step === FlowStep.Done && (
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           className="space-y-4"
         >
-          <div className="p-4 rounded-xl border border-white/[0.06] bg-white/[0.02]">
-            <div className="flex items-center gap-2 mb-3">
-              <ShieldAlert className="w-4 h-4 text-hud-violet" />
-              <span className="text-sm font-semibold text-fg">{_("审计报告快照", "Audit Report Snapshot")}</span>
-              <span className="text-[10px] text-fg-subtle font-mono px-2 py-0.5 rounded-full bg-hud-violet/10">IMMUTABLE</span>
-            </div>
-            <p className="text-[11px] text-fg-subtle mb-3">
-              {_(
-                "执行时的不可变快照。txHash 为 null 不代表最终没有 txHash，只代表执行当时尚未获取。",
-                "Immutable snapshot at execution time. txHash=null does not mean no final txHash, only that it was not yet available."
-              )}
+          <div className="rounded-xl border border-success/20 bg-success/5 p-4 text-center">
+            <CheckCheck className="mx-auto mb-2 h-8 w-8 text-success" />
+            <p className="text-sm font-semibold text-fg">
+              {_("周期执行完成", "Cycle execution complete")}
             </p>
-            <div className="rounded-lg border border-white/[0.06] overflow-hidden">
-              <table className="w-full text-left text-[12px]">
-                <thead className="bg-white/[0.03]">
-                  <tr className="border-b border-white/[0.06] text-fg-muted font-mono uppercase text-[11px]">
-                    <th className="py-2 px-2">{_("实体", "Entity")}</th>
-                    <th className="py-2 px-2">{_("状态", "Status")}</th>
-                    <th className="py-2 px-2">Hash</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-white/[0.04]">
-                  {plan.map((item) => (
-                    <tr key={item.record.id}>
-                      <td className="py-2 px-2 font-medium text-fg text-[12px]">{item.record.name}</td>
-                      <td className="py-2 px-2">
-                        {item.status === "Executed" ? (
-                          <span className="text-success font-bold flex items-center gap-1 text-[11px]">
-                            <CheckCircle className="w-3 h-3" /> EXECUTED
-                          </span>
-                        ) : (
-                          <span className="text-hud-coral font-bold flex items-center gap-1 text-[11px]">
-                            <XCircle className="w-3 h-3" /> BLOCKED
-                          </span>
-                        )}
-                      </td>
-                      <td className="py-2 px-2 font-mono text-[10px]">
-                        {item.txHash ? (
-                          <GradientText>{item.txHash}</GradientText>
-                        ) : (
-                          <span className="text-fg-subtle">—</span>
-                        )}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-
-          <div className="p-4 rounded-xl border border-white/[0.06] bg-white/[0.02]">
-            <div className="flex items-center justify-between mb-3">
-              <div className="flex items-center gap-2">
-                <RefreshCw className={cn("w-4 h-4 text-hud-blue", cawRefreshing && "animate-spin")} />
-                <span className="text-sm font-semibold text-fg">{_("最新 CAW 状态", "Latest CAW Status")}</span>
-              </div>
-              <button
-                onClick={onRefreshCaw}
-                disabled={cawRefreshing}
-                className="text-[11px] px-3 py-1.5 rounded-lg border border-white/[0.08] bg-white/[0.03] hover:bg-white/[0.06] text-fg transition-colors disabled:opacity-50 flex items-center gap-1"
-              >
-                <RefreshCw className={cn("w-3 h-3", cawRefreshing && "animate-spin")} />
-                {cawRefreshing ? _("刷新中...", "Refreshing...") : _("刷新", "Refresh")}
-              </button>
-            </div>
-            {cawStatuses.length === 0 ? (
-              <p className="text-[11px] text-fg-subtle">{_("暂无 CAW 状态", "No CAW status available")}</p>
-            ) : (
-              <div className="space-y-2">
-                {cawStatuses.map((status) => (
-                  <div
-                    key={status.cawRequestId}
-                    className="p-3 rounded-lg border border-white/[0.06] bg-white/[0.01]"
-                  >
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="text-[12px] font-medium text-fg">{status.paymentItemId}</span>
-                      <span className={cn(
-                        "text-[10px] font-bold uppercase px-2 py-0.5 rounded-full",
-                        status.normalizedStatus === "Executed"
-                          ? "bg-success/10 text-success"
-                          : status.normalizedStatus === "Failed"
-                          ? "bg-hud-coral/10 text-hud-coral"
-                          : "bg-amber-500/10 text-amber-500"
-                      )}>
-                        {status.normalizedStatus}
-                      </span>
-                    </div>
-                    <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-[11px]">
-                      <div className="text-fg-subtle">Provider: <span className="text-fg font-mono">{status.providerStatus}</span></div>
-                      <div className="text-fg-subtle">Network: <span className="text-fg font-mono">{status.network}</span></div>
-                      <div className="text-fg-subtle col-span-2">
-                        txHash:{" "}
-                        {status.txHash ? (
-                          <GradientText className="font-mono">{status.txHash}</GradientText>
-                        ) : (
-                          <span className="text-fg-subtle">{_("等待刷新...", "Pending refresh...")}</span>
-                        )}
-                      </div>
-                      <div className="text-fg-subtle col-span-2">Last checked: <span className="text-fg">{new Date(status.lastCheckedAt).toLocaleString()}</span></div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-
-          <div className="grid grid-cols-3 gap-2 text-center">
-            <div className="p-2 rounded-lg bg-white/[0.03]">
-              <div className="text-sm font-bold text-success">{executedCount}</div>
-              <div className="text-[10px] text-fg-subtle">{_("已执行", "Executed")}</div>
-            </div>
-            <div className="p-2 rounded-lg bg-white/[0.03]">
-              <div className="text-sm font-bold text-hud-coral">{blockedCount}</div>
-              <div className="text-[10px] text-fg-subtle">{_("已拦截", "Blocked")}</div>
-            </div>
-            <div className="p-2 rounded-lg bg-white/[0.03]">
-              <div className="text-sm font-bold text-hud-lime">{totalReady + totalBlocked} USDC</div>
-              <div className="text-[10px] text-fg-subtle">{_("总计", "Total")}</div>
-            </div>
+            <p className="mt-1 text-xs text-fg-subtle">
+              {_("展开下方面板查看审计报告与 CAW 状态", "Expand the panel below for audit report and CAW status")}
+            </p>
           </div>
 
           <HolographicButton
             onClick={onReset}
-            variant="lime"
+            variant="cyan"
             size="lg"
             className="w-full"
           >
@@ -920,6 +1156,8 @@ function ActionPanel({
           </HolographicButton>
         </motion.div>
       )}
+        </motion.div>
+      </AnimatePresence>
     </div>
   );
 }

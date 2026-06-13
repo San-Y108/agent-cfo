@@ -14,14 +14,23 @@ import {
 } from "@phosphor-icons/react";
 import { cn } from "@/lib/utils";
 import { useApp } from "@/lib/i18n/context";
+import type { DictKey } from "@/lib/i18n/dict";
 import { useConsoleState } from "@/lib/console/console-state";
+import { isMockMode } from "@/lib/api/client";
+import { ThemeLanguageToggle } from "@/components/ui/theme-language-toggle";
 
-const NAV_TABS = [
-  { href: "/console", label: "Agent", icon: Robot, color: "#B5FF4D" },
-  { href: "/console/treasury", label: "Treasury", icon: SquaresFour, color: "#5EEAD4" },
-  { href: "/console/wallets", label: "Wallets", icon: Wallet, color: "#60A5FA" },
-  { href: "/console/analytics", label: "Analytics", icon: ChartBar, color: "#C084FC" },
-  { href: "/console/policy", label: "Policy", icon: Shield, color: "#FB7185" },
+const NAV_TABS: {
+  href: string;
+  labelKey: DictKey;
+  icon: React.ElementType;
+  color: string;
+  lightColor: string;
+}[] = [
+  { href: "/console", labelKey: "console.tab.agent", icon: Robot, color: "#B5FF4D", lightColor: "#4d7c0f" },
+  { href: "/console/treasury", labelKey: "console.tab.treasury", icon: SquaresFour, color: "#5EEAD4", lightColor: "#0e7490" },
+  { href: "/console/wallets", labelKey: "console.tab.wallets", icon: Wallet, color: "#60A5FA", lightColor: "#1d4ed8" },
+  { href: "/console/analytics", labelKey: "console.tab.analytics", icon: ChartBar, color: "#C084FC", lightColor: "#6d28d9" },
+  { href: "/console/policy", labelKey: "console.tab.policy", icon: Shield, color: "#FB7185", lightColor: "#be123c" },
 ];
 
 function isTabActive(pathname: string, href: string) {
@@ -31,12 +40,22 @@ function isTabActive(pathname: string, href: string) {
   return pathname === href;
 }
 
-function NavPills({ pathname, compact }: { pathname: string; compact?: boolean }) {
+function NavPills({
+  pathname,
+  compact,
+  getLabel,
+  isDark,
+}: {
+  pathname: string;
+  compact?: boolean;
+  getLabel: (key: DictKey) => string;
+  isDark: boolean;
+}) {
   return (
     <div
       className={cn(
-        "flex items-center gap-1 rounded-full p-1.5",
-        "border border-white/[0.08] bg-white/[0.06] backdrop-blur-xl"
+        "flex items-center gap-0.5 rounded-full border border-border-token bg-surface-2/80 p-1 backdrop-blur-xl",
+        compact ? "p-1" : "p-1"
       )}
     >
       {NAV_TABS.map((tab) => {
@@ -47,35 +66,35 @@ function NavPills({ pathname, compact }: { pathname: string; compact?: boolean }
             key={tab.href}
             href={tab.href}
             className={cn(
-              "relative flex items-center gap-2 rounded-full transition-colors duration-200",
-              compact ? "px-3 py-1.5" : "px-4 py-1.5",
-              active ? "text-white" : "text-white/55 hover:text-white/90"
+              "relative flex items-center gap-1.5 rounded-full transition-colors duration-200",
+              compact ? "px-2.5 py-1.5" : "px-3 py-1.5 xl:px-3.5",
+              active ? "text-fg" : "text-fg-muted hover:text-fg"
             )}
           >
             {active && (
               <motion.span
                 layoutId="console-nav-pill"
-                className="absolute inset-0 rounded-full bg-white/[0.1] border border-white/[0.1]"
+                className="absolute inset-0 rounded-full border border-border-token bg-surface"
                 style={{
-                  boxShadow: `inset 0 1px 0 rgba(255,255,255,0.08), 0 0 18px -6px ${tab.color}66`,
+                  boxShadow: `inset 0 1px 0 color-mix(in srgb, var(--fg) 8%, transparent), 0 0 18px -6px ${tab.color}66`,
                 }}
                 transition={{ type: "spring", stiffness: 420, damping: 34 }}
               />
             )}
             <Icon
-              size={15}
+              size={14}
               weight={active ? "fill" : "regular"}
               className="relative z-10 shrink-0"
-              style={{ color: active ? tab.color : undefined }}
+              style={{ color: active ? (isDark ? tab.color : tab.lightColor) : undefined }}
             />
             <span
               className={cn(
-                "relative z-10 text-[13px] font-medium whitespace-nowrap",
-                compact && "text-xs"
+                "relative z-10 font-medium whitespace-nowrap",
+                compact ? "text-[11px]" : "text-[12px] xl:text-[13px]"
               )}
               style={{ fontFamily: "Inter, sans-serif" }}
             >
-              {tab.label}
+              {getLabel(tab.labelKey)}
             </span>
           </Link>
         );
@@ -91,19 +110,15 @@ function NavPills({ pathname, compact }: { pathname: string; compact?: boolean }
  */
 export function ConsoleNavbar() {
   const pathname = usePathname();
-  const { lang } = useApp();
+  const { lang, t, theme } = useApp();
+  const _ = (zh: string, en: string) => (lang === "zh" ? zh : en);
   const { openDrawer } = useConsoleState();
+  const isDark = theme === "dark";
+  const mockMode = isMockMode();
 
   return (
     <header className="fixed top-0 inset-x-0 z-50">
-      <div
-        className="relative border-b border-white/[0.07]"
-        style={{
-          backgroundColor: "rgba(13,13,13,0.78)",
-          backdropFilter: "blur(16px) saturate(1.2)",
-          WebkitBackdropFilter: "blur(16px) saturate(1.2)",
-        }}
-      >
+      <div className="relative border-b border-border-token bg-bg/85 backdrop-blur-xl backdrop-saturate-150">
         {/* lime hairline glow, same recipe as landing nav */}
         <div
           className="absolute bottom-0 inset-x-0 h-px pointer-events-none"
@@ -113,64 +128,92 @@ export function ConsoleNavbar() {
           }}
         />
 
-        <div className="flex h-16 items-center justify-between px-4 lg:px-8">
-          {/* Left: brand + back to landing */}
-          <div className="flex items-center gap-3 min-w-0">
-            <Link href="/" className="group flex items-center gap-2.5 shrink-0">
+        <div className="grid h-16 grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-3 px-4 lg:px-6">
+          {/* Left: brand */}
+          <div className="flex min-w-0 items-center gap-2.5">
+            <Link href="/" className="group flex shrink-0 items-center gap-2">
               <img
                 src="/logo.png"
                 alt="AgentCFO"
-                className="h-8 w-8"
+                className="h-7 w-7 lg:h-8 lg:w-8"
                 style={{ filter: "drop-shadow(0 0 6px rgba(181,255,77,0.45))" }}
               />
               <span
-                className="hidden sm:block text-base font-bold tracking-tight bg-gradient-to-r from-lime-400 via-cyan-400 to-violet-400 bg-clip-text text-transparent"
+                className="hidden sm:block text-sm font-bold tracking-tight bg-gradient-to-r from-lime-700 via-cyan-700 to-violet-700 dark:from-lime-400 dark:via-cyan-400 dark:to-violet-400 bg-clip-text text-transparent lg:text-base"
                 style={{ fontFamily: "Inter, sans-serif" }}
               >
                 AgentCFO
               </span>
             </Link>
-            <span className="hidden lg:flex items-center gap-1.5 rounded-full border border-white/[0.08] bg-white/[0.03] px-2.5 py-1 text-[10px] font-mono uppercase tracking-[0.14em] text-white/45">
-              Console
+            <span className="hidden xl:flex items-center gap-1.5 rounded-full border border-border-token bg-surface-2/60 px-2 py-0.5 text-[10px] font-mono uppercase tracking-[0.12em] text-fg-muted">
+              {_('工作台', 'Console')}
             </span>
           </div>
 
-          {/* Center: pill tabs (desktop) */}
-          <div className="hidden md:block absolute left-1/2 -translate-x-1/2">
-            <NavPills pathname={pathname} />
+          {/* Center: pill tabs (desktop) — grid column prevents overlap with right controls */}
+          <div className="hidden justify-self-center md:block">
+            <NavPills pathname={pathname} getLabel={(key) => t(key)} isDark={isDark} />
           </div>
 
-          {/* Right: network + drawer triggers + exit */}
-          <div className="flex items-center gap-2">
-            <div className="hidden xl:flex items-center gap-2 rounded-full border border-white/[0.08] bg-white/[0.03] px-3 py-1.5">
-              <Activity size={11} className="text-emerald-400" />
-              <span className="text-[10px] font-mono uppercase tracking-wider text-white/50">
-                Sepolia
+          {/* Right: status + controls */}
+          <div className="flex min-w-0 items-center justify-end gap-1.5 lg:gap-2">
+            <div className="hidden 2xl:flex items-center gap-1.5 rounded-full border border-border-token bg-surface-2/50 px-2.5 py-1">
+              <Activity size={10} className="text-emerald-500 dark:text-emerald-400" />
+              <span className="text-[10px] font-mono uppercase tracking-wider text-fg-muted">
+                {_('Sepolia', 'Sepolia')}
+              </span>
+              <span className="text-fg-subtle">·</span>
+              <span
+                className={cn(
+                  "text-[10px] font-mono font-semibold uppercase tracking-wider",
+                  mockMode ? "text-hud-lime" : "text-hud-cyan"
+                )}
+              >
+                {mockMode ? _('演示', 'Mock') : _('实盘', 'Real')}
               </span>
             </div>
 
-            <button
-              onClick={() => openDrawer("sandbox")}
-              className="group flex items-center gap-2 rounded-full border border-white/[0.08] bg-white/[0.03] px-3 py-2 text-xs text-white/60 transition-all hover:border-white/20 hover:bg-white/[0.07] hover:text-white"
-              style={{ fontFamily: "Inter, sans-serif" }}
+            <span
+              className={cn(
+                "hidden xl:inline 2xl:hidden rounded-full border border-border-token bg-surface-2/50 px-2 py-1 text-[10px] font-mono font-semibold uppercase tracking-wider",
+                mockMode ? "text-hud-lime" : "text-hud-cyan"
+              )}
             >
-              <FlaskConical size={13} className="text-hud-cyan" />
-              <span className="hidden lg:inline">Sandbox</span>
-              <span className="mx-0.5 text-white/15">|</span>
-              <SlidersHorizontal size={13} className="text-hud-coral" />
-              <span className="hidden lg:inline">Rules</span>
+              {mockMode ? _('演示', 'Mock') : _('实盘', 'Real')}
+            </span>
+
+            <ThemeLanguageToggle variant="app" />
+
+            <button
+              type="button"
+              onClick={() => openDrawer("sandbox")}
+              title={_('沙盒', 'Sandbox')}
+              aria-label={_('打开沙盒', 'Open sandbox')}
+              className="flex h-8 w-8 items-center justify-center rounded-full border border-border-token bg-surface-2/60 text-fg-muted transition-all hover:border-border-strong hover:bg-surface-hover hover:text-fg"
+            >
+              <FlaskConical size={14} className="text-hud-cyan" />
+            </button>
+
+            <button
+              type="button"
+              onClick={() => openDrawer("rules")}
+              title={_('护栏', 'Rules')}
+              aria-label={_('打开护栏', 'Open rules')}
+              className="flex h-8 w-8 items-center justify-center rounded-full border border-border-token bg-surface-2/60 text-fg-muted transition-all hover:border-border-strong hover:bg-surface-hover hover:text-fg"
+            >
+              <SlidersHorizontal size={14} className="text-hud-coral" />
             </button>
 
             <Link
               href="/"
-              className="hidden md:inline-flex items-center gap-1.5 rounded-full px-3.5 py-2 text-xs font-semibold transition-all duration-300 hover:opacity-80"
+              className="hidden md:inline-flex h-8 items-center gap-1 rounded-full px-3 text-[11px] font-semibold transition-all duration-300 hover:opacity-80 lg:px-3.5 lg:text-xs"
               style={{
                 fontFamily: "Inter, sans-serif",
                 backgroundColor: "#B5FF4D",
                 color: "#0D0D0D",
               }}
             >
-              <ArrowLeft size={13} />
+              <ArrowLeft size={12} />
               {lang === "zh" ? "首页" : "Home"}
             </Link>
           </div>
@@ -179,7 +222,7 @@ export function ConsoleNavbar() {
         {/* Mobile: scrollable pill strip */}
         <div className="md:hidden px-3 pb-2.5 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           <div className="w-max">
-            <NavPills pathname={pathname} compact />
+            <NavPills pathname={pathname} compact getLabel={(key) => t(key)} isDark={isDark} />
           </div>
         </div>
       </div>
