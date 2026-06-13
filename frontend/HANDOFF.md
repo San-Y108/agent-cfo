@@ -1,9 +1,22 @@
 # AgentCFO Frontend — HANDOFF（交接索引）
 
 > 冷启动时读本文，再按链接进入**最新阶段 handoff**。详细任务历史见 `docs/handoff/` 与 `docs/plans/`。
-> 总纲：`CLAUDE.md` · 任务态：`checklist.md` · 联调：`backend-integration.md`
+> 总纲：`CLAUDE.md`（§1 任务域 · §2 执行流程）· 任务态：`checklist.md` · 联调：`backend-integration.md`
 
 **最后更新：2026-06-13**
+
+---
+
+## 0. 交接节奏（Agent 必读）
+
+完整规则见 **`CLAUDE.md` §2.1**。摘要：
+
+| 时机 | 动作 |
+|---|---|
+| 完成 **1 个 phase** | 按 `docs/handoff/TEMPLATE.md` 新建 handoff，更新本文 §1–§2 |
+| 每再完成 **2 个 phase** | 合并更新 handoff + 刷新 `CLAUDE.md` §7 |
+| 小 fix / 单组件微调 | 不写 handoff；scope commit 即可 |
+| 用户指令或 Session 将断 | 立即写 handoff |
 
 ---
 
@@ -83,6 +96,8 @@ PORT=3100 pnpm dev
 # 打开 http://127.0.0.1:3100/console
 ```
 
-1. 读 `docs/handoff/phase-7-1-console-handoff.md`
-2. 读 `docs/plans/console-upgrade-checklist.md` 末尾
-3. 从 handoff §2「Suggested next steps」选任务开工
+1. 读 `CLAUDE.md` §1 确认任务域 · §2 执行流程
+2. 读本文 §2 最新 handoff（或 `docs/handoff/phase-7-1-console-handoff.md`）
+3. 读 `docs/plans/console-stage-layout-checklist.md`（或当前 phase checklist）
+4. 从 handoff §2「Suggested next steps」选任务开工
+5. Phase 完成时：用 `docs/handoff/TEMPLATE.md` 写交接，回写本文 §1–§2

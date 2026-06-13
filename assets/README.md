@@ -26,7 +26,7 @@ assets/
 | 路演 PPT（ppt-master） | `ppt/agentcfo-pitch.pptx` | ✅ 已生成（14 页，含演讲备注） |
 | 路演 PPT（物料同学 PDF） | `ppt/material/agentcfo-pitch-material-team-v1.pdf` | ✅ 已从 `inbox/` 归类入库 |
 | PPT 源工程 | `ppt/agentcfo-pitch/` | ✅ 可继续用 ppt-master 修改后重新导出 |
-| 答辩视频 | `video/` | ☐ 待录制（3–5 分钟，链接写入根目录 README） |
+| 答辩视频 | `video/` | ☐ 待录制；**拖入 `assets/video/agentcfo-demo.mp4`**，接入见 `docs/plans/demo-video-landing-integration-plan.md` |
 | README Banner | `images/readme/banner.png` | ✅ 已归类（3:1，1200×400） |
 | README Showcase | `images/readme/landing-*.png` · `console-*.png` | ✅ Landing 8 张；Console 部分占位 |
 | README 团队头像 | `images/readme/team/*-role.jpg` | ✅ 微信头像已归类 |
