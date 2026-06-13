@@ -197,7 +197,7 @@ export function RecordsImport({
             {/* Header */}
             <div className="px-5 py-4 border-b border-border-token flex items-center justify-between shrink-0">
               <div className="flex items-center gap-2">
-                <Upload className="w-4 h-4 text-[#B5FF4D]" />
+                <Upload className="w-4 h-4 text-hud-lime" />
                 <span className="text-sm font-semibold text-fg">
                   {_("批量导入贡献记录", "Import Contribution Records")}
                 </span>

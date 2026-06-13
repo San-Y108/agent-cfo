@@ -17,6 +17,8 @@ import { useApp } from "@/lib/i18n/context";
 import { localizeActivityMessage } from "@/lib/console/activity-messages";
 import { cn } from "@/lib/utils";
 import { useConsoleState } from "@/lib/console/console-state";
+import { agentChat } from "@/lib/api/agent";
+import type { AgentChatContext, AgentChatMessage } from "@/lib/api/types";
 import type { PaymentPlanItem, BudgetRules } from "@/lib/types/console";
 import type { CawStatus } from "@/lib/api/types";
 import {
@@ -505,7 +507,7 @@ function ChatPanel({
 
       {/* header */}
       <div className="relative z-10 flex shrink-0 items-center gap-2.5 border-b border-border-token px-5 py-4">
-        <Zap size={16} style={{ color: LIME }} />
+        <Zap size={16} className="text-hud-lime" />
         <span className="text-[14px] font-bold">
           <GradientText>
             {lang === "zh" ? "指挥对话" : "Command Conversation"}
@@ -704,6 +706,46 @@ function formatAuditSummary(
   return `Audit trail: ${executed.length} executed, ${blocked.length} blocked. CAW Agent Vault signed${hashes ? ` (${hashes})` : ""}. Settlement report ready.`;
 }
 
+function toApiMessages(messages: ChatMessage[]): AgentChatMessage[] {
+  return messages.map((message) => ({
+    role: message.role === "agent" ? "assistant" : "user",
+    content: message.text,
+  }));
+}
+
+function buildPlanSummary(
+  plan: PaymentPlanItem[],
+  lang: "en" | "zh"
+): string | undefined {
+  if (plan.length === 0) return undefined;
+  const ready = plan.filter((item) => item.status === "Ready").length;
+  const blocked = plan.filter((item) => item.status === "Blocked").length;
+  const executed = plan.filter((item) => item.status === "Executed").length;
+  if (lang === "zh") {
+    return `${plan.length} 笔：${ready} 就绪，${blocked} 拦截，${executed} 已执行`;
+  }
+  return `${plan.length} items: ${ready} ready, ${blocked} blocked, ${executed} executed`;
+}
+
+function buildAgentChatContext(
+  budgetRule: BudgetRules,
+  recordsCount: number,
+  plan: PaymentPlanItem[],
+  flowStep: number,
+  lang: "en" | "zh"
+): AgentChatContext {
+  return {
+    monthlyBudget: budgetRule.monthlyBudget,
+    singlePaymentLimit: budgetRule.singlePaymentLimit,
+    allowedToken: budgetRule.allowedToken,
+    whitelist: budgetRule.whitelist,
+    recordCount: recordsCount,
+    planItemCount: plan.length,
+    planSummary: buildPlanSummary(plan, lang),
+    flowStep,
+  };
+}
+
 /**
  * AgentHub — Plan A: left persona rail + right conversation (primary).
  */
@@ -711,7 +753,9 @@ export function AgentHub() {
   const { lang } = useApp();
   const {
     budgetRule,
+    records,
     plan,
+    step,
     cawStatuses,
     generatePlan,
     executePlan,
@@ -728,22 +772,46 @@ export function AgentHub() {
     setMessages((prev) => [...prev, { role: "agent", text }]);
   };
 
-  const handleSend = () => {
+  const handleSend = async () => {
     if (!inputValue.trim() || isThinking) return;
 
     const userText = inputValue.trim();
-    setMessages((prev) => [...prev, { role: "user", text: userText }]);
+    const nextMessages: ChatMessage[] = [
+      ...messages,
+      { role: "user", text: userText },
+    ];
+    setMessages(nextMessages);
     setInputValue("");
     setIsThinking(true);
 
-    setTimeout(() => {
+    try {
+      const response = await agentChat({
+        messages: toApiMessages(nextMessages),
+        lang,
+        context: buildAgentChatContext(budgetRule, records.length, plan, step, lang),
+      });
+      pushAgentMessage(response.message.content);
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : "Unknown agent chat error";
+      const isNotConfigured = message.includes("503");
+      const isMissingRoute = message.includes("404");
       pushAgentMessage(
         lang === "zh"
-          ? `已收到您的请求："${userText}"。正在分析资金拓扑和风险边界...`
-          : `Received: "${userText}". Analyzing treasury topology and risk boundaries...`
+          ? isMissingRoute
+            ? "后端接口未更新，请重启 uvicorn（需包含 /api/agent/chat）。"
+            : isNotConfigured
+              ? "Agent 未配置，请在后端设置 MINIMAX_API_KEY 后重启。"
+              : `Agent 请求失败：${message}`
+          : isMissingRoute
+            ? "Backend route missing. Restart uvicorn with the latest /api/agent/chat code."
+            : isNotConfigured
+              ? "Agent chat is not configured. Set MINIMAX_API_KEY on the backend and restart."
+              : `Agent request failed: ${message}`
       );
+    } finally {
       setIsThinking(false);
-    }, 2000);
+    }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {

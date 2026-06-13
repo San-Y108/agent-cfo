@@ -41,6 +41,14 @@
   --glow-amber: rgba(245, 158, 11, 0.3);
   --glow-blue: rgba(96, 165, 250, 0.32);
   --glow-violet: rgba(192, 132, 252, 0.3);
+
+  /* HUD accent text — darker on light bg for WCAG contrast */
+  --hud-lime: #4d7c0f;
+  --hud-cyan: #0e7490;
+  --hud-coral: #be123c;
+  --hud-amber: #b45309;
+  --hud-blue: #1d4ed8;
+  --hud-violet: #6d28d9;
 }
 
 /* Console module stage — viewport math (navbar + compact header) */
@@ -114,6 +122,14 @@
   --glow-amber: rgba(245, 158, 11, 0.22);
   --glow-blue: rgba(96, 165, 250, 0.22);
   --glow-violet: rgba(192, 132, 252, 0.22);
+
+  /* HUD accent text — neon on dark backgrounds */
+  --hud-lime: #B5FF4D;
+  --hud-cyan: #5EEAD4;
+  --hud-coral: #FB7185;
+  --hud-amber: #F59E0B;
+  --hud-blue: #60A5FA;
+  --hud-violet: #C084FC;
 }
 
 /* Expose tokens as Tailwind color utilities: bg-bg, text-fg, border-border-token … */
@@ -161,12 +177,6 @@
      ========================================================== */
   --hud-prefix: var(--fg-subtle);
   --hud-value: var(--fg);
-  --hud-lime: #B5FF4D;
-  --hud-cyan: #5EEAD4;
-  --hud-coral: #FB7185;
-  --hud-amber: #F59E0B;
-  --hud-blue: #60A5FA;
-  --hud-violet: #C084FC;
 
   --glow-lime: rgba(181, 255, 77, 0.22);
   --glow-cyan: rgba(94, 234, 212, 0.22);
@@ -175,7 +185,7 @@
   --glow-blue: rgba(96, 165, 250, 0.22);
   --glow-violet: rgba(192, 132, 252, 0.22);
 
-  /* Command Deck HUD colors */
+  /* Command Deck HUD colors — driven by :root / .dark semantic tokens */
   --color-hud-lime: var(--hud-lime);
   --color-hud-cyan: var(--hud-cyan);
   --color-hud-coral: var(--hud-coral);

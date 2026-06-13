@@ -24,12 +24,13 @@ const NAV_TABS: {
   labelKey: DictKey;
   icon: React.ElementType;
   color: string;
+  lightColor: string;
 }[] = [
-  { href: "/console", labelKey: "console.tab.agent", icon: Robot, color: "#B5FF4D" },
-  { href: "/console/treasury", labelKey: "console.tab.treasury", icon: SquaresFour, color: "#5EEAD4" },
-  { href: "/console/wallets", labelKey: "console.tab.wallets", icon: Wallet, color: "#60A5FA" },
-  { href: "/console/analytics", labelKey: "console.tab.analytics", icon: ChartBar, color: "#C084FC" },
-  { href: "/console/policy", labelKey: "console.tab.policy", icon: Shield, color: "#FB7185" },
+  { href: "/console", labelKey: "console.tab.agent", icon: Robot, color: "#B5FF4D", lightColor: "#4d7c0f" },
+  { href: "/console/treasury", labelKey: "console.tab.treasury", icon: SquaresFour, color: "#5EEAD4", lightColor: "#0e7490" },
+  { href: "/console/wallets", labelKey: "console.tab.wallets", icon: Wallet, color: "#60A5FA", lightColor: "#1d4ed8" },
+  { href: "/console/analytics", labelKey: "console.tab.analytics", icon: ChartBar, color: "#C084FC", lightColor: "#6d28d9" },
+  { href: "/console/policy", labelKey: "console.tab.policy", icon: Shield, color: "#FB7185", lightColor: "#be123c" },
 ];
 
 function isTabActive(pathname: string, href: string) {
@@ -43,10 +44,12 @@ function NavPills({
   pathname,
   compact,
   getLabel,
+  isDark,
 }: {
   pathname: string;
   compact?: boolean;
   getLabel: (key: DictKey) => string;
+  isDark: boolean;
 }) {
   return (
     <div
@@ -82,7 +85,7 @@ function NavPills({
               size={14}
               weight={active ? "fill" : "regular"}
               className="relative z-10 shrink-0"
-              style={{ color: active ? tab.color : undefined }}
+              style={{ color: active ? (isDark ? tab.color : tab.lightColor) : undefined }}
             />
             <span
               className={cn(
@@ -107,9 +110,10 @@ function NavPills({
  */
 export function ConsoleNavbar() {
   const pathname = usePathname();
-  const { lang, t } = useApp();
+  const { lang, t, theme } = useApp();
   const _ = (zh: string, en: string) => (lang === "zh" ? zh : en);
   const { openDrawer } = useConsoleState();
+  const isDark = theme === "dark";
   const mockMode = isMockMode();
 
   return (
@@ -135,7 +139,7 @@ export function ConsoleNavbar() {
                 style={{ filter: "drop-shadow(0 0 6px rgba(181,255,77,0.45))" }}
               />
               <span
-                className="hidden sm:block text-sm font-bold tracking-tight bg-gradient-to-r from-lime-400 via-cyan-400 to-violet-400 bg-clip-text text-transparent lg:text-base"
+                className="hidden sm:block text-sm font-bold tracking-tight bg-gradient-to-r from-lime-700 via-cyan-700 to-violet-700 dark:from-lime-400 dark:via-cyan-400 dark:to-violet-400 bg-clip-text text-transparent lg:text-base"
                 style={{ fontFamily: "Inter, sans-serif" }}
               >
                 AgentCFO
@@ -148,7 +152,7 @@ export function ConsoleNavbar() {
 
           {/* Center: pill tabs (desktop) — grid column prevents overlap with right controls */}
           <div className="hidden justify-self-center md:block">
-            <NavPills pathname={pathname} getLabel={(key) => t(key)} />
+            <NavPills pathname={pathname} getLabel={(key) => t(key)} isDark={isDark} />
           </div>
 
           {/* Right: status + controls */}
@@ -161,7 +165,7 @@ export function ConsoleNavbar() {
               <span className="text-fg-subtle">·</span>
               <span
                 className={cn(
-                  "text-[10px] font-mono uppercase tracking-wider",
+                  "text-[10px] font-mono font-semibold uppercase tracking-wider",
                   mockMode ? "text-hud-lime" : "text-hud-cyan"
                 )}
               >
@@ -171,7 +175,7 @@ export function ConsoleNavbar() {
 
             <span
               className={cn(
-                "hidden xl:inline 2xl:hidden rounded-full border border-border-token bg-surface-2/50 px-2 py-1 text-[10px] font-mono uppercase tracking-wider",
+                "hidden xl:inline 2xl:hidden rounded-full border border-border-token bg-surface-2/50 px-2 py-1 text-[10px] font-mono font-semibold uppercase tracking-wider",
                 mockMode ? "text-hud-lime" : "text-hud-cyan"
               )}
             >
@@ -218,7 +222,7 @@ export function ConsoleNavbar() {
         {/* Mobile: scrollable pill strip */}
         <div className="md:hidden px-3 pb-2.5 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           <div className="w-max">
-            <NavPills pathname={pathname} compact getLabel={(key) => t(key)} />
+            <NavPills pathname={pathname} compact getLabel={(key) => t(key)} isDark={isDark} />
           </div>
         </div>
       </div>
