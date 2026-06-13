@@ -49,7 +49,7 @@ export function FrostedPanel({
   return (
     <div
       className={cn(
-        "relative overflow-hidden rounded-card border border-white/[0.06] bg-surface/60 backdrop-blur-xl",
+        "relative overflow-hidden rounded-card border border-border-token bg-surface/80 backdrop-blur-xl",
         glowColor && glowColorMap[glowColor],
         className
       )}
@@ -57,7 +57,7 @@ export function FrostedPanel({
       {sheen && (
         <div
           className={cn(
-            "absolute inset-x-0 top-0 h-px bg-gradient-to-r via-white/10 to-transparent",
+            "absolute inset-x-0 top-0 h-px bg-gradient-to-r via-border-strong/40 to-transparent",
             sheenColorMap[glowColor ?? "lime"]
           )}
         />
@@ -68,7 +68,7 @@ export function FrostedPanel({
           className="absolute inset-x-0 top-0 opacity-50"
         />
       )}
-      <div className="relative z-10">{children}</div>
+      <div className="relative z-10 flex h-full min-h-0 flex-col">{children}</div>
     </div>
   );
 }
