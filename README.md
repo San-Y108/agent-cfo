@@ -110,9 +110,9 @@ Contribution Records → AI Payment Plan → Risk Check → Human Approval
 
 ### Demo Video
 
-> [TODO] 3–5 分钟 Demo 视频链接（YouTube / Bilibili / Loom）。
-> 视频需走通核心用户流程，并明确说明展示的是 mock mode 还是真实 CAW testnet transfer。
-> 当前已有 2 笔低额 CAW testnet tx hash；视频需说明它们只证明 testnet transfer 能力，默认 mock fallback 仍保留。
+**[▶ 在线观看](https://agentcfo-frontend.vercel.app/#guardrails)** — Landing `#guardrails` 区手动播放（Mock 模式演示；README 中 2 笔 CAW testnet tx 为真实付款证据，与 mock fallback 并存）。
+
+源文件：[`assets/video/agentcfo-demo.mp4`](assets/video/agentcfo-demo.mp4)
 
 路演 PPT（ppt-master）：[`assets/ppt/agentcfo-pitch.pptx`](assets/ppt/agentcfo-pitch.pptx) · 物料 PDF：[`assets/ppt/material/agentcfo-pitch-material-team-v1.pdf`](assets/ppt/material/agentcfo-pitch-material-team-v1.pdf)
 
