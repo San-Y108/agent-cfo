@@ -17,6 +17,7 @@ type Phase = {
   descZh: string;
   descEn: string;
   accent: string;
+  accentText: string; // brighter accent for left editorial copy
   accentMuted: string;
   number: string;
   img: string;
@@ -31,6 +32,7 @@ const PHASES: Phase[] = [
     descZh: "仓库创建、团队分工、后端 P0 API 与前端脚手架",
     descEn: "Repo created, team roles, backend P0 APIs and frontend scaffold",
     accent: "#4A9B8E",
+    accentText: "#5EEAD4",
     accentMuted: "rgba(74,155,142,0.15)",
     number: "01",
     img: "/timeline/phase-01-kickoff.png",
@@ -43,6 +45,7 @@ const PHASES: Phase[] = [
     descZh: "P0 API 前后端联调、CAW 测试网执行、Vercel 部署",
     descEn: "P0 API integration, CAW testnet execution, Vercel deploy",
     accent: "#5A8FC4",
+    accentText: "#7EC8FF",
     accentMuted: "rgba(90,143,196,0.15)",
     number: "02",
     img: "/timeline/phase-02-integration.png",
@@ -55,6 +58,7 @@ const PHASES: Phase[] = [
     descZh: "Landing 视觉优化、Console 组件打磨、Demo 彩排",
     descEn: "Landing visual polish, Console component refinement, demo rehearsal",
     accent: "#8BA85C",
+    accentText: "#B5FF4D",
     accentMuted: "rgba(139,168,92,0.15)",
     number: "03",
     img: "/timeline/phase-03-polish.png",
@@ -67,6 +71,7 @@ const PHASES: Phase[] = [
     descZh: "功能冻结、最终彩排、提交材料整理",
     descEn: "Feature freeze, final rehearsal, submission package",
     accent: "#9B7BB8",
+    accentText: "#D4B4FF",
     accentMuted: "rgba(155,123,184,0.15)",
     number: "04",
     img: "/timeline/phase-04-submit.png",
@@ -155,6 +160,7 @@ export function BuildTimeline() {
         gsap.set(text, {
           opacity: i === 0 ? 1 : 0,
           y: i === 0 ? 0 : 20,
+          zIndex: i === 0 ? 2 : 1,
         });
       });
 
@@ -236,12 +242,14 @@ export function BuildTimeline() {
           { opacity: 0, y: -20, duration: 0.1, ease: "power1.in" },
           slot - 0.05
         );
+        tl.set(texts[i], { zIndex: 1 }, slot - 0.04);
         tl.fromTo(
           texts[i + 1],
           { opacity: 0, y: 20 },
           { opacity: 1, y: 0, duration: 0.12, ease: "power1.out" },
           slot - 0.03
         );
+        tl.set(texts[i + 1], { zIndex: 2 }, slot - 0.03);
       }
     },
     { scope: sectionRef }
@@ -258,7 +266,7 @@ export function BuildTimeline() {
       <div className="timeline-viewport h-screen w-full flex items-center justify-center px-6 md:px-12 lg:px-20">
         <div className="flex flex-col lg:flex-row items-center justify-center gap-12 lg:gap-24 xl:gap-32 w-full max-w-7xl">
           {/* ─── Left: Editorial copy ─────────────────────────────────── */}
-          <div className="relative w-full lg:w-[440px] xl:w-[480px] h-[200px] lg:h-[260px]">
+          <div className="relative w-full lg:w-[440px] xl:w-[520px] h-[220px] lg:h-[300px]">
             {PHASES.map((p, i) => (
               <div
                 key={p.phase}
@@ -266,46 +274,46 @@ export function BuildTimeline() {
                   textRefs.current[i] = el;
                 }}
                 className="absolute inset-0 flex flex-col justify-center text-center lg:text-left"
-                style={{ opacity: i === 0 ? 1 : 0 }}
+                style={{ opacity: i === 0 ? 1 : 0, zIndex: i === 0 ? 2 : 1 }}
               >
                 {/* Phase label */}
                 <span
-                  className="text-[11px] font-mono font-semibold uppercase tracking-[0.2em]"
-                  style={{ color: p.accent }}
+                  className="text-[11px] font-mono font-semibold uppercase tracking-[0.22em]"
+                  style={{
+                    color: p.accentText,
+                    textShadow: `0 0 18px ${p.accentText}55`,
+                  }}
                 >
                   {p.date} · {p.phase}
                 </span>
 
-                {/* Large editorial title */}
+                {/* Title — per-phase accent color, bright glow on dark bg */}
                 <h4
-                  className="mt-3 text-3xl md:text-4xl lg:text-[42px] font-bold leading-[1.1]"
+                  className="mt-5 text-3xl md:text-4xl lg:text-[44px] font-bold leading-[1.12]"
                   style={{
                     letterSpacing: "-0.02em",
-                    color: "#ffffff",
-                    textShadow: `0 0 28px ${p.accent}50, 0 2px 12px rgba(0,0,0,0.5)`,
+                    color: p.accentText,
+                    textShadow: `0 0 28px ${p.accentText}70, 0 0 56px ${p.accentText}35, 0 1px 0 rgba(255,255,255,0.12)`,
                   }}
                 >
-                  <span
-                    style={{
-                      background: `linear-gradient(135deg, #ffffff 0%, ${p.accent} 65%)`,
-                      WebkitBackgroundClip: "text",
-                      backgroundClip: "text",
-                      WebkitTextFillColor: "transparent",
-                    }}
-                  >
-                    {_(p.titleZh, p.titleEn)}
-                  </span>
+                  {_(p.titleZh, p.titleEn)}
                 </h4>
 
                 {/* Description */}
-                <p className="mt-4 text-sm md:text-[15px] italic leading-relaxed text-white/95 max-w-md">
+                <p
+                  className="mt-6 max-w-md text-sm leading-[1.7] text-white/88 md:text-[15px] md:leading-[1.75]"
+                  style={{ fontStyle: "italic" }}
+                >
                   {_(p.descZh, p.descEn)}
                 </p>
 
                 {/* Accent divider line */}
                 <div
-                  className="mt-5 h-[2px] w-12 rounded-full hidden lg:block"
-                  style={{ backgroundColor: p.accent }}
+                  className="mt-7 h-[2px] w-14 rounded-full hidden lg:block"
+                  style={{
+                    backgroundColor: p.accentText,
+                    boxShadow: `0 0 12px ${p.accentText}60`,
+                  }}
                 />
               </div>
             ))}
@@ -551,7 +559,7 @@ export function BuildTimeline() {
 
                 <span
                   className="text-[10px] font-mono uppercase tracking-[0.2em] block mb-2"
-                  style={{ color: p.accent }}
+                  style={{ color: p.accentText }}
                 >
                   {p.date} · {p.phase}
                 </span>
@@ -559,16 +567,14 @@ export function BuildTimeline() {
                 <h4
                   className="text-lg font-bold mb-2"
                   style={{
-                    background: `linear-gradient(135deg, #ffffff 30%, ${p.accent} 100%)`,
-                    WebkitBackgroundClip: "text",
-                    backgroundClip: "text",
-                    WebkitTextFillColor: "transparent",
+                    color: p.accentText,
+                    textShadow: `0 0 20px ${p.accentText}60`,
                   }}
                 >
                   {_(p.titleZh, p.titleEn)}
                 </h4>
 
-                <p className="text-[13px] leading-relaxed text-white/90 italic">
+                <p className="text-[13px] leading-[1.7] text-white/88 italic">
                   {_(p.descZh, p.descEn)}
                 </p>
               </motion.div>
