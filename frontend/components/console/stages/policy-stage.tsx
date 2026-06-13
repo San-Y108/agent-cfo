@@ -317,7 +317,7 @@ export function PolicyStage() {
                   : _("悬停节点查看规则详情", "Hover nodes to inspect rule details")
               }
               hudPrefix="GUARD::"
-              hudValue={lang === "zh" ? "神经网格" : "NEURAL MESH"}
+              hudValue={lang === "zh" ? "三线防护" : "TRI-LINE GUARD"}
               hudColor="coral"
               trailing={
                 <StatusPulse
@@ -333,11 +333,11 @@ export function PolicyStage() {
             )}
 
             <div className="relative z-10 flex min-h-0 flex-1 flex-col gap-3 p-4 md:p-5">
-              <div className="mx-auto flex min-h-[120px] w-full max-w-md flex-1 items-center">
+              <div className="mx-auto flex w-full flex-1 items-stretch">
                 <NeuralGuardrailsGraph
                   activeRuleId={activeRuleId}
                   onRuleHover={setActiveRuleId}
-                  className="h-full w-full max-h-[240px]"
+                  className="w-full"
                 />
               </div>
               <div className="grid grid-cols-2 gap-2 md:grid-cols-4">
