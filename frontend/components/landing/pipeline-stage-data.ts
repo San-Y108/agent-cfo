@@ -37,7 +37,7 @@ export const STAGES: Stage[] = [
     accentSoft: "rgba(94,234,212,0.08)",
     accentBorder: "rgba(94,234,212,0.28)",
     eyebrow: "Stage 01 · Records",
-    headline: "Contribution records become\npayout plans.",
+    headline: "Contribution records\nbecome payout plans.",
     lead: "Every payout starts with a signal. A GitHub issue closed, a Notion row filled, a CSV uploaded — AgentCFO reads them all and turns messy contribution records into structured payment plans.",
     paragraphs: [
       "Contributors don't file expense reports. They write code, design posters, host AMAs. AgentCFO meets them where they work — pulling structured signals from the tools they already use, not adding another form to fill.",
@@ -90,7 +90,7 @@ data-api      5 USDC  subscription · jun`,
     accentSoft: "rgba(181,255,77,0.08)",
     accentBorder: "rgba(181,255,77,0.32)",
     eyebrow: "Stage 03 · Approval",
-    headline: "A human approves\nthe final move. Always.",
+    headline: "A human approves\nthe final move — always.",
     lead: "No autonomous transfers. Ever. A real person reviews the cleared queue, sees exactly what's being paid and why, and clicks Approve & Execute. Blocked items stay blocked — with their reasons right there.",
     paragraphs: [
       "AI can draft the plan, run the risk check, and prepare the execution — but it cannot sign the transaction. Human-in-the-loop isn't a setting you toggle off. It's the architecture.",

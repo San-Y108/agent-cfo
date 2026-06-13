@@ -57,7 +57,7 @@ export function GuardrailsCTA() {
             }}
           />
 
-          <div className="relative grid items-center gap-10 p-8 md:p-12 lg:grid-cols-[1fr_1.15fr] lg:gap-14 lg:p-16">
+          <div className="relative grid items-center gap-10 p-8 md:p-12 lg:grid-cols-[1fr_1.35fr] lg:gap-14 lg:p-16">
             {/* Left: copy + CTAs */}
             <motion.div
               variants={reveal}
@@ -92,6 +92,7 @@ export function GuardrailsCTA() {
                     WebkitBackgroundClip: "text",
                     backgroundClip: "text",
                     WebkitTextFillColor: "transparent",
+                    filter: "drop-shadow(0 0 18px rgba(181,255,77,0.45)) drop-shadow(0 0 36px rgba(0,229,176,0.25))",
                   }}
                 >
                   {t("guardrails.checked")}
@@ -106,6 +107,7 @@ export function GuardrailsCTA() {
                     backgroundClip: "text",
                     WebkitTextFillColor: "transparent",
                     animationDelay: "0.6s",
+                    filter: "drop-shadow(0 0 18px rgba(94,234,212,0.45)) drop-shadow(0 0 36px rgba(96,165,250,0.25))",
                   }}
                 >
                   {t("guardrails.approved")}
@@ -120,6 +122,7 @@ export function GuardrailsCTA() {
                     backgroundClip: "text",
                     WebkitTextFillColor: "transparent",
                     animationDelay: "1.2s",
+                    filter: "drop-shadow(0 0 18px rgba(192,132,252,0.45)) drop-shadow(0 0 36px rgba(244,114,182,0.25))",
                   }}
                 >
                   {t("guardrails.reported")}
@@ -155,6 +158,13 @@ export function GuardrailsCTA() {
                   {t("guardrails.cta")}
                 </DirectionAwareLink>
               </div>
+
+              <p
+                className="mt-3 text-[11px] italic text-white/55"
+                style={{ fontFamily: "Inter, sans-serif" }}
+              >
+                {t("guardrails.ctaHint")}
+              </p>
 
               <div
                 className="mt-6 flex flex-wrap items-center gap-4 text-[11px] text-white/70"
@@ -271,7 +281,7 @@ function DemoVideoCard() {
                     {t("guardrails.demo.title")}
                   </p>
                   <p
-                    className="mt-1 text-[10px] uppercase tracking-[0.16em] text-white/60"
+                    className="mt-1 text-[10px] uppercase tracking-[0.16em] text-white/80"
                     style={{ fontFamily: "'Courier New', Courier, monospace" }}
                   >
                     {t("guardrails.demo.subtitle")}
@@ -329,7 +339,7 @@ function DemoVideoCard() {
               )}
             </React.Fragment>
           ))}
-          <span className="ml-auto text-[9px] text-white/40 hidden sm:inline">{t("guardrails.mockTestnet")}</span>
+          <span className="ml-auto text-[9px] text-white/65 hidden sm:inline">{t("guardrails.mockTestnet")}</span>
         </div>
       </div>
 

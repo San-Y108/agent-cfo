@@ -141,7 +141,17 @@ export function BreathingText({
         <span key={lineIdx} className="block">
           {tokenizeLine(line, lang).map((token, tokenIdx) => {
             if (!token.animate) {
-              return <React.Fragment key={tokenIdx}>{token.text}</React.Fragment>;
+              // Whitespace tokens need an explicit inline-block width so the
+              // gap between animated inline-block words never collapses.
+              return (
+                <span
+                  key={tokenIdx}
+                  className="inline-block"
+                  style={{ width: lang === "en" ? "0.24em" : undefined }}
+                >
+                  {token.text}
+                </span>
+              );
             }
 
             const isAccent = accentSet.has(stripPunct(token.text));

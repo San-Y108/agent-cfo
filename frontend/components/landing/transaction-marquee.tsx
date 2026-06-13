@@ -302,10 +302,10 @@ export function TransactionMarquee() {
                   }}
                 >
                   <div className={`w-1.5 h-1.5 rounded-full ${s.dot}`} style={{ opacity: 0.85, boxShadow: `0 0 6px ${s.glow}` }} />
-                  <span className="text-[9px] font-mono text-white/35 hidden sm:inline uppercase tracking-wider">{item.sender}</span>
-                  <span className="text-[10px] font-mono text-white/75 truncate max-w-[120px] sm:max-w-[170px]">{item.action}</span>
+                  <span className="text-[9px] font-mono text-white/55 hidden sm:inline uppercase tracking-wider">{item.sender}</span>
+                  <span className="text-[10px] font-mono text-white/85 truncate max-w-[120px] sm:max-w-[170px]">{item.action}</span>
                   <span className={`text-[9px] font-mono font-semibold ${s.text}`}>{item.amount}</span>
-                  <span className="text-[8px] font-mono text-white/25 hidden sm:inline">{item.date}</span>
+                  <span className="text-[8px] font-mono text-white/45 hidden sm:inline">{item.date}</span>
                 </div>
 
                 {/* Flow arrow between cargo items */}

@@ -450,7 +450,7 @@ function NetworkNode({
               className="mt-0.5 h-[1px] w-full"
               style={{ background: `linear-gradient(90deg, transparent 10%, ${node.color}40, transparent 90%)` }}
             />
-            <div className="mt-1 text-[6.5px] font-mono leading-relaxed text-white/45">
+            <div className="mt-1 text-[6.5px] font-mono leading-relaxed text-white/70">
               {node.desc}
             </div>
           </div>
@@ -530,16 +530,16 @@ export function Web3NodeCloud() {
           viewport={{ once: true, amount: 0.5 }}
           transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
         >
-          <span className="inline-flex items-center gap-1.5 rounded-full border border-white/[0.08] bg-white/[0.07] px-3 py-1 text-[10px] font-mono uppercase tracking-wider text-white/40">
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-white/[0.08] bg-white/[0.07] px-3 py-1 text-[10px] font-mono uppercase tracking-wider text-white/65">
             {t("web3Cloud.eyebrow")}
           </span>
           <h2 className="text-xl font-extrabold tracking-tight text-white md:text-2xl">
             {t("web3Cloud.title")}
           </h2>
-          <p className="text-xs leading-relaxed text-white/45 italic">
+          <p className="text-xs leading-relaxed text-white/75 italic">
             {t("web3Cloud.desc")}
           </p>
-          <p className="text-[9px] text-white/50 font-mono italic">
+          <p className="text-[9px] text-white/65 font-mono italic">
             {t("web3Cloud.hint")}
           </p>
         </motion.div>

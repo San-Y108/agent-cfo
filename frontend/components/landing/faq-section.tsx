@@ -108,7 +108,7 @@ function FAQCard({
               </span>
             </div>
 
-            <div className="mt-2 flex items-center gap-2 text-[10px] font-mono text-white/30">
+            <div className="mt-2 flex items-center gap-2 text-[10px] font-mono text-white/55">
               <Icon className="w-3 h-3" style={{ color: item.accent }} />
               <span style={{ color: isOpen ? item.accent : undefined }}>
                 {isOpen ? "> expanded" : "> hover to expand"}
