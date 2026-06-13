@@ -27,6 +27,9 @@
 | AGENTCFO_DB_PATH | SQLite demo database path | 可选，本地默认 `agentcfo_demo.sqlite3` |
 | AGENTCFO_STORE_BACKEND | 可选切回 in-memory store | 仅本地临时 demo 使用 |
 | CORS_ALLOWED_ORIGINS | 生产前端 origin | Render 部署推荐设置 |
+| MINIMAX_API_KEY | Agent Hub 聊天代理调用 MiniMax | 不提交，必须走环境变量 |
+| MINIMAX_BASE_URL | MiniMax OpenAI 兼容 base URL，默认 `https://api.minimaxi.com/v1` | 可选 |
+| MINIMAX_MODEL | Agent 聊天模型，默认 `MiniMax-M2.5-highspeed` | 可选 |
 
 不要提交 `.env`、API key、private key、token 或生产钱包凭证。
 

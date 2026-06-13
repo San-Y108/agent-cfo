@@ -1,11 +1,16 @@
 import os
 
+from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.routers.payments import router as payments_router
 from app.routers.p2_extensions import router as p2_extensions_router
+from app.routers.agent import router as agent_router
+from app.services.agent_chat import get_minimax_config, is_agent_chat_configured
 from app.services.request_finance import RequestFinanceConfig
+
+load_dotenv()
 
 DEFAULT_CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
@@ -58,6 +63,14 @@ def get_public_p2_capabilities():
     }
 
 
+def get_public_agent_chat_status():
+    _, _, model = get_minimax_config()
+    return {
+        "configured": is_agent_chat_configured(),
+        "model": model,
+    }
+
+
 app = FastAPI(
     title="AgentCFO Backend MVP",
     description="Mock backend API for AgentCFO payment planning, risk checks, execution, and audit reports.",
@@ -77,6 +90,7 @@ app.add_middleware(
 
 app.include_router(payments_router)
 app.include_router(p2_extensions_router)
+app.include_router(agent_router)
 
 
 @app.get("/health", include_in_schema=False)
@@ -95,4 +109,5 @@ def version():
         "cawMode": get_public_caw_mode(),
         "requestFinance": get_public_request_finance_status(),
         "p2Capabilities": get_public_p2_capabilities(),
+        "agentChat": get_public_agent_chat_status(),
     }

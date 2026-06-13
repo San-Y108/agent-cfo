@@ -1,6 +1,6 @@
 from datetime import UTC, datetime
 from enum import StrEnum
-from typing import Any
+from typing import Any, Literal
 
 from pydantic import BaseModel, Field
 
@@ -627,3 +627,34 @@ class OpenApiLiteContracts(BaseModel):
     noLiveActions: bool
     contracts: list[OpenApiLiteContract]
     globalInvariants: list[str]
+
+
+class AgentChatMessage(BaseModel):
+    role: Literal["user", "assistant"]
+    content: str
+
+
+class AgentChatContext(BaseModel):
+    monthlyBudget: float | None = None
+    singlePaymentLimit: float | None = None
+    allowedToken: str | None = None
+    whitelist: list[str] = Field(default_factory=list)
+    recordCount: int | None = None
+    planItemCount: int | None = None
+    planSummary: str | None = None
+    flowStep: int | None = None
+
+
+class AgentChatRequest(BaseModel):
+    messages: list[AgentChatMessage]
+    lang: Literal["en", "zh"] = "en"
+    context: AgentChatContext | None = None
+
+
+class AgentChatResponseMessage(BaseModel):
+    role: Literal["assistant"] = "assistant"
+    content: str
+
+
+class AgentChatResponse(BaseModel):
+    message: AgentChatResponseMessage
