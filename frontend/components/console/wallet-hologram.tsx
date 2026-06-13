@@ -153,8 +153,9 @@ export function WalletTopology({
   onSelect: (id: string) => void;
   compact?: boolean;
 }) {
-  const { lang } = useApp();
+  const { lang, theme } = useApp();
   const _ = (zh: string, en: string) => (lang === "zh" ? zh : en);
+  const isDark = theme === "dark";
   const reduce = useReducedMotion();
   const containerRef = useRef<HTMLDivElement>(null);
   const [mouse, setMouse] = useState({ x: 0, y: 0 });
@@ -211,14 +212,20 @@ export function WalletTopology({
         </div>
       )}
 
-      {/* Dark radar viewport — intentionally dark in both themes */}
-      <div className={cn("relative bg-[#0A0F18]", compact && "bg-[#080c14]")}>
+      {/* Radar viewport — light surface in light theme, dark radar in dark theme */}
+      <div
+        className={cn(
+          "relative bg-surface-2 dark:bg-[#0A0F18]",
+          compact && "bg-surface dark:bg-[#080c14]"
+        )}
+      >
         <div
           aria-hidden
-          className="pointer-events-none absolute inset-0 opacity-50"
+          className="pointer-events-none absolute inset-0 opacity-50 dark:opacity-50"
           style={{
-            background:
-              "radial-gradient(ellipse 60% 60% at 50% 50%, rgba(96,165,250,0.07), transparent 70%)",
+            background: isDark
+              ? "radial-gradient(ellipse 60% 60% at 50% 50%, rgba(96,165,250,0.07), transparent 70%)"
+              : "radial-gradient(ellipse 60% 60% at 50% 50%, rgba(96,165,250,0.12), transparent 70%)",
           }}
         />
 
@@ -238,8 +245,13 @@ export function WalletTopology({
                 height: r * 2,
                 marginLeft: -r,
                 marginTop: -r,
-                borderColor:
-                  i === 1 ? "rgba(96,165,250,0.12)" : "rgba(255,255,255,0.05)",
+                borderColor: isDark
+                  ? i === 1
+                    ? "rgba(96,165,250,0.12)"
+                    : "rgba(255,255,255,0.05)"
+                  : i === 1
+                    ? "rgba(96,165,250,0.22)"
+                    : "rgba(15,23,42,0.08)",
               }}
               animate={reduce ? {} : { scale: [1, 1.02, 1], opacity: [0.35, 0.7, 0.35] }}
               transition={{ duration: 4 + i, repeat: Infinity, ease: "easeInOut", delay: i * 0.5 }}
@@ -298,12 +310,16 @@ export function WalletTopology({
           <motion.div
             className="absolute left-1/2 top-1/2 z-20 flex h-16 w-16 -translate-x-1/2 -translate-y-1/2 flex-col items-center justify-center rounded-full"
             style={{
-              background:
-                "radial-gradient(circle at 35% 35%, rgba(255,255,255,0.1), rgba(255,255,255,0.02))",
+              background: isDark
+                ? "radial-gradient(circle at 35% 35%, rgba(255,255,255,0.1), rgba(255,255,255,0.02))"
+                : "radial-gradient(circle at 35% 35%, rgba(255,255,255,0.95), rgba(241,245,249,0.9))",
               backdropFilter: "blur(12px)",
-              boxShadow:
-                "inset 0 1px 2px rgba(255,255,255,0.15), 0 0 36px rgba(96,165,250,0.22), inset 0 0 18px rgba(96,165,250,0.08)",
-              border: "1px solid rgba(255,255,255,0.1)",
+              boxShadow: isDark
+                ? "inset 0 1px 2px rgba(255,255,255,0.15), 0 0 36px rgba(96,165,250,0.22), inset 0 0 18px rgba(96,165,250,0.08)"
+                : "inset 0 1px 2px rgba(255,255,255,0.9), 0 0 28px rgba(96,165,250,0.18), 0 4px 16px rgba(15,23,42,0.06)",
+              border: isDark
+                ? "1px solid rgba(255,255,255,0.1)"
+                : "1px solid rgba(96,165,250,0.25)",
             }}
             animate={reduce ? {} : { scale: [1, 1.04, 1] }}
             transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
@@ -338,11 +354,27 @@ export function WalletTopology({
                   onMouseLeave={() => setHovered(null)}
                   className="relative flex h-11 w-11 cursor-pointer items-center justify-center rounded-full outline-none"
                   style={{
-                    background: lit ? "rgba(96,165,250,0.16)" : "rgba(255,255,255,0.05)",
-                    border: `1px solid ${lit ? "rgba(96,165,250,0.5)" : "rgba(255,255,255,0.1)"}`,
+                    background: lit
+                      ? isDark
+                        ? "rgba(96,165,250,0.16)"
+                        : "rgba(96,165,250,0.12)"
+                      : isDark
+                        ? "rgba(255,255,255,0.05)"
+                        : "rgba(255,255,255,0.88)",
+                    border: `1px solid ${
+                      lit
+                        ? "rgba(96,165,250,0.5)"
+                        : isDark
+                          ? "rgba(255,255,255,0.1)"
+                          : "rgba(148,163,184,0.35)"
+                    }`,
                     boxShadow: lit
-                      ? "0 0 22px rgba(96,165,250,0.35), inset 0 1px 1px rgba(255,255,255,0.1)"
-                      : "inset 0 1px 1px rgba(255,255,255,0.05)",
+                      ? isDark
+                        ? "0 0 22px rgba(96,165,250,0.35), inset 0 1px 1px rgba(255,255,255,0.1)"
+                        : "0 0 18px rgba(96,165,250,0.22), inset 0 1px 1px rgba(255,255,255,0.9)"
+                      : isDark
+                        ? "inset 0 1px 1px rgba(255,255,255,0.05)"
+                        : "0 2px 8px rgba(15,23,42,0.06), inset 0 1px 1px rgba(255,255,255,0.8)",
                   }}
                   whileHover={{ scale: 1.18 }}
                   whileTap={{ scale: 0.95 }}
@@ -359,7 +391,13 @@ export function WalletTopology({
                   )}
                   <Icon
                     className="h-4 w-4 relative"
-                    style={{ color: lit ? BLUE : "rgba(255,255,255,0.55)" }}
+                    style={{
+                      color: lit
+                        ? BLUE
+                        : isDark
+                          ? "rgba(255,255,255,0.55)"
+                          : "rgba(71,85,105,0.75)",
+                    }}
                     strokeWidth={1.5}
                   />
 
@@ -376,7 +414,7 @@ export function WalletTopology({
                     <motion.div
                       initial={{ opacity: 0, y: 4 }}
                       animate={{ opacity: 1, y: 0 }}
-                      className="absolute top-12 left-1/2 z-30 w-32 -translate-x-1/2 rounded-lg border border-border-token bg-[#0A0F18]/95 p-2 text-center shadow-2xl backdrop-blur-md"
+                      className="absolute top-12 left-1/2 z-30 w-32 -translate-x-1/2 rounded-lg border border-border-token bg-surface/95 p-2 text-center shadow-2xl backdrop-blur-md dark:bg-[#0A0F18]/95"
                     >
                       <div className="text-[9px] font-bold text-fg">{wallet.name}</div>
                       <div className="mt-0.5 text-[7px] font-mono leading-tight text-fg-muted">
@@ -389,7 +427,13 @@ export function WalletTopology({
                 <motion.span
                   className="mt-1.5 text-[8px] font-mono uppercase tracking-wider whitespace-nowrap"
                   animate={{ opacity: lit ? 1 : 0.4 }}
-                  style={{ color: lit ? BLUE : "rgba(255,255,255,0.4)" }}
+                  style={{
+                    color: lit
+                      ? BLUE
+                      : isDark
+                        ? "rgba(255,255,255,0.4)"
+                        : "rgba(100,116,139,0.85)",
+                  }}
                 >
                   {wallet.name.split(" ")[0]} · {fmtUsd(wallet.valueUsd)}
                 </motion.span>
