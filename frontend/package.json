@@ -3,9 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "sync:demo-video": "node ../scripts/sync-demo-video.mjs",
-    "predev": "node ../scripts/sync-demo-video.mjs",
-    "prebuild": "node ../scripts/sync-demo-video.mjs",
+    "sync:demo-video": "node scripts/sync-demo-video.mjs",
+    "predev": "node scripts/sync-demo-video.mjs",
+    "prebuild": "node scripts/sync-demo-video.mjs",
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
