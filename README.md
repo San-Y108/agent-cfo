@@ -1,6 +1,7 @@
 <p align="center">
-  <h1 align="center">AgentCFO — Give every DAO an AI CFO with a controlled wallet</h1>
-  <p align="center">AgentCFO 是面向 Web3 小团队 / DAO 的 AI 财务官。它读取贡献记录与预算规则，生成 Payment Plan，执行 Risk Check，在 Human Approval 之后通过 <strong>Cobo Agentic Wallet (CAW)</strong> 完成受控付款，并输出可审计的 Audit Report。赛道：<strong>Cobo 赛道｜Agentic Economy × CAW</strong></p>
+  <h1 align="center">AgentCFO — DAO AI Treasury</h1>
+  <p align="center"><em>Give every DAO an AI CFO with a controlled wallet</em></p>
+  <p align="center">AgentCFO 是面向 Web3 小团队 / DAO 的 AI 财务官，让贡献结算从人工表格变为全链路自动化。它读取贡献记录与预算规则，自动生成 Payment Plan，执行确定性 Risk Check，在 Human Approval 之后通过 <strong>Cobo Agentic Wallet (CAW)</strong> 完成受控付款，最终输出完整可审计的 Audit Report。赛道：<strong>Cobo 赛道｜Agentic Economy × CAW</strong></p>
 </p>
 
 <p align="center">
@@ -106,7 +107,8 @@ Contribution Records → AI Payment Plan → Risk Check → Human Approval
 
 | | | |
 |:---:|:---:|:---:|
-| [![Agent Hub](assets/images/readme/console-agent-hub.png)](assets/images/readme/console-agent-hub.png)<br><br>**Agent Hub**<br>Agent-first 工作台 · Payment Plan → Risk → Approval → Execution<br>[Console Demo](https://agentcfo-frontend.vercel.app/console) | 🔜 **Treasury**<br>资金与付款计划总览<br>截图待补充 | 🔜 **Policy**<br>风控规则与 Guardrails 配置<br>截图待补充 |
+| [![Agent Hub](assets/images/readme/console-agent-hub.png)](assets/images/readme/console-agent-hub.png)<br><br>**Agent Hub**<br>Agent-first 工作台 · Payment Plan → Risk → Approval → Execution<br>[Console Demo](https://agentcfo-frontend.vercel.app/console) | [![Treasury](assets/images/readme/console-treasury.png)](assets/images/readme/console-treasury.png)<br><br>**Treasury**<br>Payment Execution Pipeline · Records → Plan → Risk → Approval → CAW → Audit<br>[Console Demo](https://agentcfo-frontend.vercel.app/console/treasury) | [![CAW Wallets](assets/images/readme/console-wallets.png)](assets/images/readme/console-wallets.png)<br><br>**CAW Wallets**<br>Crypto Vaults Management · Agent Vault · Multi-sig · Cold Storage<br>[Console Demo](https://agentcfo-frontend.vercel.app/console/wallets) |
+| [![Analytics](assets/images/readme/console-analytics.png)](assets/images/readme/console-analytics.png)<br><br>**Analytics**<br>Gas Optimization · DAO Expenditure · Efficiency Compare · Allocated Spend<br>[Console Demo](https://agentcfo-frontend.vercel.app/console/analytics) | [![Policy](assets/images/readme/console-policy.png)](assets/images/readme/console-policy.png)<br><br>**Policy**<br>DAO Compliance Rules · Guardrail Topology · Whitelist Manager<br>[Console Demo](https://agentcfo-frontend.vercel.app/console/policy) | |
 
 ### Demo Video
 
@@ -412,12 +414,12 @@ P2 提供 metadata / preview / simulation 类端点，不改变 P0 授权与 Aud
 
 | Avatar | 姓名 | 角色 | 职责 |
 |---|---|---|---|
-| [![ZanyK](assets/images/readme/team/zanyk-role.jpg)](assets/images/readme/team/zanyk-role.jpg) | **ZanyK** | 指导 / 交付总控 | 项目统筹、路演、GitHub、最终交付 |
-| [![欢](assets/images/readme/team/huan-role.jpg)](assets/images/readme/team/huan-role.jpg) | **欢** | PM | 需求拆解、路线管理、站会与交付协同 |
-| [![呱呱](assets/images/readme/team/guagua-role.jpg)](assets/images/readme/team/guagua-role.jpg) | **呱呱** | 物料 / 设计 / 内容 | PPT、海报、视频、文案、视觉资产 |
-| [![threetwoa](assets/images/readme/team/threetwoa-role.jpg)](assets/images/readme/team/threetwoa-role.jpg) | **threetwoa** | 前端 | Landing + Console 界面、Mock 模式演示 |
-| [![九九八乂](assets/images/readme/team/jiujiu-role.jpg)](assets/images/readme/team/jiujiu-role.jpg) | **九九八乂** | 后端 / Agent | FastAPI、Payment Plan、Risk Check、Audit Report |
-| [![purple sun](assets/images/readme/team/purple-sun-role.jpg)](assets/images/readme/team/purple-sun-role.jpg) | **purple sun** | 合约 / CAW | Cobo Agentic Wallet 集成、测试网付款证据 |
+| <a href="assets/images/readme/team/zanyk-role.jpg"><img src="assets/images/readme/team/zanyk-role.jpg" width="80" alt="ZanyK"></a> | **ZanyK** | 指导 / 交付总控 | 项目统筹、路演、GitHub、最终交付 |
+| <a href="assets/images/readme/team/huan-role.jpg"><img src="assets/images/readme/team/huan-role.jpg" width="80" alt="欢"></a> | **欢** | PM | 需求拆解、路线管理、站会与交付协同 |
+| <a href="assets/images/readme/team/guagua-role.jpg"><img src="assets/images/readme/team/guagua-role.jpg" width="80" alt="呱呱"></a> | **呱呱** | 物料 / 设计 / 内容 | PPT、海报、视频、文案、视觉资产 |
+| <a href="assets/images/readme/team/threetwoa-role.jpg"><img src="assets/images/readme/team/threetwoa-role.jpg" width="80" alt="threetwoa"></a> | **threetwoa** | 前端 | Landing + Console 界面、Mock 模式演示 |
+| <a href="assets/images/readme/team/jiujiu-role.jpg"><img src="assets/images/readme/team/jiujiu-role.jpg" width="80" alt="九九八乂"></a> | **九九八乂** | 后端 / Agent | FastAPI、Payment Plan、Risk Check、Audit Report |
+| <a href="assets/images/readme/team/purple-sun-role.jpg"><img src="assets/images/readme/team/purple-sun-role.jpg" width="80" alt="purple sun"></a> | **purple sun** | 合约 / CAW | Cobo Agentic Wallet 集成、测试网付款证据 |
 
 
 > GitHub 主页链接待后续补充。
@@ -440,7 +442,7 @@ P2 提供 metadata / preview / simulation 类端点，不改变 P0 授权与 Aud
 | **提交截止** | 2026-06-13 12:00（UTC+8） |
 | **Demo Day** | 2026-06-14 |
 | **获奖公示** | 2026-06-17 |
-| **当前状态** | 进行中 · 报名已通过 · 作品待提交 |
+| **当前状态** | ✅ 已提交 · Demo Day 2026-06-14 |
 
 **主办与社区网络**（据官方页面；非商业赞助声明）：
 
