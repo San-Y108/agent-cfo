@@ -35,6 +35,10 @@ import { BentoCard } from "@/components/ui/aceternity/bento-grid";
 import { GradientText } from "@/components/ui/aceternity/colourful-text";
 import { GradientOrb } from "@/components/ui/aceternity/background";
 import { Sparkles as SparklesFX } from "@/components/ui/aceternity/sparkles";
+import {
+  AgentChatMarkdown,
+  hasAgentMarkdown,
+} from "@/components/console/agent-chat-markdown";
 
 const LIME = "#B5FF4D";
 const CYAN = "#5EEAD4";
@@ -120,74 +124,17 @@ function TypewriterBubble({ text, onDone }: { text: string; onDone?: () => void 
 }
 
 function AgentBubble({ text, isLatest }: { text: string; isLatest: boolean }) {
-  const [done, setDone] = useState(!isLatest);
+  const useTypewriter = isLatest && !hasAgentMarkdown(text);
+  const [done, setDone] = useState(!useTypewriter);
 
   return (
     <div className="max-w-[85%] rounded-2xl rounded-tl-sm border border-hud-lime/15 bg-hud-lime/[0.04] px-4 py-3 text-[14px] leading-relaxed text-fg shadow-[0_0_24px_-12px_var(--glow-lime)]">
-      {isLatest && !done ? (
+      {useTypewriter && !done ? (
         <TypewriterBubble text={text} onDone={() => setDone(true)} />
       ) : (
-        <SemanticText text={text} />
+        <AgentChatMarkdown text={text} />
       )}
     </div>
-  );
-}
-
-function SemanticText({ text }: { text: string }) {
-  const tokens = React.useMemo(() => {
-    const parts: { text: string; type: "amount" | "risk" | "normal" }[] = [];
-    const amountRegex = /(\$?\d+(?:\.\d+)?(?:\s*\/\s*\$?\d+(?:\.\d+)?)?\s*(?:USDC|USD|ETH|gwei|txns?))/gi;
-    const riskRegex = /\b(blocked|risk|拦截|风险|警告|warning|danger|failed|失败)\b/gi;
-
-    const pushSegment = (seg: string) => {
-      if (!seg) return;
-      let riskLast = 0;
-      let riskMatch;
-      while ((riskMatch = riskRegex.exec(seg)) !== null) {
-        if (riskMatch.index > riskLast) {
-          parts.push({ text: seg.slice(riskLast, riskMatch.index), type: "normal" });
-        }
-        parts.push({ text: riskMatch[0], type: "risk" });
-        riskLast = riskMatch.index + riskMatch[0].length;
-      }
-      if (riskLast < seg.length) {
-        parts.push({ text: seg.slice(riskLast), type: "normal" });
-      }
-      riskRegex.lastIndex = 0;
-    };
-
-    let lastIndex = 0;
-    let match;
-    while ((match = amountRegex.exec(text)) !== null) {
-      if (match.index > lastIndex) {
-        pushSegment(text.slice(lastIndex, match.index));
-      }
-      parts.push({ text: match[0], type: "amount" });
-      lastIndex = match.index + match[0].length;
-    }
-    if (lastIndex < text.length) {
-      pushSegment(text.slice(lastIndex));
-    }
-    return parts;
-  }, [text]);
-
-  return (
-    <>
-      {tokens.map((part, i) => (
-        <span
-          key={i}
-          className={cn(
-            part.type === "amount"
-              ? "text-hud-lime font-semibold"
-              : part.type === "risk"
-              ? "text-hud-coral font-semibold"
-              : undefined
-          )}
-        >
-          {part.text}
-        </span>
-      ))}
-    </>
   );
 }
 
