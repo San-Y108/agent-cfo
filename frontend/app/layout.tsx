@@ -44,11 +44,12 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={`dark ${geist.variable} ${geistMono.variable}`} suppressHydrationWarning>
-      <head />
-      {/* Anti-FOUC theme script — beforeInteractive so it runs synchronously before paint. */}
-      <Script id="theme-script" strategy="beforeInteractive">
-        {themeScript}
-      </Script>
+      <head>
+        {/* Anti-FOUC theme script — beforeInteractive so it runs synchronously before paint. */}
+        <Script id="theme-script" strategy="beforeInteractive">
+          {themeScript}
+        </Script>
+      </head>
       <body className="min-h-screen bg-bg text-fg antialiased font-sans">
         <AppProvider>{children}</AppProvider>
       </body>
