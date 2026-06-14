@@ -69,6 +69,15 @@ function RuleNode({
   const Icon = rule.icon;
   const accent = isDark ? DARK_COLORS[rule.id] : rule.color;
 
+  /* Per-rule micro-twist on hover so each node feels distinct. */
+  const twist = {
+    "0x3C": -8,
+    "0x2B": 7,
+    "0x1A": -6,
+    "0x5E": 8,
+    "0x4D": -10,
+  }[rule.id] ?? 0;
+
   return (
     <motion.button
       type="button"
@@ -77,7 +86,7 @@ function RuleNode({
       onFocus={() => onHover(rule.id)}
       onBlur={() => onHover(null)}
       className={cn(
-        "flex w-full flex-col items-center gap-1 rounded-lg border px-2 py-2 text-center transition-shadow",
+        "relative flex w-full min-w-0 flex-col items-center gap-1 overflow-hidden rounded-lg border px-1.5 py-1 text-center transition-colors sm:px-2 sm:py-1.5",
         isActive
           ? "border-border-strong bg-surface shadow-md"
           : "border-border-token bg-surface/95 hover:border-border-strong hover:bg-surface"
@@ -86,19 +95,57 @@ function RuleNode({
         boxShadow: isActive ? `0 0 16px -4px ${accent}55` : undefined,
         borderColor: isActive ? `${accent}66` : undefined,
       }}
-      animate={reduce ? {} : { scale: isActive ? 1.03 : 1 }}
-      transition={{ duration: 0.2 }}
+      initial="rest"
+      animate={isActive ? "active" : "rest"}
+      whileHover={reduce ? undefined : "hover"}
+      variants={{
+        rest: { scale: 1, y: 0, boxShadow: "0 0 0px transparent" },
+        active: { scale: 1.03, y: 0 },
+        hover: {
+          scale: 1.05,
+          y: -5,
+          boxShadow: `0 16px 36px -12px ${accent}55`,
+          transition: { type: "spring", stiffness: 360, damping: 18 },
+        },
+      }}
     >
-      <span
-        className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border"
+      {/* Shimmer sweep on hover */}
+      {!reduce && (
+        <motion.div
+          className="pointer-events-none absolute inset-0 z-0"
+          style={{
+            background: `linear-gradient(105deg, transparent 35%, ${accent}22 50%, transparent 65%)`,
+          }}
+          variants={{
+            rest: { x: "-100%", opacity: 0 },
+            hover: {
+              x: "100%",
+              opacity: 1,
+              transition: { duration: 0.65, ease: "easeInOut" },
+            },
+          }}
+        />
+      )}
+
+      <motion.span
+        className="relative z-10 flex h-7 w-7 shrink-0 items-center justify-center rounded-full border sm:h-8 sm:w-8"
         style={{ borderColor: `${accent}44`, background: `${accent}14` }}
+        variants={{
+          rest: { scale: 1, rotate: 0 },
+          hover: {
+            scale: 1.18,
+            rotate: twist,
+            transition: { type: "spring", stiffness: 320, damping: 14 },
+          },
+        }}
       >
-        <Icon className="h-3.5 w-3.5" style={{ color: accent }} strokeWidth={1.75} />
-      </span>
-      <span className="font-mono text-[9px] font-bold uppercase tracking-wider text-fg-muted">
+        <Icon className="h-3 w-3 sm:h-3.5 sm:w-3.5" style={{ color: accent }} strokeWidth={1.75} />
+      </motion.span>
+
+      <span className="relative z-10 font-mono text-[9px] font-bold uppercase tracking-wider text-fg-muted">
         {rule.id}
       </span>
-      <span className="text-[11px] font-semibold leading-snug text-fg">{title}</span>
+      <span className="relative z-10 text-[11px] font-semibold leading-snug text-fg">{title}</span>
     </motion.button>
   );
 }
@@ -107,13 +154,13 @@ function FlowArrow({ isDark, reduce }: { isDark: boolean; reduce: boolean }) {
   return (
     <div className="flex shrink-0 flex-col items-center justify-center px-0.5 sm:px-1">
       <div
-        className="hidden h-px w-4 sm:block sm:w-6"
+        className="hidden h-px w-3 sm:block sm:w-4"
         style={{
           background: `linear-gradient(90deg, ${CORAL}22, ${CORAL}${isDark ? "66" : "44"})`,
         }}
       />
       <ChevronRight
-        className="h-4 w-4 sm:h-5 sm:w-5"
+        className="h-3 w-3 sm:h-4 sm:w-4"
         style={{ color: isDark ? "#FB7185" : "#e11d48" }}
         strokeWidth={2}
       />
@@ -153,20 +200,20 @@ function TierColumn({
   return (
     <div
       className={cn(
-        "flex min-w-0 flex-1 flex-col rounded-xl border p-2 sm:p-2.5",
+        "flex min-w-0 flex-1 flex-col rounded-xl border p-1 sm:p-1.5",
         isDark ? "border-border-token bg-[#0b1120]/40" : "border-border-token bg-surface/80"
       )}
       style={{
         boxShadow: isDark ? undefined : "inset 0 1px 0 rgba(255,255,255,0.8)",
       }}
     >
-      <div className="mb-2 shrink-0 border-b border-border-token pb-1.5 text-center">
+      <div className="mb-1 shrink-0 border-b border-border-token pb-1 text-center">
         <p className="font-mono text-[10px] font-bold uppercase tracking-wider text-fg-muted">
           {_(meta.zh, meta.en)}
         </p>
         <p className="text-[11px] font-semibold text-fg">{_(meta.subZh, meta.subEn)}</p>
       </div>
-      <div className="flex flex-1 flex-col justify-center gap-1.5">
+      <div className="flex flex-1 flex-col justify-center gap-1">
         {rules.map((rule) => (
           <RuleNode
             key={rule.id}
@@ -187,35 +234,55 @@ function CawHub({ lang, isDark, reduce }: { lang: string; isDark: boolean; reduc
   const _ = (zh: string, en: string) => (lang === "zh" ? zh : en);
 
   return (
-    <div
+    <motion.div
       className={cn(
-        "flex w-[72px] shrink-0 flex-col items-center justify-center rounded-xl border px-1.5 py-3 sm:w-[80px]",
+        "flex w-[60px] shrink-0 flex-col items-center justify-center rounded-xl border px-1 py-1.5 sm:w-[72px] sm:px-1.5 sm:py-2.5",
         isDark ? "border-border-token bg-[#0b1120]/50" : "border-border-token bg-surface/90"
       )}
+      initial="rest"
+      whileHover={reduce ? undefined : "hover"}
+      variants={{
+        rest: { scale: 1 },
+        hover: { scale: 1.05, transition: { type: "spring", stiffness: 320, damping: 16 } },
+      }}
     >
       <motion.div
         className="flex flex-col items-center"
         animate={reduce ? {} : { scale: [1, 1.04, 1] }}
         transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
       >
-        <div
+        <motion.div
           className={cn(
-            "flex h-12 w-12 flex-col items-center justify-center rounded-full border",
+            "flex h-10 w-10 flex-col items-center justify-center rounded-full border sm:h-12 sm:w-12",
             isDark ? "bg-[#0b1120]" : "bg-surface"
           )}
           style={{
             borderColor: `${CORAL}55`,
             boxShadow: `0 0 20px -6px ${CORAL}44`,
           }}
+          variants={{
+            rest: { boxShadow: `0 0 20px -6px ${CORAL}44` },
+            hover: {
+              boxShadow: `0 0 30px -4px ${CORAL}77`,
+              transition: { duration: 0.3 },
+            },
+          }}
         >
-          <Orbit className="h-4 w-4" style={{ color: isDark ? "#FB7185" : "#be123c" }} />
+          <motion.div
+            variants={{
+              rest: { rotate: 0 },
+              hover: { rotate: 180, transition: { duration: 0.75, ease: "easeInOut" } },
+            }}
+          >
+            <Orbit className="h-4 w-4" style={{ color: isDark ? "#FB7185" : "#be123c" }} />
+          </motion.div>
           <span className="mt-0.5 font-mono text-[8px] font-bold uppercase text-fg">CAW</span>
-        </div>
+        </motion.div>
       </motion.div>
       <p className="mt-2 text-center font-mono text-[9px] font-semibold uppercase leading-tight text-fg-muted">
         {_("核心", "Core")}
       </p>
-    </div>
+    </motion.div>
   );
 }
 
@@ -254,7 +321,7 @@ export function NeuralGuardrailsGraph({
         ))}
       </div>
 
-      <div className="relative z-10 flex items-stretch gap-0 py-1">
+      <div className="relative z-10 flex h-full min-h-0 w-full min-w-0 items-stretch gap-0 py-0.5">
         {TIER_META.map((meta, idx) => (
           <React.Fragment key={meta.tier}>
             {idx > 0 && <FlowArrow isDark={isDark} reduce={!!reduce} />}

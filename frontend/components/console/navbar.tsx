@@ -61,38 +61,79 @@ function NavPills({
       {NAV_TABS.map((tab) => {
         const active = isTabActive(pathname, tab.href);
         const Icon = tab.icon;
+        const accent = isDark ? tab.color : tab.lightColor;
+
         return (
           <Link
             key={tab.href}
             href={tab.href}
             className={cn(
-              "relative flex items-center gap-1.5 rounded-full transition-colors duration-200",
+              "group relative flex items-center gap-1.5 rounded-full transition-colors duration-200",
               compact ? "px-2.5 py-1.5" : "px-3 py-1.5 xl:px-3.5",
               active ? "text-fg" : "text-fg-muted hover:text-fg"
             )}
+            style={{ ["--tab-accent" as string]: accent }}
           >
-            {active && (
-              <motion.span
-                layoutId="console-nav-pill"
-                className="absolute inset-0 rounded-full border border-border-token bg-surface"
-                style={{
-                  boxShadow: `inset 0 1px 0 color-mix(in srgb, var(--fg) 8%, transparent), 0 0 18px -6px ${tab.color}66`,
-                }}
-                transition={{ type: "spring", stiffness: 420, damping: 34 }}
-              />
+            {/* Inactive hover wash */}
+            {!active && (
+              <span className="absolute inset-0 rounded-full bg-surface/0 transition-colors duration-200 group-hover:bg-surface-hover/50" />
             )}
-            <Icon
-              size={14}
-              weight={active ? "fill" : "regular"}
-              className="relative z-10 shrink-0"
-              style={{ color: active ? (isDark ? tab.color : tab.lightColor) : undefined }}
-            />
+
+            {/* Active pill background */}
+            {active && (
+              <>
+                <motion.span
+                  layoutId="console-nav-pill"
+                  className="absolute inset-0 rounded-full border border-border-token bg-surface"
+                  style={{
+                    boxShadow: `inset 0 1px 0 color-mix(in srgb, var(--fg) 8%, transparent), 0 0 22px -5px ${accent}55, 0 0 6px -2px ${accent}33`,
+                  }}
+                  transition={{ type: "spring", stiffness: 420, damping: 34 }}
+                />
+                <motion.span
+                  layoutId="console-nav-pill-glow"
+                  className="pointer-events-none absolute inset-0 rounded-full"
+                  style={{
+                    background: `linear-gradient(180deg, ${accent}22 0%, transparent 60%)`,
+                  }}
+                  transition={{ type: "spring", stiffness: 420, damping: 34 }}
+                />
+                <motion.span
+                  layoutId="console-nav-underline"
+                  className="absolute -bottom-1 left-1/4 right-1/4 h-px rounded-full"
+                  style={{
+                    background: accent,
+                    boxShadow: `0 0 10px 1px ${accent}88, 0 0 20px 2px ${accent}44`,
+                  }}
+                  transition={{ type: "spring", stiffness: 420, damping: 34 }}
+                />
+              </>
+            )}
+
+            {/* Icon with active pop + inactive hover lift */}
+            <motion.span
+              className="relative z-10 flex shrink-0 items-center justify-center transition-transform duration-200 group-hover:scale-110 group-hover:-translate-y-0.5"
+              animate={active ? { scale: 1.15, y: -1 } : { scale: 1, y: 0 }}
+              transition={{ type: "spring", stiffness: 400, damping: 18 }}
+            >
+              <Icon
+                size={14}
+                weight={active ? "fill" : "regular"}
+                style={{ color: active ? accent : undefined }}
+              />
+            </motion.span>
+
             <span
               className={cn(
-                "relative z-10 font-medium whitespace-nowrap",
-                compact ? "text-[11px]" : "text-[12px] xl:text-[13px]"
+                "relative z-10 font-medium whitespace-nowrap transition-all duration-200",
+                compact ? "text-[11px]" : "text-[12px] xl:text-[13px]",
+                active && "font-semibold"
               )}
-              style={{ fontFamily: "Inter, sans-serif" }}
+              style={{
+                fontFamily: "Inter, sans-serif",
+                color: active ? accent : undefined,
+                textShadow: active ? `0 0 18px ${accent}44` : undefined,
+              }}
             >
               {getLabel(tab.labelKey)}
             </span>

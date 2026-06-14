@@ -21,7 +21,7 @@ import { useApp } from "@/lib/i18n/context";
 type Member = {
   roleZh: string;
   roleEn: string;
-  handle: string;
+  name: string;
   contribZh: string;
   contribEn: string;
   accent: string;
@@ -36,7 +36,7 @@ const MEMBERS: Member[] = [
   {
     roleZh: "交付 / 总控",
     roleEn: "Delivery & Ops",
-    handle: "San-Y108",
+    name: "欢",
     contribZh: "项目统筹、路演与最终交付",
     contribEn: "Coordination, pitch and final delivery",
     accent: "#B5FF4D",
@@ -48,7 +48,7 @@ const MEMBERS: Member[] = [
   {
     roleZh: "后端 / Agent",
     roleEn: "Backend & Agent",
-    handle: "W5W8L9jlu",
+    name: "九九八乂",
     contribZh: "FastAPI 付款计划与风险引擎",
     contribEn: "FastAPI payment plans and risk engine",
     accent: "#5EEAD4",
@@ -60,7 +60,7 @@ const MEMBERS: Member[] = [
   {
     roleZh: "前端",
     roleEn: "Frontend",
-    handle: "Aafff623",
+    name: "threetwoa",
     contribZh: "产品界面与 Mock 演示模式",
     contribEn: "Product UI and mock demo mode",
     accent: "#60A5FA",
@@ -72,7 +72,7 @@ const MEMBERS: Member[] = [
   {
     roleZh: "合约 / CAW",
     roleEn: "Contracts & CAW",
-    handle: "gitgdut",
+    name: "purple sun",
     contribZh: "Cobo Agentic Wallet 测试网执行",
     contribEn: "Cobo Agentic Wallet testnet execution",
     accent: "#C084FC",
@@ -84,7 +84,7 @@ const MEMBERS: Member[] = [
   {
     roleZh: "物料 / 设计",
     roleEn: "Design & Content",
-    handle: "Eloise-qiu",
+    name: "呱呱",
     contribZh: "PPT、视频与视觉物料",
     contribEn: "Slides, video and visual assets",
     accent: "#FB7185",
@@ -98,7 +98,7 @@ const MEMBERS: Member[] = [
 const MENTOR: Member = {
   roleZh: "导师",
   roleEn: "Mentor",
-  handle: "ZanyK",
+  name: "ZanyK",
   contribZh: "去年 Hackathon 参赛者，指导团队度过混沌",
   contribEn: "Last year's hackathon veteran, guiding the team through the chaos",
   accent: "#FFD700",
@@ -183,7 +183,7 @@ function AvatarRing({
         style={{
           background: `conic-gradient(from 0deg, ${accent}00, ${accent}70, ${accent}, ${accent}70, ${accent}00)`,
           filter: active ? "blur(1.5px)" : "blur(0.8px)",
-          opacity: active ? 1 : 0.6,
+          opacity: active ? 1 : 0.78,
         }}
       />
 
@@ -265,10 +265,10 @@ function ConnectionLines({
             y1={0}
             x2={coord.x}
             y2={coord.y}
-            stroke={isActive ? member.accent : "rgba(255,255,255,0.10)"}
+            stroke={isActive ? member.accent : "rgba(255,255,255,0.18)"}
             strokeWidth={isActive ? 1.5 : 1}
             strokeDasharray={isActive ? "none" : "4 6"}
-            opacity={isActive ? 0.7 : 0.3}
+            opacity={isActive ? 0.7 : 0.45}
             style={{ transition: "all 0.4s ease" }}
           />
         );
@@ -298,8 +298,8 @@ function MemberCard({
   const coord = PENTAGON_COORDS[index];
 
   const distFromCenter = Math.sqrt(coord.x ** 2 + coord.y ** 2) / PENTAGON_R;
-  const baseOpacity = 1 - distFromCenter * 0.35;
-  const opacity = anyHovered ? (isHovered ? 1 : 0.45) : baseOpacity;
+  const baseOpacity = 1 - distFromCenter * 0.14;
+  const opacity = anyHovered ? (isHovered ? 1 : 0.68) : Math.max(baseOpacity, 0.82);
   const scale = isHovered ? 1.05 : 1;
 
   return (
@@ -325,15 +325,14 @@ function MemberCard({
       <div
         className="relative flex h-[260px] w-[180px] flex-col items-center overflow-hidden rounded-xl border p-5 text-center transition-all duration-500"
         style={{
-          borderColor: isHovered ? `${member.accent}50` : "rgba(255,255,255,0.12)",
+          borderColor: isHovered ? `${member.accent}55` : `${member.accent}24`,
           background: isHovered
-            ? `linear-gradient(135deg, ${member.accent}12, rgba(255,255,255,0.02) 60%, rgba(0,0,0,0.2))`
-            : `linear-gradient(135deg, ${member.accent}08, rgba(255,255,255,0.01) 60%, rgba(0,0,0,0.1))`,
+            ? `linear-gradient(135deg, ${member.accent}18, rgba(255,255,255,0.04) 60%, rgba(0,0,0,0.12))`
+            : `linear-gradient(135deg, ${member.accent}0e, rgba(255,255,255,0.025) 60%, rgba(0,0,0,0.08))`,
           boxShadow: isHovered
-            ? `0 0 30px ${member.accent}25, inset 0 1px 0 ${member.accent}30`
-            : "none",
+            ? `0 0 30px ${member.accent}30, inset 0 1px 0 ${member.accent}35`
+            : `0 0 12px ${member.accent}0c, inset 0 1px 0 rgba(255,255,255,0.06)`,
           transform: `scale(${scale})`,
-          opacity,
         }}
       >
         {/* Role badge — top-right pill */}
@@ -362,9 +361,9 @@ function MemberCard({
           />
         </div>
 
-        {/* Handle */}
+        {/* Name */}
         <div className="mt-2 font-mono text-base font-bold text-white">
-          {member.handle}
+          {member.name}
         </div>
 
         {/* Divider */}
@@ -372,7 +371,7 @@ function MemberCard({
           className="mt-4 h-[2px] w-10 rounded-full transition-all duration-500"
           style={{
             backgroundColor: member.accent,
-            opacity: isHovered ? 1 : 0.4,
+            opacity: isHovered ? 1 : 0.58,
             transform: isHovered ? "scaleX(1.5)" : "scaleX(1)",
           }}
         />
@@ -407,8 +406,8 @@ function MentorCard({
   const { lang } = useApp();
   const _ = (zh: string, en: string) => (lang === "zh" ? zh : en);
 
-  const opacity = anyHovered ? (isHovered ? 1 : 0.5) : 1;
-  const scale = isHovered ? 1.04 : 1;
+  const opacity = anyHovered ? (isHovered ? 1 : 0.58) : 1;
+  const scale = isHovered ? 1.05 : 1.02;
 
   return (
     <motion.div
@@ -433,13 +432,13 @@ function MentorCard({
       <div
         className="relative flex h-[320px] w-[230px] flex-col items-center overflow-hidden rounded-xl border p-6 text-center transition-all duration-500"
         style={{
-          borderColor: isHovered ? "rgba(255,215,0,0.5)" : "rgba(255,255,255,0.15)",
+          borderColor: isHovered ? "rgba(255,215,0,0.55)" : "rgba(255,215,0,0.28)",
           background: isHovered
-            ? "linear-gradient(135deg, rgba(255,215,0,0.12), rgba(255,255,255,0.03) 60%, rgba(0,0,0,0.15))"
-            : "linear-gradient(135deg, rgba(255,215,0,0.06), rgba(255,255,255,0.01) 60%, rgba(0,0,0,0.15))",
+            ? "linear-gradient(135deg, rgba(255,215,0,0.14), rgba(255,255,255,0.04) 60%, rgba(0,0,0,0.12))"
+            : "linear-gradient(135deg, rgba(255,215,0,0.09), rgba(255,255,255,0.025) 60%, rgba(0,0,0,0.1))",
           boxShadow: isHovered
-            ? "0 0 40px rgba(255,215,0,0.2), inset 0 1px 0 rgba(255,215,0,0.3)"
-            : "0 0 20px rgba(255,215,0,0.05)",
+            ? "0 0 44px rgba(255,215,0,0.24), inset 0 1px 0 rgba(255,215,0,0.35)"
+            : "0 0 28px rgba(255,215,0,0.14), 0 0 60px rgba(255,215,0,0.06), inset 0 1px 0 rgba(255,215,0,0.18)",
         }}
       >
         {/* Mentor badge */}
@@ -467,7 +466,7 @@ function MentorCard({
 
         {/* Handle */}
         <div className="mt-5 font-mono text-xl font-bold text-white">
-          {MENTOR.handle}
+          {MENTOR.name}
         </div>
 
         {/* Divider */}
@@ -509,10 +508,10 @@ function MobileCard({
       transition={{ duration: 0.5, delay: index * 0.08 }}
       className="flex items-center gap-4 rounded-xl border p-4"
       style={{
-        borderColor: member.isMentor ? "rgba(255,215,0,0.2)" : "rgba(255,255,255,0.12)",
+        borderColor: member.isMentor ? "rgba(255,215,0,0.2)" : "rgba(255,255,255,0.18)",
         background: member.isMentor
           ? "linear-gradient(135deg, rgba(255,215,0,0.08), rgba(255,255,255,0.01))"
-          : "rgba(255,255,255,0.02)",
+          : "linear-gradient(135deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02))",
       }}
     >
       {/* Avatar */}
@@ -558,7 +557,7 @@ function MobileCard({
             </span>
           )}
         </div>
-        <div className="text-sm font-bold text-white">{member.handle}</div>
+        <div className="text-sm font-bold text-white">{member.name}</div>
         <p className="mt-0.5 text-[11px] leading-relaxed text-white/75">
           {_(member.contribZh, member.contribEn)}
         </p>
@@ -677,7 +676,7 @@ export function TeamShowcase() {
             {/* 5 outer members */}
             {MEMBERS.map((m, i) => (
               <MemberCard
-                key={m.handle}
+                key={m.name}
                 member={m}
                 index={i}
                 isHovered={selectedIdx === i}
@@ -696,7 +695,7 @@ export function TeamShowcase() {
             <MobileCard member={MENTOR} index={0} />
           </div>
           {MEMBERS.map((m, i) => (
-            <MobileCard key={m.handle} member={m} index={i + 1} />
+            <MobileCard key={m.name} member={m} index={i + 1} />
           ))}
         </div>
 
@@ -704,7 +703,7 @@ export function TeamShowcase() {
         <div className="flex flex-col gap-3 md:hidden max-w-md mx-auto">
           <MobileCard member={MENTOR} index={0} />
           {MEMBERS.map((m, i) => (
-            <MobileCard key={m.handle} member={m} index={i + 1} />
+            <MobileCard key={m.name} member={m} index={i + 1} />
           ))}
         </div>
       </div>

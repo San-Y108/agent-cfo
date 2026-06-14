@@ -412,14 +412,14 @@ P2 提供 metadata / preview / simulation 类端点，不改变 P0 授权与 Aud
 ## 团队
 
 
-| Avatar | 姓名 | 角色 | 职责 |
-|---|---|---|---|
-| <a href="assets/images/readme/team/zanyk-role.jpg"><img src="assets/images/readme/team/zanyk-role.jpg" width="80" alt="ZanyK"></a> | **ZanyK** | 指导 / 交付总控 | 项目统筹、路演、GitHub、最终交付 |
-| <a href="assets/images/readme/team/huan-role.jpg"><img src="assets/images/readme/team/huan-role.jpg" width="80" alt="欢"></a> | **欢** | PM | 需求拆解、路线管理、站会与交付协同 |
-| <a href="assets/images/readme/team/guagua-role.jpg"><img src="assets/images/readme/team/guagua-role.jpg" width="80" alt="呱呱"></a> | **呱呱** | 物料 / 设计 / 内容 | PPT、海报、视频、文案、视觉资产 |
-| <a href="assets/images/readme/team/threetwoa-role.jpg"><img src="assets/images/readme/team/threetwoa-role.jpg" width="80" alt="threetwoa"></a> | **threetwoa** | 前端 | Landing + Console 界面、Mock 模式演示 |
-| <a href="assets/images/readme/team/jiujiu-role.jpg"><img src="assets/images/readme/team/jiujiu-role.jpg" width="80" alt="九九八乂"></a> | **九九八乂** | 后端 / Agent | FastAPI、Payment Plan、Risk Check、Audit Report |
-| <a href="assets/images/readme/team/purple-sun-role.jpg"><img src="assets/images/readme/team/purple-sun-role.jpg" width="80" alt="purple sun"></a> | **purple sun** | 合约 / CAW | Cobo Agentic Wallet 集成、测试网付款证据 |
+| Avatar | 姓名 | 角色 | 职责 | 3D 形象 |
+|---|---|---|---|---|
+| <a href="assets/images/readme/team/zanyk-role.jpg"><img src="assets/images/readme/team/zanyk-role.jpg" width="80" alt="ZanyK"></a> | **ZanyK** | 指导 / 交付总控 | 项目统筹、路演、GitHub、最终交付 | <a href="assets/images/readme/team/zanyk-mascot.png"><img src="assets/images/readme/team/zanyk-mascot.png" width="100" alt="ZanyK 3D"></a> |
+| <a href="assets/images/readme/team/huan-role.jpg"><img src="assets/images/readme/team/huan-role.jpg" width="80" alt="欢"></a> | **欢** | PM | 需求拆解、路线管理、站会与交付协同 | <a href="assets/images/readme/team/huan-mascot.png"><img src="assets/images/readme/team/huan-mascot.png" width="100" alt="欢 3D"></a> |
+| <a href="assets/images/readme/team/guagua-role.jpg"><img src="assets/images/readme/team/guagua-role.jpg" width="80" alt="呱呱"></a> | **呱呱** | 物料 / 设计 / 内容 | PPT、海报、视频、文案、视觉资产 | <a href="assets/images/readme/team/guagua-mascot.png"><img src="assets/images/readme/team/guagua-mascot.png" width="100" alt="呱呱 3D"></a> |
+| <a href="assets/images/readme/team/threetwoa-role.jpg"><img src="assets/images/readme/team/threetwoa-role.jpg" width="80" alt="threetwoa"></a> | **threetwoa** | 前端 | Landing + Console 界面、Mock 模式演示 | <a href="assets/images/readme/team/threetwoa-mascot.png"><img src="assets/images/readme/team/threetwoa-mascot.png" width="100" alt="threetwoa 3D"></a> |
+| <a href="assets/images/readme/team/jiujiu-role.jpg"><img src="assets/images/readme/team/jiujiu-role.jpg" width="80" alt="九九八乂"></a> | **九九八乂** | 后端 / Agent | FastAPI、Payment Plan、Risk Check、Audit Report | <a href="assets/images/readme/team/jiujiu-mascot.png"><img src="assets/images/readme/team/jiujiu-mascot.png" width="100" alt="九九八乂 3D"></a> |
+| <a href="assets/images/readme/team/purple-sun-role.jpg"><img src="assets/images/readme/team/purple-sun-role.jpg" width="80" alt="purple sun"></a> | **purple sun** | 合约 / CAW | Cobo Agentic Wallet 集成、测试网付款证据 | <a href="assets/images/readme/team/purple-sun-mascot.png"><img src="assets/images/readme/team/purple-sun-mascot.png" width="100" alt="purple sun 3D"></a> |
 
 
 > GitHub 主页链接待后续补充。
