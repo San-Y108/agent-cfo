@@ -745,8 +745,8 @@ export function AgentHub() {
     generatePlan,
     executePlan,
   } = useConsoleState();
-  const [messages, setMessages] = useState<ChatMessage[]>(
-    () => readStoredMessages(lang) ?? getSeedMessages(lang)
+  const [messages, setMessages] = useState<ChatMessage[]>(() =>
+    getSeedMessages(lang)
   );
   const [inputValue, setInputValue] = useState("");
   const [isThinking, setIsThinking] = useState(false);
@@ -755,7 +755,9 @@ export function AgentHub() {
   useEffect(() => {
     setChatHydrated(true);
     const stored = readStoredMessages(lang);
-    setMessages(stored ?? getSeedMessages(lang));
+    if (stored) {
+      setMessages(stored);
+    }
   }, [lang]);
 
   useEffect(() => {
