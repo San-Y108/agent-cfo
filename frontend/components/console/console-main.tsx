@@ -2,9 +2,17 @@
 
 import React from "react";
 import { usePathname } from "next/navigation";
+import { AnimatePresence, motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 
 const AGENT_ROUTES = new Set(["/console", "/console/agent"]);
+
+const pageTransition = {
+  initial: { opacity: 0, y: 12 },
+  animate: { opacity: 1, y: 0 },
+  exit: { opacity: 0, y: -8 },
+  transition: { duration: 0.28, ease: [0.16, 1, 0.3, 1] as [number, number, number, number] },
+};
 
 /**
  * Console main shell — module routes fill viewport below nav (same budget as Agent hub).
@@ -21,10 +29,26 @@ export function ConsoleMain({ children }: { children: React.ReactNode }) {
       )}
     >
       {isAgentHome ? (
-        children
+        <AnimatePresence mode="wait" initial={false}>
+          <motion.div
+            key={pathname}
+            className="flex flex-col min-h-[100dvh]"
+            {...pageTransition}
+          >
+            {children}
+          </motion.div>
+        </AnimatePresence>
       ) : (
         <div className="flex h-[calc(100dvh-7.5rem)] min-h-0 flex-col overflow-hidden md:h-[calc(100dvh-4rem)]">
-          {children}
+          <AnimatePresence mode="wait" initial={false}>
+            <motion.div
+              key={pathname}
+              className="flex h-full min-h-0 flex-col overflow-hidden"
+              {...pageTransition}
+            >
+              {children}
+            </motion.div>
+          </AnimatePresence>
         </div>
       )}
     </main>

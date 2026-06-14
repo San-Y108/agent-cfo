@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useCallback } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import {
   Plus,
@@ -33,6 +33,51 @@ import { useConsoleFlowHighlight } from "@/lib/console/use-console-flow-highligh
 
 const CORAL = "#FB7185";
 const LIME = "#B5FF4D";
+const POLICY_AUDIT_SCENE_SRC = "/console/mascots/policy-audit-scene.png";
+
+/** Audit intercept scene — bottom-right of Guard Integrity panel. */
+function PolicyAuditSceneAccent() {
+  const reduce = useReducedMotion();
+
+  return (
+    <div className="pointer-events-none absolute bottom-1.5 right-1.5 z-[5] h-[min(72%,200px)] w-[min(42%,220px)] min-h-[112px] min-w-[120px]">
+      <div
+        className="absolute inset-x-[-18%] bottom-0 h-[88%]"
+        style={{
+          background:
+            "radial-gradient(ellipse 88% 82% at 58% 100%, rgba(251,113,133,0.32) 0%, rgba(192,132,252,0.12) 42%, transparent 72%)",
+        }}
+      />
+      <div
+        className="pointer-events-none absolute inset-x-0 bottom-[-6px] h-[46%]"
+        style={{
+          background:
+            "radial-gradient(ellipse 78% 40% at 50% 100%, rgba(251,113,133,0.28) 0%, transparent 70%)",
+          filter: "blur(12px)",
+        }}
+      />
+      <motion.img
+        src={POLICY_AUDIT_SCENE_SRC}
+        alt="Policy audit guardian"
+        className="absolute bottom-0 right-0 h-[min(100%,118px)] w-auto max-w-none select-none object-contain object-bottom sm:h-[124px]"
+        draggable={false}
+        animate={reduce ? undefined : { y: [0, -4, 0] }}
+        transition={{ duration: 3.6, repeat: Infinity, ease: "easeInOut" }}
+        style={{
+          filter:
+            "drop-shadow(0 10px 20px rgba(251,113,133,0.22)) drop-shadow(0 0 10px rgba(192,132,252,0.18))",
+        }}
+      />
+      <div
+        className="pointer-events-none absolute inset-x-0 bottom-0 h-[42%]"
+        style={{
+          background:
+            "linear-gradient(to top, var(--surface) 0%, color-mix(in srgb, var(--surface) 58%, transparent) 50%, transparent 100%)",
+        }}
+      />
+    </div>
+  );
+}
 
 interface WhitelistItem {
   id: string;
@@ -319,6 +364,7 @@ export function PolicyStage() {
               hudPrefix="GUARD::"
               hudValue={lang === "zh" ? "三线防护" : "TRI-LINE GUARD"}
               hudColor="coral"
+              compact
               trailing={
                 <StatusPulse
                   color="coral"
@@ -333,11 +379,11 @@ export function PolicyStage() {
             )}
 
             <div className="relative z-10 flex min-h-0 flex-1 flex-col gap-3 p-4 md:p-5">
-              <div className="mx-auto flex min-h-0 w-full flex-1 overflow-y-auto">
+              <div className="mx-auto flex min-h-0 w-full flex-1 overflow-hidden">
                 <NeuralGuardrailsGraph
                   activeRuleId={activeRuleId}
                   onRuleHover={setActiveRuleId}
-                  className="w-full min-h-0"
+                  className="h-full w-full min-h-0"
                 />
               </div>
               <div className="grid shrink-0 grid-cols-2 gap-2 md:grid-cols-4">
@@ -494,12 +540,13 @@ function GuardIntegrityPanel() {
   const { t } = useApp();
 
   return (
-    <FrostedPanel glowColor="coral" sheen className="space-y-3 p-4">
-      <h3 className="flex items-center gap-2 text-sm font-bold text-fg">
+    <FrostedPanel glowColor="coral" sheen className="relative overflow-hidden space-y-3 p-4 pr-28 sm:pr-32">
+      <PolicyAuditSceneAccent />
+      <h3 className="relative z-10 flex items-center gap-2 text-sm font-bold text-fg">
         <Workflow className="h-4 w-4" style={{ color: CORAL }} />
         {t("console.policy.guardIntegrity" as any)}
       </h3>
-      <div className="space-y-2">
+      <div className="relative z-10 space-y-2">
         {[
           { label: t("console.policy.guardItem1" as any), sub: t("console.policy.guardItem1Sub" as any) },
           { label: t("console.policy.guardItem2" as any), sub: t("console.policy.guardItem2Sub" as any) },
