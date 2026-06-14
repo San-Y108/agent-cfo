@@ -22,19 +22,21 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [lang, setLangState] = useState<Lang>("en");
   const [theme, setThemeState] = useState<Theme>("dark");
 
-  // Hydrate from localStorage / DOM (the inline script in <head> already set the class).
-  useEffect(() => {
-    const storedLang = (localStorage.getItem("agentcfo-lang") as Lang) || "en";
-    const storedTheme = (localStorage.getItem("agentcfo-theme") as Theme) || "dark";
-    setLangState(storedLang);
-    setThemeState(storedTheme);
-  }, []);
-
   const applyTheme = useCallback((t: Theme) => {
     const root = document.documentElement;
     if (t === "dark") root.classList.add("dark");
     else root.classList.remove("dark");
   }, []);
+
+  // Hydrate from localStorage and apply to documentElement (default SSR is dark/en).
+  useEffect(() => {
+    const storedLang = (localStorage.getItem("agentcfo-lang") as Lang) || "en";
+    const storedTheme = (localStorage.getItem("agentcfo-theme") as Theme) || "dark";
+    setLangState(storedLang);
+    setThemeState(storedTheme);
+    applyTheme(storedTheme);
+    document.documentElement.lang = storedLang === "zh" ? "zh-CN" : "en";
+  }, [applyTheme]);
 
   const setTheme = useCallback(
     (t: Theme) => {

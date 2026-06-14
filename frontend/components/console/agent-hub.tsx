@@ -750,21 +750,21 @@ export function AgentHub() {
   );
   const [inputValue, setInputValue] = useState("");
   const [isThinking, setIsThinking] = useState(false);
-  const [chatHydrated, setChatHydrated] = useState(false);
+  const [chatLoaded, setChatLoaded] = useState(false);
 
   useEffect(() => {
-    setChatHydrated(true);
     const stored = readStoredMessages(lang);
     if (stored) {
       setMessages(stored);
     }
+    setChatLoaded(true);
   }, [lang]);
 
   useEffect(() => {
-    if (chatHydrated) {
+    if (chatLoaded) {
       writeStoredMessages(lang, messages);
     }
-  }, [messages, lang, chatHydrated]);
+  }, [messages, lang, chatLoaded]);
 
   const pushAgentMessage = (text: string) => {
     setMessages((prev) => [...prev, { role: "agent", text }]);
