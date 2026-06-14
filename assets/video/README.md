@@ -37,4 +37,4 @@ assets/video/agentcfo-demo.mp4
 
 ## 状态
 
-☐ 待录制 · 录完拖入本目录即可
+✅ 已录制 · `agentcfo-demo.mp4` · 11.2 MB · <2 min
