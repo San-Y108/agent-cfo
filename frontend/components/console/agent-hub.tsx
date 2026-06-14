@@ -82,6 +82,44 @@ function getSeedMessages(lang: "en" | "zh"): ChatMessage[] {
   ];
 }
 
+const chatStorageKey = (language: string) =>
+  `agentcfo:agent-hub:messages:${language}`;
+
+function readStoredMessages(language: string): ChatMessage[] | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = localStorage.getItem(chatStorageKey(language));
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    if (
+      Array.isArray(parsed) &&
+      parsed.every(
+        (m) =>
+          m &&
+          (m.role === "agent" || m.role === "user") &&
+          typeof m.text === "string"
+      )
+    ) {
+      return parsed as ChatMessage[];
+    }
+  } catch {
+    // ignore corrupt storage
+  }
+  return null;
+}
+
+function writeStoredMessages(
+  language: string,
+  messagesToStore: ChatMessage[]
+) {
+  if (typeof window === "undefined") return;
+  try {
+    localStorage.setItem(chatStorageKey(language), JSON.stringify(messagesToStore));
+  } catch {
+    // ignore storage errors (e.g. quota exceeded)
+  }
+}
+
 function TypingIndicator() {
   return (
     <div className="flex items-center gap-1 px-1 py-2">
@@ -707,13 +745,24 @@ export function AgentHub() {
     generatePlan,
     executePlan,
   } = useConsoleState();
-  const [messages, setMessages] = useState<ChatMessage[]>(() => getSeedMessages(lang));
+  const [messages, setMessages] = useState<ChatMessage[]>(
+    () => readStoredMessages(lang) ?? getSeedMessages(lang)
+  );
   const [inputValue, setInputValue] = useState("");
   const [isThinking, setIsThinking] = useState(false);
+  const [chatHydrated, setChatHydrated] = useState(false);
 
   useEffect(() => {
-    setMessages(getSeedMessages(lang));
+    setChatHydrated(true);
+    const stored = readStoredMessages(lang);
+    setMessages(stored ?? getSeedMessages(lang));
   }, [lang]);
+
+  useEffect(() => {
+    if (chatHydrated) {
+      writeStoredMessages(lang, messages);
+    }
+  }, [messages, lang, chatHydrated]);
 
   const pushAgentMessage = (text: string) => {
     setMessages((prev) => [...prev, { role: "agent", text }]);
