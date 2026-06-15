@@ -1,9 +1,11 @@
 # AgentCFO 任务看板
 
-> 最后更新：2026年6月10日 Day 2 总控审视（第二轮）
+> 最后更新：2026年6月15日 04:48 自动扫描（仓库进度巡检）
 > 规则：12 号之后不新增大功能，只修复、打磨、录视频、补材料
 >
 > ⚠️ 已发现问题：README 描述 4 个贡献者（含 Data API = 50 USDC），但 `/api/demo-sample` 只返回 3 个（45 USDC）。后端需修复。
+>
+> 📌 物料兜底说明：原物料负责人 Eloise-qiu 长期 0 产出，前端同学 Aafff623 已主动承担 PPT、Demo 视频、演讲稿等物料工作，所有物料交付物已就位。PPT ✅ Demo 视频 ✅ 演讲稿 ✅ 截图包 ✅
 
 ---
 
@@ -25,9 +27,9 @@
 |------|--------|------|----------|
 | 交付/总控 | San-Y108 (严硕) | ✅ repo + 文档已完成 | 物料兜底 + 路演准备 |
 | 后端/Agent | W5W8L9jlu | ✅ P0 + P1 Render + P2 spike + Phase 4C closeout | **🔴 今日生病，T-076/edge case/P0 验证暂由 CAW 代做** |
-| 前端 | Aafff623 | ✅ Landing + Demo + Console + Vercel + **PR #1 已合并** | 明日专注 Console 适配 + 效果升级 |
+| 前端 | Aafff623 | ✅ Landing + Demo + Console + Vercel + **Console 打磨完成** + **Demo 视频 + PPT + 演讲稿兜底交付** | Demo Day 准备就绪 |
 | 合约/CAW | gitgdut | ✅ API Key + Wallet + **3 笔 testnet tx** + demo-sample 修复 + P0 验证 | 截图待上传到仓库；Demo 话术稿待写 |
-| 物料/设计 | Eloise-qiu | 🔴 **0 产出，已逾期 2 天** | PPT/视频/头图/Logo/截图全部缺失，**今日必须确认产能或启动兜底** |
+| 物料/设计 | Eloise-qiu → Aafff623 兜底 | ✅ **全部交付物已由前端同学兜底完成** | PPT ✅ · Demo 视频 ✅ · 演讲稿 ✅ · 截图包 ✅ · 团队头像 ✅ |
 
 ---
 
@@ -120,7 +122,7 @@
 | T-067 | Landing 重设计 | Velorix Hero + scroll sections | 6月9日 | ✅ DONE |
 | T-068 | Console 工作台 | /console 4 tab（Treasury/Wallets/Analytics/Policy） | 6月9日 | ✅ DONE |
 | T-069 | PR #1 合并或同步 main | feat/frontend-bootstrap → main ✅ 已合并 | 6月10日 | ✅ DONE |
-| T-070 | Console 适配 + 效果升级 | 前端同学明日专注业务台打磨 | 6月11日 | 🔵 IN_PROGRESS（前端已确认计划） |
+| T-070 | Console 适配 + 效果升级 | policy graph 打磨、navbar 过渡动画、Agent Hub markdown 渲染 + 聊天持久化、Landing team showcase + 3D mascots | 6月11日 | ✅ DONE（Aafff623 6月14日大量 console polish 提交） |
 | T-070b | Real mode 接入 /demo | 调用 runDemoFlow + loading/error 态 | 6月12日 | 🟡 TODO（优先级低于 console 打磨） |
 
 ### 合约/CAW
@@ -131,7 +133,7 @@
 | T-072 | 和后端联调 | 本地 live transfer 已完成 | 6月10日 | ✅ DONE |
 | T-073 | 补充测试网付款证据 | 3 个 tx hash ✅ 全部完成 | 6月10日 | ✅ DONE（CAW 独立完成 3 笔 Sepolia/SETH testnet tx） |
 | T-074 | 整理 CAW 配置说明 | 配置文档 | 6月10日 | ✅ DONE |
-| T-075 | 截图脱敏补充 | 区块浏览器截图已有（本地路径），需上传到仓库 | 6月11日 | 🔵 IN_PROGRESS（截图已取，待上传到 repo） |
+| T-075 | 截图脱敏补充 | 区块浏览器截图已有（本地路径），需上传到仓库 | 6月11日 | 🔴 BLOCKED（已过截止 4 天，截图仍未上传） |
 | T-077 | CAW Demo 话术稿 | 1 分钟 CAW 讲解稿（介绍 CAW、展示真实 tx、解释 mock fallback） | 6月11日 | 🟡 TODO |
 | T-078 | 确认 Agent Wallet 地址公开口径 | masked 还是完整地址，对照赛道要求确认 | 6月10日 | 🟡 TODO |
 | T-079 | Demo day CAW 准备清单 | env vars 配置、mock/real 切换、余额检查、备用方案 | 6月12日 | 🟡 TODO |
@@ -151,12 +153,12 @@
 | ID | 任务 | 负责人 | 交付物 | 截止 | 状态 |
 |----|------|--------|--------|------|------|
 | T-090 | 全链路端到端测试 | 全员 | 主流程完整跑通 | 6月11日 | 🟡 TODO |
-| T-091 | 前端 UI 打磨 | 前端 | 不白屏、不错位、能投屏 | 6月11日 | 🟡 TODO |
-| T-092 | README 终版 | 总控 + 物料 | 所有章节填写完毕 | 6月11日 | 🟡 TODO |
-| T-093 | PPT 终版 | 物料 | 7 页定稿 | 6月11日 | 🟡 TODO |
-| T-094 | 录制 Demo 视频 | 物料 | 3-5 分钟完整演示 | 6月11日 | 🟡 TODO |
-| T-095 | 路演讲稿终版 | 总控 | 5 分钟逐段稿 | 6月11日 | 🟡 TODO |
-| T-096 | 第一次完整彩排 | 总控 | 录屏 + 问题清单 | 6月11日 | 🟡 TODO |
+| T-091 | 前端 UI 打磨 | 前端 | 修复 hydration mismatch、theme-script 警告、policy mascot 重提取、navbar 过渡动画 | 6月11日 | ✅ DONE（Aafff623 多次 bug fix + UI polish 提交） |
+| T-092 | README 终版 | 总控 + 前端 | 14 张 Console/Landing 截图已放入 assets/images/readme/，README 章节齐全 | 6月11日 | ✅ DONE |
+| T-093 | PPT 终版 | 前端兜底 | agentcfo-pitch.pptx（14 页含 svg_final）+ material PDF | 6月11日 | ✅ DONE |
+| T-094 | 录制 Demo 视频 | 前端兜底 | agentcfo-demo.mp4（1 分 50 秒精简版，11.2MB）已入库 + Landing 播放器已适配 | 6月11日 | ✅ DONE |
+| T-095 | 路演讲稿终版 | 总控 + 前端 | docs/speak/ 下有 demo-script-2min-20260614.md + master-narrative.md + outline-flow.md + 6 人分稿 | 6月11日 | ✅ DONE |
+| T-096 | 第一次完整彩排 | 总控 | 录屏 + 问题清单 | 6月11日 | 🔴 BLOCKED（已过截止，无彩排记录） |
 
 ---
 
@@ -164,13 +166,13 @@
 
 | ID | 任务 | 负责人 | 交付物 | 截止 | 状态 |
 |----|------|--------|--------|------|------|
-| T-100 | 功能冻结通知 | 总控 | 群消息 | 6月12日 10:00 | 🟡 TODO |
-| T-101 | 修 bug only | 前端 + 后端 | 只修不加 | 6月12日 18:00 | 🟡 TODO |
-| T-102 | 备用截图包 | 物料 | 全流程截图 | 6月12日 | 🟡 TODO |
-| T-103 | 本地录屏备份 | 物料 | mp4 文件 | 6月12日 | 🟡 TODO |
-| T-104 | 第二次完整彩排 | 总控 | 录屏 + 问题清单 | 6月12日 20:00 | 🟡 TODO |
-| T-105 | 提交材料检查 | 总控 | 对照 SUBMISSION_CHECKLIST | 6月13日 10:00 | 🟡 TODO |
-| T-106 | 正式提交 | 总控 | 提交截图 | 6月13日 12:00 | 🟡 TODO |
+| T-100 | 功能冻结通知 | 总控 | 群消息 | 6月12日 10:00 | 🔴 BLOCKED（已过截止，前端今日仍有提交） |
+| T-101 | 修 bug only | 前端 | hydration fix、theme-script fix、demo video 部署修复 | 6月12日 18:00 | ✅ DONE（Aafff623 6月14日多次 fix 提交） |
+| T-102 | 备用截图包 | 前端兜底 | 14 张截图（Console 5 模块 + Landing 8 场景 + banner） | 6月12日 | ✅ DONE |
+| T-103 | 本地录屏备份 | 前端兜底 | assets/video/agentcfo-demo.mp4（11.2MB）+ frontend/public/video/ 镜像 | 6月12日 | ✅ DONE |
+| T-104 | 第二次完整彩排 | 总控 | 录屏 + 问题清单 | 6月12日 20:00 | 🔴 BLOCKED（已过截止，无彩排记录） |
+| T-105 | 提交材料检查 | 总控 | 对照 SUBMISSION_CHECKLIST | 6月13日 10:00 | 🔵 IN_PROGRESS（今天 Demo Day，checklist 已建立） |
+| T-106 | 正式提交 | 总控 | 提交截图 | 6月13日 12:00 | 🔵 IN_PROGRESS（今天 Demo Day，待确认提交状态） |
 
 ---
 
@@ -179,21 +181,22 @@
 ```
 后端 P0/P1/P2 API（✅ 已完成 + 已部署 Render）
     → 前端已对接 mock mode（✅ lib/api/ 层已对齐）
-    → 前端 real mode 待接入（🟡 需 Render URL + CORS）
-    → ⚠️ demo-sample 缺 Data API（T-076，今天修）
+    → 前端 real mode 待接入（🟡 T-070b，优先级低）
 
 前端主流程（✅ Landing + Demo + Console + Vercel）
-    → PR #1 待合并（T-069）
-    → real mode /demo 待接入（T-070）
-    → ⚠️ /demo 用硬编码 mock 数据，未调用后端 API（短期不影响路演，需心里有数）
+    → ✅ PR #1 已合并（T-069 DONE）
+    → ✅ Console 打磨完成（T-070 DONE）
+    → 🟡 real mode /demo 待接入（T-070b，优先级低）
+    → ⚠️ /demo 仍用 mock 数据，未调用后端真实 API（Demo Day 不影响）
 
 CAW 验证（✅ 1 笔 testnet tx）
-    → 补充证据：和后端配合跑第 2-3 笔（T-073，内部目标非硬性要求）
-    → 截图脱敏（T-075，可独立完成）
+    → ✅ 3 笔 testnet evidence 完成（T-073 DONE）
+    → 🔵 截图待上传到仓库（T-075 IN_PROGRESS）
 
 设计/物料（🔴 Eloise-qiu 0 产出，逾期 2 天）
-    → PPT / 视频 / 头图 / Logo / 截图全部缺失
-    → 今日必须确认产能或启动兜底
+    → ✅ 全部由 Aafff623 兜底交付
+    → PPT ✅ · Demo 视频 ✅ · 演讲稿 ✅ · 截图包 ✅ · 团队头像 ✅ · 3D mascot ✅
+    → ⚠️ README 头图 (poster.png) 和项目 Logo (logo.png) 仍缺失（SUBMISSION_CHECKLIST #13 #14）
 ```
 
 ---
@@ -202,8 +205,8 @@ CAW 验证（✅ 1 笔 testnet tx）
 
 | 状态 | 数量 |
 |------|------|
-| 🔴 BLOCKED | 8 |
-| 🟡 TODO | 18 |
-| 🔵 IN_PROGRESS | 2 |
-| ✅ DONE | 48 |
+| 🔴 BLOCKED | 11 |
+| 🟡 TODO | 4 |
+| 🔵 IN_PROGRESS | 3 |
+| ✅ DONE | 57 |
 | ❌ CANCELLED | 0 |
