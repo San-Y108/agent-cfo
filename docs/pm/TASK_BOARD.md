@@ -1,6 +1,6 @@
 # AgentCFO 任务看板
 
-> 最后更新：2026年6月15日 04:48 自动扫描（仓库进度巡检）
+> 最后更新：2026年6月16日 18:00 自动扫描（仓库进度巡检）
 > 规则：12 号之后不新增大功能，只修复、打磨、录视频、补材料
 >
 > ⚠️ 已发现问题：README 描述 4 个贡献者（含 Data API = 50 USDC），但 `/api/demo-sample` 只返回 3 个（45 USDC）。后端需修复。
@@ -123,7 +123,7 @@
 | T-068 | Console 工作台 | /console 4 tab（Treasury/Wallets/Analytics/Policy） | 6月9日 | ✅ DONE |
 | T-069 | PR #1 合并或同步 main | feat/frontend-bootstrap → main ✅ 已合并 | 6月10日 | ✅ DONE |
 | T-070 | Console 适配 + 效果升级 | policy graph 打磨、navbar 过渡动画、Agent Hub markdown 渲染 + 聊天持久化、Landing team showcase + 3D mascots | 6月11日 | ✅ DONE（Aafff623 6月14日大量 console polish 提交） |
-| T-070b | Real mode 接入 /demo | 调用 runDemoFlow + loading/error 态 | 6月12日 | 🟡 TODO（优先级低于 console 打磨） |
+|| T-070b | Real mode 接入 /demo | 调用 runDemoFlow + loading/error 态 | 6月12日 | 🔴 BLOCKED（已过截止 3 天，无提交） |
 
 ### 合约/CAW
 
@@ -134,9 +134,9 @@
 | T-073 | 补充测试网付款证据 | 3 个 tx hash ✅ 全部完成 | 6月10日 | ✅ DONE（CAW 独立完成 3 笔 Sepolia/SETH testnet tx） |
 | T-074 | 整理 CAW 配置说明 | 配置文档 | 6月10日 | ✅ DONE |
 | T-075 | 截图脱敏补充 | 区块浏览器截图已有（本地路径），需上传到仓库 | 6月11日 | 🔴 BLOCKED（已过截止 4 天，截图仍未上传） |
-| T-077 | CAW Demo 话术稿 | 1 分钟 CAW 讲解稿（介绍 CAW、展示真实 tx、解释 mock fallback） | 6月11日 | 🟡 TODO |
-| T-078 | 确认 Agent Wallet 地址公开口径 | masked 还是完整地址，对照赛道要求确认 | 6月10日 | 🟡 TODO |
-| T-079 | Demo day CAW 准备清单 | env vars 配置、mock/real 切换、余额检查、备用方案 | 6月12日 | 🟡 TODO |
+| T-077 | CAW Demo 话术稿 | 1 分钟 CAW 讲解稿（介绍 CAW、展示真实 tx、解释 mock fallback） | 6月11日 | 🔴 BLOCKED（已过截止 5 天，0 产出） |
+| T-078 | 确认 Agent Wallet 地址公开口径 | masked 还是完整地址，对照赛道要求确认 | 6月10日 | 🔴 BLOCKED（已过截止 6 天，0 产出） |
+| T-079 | Demo day CAW 准备清单 | env vars 配置、mock/real 切换、余额检查、备用方案 | 6月12日 | 🔴 BLOCKED（已过截止 4 天，0 产出） |
 
 ### 物料/设计
 
@@ -152,7 +152,7 @@
 
 | ID | 任务 | 负责人 | 交付物 | 截止 | 状态 |
 |----|------|--------|--------|------|------|
-| T-090 | 全链路端到端测试 | 全员 | 主流程完整跑通 | 6月11日 | 🟡 TODO |
+| T-090 | 全链路端到端测试 | 全员 | 主流程完整跑通 | 6月11日 | 🔴 BLOCKED（已过截止 5 天，无测试记录） |
 | T-091 | 前端 UI 打磨 | 前端 | 修复 hydration mismatch、theme-script 警告、policy mascot 重提取、navbar 过渡动画 | 6月11日 | ✅ DONE（Aafff623 多次 bug fix + UI polish 提交） |
 | T-092 | README 终版 | 总控 + 前端 | 14 张 Console/Landing 截图已放入 assets/images/readme/，README 章节齐全 | 6月11日 | ✅ DONE |
 | T-093 | PPT 终版 | 前端兜底 | agentcfo-pitch.pptx（14 页含 svg_final）+ material PDF | 6月11日 | ✅ DONE |
@@ -205,8 +205,8 @@ CAW 验证（✅ 1 笔 testnet tx）
 
 | 状态 | 数量 |
 |------|------|
-| 🔴 BLOCKED | 11 |
-| 🟡 TODO | 4 |
-| 🔵 IN_PROGRESS | 3 |
+| 🔴 BLOCKED | 17 |
+| 🟡 TODO | 0 |
+| 🔵 IN_PROGRESS | 2 |
 | ✅ DONE | 57 |
 | ❌ CANCELLED | 0 |
