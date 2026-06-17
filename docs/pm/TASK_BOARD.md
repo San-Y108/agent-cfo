@@ -1,6 +1,6 @@
 # AgentCFO 任务看板
 
-> 最后更新：2026年6月16日 18:00 自动扫描（仓库进度巡检）
+> 最后更新：2026年6月18日 自动扫描（仓库进度巡检）
 > 规则：12 号之后不新增大功能，只修复、打磨、录视频、补材料
 >
 > ⚠️ 已发现问题：README 描述 4 个贡献者（含 Data API = 50 USDC），但 `/api/demo-sample` 只返回 3 个（45 USDC）。后端需修复。
@@ -25,7 +25,7 @@
 
 | 岗位 | 负责人 | 进度 | 最大卡点 |
 |------|--------|------|----------|
-| 交付/总控 | San-Y108 (严硕) | ✅ repo + 文档已完成 | 物料兜底 + 路演准备 |
+| 交付/总控 | San-Y108 (严硕) | 🔵 repo + 文档已完成，提交状态未确认 | T-105/T-106 提交材料检查 + 正式提交逾期未确认 |
 | 后端/Agent | W5W8L9jlu | ✅ P0 + P1 Render + P2 spike + Phase 4C closeout | **🔴 今日生病，T-076/edge case/P0 验证暂由 CAW 代做** |
 | 前端 | Aafff623 | ✅ Landing + Demo + Console + Vercel + **Console 打磨完成** + **Demo 视频 + PPT + 演讲稿兜底交付** | Demo Day 准备就绪 |
 | 合约/CAW | gitgdut | ✅ API Key + Wallet + **3 笔 testnet tx** + demo-sample 修复 + P0 验证 | 截图待上传到仓库；Demo 话术稿待写 |
@@ -171,8 +171,8 @@
 | T-102 | 备用截图包 | 前端兜底 | 14 张截图（Console 5 模块 + Landing 8 场景 + banner） | 6月12日 | ✅ DONE |
 | T-103 | 本地录屏备份 | 前端兜底 | assets/video/agentcfo-demo.mp4（11.2MB）+ frontend/public/video/ 镜像 | 6月12日 | ✅ DONE |
 | T-104 | 第二次完整彩排 | 总控 | 录屏 + 问题清单 | 6月12日 20:00 | 🔴 BLOCKED（已过截止，无彩排记录） |
-| T-105 | 提交材料检查 | 总控 | 对照 SUBMISSION_CHECKLIST | 6月13日 10:00 | 🔵 IN_PROGRESS（今天 Demo Day，checklist 已建立） |
-| T-106 | 正式提交 | 总控 | 提交截图 | 6月13日 12:00 | 🔵 IN_PROGRESS（今天 Demo Day，待确认提交状态） |
+| T-105 | 提交材料检查 | 总控 | 对照 SUBMISSION_CHECKLIST | 6月13日 10:00 | 🔴 BLOCKED（已过截止 5 天，无更新） |
+| T-106 | 正式提交 | 总控 | 提交截图 | 6月13日 12:00 | 🔴 BLOCKED（已过截止 5 天，无更新） |
 
 ---
 
@@ -205,8 +205,8 @@ CAW 验证（✅ 1 笔 testnet tx）
 
 | 状态 | 数量 |
 |------|------|
-| 🔴 BLOCKED | 17 |
+| 🔴 BLOCKED | 19 |
 | 🟡 TODO | 0 |
-| 🔵 IN_PROGRESS | 2 |
+| 🔵 IN_PROGRESS | 0 |
 | ✅ DONE | 57 |
 | ❌ CANCELLED | 0 |
