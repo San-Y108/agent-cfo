@@ -191,7 +191,7 @@
 
 CAW 验证（✅ 1 笔 testnet tx）
     → ✅ 3 笔 testnet evidence 完成（T-073 DONE）
-    → 🔵 截图待上传到仓库（T-075 IN_PROGRESS）
+    → 🔴 截图仍未上传（T-075 BLOCKED，已逾期 4 天）
 
 设计/物料（🔴 Eloise-qiu 0 产出，逾期 2 天）
     → ✅ 全部由 Aafff623 兜底交付
