@@ -1,6 +1,6 @@
 # AgentCFO 任务看板
 
-> 最后更新：2026年6月18日 自动扫描（仓库进度巡检）
+> 最后更新：2026年7月9日 09:58 自动扫描（仓库进度巡检）
 > 规则：12 号之后不新增大功能，只修复、打磨、录视频、补材料
 >
 > ⚠️ 已发现问题：README 描述 4 个贡献者（含 Data API = 50 USDC），但 `/api/demo-sample` 只返回 3 个（45 USDC）。后端需修复。
@@ -123,7 +123,7 @@
 | T-068 | Console 工作台 | /console 4 tab（Treasury/Wallets/Analytics/Policy） | 6月9日 | ✅ DONE |
 | T-069 | PR #1 合并或同步 main | feat/frontend-bootstrap → main ✅ 已合并 | 6月10日 | ✅ DONE |
 | T-070 | Console 适配 + 效果升级 | policy graph 打磨、navbar 过渡动画、Agent Hub markdown 渲染 + 聊天持久化、Landing team showcase + 3D mascots | 6月11日 | ✅ DONE（Aafff623 6月14日大量 console polish 提交） |
-|| T-070b | Real mode 接入 /demo | 调用 runDemoFlow + loading/error 态 | 6月12日 | 🔴 BLOCKED（已过截止 3 天，无提交） |
+| T-070b | Real mode 接入 /demo | 调用 runDemoFlow + loading/error 态 | 6月12日 | 🔴 BLOCKED（已过截止 3 天，无提交） |
 
 ### 合约/CAW
 
