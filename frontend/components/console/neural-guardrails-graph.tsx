@@ -86,7 +86,7 @@ function RuleNode({
       onFocus={() => onHover(rule.id)}
       onBlur={() => onHover(null)}
       className={cn(
-        "relative flex w-full min-w-0 flex-col items-center gap-1 overflow-hidden rounded-lg border px-1.5 py-1 text-center transition-colors sm:px-2 sm:py-1.5",
+        "relative flex w-full min-w-0 items-center gap-2 overflow-hidden rounded-lg border px-2 py-1.5 text-left transition-colors",
         isActive
           ? "border-border-strong bg-surface shadow-md"
           : "border-border-token bg-surface/95 hover:border-border-strong hover:bg-surface"
@@ -100,11 +100,11 @@ function RuleNode({
       whileHover={reduce ? undefined : "hover"}
       variants={{
         rest: { scale: 1, y: 0, boxShadow: "0 0 0px transparent" },
-        active: { scale: 1.03, y: 0 },
+        active: { scale: 1.02, y: 0 },
         hover: {
-          scale: 1.05,
-          y: -5,
-          boxShadow: `0 16px 36px -12px ${accent}55`,
+          scale: 1.03,
+          y: -2,
+          boxShadow: `0 10px 24px -12px ${accent}55`,
           transition: { type: "spring", stiffness: 360, damping: 18 },
         },
       }}
@@ -128,12 +128,12 @@ function RuleNode({
       )}
 
       <motion.span
-        className="relative z-10 flex h-7 w-7 shrink-0 items-center justify-center rounded-full border sm:h-8 sm:w-8"
+        className="relative z-10 flex h-6 w-6 shrink-0 items-center justify-center rounded-full border sm:h-7 sm:w-7"
         style={{ borderColor: `${accent}44`, background: `${accent}14` }}
         variants={{
           rest: { scale: 1, rotate: 0 },
           hover: {
-            scale: 1.18,
+            scale: 1.15,
             rotate: twist,
             transition: { type: "spring", stiffness: 320, damping: 14 },
           },
@@ -142,10 +142,12 @@ function RuleNode({
         <Icon className="h-3 w-3 sm:h-3.5 sm:w-3.5" style={{ color: accent }} strokeWidth={1.75} />
       </motion.span>
 
-      <span className="relative z-10 font-mono text-[9px] font-bold uppercase tracking-wider text-fg-muted">
-        {rule.id}
+      <span className="relative z-10 flex min-w-0 flex-col">
+        <span className="font-mono text-[8px] font-bold uppercase tracking-wider text-fg-muted">
+          {rule.id}
+        </span>
+        <span className="truncate text-[10px] font-semibold leading-tight text-fg">{title}</span>
       </span>
-      <span className="relative z-10 text-[11px] font-semibold leading-snug text-fg">{title}</span>
     </motion.button>
   );
 }
@@ -207,11 +209,8 @@ function TierColumn({
         boxShadow: isDark ? undefined : "inset 0 1px 0 rgba(255,255,255,0.8)",
       }}
     >
-      <div className="mb-1 shrink-0 border-b border-border-token pb-1 text-center">
-        <p className="font-mono text-[10px] font-bold uppercase tracking-wider text-fg-muted">
-          {_(meta.zh, meta.en)}
-        </p>
-        <p className="text-[11px] font-semibold text-fg">{_(meta.subZh, meta.subEn)}</p>
+      <div className="mb-1 shrink-0 truncate border-b border-border-token pb-1 text-center font-mono text-[9px] font-bold uppercase tracking-wide text-fg-muted">
+        {_(meta.zh, meta.en)} · <span className="text-fg">{_(meta.subZh, meta.subEn)}</span>
       </div>
       <div className="flex flex-1 flex-col justify-center gap-1">
         {rules.map((rule) => (
