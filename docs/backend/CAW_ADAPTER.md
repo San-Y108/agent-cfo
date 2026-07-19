@@ -6,46 +6,75 @@
 
 以下内容按当前可验证状态维护。公开文档只记录脱敏地址和公开 tx hash；不要补 API key、pact-scoped key、`.env`、raw provider response 或未脱敏钱包地址。
 
+> 数据来源：CAW/合约（purple sun）于 2026-06-10 提交的 Phase 4C closeout 证据。仓库内所有公开 README / 路演稿 / 提交清单必须引用本节事实，且必须明确「2 笔低额 testnet transfer，线上 Render 默认仍为 `mock` mode」。
+
+### Agent Wallet（公开信息）
+
+| 字段                  | 值                                                              |
+| ------------------- | -------------------------------------------------------------- |
+| Network / Token     | Sepolia / `SETH`                                               |
+| Agent Wallet（链上地址） | `0x2cda2abddfcc7b8a59b7dfa9c4d8855f6bd576da`（脱敏写法：`0x2cda...76da`） |
+| CAW Wallet ID (UUID) | `36bca6d8-1273-4d85-b099-6eca490e966f`                         |
+| SDK                  | `cobo-agentic-wallet==0.1.40`                                 |
+| Status               | active（公开文档可公示）                                              |
+
+### 证据 1：Demo payment（AgentCFO 端到端流程验证）
+
+| Field                | Public evidence                                                                                              |
+| -------------------- | ------------------------------------------------------------------------------------------------------------ |
+| `chain` / `token`    | Sepolia / `SETH`                                                                                            |
+| `amount`             | `0.001`                                                                                                     |
+| `source`             | `0x2cda2abddfcc7b8a59b7dfa9c4d8855f6bd576da`（脱敏写法 `0x2cda...76da`）                                       |
+| recipient            | `0xAf3f...594B`                                                                                             |
+| `request_id`         | `agentcfo_exec_demo_002_pay_001`                                                                            |
+| `pact_id`            | `7f3e9574-49e4-4321-9d42-e5c53b49f74a`                                                                       |
+| `cawRequestId`       | `agentcfo_exec_demo_002_pay_001`                                                                            |
+| provider final status | `900`（Success / completed）                                                                               |
+| `txHash`             | `0x85a5a2e934ca0e34c7fb3e038ca06e54e15bd29b56b64e5b01ff80eb20ed4d98`                                      |
+| Explorer             | [sepolia.etherscan.io/tx/0x85a5…4d98](https://sepolia.etherscan.io/tx/0x85a5a2e934ca0e34c7fb3e038ca06e54e15bd29b56b64e5b01ff80eb20ed4d98) |
+| Purpose              | 验证 CAW SDK 对外转账通路 — submit pact → poll active → transfer_tokens → 归一化 status 全链路             |
+| Date (UTC)           | 2026-06-09 07:56                                                                                            |
+| audit log summary    | `transfer.allowed` and `transfer.initiate` were allowed                                                     |
+
+### 证据 2：Internal transfer（同 Agent Wallet 内部地址路由验证）
+
+| Field                | Public evidence                                                                                              |
+| -------------------- | ------------------------------------------------------------------------------------------------------------ |
+| `chain` / `token`    | Sepolia / `SETH`                                                                                            |
+| `amount`             | `0.001`                                                                                                     |
+| `source`             | `0xaa55...c199` → `0x2cda...76da`（`0x2cda2abddfcc7b8a59b7dfa9c4d8855f6bd576da`）                          |
+| counterparty         | `0xaa55...c199`                                                                                             |
+| `request_id`         | `71b08d13-96c9-4cdf-a844-c9f9b87feadf`                                                                       |
+| `pact_id`            | `e77f66de-1441-4273-8934-3391fddefec8`                                                                       |
+| provider final status | `900`（Success / completed）                                                                               |
+| `txHash`             | `0x6bd793bc3030c995245b2e73a466898e46278be092aa9f7a3c86cad21cbbae8a`                                      |
+| Explorer             | [sepolia.etherscan.io/tx/0x6bd7…ae8a](https://sepolia.etherscan.io/tx/0x6bd793bc3030c995245b2e73a466898e46278be092aa9f7a3c86cad21cbbae8a) |
+| Purpose              | 验证同 Agent Wallet 下多地址间资金划转能力 — CAW 内部地址路由                                                |
+| Date (UTC)           | 2026-06-09 01:45                                                                                            |
+| note                 | 同 Agent Wallet 内部划转；**不替代** Demo payment 证据                                                        |
+
+### 状态总表（与 README 对齐）
+
 | 证据项 | 当前状态 |
 | --- | --- |
-| CAW API Key | ✅ 已申请并配置（不写入仓库） |
-| Agent Wallet | ✅ 已创建；公开文档只使用 masked source `0x2cda...76da` |
-| SDK | ✅ 确认 `cobo-agentic-wallet v0.1.40` |
+| CAW API Key | ✅ 已申请并配置（**不写入仓库**） |
+| Agent Wallet 链上地址 | ✅ `0x2cda2abddfcc7b8a59b7dfa9c4d8855f6bd576da` |
+| CAW Wallet ID (UUID) | ✅ `36bca6d8-1273-4d85-b099-6eca490e966f` |
+| SDK | ✅ `cobo-agentic-wallet==0.1.40` |
 | Testnet / Chain | ✅ Sepolia / `SETH` |
 | Token | ✅ `SETH` |
 | Transaction Hash (demo payment) | ✅ `0x85a5a2e934ca0e34c7fb3e038ca06e54e15bd29b56b64e5b01ff80eb20ed4d98` |
 | Transaction Hash (internal transfer) | ✅ `0x6bd793bc3030c995245b2e73a466898e46278be092aa9f7a3c86cad21cbbae8a` |
-| CAW Request ID | ✅ `agentcfo_exec_demo_002_pay_001`（demo payment） |
-| Provider final status | ✅ `900` |
+| CAW Request ID（demo payment） | ✅ `agentcfo_exec_demo_002_pay_001` |
+| CAW Request ID（internal transfer） | ✅ `71b08d13-96c9-4cdf-a844-c9f9b87feadf` |
+| Pact ID（demo payment） | ✅ `7f3e9574-49e4-4321-9d42-e5c53b49f74a` |
+| Pact ID（internal transfer） | ✅ `e77f66de-1441-4273-8934-3391fddefec8` |
+| Provider final status | ✅ `900`（两笔均 Success / completed） |
 | CAW audit actions | ✅ `transfer.allowed` and `transfer.initiate` were allowed |
 | CAW config notes | ✅ 已交付 518 行后端对接说明 |
 | Payment screenshots | 待补充；截图必须先脱敏 |
 
 真实付款必须通过 Cobo Agentic Wallet。Mock mode 只能用于演示兜底，必须明确标注。
-
-### Phase 4C successful testnet evidence — demo payment
-
-| Field | Public evidence |
-| --- | --- |
-| `chain` / `token` | `SETH` / `SETH` |
-| `amount` | `0.001` |
-| recipient | `0xAf3f...594B` |
-| source | `0x2cda...76da` |
-| `request_id` / `cawRequestId` | `agentcfo_exec_demo_002_pay_001` |
-| provider final status | `900` |
-| `txHash` | `0x85a5a2e934ca0e34c7fb3e038ca06e54e15bd29b56b64e5b01ff80eb20ed4d98` |
-| audit log summary | `transfer.allowed` and `transfer.initiate` were allowed |
-
-### Phase 4C — internal transfer (same wallet)
-
-| Field | Public evidence |
-| --- | --- |
-| `chain` / `token` | Sepolia / `SETH` |
-| `amount` | `0.001` |
-| source | `0x2cda...76da` |
-| counterparty | `0xaa55...c199` |
-| `txHash` | `0x6bd793bc3030c995245b2e73a466898e46278be092aa9f7a3c86cad21cbbae8a` |
-| note | 同 Agent Wallet 地址下的内部划转验证；**不替代** demo payment 证据 |
 
 This proves two low-value CAW testnet transfers. It does not prove three separate commercial payment tx hashes.
 

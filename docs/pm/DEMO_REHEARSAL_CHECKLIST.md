@@ -48,7 +48,7 @@
 
 ### 第五步：CAW 执行付款
 
-> 彩排口径：默认 mock flow 的 `txHash=null` 是正常兜底；Phase 4C 已有 1 笔真实 CAW testnet evidence。前端应分开展示 Audit Report snapshot 与 Latest CAW Status。若 refresh 后拿到真实 txHash，只展示在 Latest CAW Status 区域，不改写历史 Audit Report 快照。
+> 彩排口径：默认 mock flow 的 `txHash=null` 是正常兜底；Phase 4C 已有 **2 笔**真实 CAW testnet evidence（demo payment + internal transfer，Sepolia / SETH / 0.001 SETH，来源 Agent Wallet `0x2cda...76da`）。前端应分开展示 Audit Report snapshot 与 Latest CAW Status。若 refresh 后拿到真实 txHash，只展示在 Latest CAW Status 区域，不改写历史 Audit Report 快照。
 
 | # | 检查项 | 状态 |
 |---|--------|------|
@@ -56,7 +56,7 @@
 | 21 | 使用已记录 evidence 或已批准 real transfer 时，Latest CAW Status 区域能展示真实 tx hash；mock flow 明确显示 txHash=null | ☐ |
 | 22 | tx hash 可以复制 | ☐ |
 | 23 | 真实 evidence 的 tx hash 可在区块浏览器上查到；mock flow 不伪造链接 | ☐ |
-| 24 | 显示 masked Agent Wallet/source，完整地址是否公开需单独确认 | ☐ |
+| 24 | 显示 Agent Wallet：`0x2cda...76da`（脱敏）；完整地址与 UUID 见 README / `docs/backend/CAW_ADAPTER.md` | ☐ |
 | 25 | 付款状态显示"Completed" | ☐ |
 
 ### 第六步：审计报告

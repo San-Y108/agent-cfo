@@ -28,7 +28,7 @@
 | 交付/总控 | San-Y108 (严硕) | 🔵 repo + 文档已完成，提交状态未确认 | T-105/T-106 提交材料检查 + 正式提交逾期未确认 |
 | 后端/Agent | W5W8L9jlu | ✅ P0 + P1 Render + P2 spike + Phase 4C closeout | **🔴 今日生病，T-076/edge case/P0 验证暂由 CAW 代做** |
 | 前端 | Aafff623 | ✅ Landing + Demo + Console + Vercel + **Console 打磨完成** + **Demo 视频 + PPT + 演讲稿兜底交付** | Demo Day 准备就绪 |
-| 合约/CAW | gitgdut | ✅ API Key + Wallet + **3 笔 testnet tx** + demo-sample 修复 + P0 验证 | 截图待上传到仓库；Demo 话术稿待写 |
+| 合约/CAW | gitgdut | ✅ API Key + Wallet + **2 笔 testnet tx（Sepolia/SETH）** + demo-sample 修复 + P0 验证 | 截图待上传到仓库；Demo 话术稿待写 |
 | 物料/设计 | Eloise-qiu → Aafff623 兜底 | ✅ **全部交付物已由前端同学兜底完成** | PPT ✅ · Demo 视频 ✅ · 演讲稿 ✅ · 截图包 ✅ · 团队头像 ✅ |
 
 ---
@@ -131,7 +131,7 @@
 |----|------|--------|------|------|
 | T-071 | 验证真实 CAW adapter | Phase 4C skeleton + 1 笔 testnet evidence | 6月10日 | ✅ DONE |
 | T-072 | 和后端联调 | 本地 live transfer 已完成 | 6月10日 | ✅ DONE |
-| T-073 | 补充测试网付款证据 | 3 个 tx hash ✅ 全部完成 | 6月10日 | ✅ DONE（CAW 独立完成 3 笔 Sepolia/SETH testnet tx） |
+| T-073 | 补充测试网付款证据 | 3 个 tx hash ✅ 全部完成 | 6月10日 | ✅ DONE（CAW 独立完成 **2 笔** Sepolia/SETH testnet tx：demo payment + internal transfer；若按赛方「3 笔商业付款」口径另议） |
 | T-074 | 整理 CAW 配置说明 | 配置文档 | 6月10日 | ✅ DONE |
 | T-075 | 截图脱敏补充 | 区块浏览器截图已有（本地路径），需上传到仓库 | 6月11日 | 🔴 BLOCKED（已过截止 4 天，截图仍未上传） |
 | T-077 | CAW Demo 话术稿 | 1 分钟 CAW 讲解稿（介绍 CAW、展示真实 tx、解释 mock fallback） | 6月11日 | 🔴 BLOCKED（已过截止 5 天，0 产出） |
@@ -189,11 +189,11 @@
     → 🟡 real mode /demo 待接入（T-070b，优先级低）
     → ⚠️ /demo 仍用 mock 数据，未调用后端真实 API（Demo Day 不影响）
 
-CAW 验证（✅ 1 笔 testnet tx）
-    → ✅ 3 笔 testnet evidence 完成（T-073 DONE）
+CAW 验证（✅ 2 笔 testnet tx：demo payment + internal transfer）
+    → Sepolia/SETH/0.001 SETH，证据已写入 README 与 docs/backend/CAW_ADAPTER.md
     → 🔴 截图仍未上传（T-075 BLOCKED，已逾期 4 天）
 
-设计/物料（🔴 Eloise-qiu 0 产出，逾期 2 天）
+设计/物料（✅ Aafff623 已完成兜底交付）
     → ✅ 全部由 Aafff623 兜底交付
     → PPT ✅ · Demo 视频 ✅ · 演讲稿 ✅ · 截图包 ✅ · 团队头像 ✅ · 3D mascot ✅
     → ⚠️ README 头图 (poster.png) 和项目 Logo (logo.png) 仍缺失（SUBMISSION_CHECKLIST #13 #14）

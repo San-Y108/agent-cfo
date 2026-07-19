@@ -15,9 +15,9 @@
 | 2 | README.md 完整版 | 总控 + 物料 | 含项目介绍、架构、运行方式、CAW 说明、Demo 截图、tx hash、团队信息；已从 preview 合并（2026-06-13） | ☑ |
 | 3 | 项目说明文档 | 总控 | 问题背景、解决方案、赛道匹配、风险边界说明 | ☑ |
 | 4 | Demo 视频 3–5 分钟 | 物料 | 文件放 `assets/video/`，公开链接写入 README Demo Video 章节 | ☐ |
-| 5 | CAW 关键代码或配置说明 | 合约/CAW | 配置说明 + opt-in testnet RealCawAdapter skeleton + 1 笔 testnet evidence 已就绪；默认 mock/fail-closed | ☑ |
-| 6 | Agent Wallet 地址 | 合约/CAW | README 已记录 masked source；如比赛要求完整公开地址需单独确认 | ☐ |
-| 7 | Transaction Hash 列表 | 合约/CAW | 已有 2 笔：`0x85a5...0ed4d98`（demo payment）+ `0x6bd7...bae8a`（internal transfer）；若赛方要求 3 笔商业付款 tx 需再补 | ☐ |
+| 5 | CAW 关键代码或配置说明 | 合约/CAW | 配置说明 + opt-in testnet RealCawAdapter skeleton + **2 笔** testnet evidence 已就绪；默认 mock/fail-closed | ☑ |
+| 6 | Agent Wallet 地址 | 合约/CAW | README 已记录完整链上地址 `0x2cda2abddfcc7b8a59b7dfa9c4d8855f6bd576da` + 脱敏写法 `0x2cda...76da` + CAW Wallet ID `36bca6d8-1273-4d85-b099-6eca490e966f` | ☑ |
+| 7 | Transaction Hash 列表 | 合约/CAW | 已有 2 笔：`0x85a5...0ed4d98`（demo payment · Sepolia · SETH · 0.001）+ `0x6bd7...bae8a`（internal transfer · 同 Agent Wallet 内部路由）；Etherscan 链接见 README；若赛方要求 3 笔商业付款 tx 需再补 | ☑ |
 | 8 | 风险边界说明 | 总控 | README 已覆盖 mock、审批、风控、fail-closed、refresh 不转账、audit immutable | ☑ |
 
 ---
@@ -58,8 +58,8 @@
 | 6 | 架构图 | ☑ |
 | 7 | Demo 截图（至少 4 张） | ☐ |
 | 8 | CAW 使用说明 | ☑ |
-| 9 | Agent Wallet 地址 | ☐ masked source 已记录；完整地址是否公开待确认 |
-| 10 | Transaction Hash（至少 3 笔） | ☐ 已有 2 笔 testnet evidence；若按赛方「3 笔」口径仍缺 1 笔 |
+| 9 | Agent Wallet 地址 | ☑ README 已记录完整链上地址 + 脱敏写法 + UUID |
+| 10 | Transaction Hash（公开摘要） | ☑ 2 笔 testnet evidence（含 Etherscan 链接）；若赛方「3 笔商业付款」口径仍需确认 |
 | 11 | 运行方式（后端 + 部署 API） | ☑ |
 | 12 | 风险边界说明 | ☑ |
 | 13 | 团队分工表 | ☑ |
@@ -74,7 +74,7 @@
 | 1 | GitHub repo 可以在无登录状态下访问 | ☐ |
 | 2 | README 没有 TODO / 占位符 / Lorem ipsum | ☐ |
 | 3 | 所有 tx hash 都能在区块浏览器上查到 | ☐ |
-| 4 | Agent Wallet 地址是正确的测试网地址 | ☐ |
+| 4 | Agent Wallet 地址是正确的测试网地址 | ☑ Sepolia 0x2cda2abddfcc7b8a59b7dfa9c4d8855f6bd576da |
 | 5 | Demo 视频链接可以打开 | ☐ |
 | 6 | PPT 没有错别字 | ☐ |
 | 7 | 前端 Demo 可以正常打开 | ☐ |
