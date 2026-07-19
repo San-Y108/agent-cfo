@@ -506,6 +506,7 @@ function PipelineIntro({ stages, lang }: { stages: Stage[]; lang: "en" | "zh" })
             accentWords={accentWords}
             accentColor="#B5FF4D"
             lang={lang}
+            repel
           />
         </h2>
 

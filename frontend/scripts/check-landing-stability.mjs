@@ -11,6 +11,7 @@ const files = {
   repel: join(FRONTEND, "components/landing/use-pointer-repel.ts"),
   holographic: join(FRONTEND, "components/landing/holographic-card.tsx"),
   particles: join(FRONTEND, "components/landing/global-particle-background.tsx"),
+  pipeline: join(FRONTEND, "components/landing/pipeline-editorial.tsx"),
   guardrails: join(FRONTEND, "components/landing/guardrails-cta.tsx"),
   timeline: join(FRONTEND, "components/landing/build-timeline.tsx"),
 };
@@ -34,6 +35,7 @@ const forbidden = [
   ["timeline", /feTurbulence/, "full-frame animated film grain"],
   ["holographic", /backdrop-blur|from-white\/\[0\.08\]/, "lifted gray card surface"],
   ["particles", /rgba\(13,\s*13,\s*13,\s*0\.9\)/, "global dark hydration overlay"],
+  ["pipeline", /scrollTriggerRef=\{sectionRef\}[\s\S]{0,180}\brepel\b/, "body-copy repulsion"],
   ["guardrails", /variants=\{reveal\}/, "whole-card opacity reveal"],
   ["guardrails", /rgba\(255,\s*255,\s*255,\s*0\.88\)/, "dimmed headline white"],
 ];

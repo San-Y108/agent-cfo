@@ -32,6 +32,8 @@ interface BreathingTextProps {
   lang?: "en" | "zh";
   /** Optional outer scroll container — e.g. the whole pipeline stage section. */
   scrollTriggerRef?: React.RefObject<HTMLElement | null>;
+  /** Enable pointer-driven character repulsion for headline use only. */
+  repel?: boolean;
   className?: string;
   style?: React.CSSProperties;
 }
@@ -71,6 +73,7 @@ export function BreathingText({
   opacityPulse,
   lang = "en",
   scrollTriggerRef,
+  repel = false,
   className = "",
   style,
 }: BreathingTextProps) {
@@ -82,7 +85,7 @@ export function BreathingText({
   usePointerRepel(
     scopeRef,
     ".breathing-repel-char",
-    Boolean(prefersReducedMotion),
+    Boolean(prefersReducedMotion) || !repel,
     text,
   );
 
@@ -174,14 +177,16 @@ export function BreathingText({
                   opacity: initialOpacity,
                 }}
               >
-                {Array.from(token.text).map((char, charIndex) => (
-                  <span
-                    key={`${char}-${charIndex}`}
-                    className="breathing-repel-char inline-block"
-                  >
-                    {char}
-                  </span>
-                ))}
+                {repel
+                  ? Array.from(token.text).map((char, charIndex) => (
+                      <span
+                        key={`${char}-${charIndex}`}
+                        className="breathing-repel-char inline-block"
+                      >
+                        {char}
+                      </span>
+                    ))
+                  : token.text}
               </span>
             );
           })}
