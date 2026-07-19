@@ -207,7 +207,9 @@ function useAgentTelemetry() {
       labelKey: ["已拦截", "BLOCKED"] as const,
       value: blocked,
       unit: lang === "zh" ? "笔" : "TX",
-      color: "#FB7185",
+      // Only alarm-red when something is actually blocked; a zero count is a
+      // healthy state and should read as neutral rather than a warning.
+      color: blocked > 0 ? "#FB7185" : "#9CA3AF",
     },
   ];
 }
@@ -412,13 +414,13 @@ function DemoPreflightPanel({ lang }: { lang: "en" | "zh" }) {
       {activityLog.length > 0 ? (
         <div className="mt-2 max-h-24 space-y-1 overflow-y-auto border-t border-border-token pt-2">
           {activityLog.slice(-4).map((entry) => (
-            <p key={entry.id} className="font-mono text-[10px] text-fg-subtle">
+            <p key={entry.id} className="font-mono text-[11px] text-fg-muted">
               {localizeActivityMessage(entry.message, lang)}
             </p>
           ))}
         </div>
       ) : (
-        <p className="mt-2 text-[10px] text-fg-subtle">
+        <p className="mt-2 text-[11px] text-fg-muted">
           {lang === "zh"
             ? "点击「生成计划」后，此处会追加风险扫描与 CAW 执行日志。"
             : "After Generate Plan, risk scan and CAW execution logs appear here."}
@@ -487,7 +489,7 @@ function ChatPanel({
     >
       <GradientOrb
         color="lime"
-        className="pointer-events-none absolute -right-16 -top-20 z-0 h-[240px] w-[240px] opacity-20 blur-[100px]"
+        className="pointer-events-none absolute -right-16 -top-20 z-0 h-[200px] w-[200px] opacity-[0.12] blur-[110px]"
       />
 
       {/* header */}
@@ -506,7 +508,13 @@ function ChatPanel({
       {/* messages — grows to fill, keeps input at bottom */}
       <div
         ref={scrollRef}
-        className="relative z-10 min-h-0 flex-1 space-y-4 overflow-y-auto px-5 py-5"
+        className={cn(
+          "relative z-10 min-h-0 flex-1 space-y-4 overflow-y-auto px-5 py-5",
+          // When the conversation is still just the seed messages, center the
+          // content vertically so the panel doesn't leave a large empty band
+          // above the pinned composer.
+          messages.length <= 3 && !isThinking && "flex flex-col justify-center"
+        )}
       >
         <AnimatePresence initial={false}>
           {messages.map((msg, idx) => {
