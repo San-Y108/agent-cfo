@@ -3,6 +3,7 @@
 import React, { useRef } from "react";
 import { gsap, ScrollTrigger, useGSAP } from "@/lib/gsap";
 import { useReducedMotion } from "framer-motion";
+import { usePointerRepel } from "./use-pointer-repel";
 
 /* =============================================================================
  * BREATHING TEXT — Pretext-style "text breathing"
@@ -77,6 +78,13 @@ export function BreathingText({
   const prefersReducedMotion = useReducedMotion();
   const lines = text.split("\n");
   const accentSet = new Set((accentWords ?? []).map(stripPunct));
+
+  usePointerRepel(
+    scopeRef,
+    ".breathing-repel-char",
+    Boolean(prefersReducedMotion),
+    text,
+  );
 
   useGSAP(
     () => {
@@ -166,7 +174,14 @@ export function BreathingText({
                   opacity: initialOpacity,
                 }}
               >
-                {token.text}
+                {Array.from(token.text).map((char, charIndex) => (
+                  <span
+                    key={`${char}-${charIndex}`}
+                    className="breathing-repel-char inline-block"
+                  >
+                    {char}
+                  </span>
+                ))}
               </span>
             );
           })}
