@@ -79,33 +79,29 @@ function NavPills({
               <span className="absolute inset-0 rounded-full bg-surface/0 transition-colors duration-200 group-hover:bg-surface-hover/50" />
             )}
 
-            {/* Active pill background */}
+            {/* Active state — accent-tinted glass fill + soft aura, no underline */}
             {active && (
               <>
                 <motion.span
+                  layoutId="console-nav-pill-aura"
+                  aria-hidden
+                  className="pointer-events-none absolute -inset-1.5 rounded-full blur-md"
+                  style={{
+                    background: `radial-gradient(58% 130% at 50% 50%, ${accent}3a, transparent 72%)`,
+                  }}
+                  transition={{ type: "spring", stiffness: 380, damping: 32 }}
+                />
+                <motion.span
                   layoutId="console-nav-pill"
-                  className="absolute inset-0 rounded-full border border-border-token bg-surface"
+                  className="absolute inset-0 rounded-full"
                   style={{
-                    boxShadow: `inset 0 1px 0 color-mix(in srgb, var(--fg) 8%, transparent), 0 0 22px -5px ${accent}55, 0 0 6px -2px ${accent}33`,
+                    background: isDark
+                      ? `linear-gradient(180deg, color-mix(in srgb, ${accent} 24%, transparent) 0%, color-mix(in srgb, ${accent} 9%, transparent) 100%)`
+                      : `linear-gradient(180deg, color-mix(in srgb, ${accent} 17%, white) 0%, color-mix(in srgb, ${accent} 8%, white) 100%)`,
+                    border: `1px solid ${accent}4d`,
+                    boxShadow: `0 6px 20px -10px ${accent}88, inset 0 0 14px -8px ${accent}66`,
                   }}
-                  transition={{ type: "spring", stiffness: 420, damping: 34 }}
-                />
-                <motion.span
-                  layoutId="console-nav-pill-glow"
-                  className="pointer-events-none absolute inset-0 rounded-full"
-                  style={{
-                    background: `linear-gradient(180deg, ${accent}22 0%, transparent 60%)`,
-                  }}
-                  transition={{ type: "spring", stiffness: 420, damping: 34 }}
-                />
-                <motion.span
-                  layoutId="console-nav-underline"
-                  className="absolute -bottom-1 left-1/4 right-1/4 h-px rounded-full"
-                  style={{
-                    background: accent,
-                    boxShadow: `0 0 10px 1px ${accent}88, 0 0 20px 2px ${accent}44`,
-                  }}
-                  transition={{ type: "spring", stiffness: 420, damping: 34 }}
+                  transition={{ type: "spring", stiffness: 380, damping: 32 }}
                 />
               </>
             )}
