@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "web-search": {
+      "type": "http",
+      "url": "https://api.stepfun.com/step_plan/v1/mcp/web_search/mcp",
+      "headers": {
+        "Authorization": "Bearer your_api_key"
+      }
+    }
+  }
+}
