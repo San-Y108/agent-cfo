@@ -5,7 +5,7 @@ import { GlobalParticleBackground } from "@/components/landing/global-particle-b
 
 export default function HomePage() {
   return (
-    <div className="dark bg-black relative">
+    <div className="dark bg-black text-fg relative">
       {/* Global fixed particle background — covers entire viewport, all scroll positions */}
       <GlobalParticleBackground />
       {/* Content layers above particle background */}

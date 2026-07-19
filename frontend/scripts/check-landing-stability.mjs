@@ -7,6 +7,7 @@ import { fileURLToPath } from "node:url";
 const FRONTEND = join(fileURLToPath(new URL("..", import.meta.url)));
 
 const files = {
+  page: join(FRONTEND, "app/page.tsx"),
   headline: join(FRONTEND, "components/landing/decode-headline.tsx"),
   repel: join(FRONTEND, "components/landing/use-pointer-repel.ts"),
   holographic: join(FRONTEND, "components/landing/holographic-card.tsx"),
@@ -50,6 +51,10 @@ const forbidden = [
 const failures = forbidden
   .filter(([file, pattern]) => pattern.test(source[file]))
   .map(([file, , label]) => `${file}: ${label}`);
+
+if (!source.page.includes('className="dark bg-black text-fg relative"')) {
+  failures.push("page: dark Landing root must re-apply the foreground token");
+}
 
 const repelLayoutReads =
   source.repel.match(/getBoundingClientRect/g)?.length ?? 0;
