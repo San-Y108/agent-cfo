@@ -2,9 +2,10 @@
 
 import React, { useLayoutEffect, useState } from "react";
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
+import { useApp } from "@/lib/i18n/context";
 
-const SCAN_DURATION = 1.15;
-const REVEAL_DELAY = 0.35;
+const SCAN_DURATION = 0.9;
+const REVEAL_DELAY = 0.2;
 const BOOT_KEY = "agentcfo-console-boot-shown";
 const TOTAL_MS = (SCAN_DURATION + REVEAL_DELAY) * 1000;
 
@@ -45,7 +46,7 @@ export default function ConsoleTemplate({
         initial={false}
         animate={{ opacity: booting ? 0 : 1, scale: booting ? 0.985 : 1 }}
         transition={{
-          duration: booting ? 0 : 0.45,
+          duration: booting ? 0 : 0.4,
           ease: [0.22, 1, 0.36, 1],
           delay: booting ? 0 : 0.05,
         }}
@@ -59,24 +60,69 @@ export default function ConsoleTemplate({
   );
 }
 
+/**
+ * Theme-aware palette so the boot overlay matches the active console theme
+ * instead of flashing a hard dark screen before light-mode content loads.
+ */
+function useBootPalette() {
+  const { theme } = useApp();
+  const isDark = theme === "dark";
+  if (isDark) {
+    return {
+      bg: "#030712",
+      vignette: "rgba(3,7,18,0.85)",
+      gridLime: "rgba(181,255,77,0.05)",
+      gridCyan: "rgba(94,234,212,0.05)",
+      glow:
+        "radial-gradient(circle at 50% 50%, rgba(181,255,77,0.12) 0%, rgba(94,234,212,0.06) 28%, transparent 62%)",
+      ringEven: "rgba(181,255,77,0.14)",
+      ringOdd: "rgba(94,234,212,0.11)",
+      chipBorder: "rgba(255,255,255,0.10)",
+      chipBg: "rgba(255,255,255,0.04)",
+      cornerBorder: "border-white/20",
+      track: "bg-white/[0.06]",
+      initText: "text-lime-400/80",
+      onlineText: "text-cyan-300/70",
+    };
+  }
+  return {
+    bg: "#EEF3E9",
+    vignette: "rgba(205,218,196,0.65)",
+    gridLime: "rgba(101,163,13,0.10)",
+    gridCyan: "rgba(13,148,136,0.10)",
+    glow:
+      "radial-gradient(circle at 50% 50%, rgba(132,204,22,0.16) 0%, rgba(13,148,136,0.08) 28%, transparent 62%)",
+    ringEven: "rgba(101,163,13,0.22)",
+    ringOdd: "rgba(13,148,136,0.18)",
+    chipBorder: "rgba(13,13,13,0.10)",
+    chipBg: "rgba(255,255,255,0.65)",
+    cornerBorder: "border-black/15",
+    track: "bg-black/[0.08]",
+    initText: "text-lime-700",
+    onlineText: "text-cyan-700/80",
+  };
+}
+
 function BootOverlay() {
+  const p = useBootPalette();
+
   return (
     <motion.div
       key="console-boot"
-      className="fixed inset-0 z-[100] flex items-center justify-center overflow-hidden bg-[#030712]"
+      className="fixed inset-0 z-[100] flex items-center justify-center overflow-hidden"
+      style={{ backgroundColor: p.bg }}
       initial={{ opacity: 1 }}
       exit={{
         opacity: 0,
         clipPath: "inset(0 0 0 0)",
       }}
-      transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
+      transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
     >
       {/* Vignette */}
       <div
         className="pointer-events-none absolute inset-0"
         style={{
-          background:
-            "radial-gradient(ellipse 70% 60% at 50% 45%, transparent 0%, rgba(3,7,18,0.85) 100%)",
+          background: `radial-gradient(ellipse 70% 60% at 50% 45%, transparent 0%, ${p.vignette} 100%)`,
         }}
       />
 
@@ -84,12 +130,12 @@ function BootOverlay() {
       <motion.div
         className="pointer-events-none absolute left-1/2 top-1/2 h-[560px] w-[560px] -translate-x-1/2 -translate-y-1/2 rounded-full"
         style={{
-          background: `radial-gradient(circle at 50% 50%, rgba(181,255,77,0.12) 0%, rgba(94,234,212,0.06) 28%, transparent 62%)`,
+          background: p.glow,
           filter: "blur(72px)",
         }}
         initial={{ opacity: 0, scale: 0.6 }}
         animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.6, ease: "easeOut" }}
+        transition={{ duration: 0.5, ease: "easeOut" }}
       />
 
       {/* Grid field */}
@@ -97,15 +143,15 @@ function BootOverlay() {
         className="absolute inset-0 opacity-[0.22]"
         initial={{ opacity: 0 }}
         animate={{ opacity: 0.22 }}
-        transition={{ duration: 0.5, delay: 0.15 }}
+        transition={{ duration: 0.4, delay: 0.1 }}
       >
         <div
           className="absolute inset-0"
           style={{
-            backgroundImage:
-              "linear-gradient(rgba(181,255,77,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(94,234,212,0.05) 1px, transparent 1px)",
+            backgroundImage: `linear-gradient(${p.gridLime} 1px, transparent 1px), linear-gradient(90deg, ${p.gridCyan} 1px, transparent 1px)`,
             backgroundSize: "44px 44px",
-            maskImage: "radial-gradient(circle at 50% 50%, black 0%, transparent 58%)",
+            maskImage:
+              "radial-gradient(circle at 50% 50%, black 0%, transparent 58%)",
           }}
         />
       </motion.div>
@@ -118,11 +164,11 @@ function BootOverlay() {
           style={{
             width: 140 + i * 70,
             height: 140 + i * 70,
-            borderColor: i % 2 === 0 ? "rgba(181,255,77,0.14)" : "rgba(94,234,212,0.11)",
+            borderColor: i % 2 === 0 ? p.ringEven : p.ringOdd,
           }}
           initial={{ opacity: 0, scale: 0.75 }}
           animate={{ opacity: [0, 0.75, 0], scale: [0.75, 1.2, 1.5] }}
-          transition={{ duration: 1.25, delay: 0.08 + i * 0.1, ease: "easeOut" }}
+          transition={{ duration: 0.95, delay: 0.06 + i * 0.08, ease: "easeOut" }}
         />
       ))}
 
@@ -145,7 +191,7 @@ function BootOverlay() {
         }}
         initial={{ top: "108%" }}
         animate={{ top: "-8%" }}
-        transition={{ duration: SCAN_DURATION, delay: 0.08, ease: [0.22, 1, 0.36, 1] }}
+        transition={{ duration: SCAN_DURATION, delay: 0.06, ease: [0.22, 1, 0.36, 1] }}
       />
 
       {/* Scan trail */}
@@ -161,7 +207,7 @@ function BootOverlay() {
       />
 
       {/* Floating particles */}
-      {Array.from({ length: 14 }).map((_, i) => (
+      {Array.from({ length: 12 }).map((_, i) => (
         <motion.span
           key={i}
           className="pointer-events-none absolute rounded-full"
@@ -179,8 +225,8 @@ function BootOverlay() {
             y: [0, -18 - (i % 4) * 6, -36],
           }}
           transition={{
-            duration: 1.1,
-            delay: 0.2 + i * 0.05,
+            duration: 0.85,
+            delay: 0.15 + i * 0.035,
             ease: "easeOut",
           }}
         />
@@ -189,10 +235,11 @@ function BootOverlay() {
       {/* Center HUD */}
       <div className="relative z-10 flex flex-col items-center gap-4">
         <motion.div
-          className="flex h-12 w-12 items-center justify-center rounded-2xl border border-white/[0.1] bg-white/[0.04] shadow-[0_0_40px_-8px_rgba(181,255,77,0.45)]"
+          className="flex h-12 w-12 items-center justify-center rounded-2xl border shadow-[0_0_40px_-8px_rgba(181,255,77,0.45)]"
+          style={{ borderColor: p.chipBorder, backgroundColor: p.chipBg }}
           initial={{ opacity: 0, scale: 0.7, rotateY: -20 }}
           animate={{ opacity: 1, scale: 1, rotateY: 0 }}
-          transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+          transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
         >
           <img
             src="/logo.png"
@@ -203,23 +250,23 @@ function BootOverlay() {
         </motion.div>
 
         <motion.div
-          className="bg-gradient-to-r from-lime-400 via-cyan-300 to-violet-400 bg-clip-text text-lg font-bold tracking-tight text-transparent"
+          className="bg-gradient-to-r from-lime-500 via-cyan-500 to-violet-500 bg-clip-text text-lg font-bold tracking-tight text-transparent dark:from-lime-400 dark:via-cyan-300 dark:to-violet-400"
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2, duration: 0.45 }}
+          transition={{ delay: 0.15, duration: 0.4 }}
         >
           AgentCFO
         </motion.div>
 
         <motion.div
-          className="font-mono text-[10px] uppercase tracking-[0.35em] text-lime-400/80"
+          className={`font-mono text-[10px] uppercase tracking-[0.35em] ${p.initText}`}
           animate={{ opacity: [0.35, 1, 0.35] }}
           transition={{ duration: 1.4, repeat: Infinity }}
         >
           Initializing Command Center
         </motion.div>
 
-        <div className="h-[3px] w-56 overflow-hidden rounded-full bg-white/[0.06]">
+        <div className={`h-[3px] w-56 overflow-hidden rounded-full ${p.track}`}>
           <motion.div
             className="h-full bg-gradient-to-r from-lime-400 via-cyan-300 to-lime-400"
             initial={{ width: "0%" }}
@@ -229,10 +276,10 @@ function BootOverlay() {
         </div>
 
         <motion.div
-          className="font-mono text-[11px] tracking-widest text-cyan-300/70"
+          className={`font-mono text-[11px] tracking-widest ${p.onlineText}`}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ delay: 0.55 }}
+          transition={{ delay: 0.4 }}
         >
           CAW.SECTOR.ONLINE
         </motion.div>
@@ -243,7 +290,7 @@ function BootOverlay() {
         (pos, i) => (
           <motion.div
             key={pos}
-            className={`pointer-events-none absolute ${pos} h-8 w-8 border-white/20`}
+            className={`pointer-events-none absolute ${pos} h-8 w-8 ${p.cornerBorder}`}
             style={{
               borderTopWidth: i < 2 ? 1 : 0,
               borderBottomWidth: i >= 2 ? 1 : 0,
@@ -252,7 +299,7 @@ function BootOverlay() {
             }}
             initial={{ opacity: 0 }}
             animate={{ opacity: 0.5 }}
-            transition={{ delay: 0.25 + i * 0.06 }}
+            transition={{ delay: 0.2 + i * 0.05 }}
           />
         )
       )}
