@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import {
   Shield,
@@ -43,6 +43,51 @@ import { useFlipLayout } from "@/lib/console/motion/use-flip-layout";
 
 const BLUE = "#60A5FA";
 const ETH_PRICE_USD = 3400;
+const WALLETS_GUARDIAN_ROBOT_SRC = "/console/mascots/treasury-audit-robot.png";
+
+/** HSM guardian robot — bottom-right of Controlled Disbursement stage panel. */
+function WalletsGuardianRobotAccent() {
+  const reduce = useReducedMotion();
+
+  return (
+    <div className="pointer-events-none absolute bottom-1.5 right-1.5 z-[5] h-[min(30%,155px)] w-[min(28%,132px)] min-h-[96px] min-w-[84px]">
+      <div
+        className="absolute inset-x-[-20%] bottom-0 h-[90%]"
+        style={{
+          background:
+            "radial-gradient(ellipse 90% 85% at 55% 100%, rgba(96,165,250,0.35) 0%, rgba(192,132,252,0.1) 42%, transparent 72%)",
+        }}
+      />
+      <div
+        className="pointer-events-none absolute inset-x-0 bottom-[-8px] h-[48%]"
+        style={{
+          background:
+            "radial-gradient(ellipse 80% 42% at 50% 100%, rgba(96,165,250,0.3) 0%, transparent 70%)",
+          filter: "blur(14px)",
+        }}
+      />
+      <motion.img
+        src={WALLETS_GUARDIAN_ROBOT_SRC}
+        alt="Wallet guardian robot"
+        className="absolute bottom-0 right-0 h-[min(100%,116px)] w-auto max-w-none select-none object-contain object-bottom sm:h-[122px]"
+        draggable={false}
+        animate={reduce ? undefined : { y: [0, -5, 0] }}
+        transition={{ duration: 3.6, repeat: Infinity, ease: "easeInOut" }}
+        style={{
+          filter:
+            "drop-shadow(0 12px 22px rgba(96,165,250,0.26)) drop-shadow(0 0 12px rgba(192,132,252,0.22))",
+        }}
+      />
+      <div
+        className="pointer-events-none absolute inset-x-0 bottom-0 h-[45%]"
+        style={{
+          background:
+            "linear-gradient(to top, var(--surface) 0%, color-mix(in srgb, var(--surface) 55%, transparent) 48%, transparent 100%)",
+        }}
+      />
+    </div>
+  );
+}
 
 function tokenValueUsd(symbol: string, balance: number): number {
   if (symbol === "USDC" || symbol === "USDT") return balance;
@@ -318,6 +363,8 @@ export function WalletsStage() {
             />
 
             {isTransferring && <Scanline color="blue" className="relative z-10 shrink-0" />}
+
+            <WalletsGuardianRobotAccent />
 
             <div className="relative z-10 min-h-0 flex-1 overflow-y-auto p-4 pt-0 md:p-5 md:pt-0">
               <WalletsDetailDeck

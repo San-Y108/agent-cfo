@@ -35,46 +35,37 @@ const CORAL = "#FB7185";
 const LIME = "#B5FF4D";
 const POLICY_AUDIT_SCENE_SRC = "/console/mascots/policy-audit-scene.png";
 
-/** Audit intercept scene — bottom-right of Guard Integrity panel. */
+/** Compact audit scene — right column beside integrity status rows. */
 function PolicyAuditSceneAccent() {
   const reduce = useReducedMotion();
 
   return (
-    <div className="pointer-events-none absolute bottom-1.5 right-1.5 z-[5] h-[min(72%,200px)] w-[min(42%,220px)] min-h-[112px] min-w-[120px]">
+    <div className="relative hidden min-h-[148px] w-[144px] shrink-0 overflow-hidden rounded-xl border border-coral-400/30 bg-gradient-to-br from-coral-400/14 via-violet-500/10 to-surface-2/75 shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_8px_24px_rgba(251,113,133,0.1)] sm:block">
       <div
-        className="absolute inset-x-[-18%] bottom-0 h-[88%]"
+        className="pointer-events-none absolute inset-0"
         style={{
           background:
-            "radial-gradient(ellipse 88% 82% at 58% 100%, rgba(251,113,133,0.32) 0%, rgba(192,132,252,0.12) 42%, transparent 72%)",
+            "radial-gradient(ellipse 95% 88% at 50% 82%, rgba(251,113,133,0.42) 0%, rgba(192,132,252,0.18) 38%, transparent 72%)",
         }}
       />
-      <div
-        className="pointer-events-none absolute inset-x-0 bottom-[-6px] h-[46%]"
-        style={{
-          background:
-            "radial-gradient(ellipse 78% 40% at 50% 100%, rgba(251,113,133,0.28) 0%, transparent 70%)",
-          filter: "blur(12px)",
-        }}
-      />
-      <motion.img
-        src={POLICY_AUDIT_SCENE_SRC}
-        alt="Policy audit guardian"
-        className="absolute bottom-0 right-0 h-[min(100%,118px)] w-auto max-w-none select-none object-contain object-bottom sm:h-[124px]"
-        draggable={false}
-        animate={reduce ? undefined : { y: [0, -4, 0] }}
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-coral-400/40 to-transparent" />
+
+      <motion.div
+        className="absolute inset-0 flex items-center justify-center p-1.5"
+        animate={reduce ? undefined : { y: [0, -3, 0] }}
         transition={{ duration: 3.6, repeat: Infinity, ease: "easeInOut" }}
-        style={{
-          filter:
-            "drop-shadow(0 10px 20px rgba(251,113,133,0.22)) drop-shadow(0 0 10px rgba(192,132,252,0.18))",
-        }}
-      />
-      <div
-        className="pointer-events-none absolute inset-x-0 bottom-0 h-[42%]"
-        style={{
-          background:
-            "linear-gradient(to top, var(--surface) 0%, color-mix(in srgb, var(--surface) 58%, transparent) 50%, transparent 100%)",
-        }}
-      />
+      >
+        <img
+          src={POLICY_AUDIT_SCENE_SRC}
+          alt="Policy audit guardian"
+          className="h-full w-full select-none object-contain object-center"
+          draggable={false}
+          style={{
+            filter:
+              "brightness(1.06) contrast(1.12) saturate(1.1) drop-shadow(0 10px 20px rgba(0,0,0,0.38)) drop-shadow(0 0 14px rgba(251,113,133,0.32))",
+          }}
+        />
+      </motion.div>
     </div>
   );
 }
@@ -540,30 +531,34 @@ function GuardIntegrityPanel() {
   const { t } = useApp();
 
   return (
-    <FrostedPanel glowColor="coral" sheen className="relative overflow-hidden space-y-3 p-4 pr-28 sm:pr-32">
-      <PolicyAuditSceneAccent />
-      <h3 className="relative z-10 flex items-center gap-2 text-sm font-bold text-fg">
-        <Workflow className="h-4 w-4" style={{ color: CORAL }} />
-        {t("console.policy.guardIntegrity" as any)}
-      </h3>
-      <div className="relative z-10 space-y-2">
-        {[
-          { label: t("console.policy.guardItem1" as any), sub: t("console.policy.guardItem1Sub" as any) },
-          { label: t("console.policy.guardItem2" as any), sub: t("console.policy.guardItem2Sub" as any) },
-        ].map((g, i) => (
-          <div
-            key={i}
-            className="flex items-center justify-between rounded-lg border border-border-token bg-surface-2/40 p-3"
-          >
-            <div className="space-y-0.5">
-              <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-fg-muted">
-                {g.label}
-              </span>
-              <p className="text-xs font-bold text-fg">{g.sub}</p>
-            </div>
-            <CheckCircle className="h-4 w-4 shrink-0" style={{ color: CORAL }} />
+    <FrostedPanel glowColor="coral" sheen className="p-4">
+      <div className="flex items-stretch gap-3">
+        <div className="min-w-0 flex-1 space-y-3">
+          <h3 className="flex items-center gap-2 text-sm font-bold text-fg">
+            <Workflow className="h-4 w-4" style={{ color: CORAL }} />
+            {t("console.policy.guardIntegrity" as any)}
+          </h3>
+          <div className="space-y-2">
+            {[
+              { label: t("console.policy.guardItem1" as any), sub: t("console.policy.guardItem1Sub" as any) },
+              { label: t("console.policy.guardItem2" as any), sub: t("console.policy.guardItem2Sub" as any) },
+            ].map((g, i) => (
+              <div
+                key={i}
+                className="flex items-center justify-between rounded-lg border border-border-token bg-surface-2/40 p-3"
+              >
+                <div className="space-y-0.5">
+                  <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-fg-muted">
+                    {g.label}
+                  </span>
+                  <p className="text-xs font-bold text-fg">{g.sub}</p>
+                </div>
+                <CheckCircle className="h-4 w-4 shrink-0" style={{ color: CORAL }} />
+              </div>
+            ))}
           </div>
-        ))}
+        </div>
+        <PolicyAuditSceneAccent />
       </div>
     </FrostedPanel>
   );
