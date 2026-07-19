@@ -1,5 +1,8 @@
 # AgentCFO — AI Agent 工作指南
 
+> **Output Style**: `humanizer-output-style` skill — 统一语气与去 AI 味。仓库规则见 `docs/agents/voice.md`。
+> **Context**: `CONTEXT.md` → `CONTEXT-MAP.md` → `docs/contexts/*`。
+
 > 面向所有 AI coding agent 的仓库级说明。Claude Code 用户可同时读 `CLAUDE.md`。
 
 ## 1. 你在哪个团队？
@@ -133,38 +136,45 @@ npx gitnexus analyze   # 索引过期时
 ---
 
 <!-- gitnexus:start -->
-## GitNexus — Code Intelligence
+# GitNexus — Code Intelligence
 
-本仓库已索引为 **agent-cfo**（约 3800+ symbols，130+ execution flows）。用于理解代码、评估改动影响、追踪调用链。
+This project is indexed by GitNexus as **agent-cfo** (4819 symbols, 8434 relationships, 162 execution flows). Use the GitNexus MCP tools to understand code, assess impact, and navigate safely.
 
-> 工具提示 index stale 时：在仓库根运行 `npx gitnexus analyze`
+> If any GitNexus tool warns the index is stale, run `npx gitnexus analyze` in terminal first.
 
-### 推荐用法
+## Always Do
 
-| 场景 | 工具 / 资源 |
-|---|---|
-| 理解某功能怎么跑 | `gitnexus_query({ query: "payment plan" })` |
-| 查某函数上下游 | `gitnexus_context({ name: "symbolName" })` |
-| 改代码前看影响面 | `gitnexus_impact({ target: "symbolName", direction: "upstream" })` |
-| 提交前核对波及范围 | `gitnexus_detect_changes()` |
-| 仓库概览 | `gitnexus://repo/agent-cfo/context` |
-| 功能聚类 | `gitnexus://repo/agent-cfo/clusters` |
-| 执行流列表 | `gitnexus://repo/agent-cfo/processes` |
+- **MUST run impact analysis before editing any symbol.** Before modifying a function, class, or method, run `gitnexus_impact({target: "symbolName", direction: "upstream"})` and report the blast radius (direct callers, affected processes, risk level) to the user.
+- **MUST run `gitnexus_detect_changes()` before committing** to verify your changes only affect expected symbols and execution flows.
+- **MUST warn the user** if impact analysis returns HIGH or CRITICAL risk before proceeding with edits.
+- When exploring unfamiliar code, use `gitnexus_query({query: "concept"})` to find execution flows instead of grepping. It returns process-grouped results ranked by relevance.
+- When you need full context on a specific symbol — callers, callees, which execution flows it participates in — use `gitnexus_context({name: "symbolName"})`.
 
-### 纪律
+## Never Do
 
-- 修改非平凡符号前，优先做 impact 分析
-- HIGH / CRITICAL 风险须告知用户后再改
-- 重命名用 `gitnexus_rename`，不要盲 find-replace
+- NEVER edit a function, class, or method without first running `gitnexus_impact` on it.
+- NEVER ignore HIGH or CRITICAL risk warnings from impact analysis.
+- NEVER rename symbols with find-and-replace — use `gitnexus_rename` which understands the call graph.
+- NEVER commit changes without running `gitnexus_detect_changes()` to check affected scope.
 
-### Skill 文件
+## Resources
 
-| 任务 | 路径 |
-|---|---|
-| 探索架构 | `.claude/skills/gitnexus/gitnexus-exploring/SKILL.md` |
-| 影响分析 | `.claude/skills/gitnexus/gitnexus-impact-analysis/SKILL.md` |
-| 调试追踪 | `.claude/skills/gitnexus/gitnexus-debugging/SKILL.md` |
-| 重构 | `.claude/skills/gitnexus/gitnexus-refactoring/SKILL.md` |
-| CLI | `.claude/skills/gitnexus/gitnexus-cli/SKILL.md` |
+| Resource | Use for |
+|----------|---------|
+| `gitnexus://repo/agent-cfo/context` | Codebase overview, check index freshness |
+| `gitnexus://repo/agent-cfo/clusters` | All functional areas |
+| `gitnexus://repo/agent-cfo/processes` | All execution flows |
+| `gitnexus://repo/agent-cfo/process/{name}` | Step-by-step execution trace |
+
+## CLI
+
+| Task | Read this skill file |
+|------|---------------------|
+| Understand architecture / "How does X work?" | `.claude/skills/gitnexus/gitnexus-exploring/SKILL.md` |
+| Blast radius / "What breaks if I change X?" | `.claude/skills/gitnexus/gitnexus-impact-analysis/SKILL.md` |
+| Trace bugs / "Why is X failing?" | `.claude/skills/gitnexus/gitnexus-debugging/SKILL.md` |
+| Rename / extract / split / refactor | `.claude/skills/gitnexus/gitnexus-refactoring/SKILL.md` |
+| Tools, resources, schema reference | `.claude/skills/gitnexus/gitnexus-guide/SKILL.md` |
+| Index, status, clean, wiki CLI commands | `.claude/skills/gitnexus/gitnexus-cli/SKILL.md` |
 
 <!-- gitnexus:end -->

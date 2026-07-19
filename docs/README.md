@@ -13,6 +13,13 @@
 | [`speak/`](speak/) | 路演 / Demo 陈述稿、团队分工口述、录制大纲 |
 | [`p2/`](p2/) | P2 扩展能力边界与设计说明 |
 | [`reports/`](reports/) | 阶段性状态 / handoff 报告 |
+| [`agents/`](agents/) | Agent workflow、交付、归档、领域、Issue、Triage、语气 |
+| [`contexts/`](contexts/) | 多 Context 领域说明 |
+| [`adr/`](adr/) | Architecture Decision Records |
+| [`knowledge/`](knowledge/) | 可跨 theme 复用的知识 |
+| [`glossary/`](glossary/) | 领域术语 |
+| [`commit-history/`](commit-history/) | 已验收交付批次与 commit 索引 |
+| [`output/`](output/) | 新业务 theme 的 report、PRD、handoff |
 
 ## 常用入口
 
@@ -25,6 +32,9 @@
 - [路演陈述稿索引](speak/README.md)
 - [Demo 视频录制指南](speak/demo-video-guide.md)
 - [Demo 视频 Landing 接入规划](plans/demo-video-landing-integration-plan.md)
+- [Agent workflow](agents/workflow.md)
+- [Theme outputs](output/README.md)
+- [多 Context 入口](../CONTEXT-MAP.md)
 
 ## 前端专项文档
 
