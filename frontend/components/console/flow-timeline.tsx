@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -19,6 +19,13 @@ export interface FlowTimelineProps {
 }
 
 export function FlowTimeline({ currentStep, steps }: FlowTimelineProps) {
+  // Trig-based particle offsets (Math.cos/sin) produce full-precision floats that
+  // framer-motion serializes differently on the server vs client, causing a
+  // hydration mismatch React "won't patch up". Render the decorative particles
+  // only after mount so they never participate in SSR.
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+
   return (
     <div className="w-full overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
       <div className="flex min-w-[420px] items-center justify-between">
@@ -57,8 +64,8 @@ export function FlowTimeline({ currentStep, steps }: FlowTimelineProps) {
                         boxShadow: `0 0 20px ${CYAN}66, 0 0 40px ${CYAN}33`,
                       }}
                     >
-                      {/* 3 sparkle particles */}
-                      {[0, 1, 2].map((i) => (
+                      {/* 3 sparkle particles — client-only to avoid SSR hydration mismatch */}
+                      {mounted && [0, 1, 2].map((i) => (
                         <motion.div
                           key={i}
                           className="absolute"
