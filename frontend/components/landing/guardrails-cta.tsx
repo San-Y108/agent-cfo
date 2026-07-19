@@ -36,11 +36,6 @@ function getDir(e: React.MouseEvent<HTMLElement>): Dir {
   return d.reduce((a, b) => (a[1] < b[1] ? a : b))[0];
 }
 
-const reveal = {
-  hidden: { opacity: 0, y: 20 },
-  show: { opacity: 1, y: 0 },
-};
-
 export function GuardrailsCTA() {
   const { lang } = useApp();
   const t = useT();
@@ -62,13 +57,7 @@ export function GuardrailsCTA() {
 
           <div className="relative grid items-center gap-10 p-8 md:p-12 lg:grid-cols-[1fr_1.35fr] lg:gap-14 lg:p-16">
             {/* Left: copy + CTAs */}
-            <motion.div
-              variants={reveal}
-              initial="hidden"
-              whileInView="show"
-              viewport={{ once: true, margin: "-80px" }}
-              transition={{ duration: 0.5, ease: "easeOut" }}
-            >
+            <div>
               <span
                 className="text-[11px] font-medium uppercase tracking-[0.18em] text-[#B5FF4D]"
                 style={{ fontFamily: "'Courier New', Courier, monospace" }}
@@ -81,8 +70,8 @@ export function GuardrailsCTA() {
                   fontFamily: "Inter, sans-serif",
                   fontSize: "clamp(2.1rem, 4.6vw, 3.5rem)",
                   letterSpacing: "-0.025em",
-                  color: "rgba(255, 255, 255, 0.88)",
-                  textShadow: "0 2px 12px rgba(0,0,0,0.35)",
+                  color: "#F5F5F5",
+                  textShadow: "0 2px 12px rgba(0,0,0,0.22)",
                   WebkitFontSmoothing: "antialiased",
                 }}
               >
@@ -145,7 +134,7 @@ export function GuardrailsCTA() {
                 `
               }</style>
               <p
-                className="mt-5 max-w-xl text-sm italic leading-relaxed text-white/80 md:text-base"
+                className="mt-5 max-w-xl text-sm italic leading-relaxed text-white/86 md:text-base"
                 style={{ fontFamily: "Inter, sans-serif" }}
               >
                 {t("guardrails.subtitle")}
@@ -163,14 +152,14 @@ export function GuardrailsCTA() {
               </div>
 
               <p
-                className="mt-3 text-[11px] italic text-white/55"
+                className="mt-3 text-[11px] italic text-white/70"
                 style={{ fontFamily: "Inter, sans-serif" }}
               >
                 {t("guardrails.ctaHint")}
               </p>
 
               <div
-                className="mt-6 flex flex-wrap items-center gap-4 text-[11px] text-white/70"
+                className="mt-6 flex flex-wrap items-center gap-4 text-[11px] text-white/76"
                 style={{ fontFamily: "'Courier New', Courier, monospace" }}
               >
                 <span>{t("guardrails.badge.testnet")}</span>
@@ -179,24 +168,17 @@ export function GuardrailsCTA() {
                 <span className="text-white/40">·</span>
                 <span>{t("guardrails.badge.deterministic")}</span>
               </div>
-            </motion.div>
+            </div>
 
             {/* Right: demo video (terminal-framed; audit story lives on as floating chips) */}
-            <motion.div
-              variants={reveal}
-              initial="hidden"
-              whileInView="show"
-              viewport={{ once: true, margin: "-80px" }}
-              transition={{ duration: 0.6, delay: 0.1, ease: "easeOut" }}
-              className="relative"
-            >
+            <div className="relative">
               <DemoVideoCard />
-            </motion.div>
+            </div>
           </div>
 
           {/* Footer */}
           <div className="relative border-t border-white/12 px-8 py-6 lg:px-16">
-            <div className="flex flex-col items-center justify-between gap-3 text-[11px] text-white/85 sm:flex-row" style={{ fontFamily: "'Courier New', Courier, monospace" }}>
+            <div className="flex flex-col items-center justify-between gap-3 text-[11px] text-white/80 sm:flex-row" style={{ fontFamily: "'Courier New', Courier, monospace" }}>
               <p>{t("guardrails.cardFooter")}</p>
               <p>v0.1 · 2026</p>
             </div>

@@ -197,8 +197,9 @@ export function GlobalParticleBackground() {
         position: "fixed",
         inset: 0,
         zIndex: 1,
-        background:
-          "radial-gradient(ellipse at 50% 45%, rgba(13,13,13,0.1) 0%, rgba(13,13,13,0.6) 60%, rgba(13,13,13,0.9) 100%)",
+        background: "transparent",
+        mixBlendMode: "screen",
+        opacity: 0.56,
       }}
       aria-hidden="true"
     />

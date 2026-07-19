@@ -79,24 +79,6 @@ const PHASES: Phase[] = [
 ];
 
 /**
- * Cinematic film-grain overlay using SVG noise filter.
- * Applied to the filmstrip container for texture.
- */
-function FilmGrainOverlay() {
-  return (
-    <div
-      className="absolute inset-0 pointer-events-none opacity-[0.05] z-10 mix-blend-overlay"
-      style={{
-        backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E")`,
-        backgroundRepeat: "repeat",
-        backgroundSize: "128px 128px",
-      }}
-      aria-hidden="true"
-    />
-  );
-}
-
-/**
  * Sprocket holes strip for the filmstrip edges.
  */
 function SprocketStrip({ side = "left" }: { side?: "left" | "right" }) {
@@ -145,114 +127,55 @@ export function BuildTimeline() {
       const viewport = sectionRef.current?.querySelector(".timeline-viewport") as HTMLElement | null;
       if (!viewport) return;
 
-      // Use yPercent (CSS translateY %) — avoids GSAP pixel-calc issues during hydration
-      frames.forEach((frame, i) => {
-        gsap.set(frame, {
-          opacity: i === 0 ? 1 : 0,
-          yPercent: i === 0 ? 0 : 110,
-          rotateX: i === 0 ? 0 : -18,
-          transformOrigin: "center bottom",
-          filter: i === 0 ? "brightness(1) contrast(1)" : "brightness(0.6) contrast(1.1)",
-        });
-      });
+      let activeIndex = -1;
+      const showPhase = (nextIndex: number) => {
+        const index = Math.max(0, Math.min(frames.length - 1, nextIndex));
+        if (index === activeIndex) return;
+        activeIndex = index;
 
-      texts.forEach((text, i) => {
-        gsap.set(text, {
-          opacity: i === 0 ? 1 : 0,
-          y: i === 0 ? 0 : 20,
-          zIndex: i === 0 ? 2 : 1,
+        gsap.killTweensOf([...frames, ...texts]);
+        frames.forEach((frame, frameIndex) => {
+          const active = frameIndex === index;
+          gsap.set(frame, {
+            opacity: active ? 1 : 0,
+            yPercent: 0,
+            rotateX: 0,
+            filter: "none",
+            zIndex: active ? 2 : 1,
+          });
         });
-      });
+        texts.forEach((text, textIndex) => {
+          const active = textIndex === index;
+          gsap.set(text, {
+            opacity: active ? 1 : 0,
+            y: 0,
+            zIndex: active ? 2 : 1,
+          });
+        });
+      };
 
-      const tl = gsap.timeline({
-        scrollTrigger: {
-          trigger: sectionRef.current,
-          start: "top top",
-          end: "bottom bottom",
-          pin: viewport,
-          scrub: 0.3,
-          onLeave: () => {
-            frames.forEach((f) => gsap.set(f, { opacity: 0 }));
-            texts.forEach((t) => gsap.set(t, { opacity: 0 }));
-          },
-          onLeaveBack: () => {
-            frames.forEach((f, i) =>
-              gsap.set(f, {
-                opacity: i === 0 ? 1 : 0,
-                yPercent: i === 0 ? 0 : 110,
-                rotateX: i === 0 ? 0 : -18,
-              })
-            );
-            texts.forEach((t, i) =>
-              gsap.set(t, { opacity: i === 0 ? 1 : 0, y: i === 0 ? 0 : 20 })
-            );
-          },
-          snap: {
-            snapTo: 1 / (frames.length - 1),
-            duration: { min: 0.15, max: 0.3 },
-            delay: 0.05,
-            ease: "power1.out",
-          },
+      showPhase(0);
+      const trigger = ScrollTrigger.create({
+        trigger: sectionRef.current,
+        start: "top top",
+        end: "bottom bottom",
+        pin: viewport,
+        onUpdate: (self) => {
+          showPhase(Math.round(self.progress * (frames.length - 1)));
+        },
+        onLeave: () => showPhase(frames.length - 1),
+        onLeaveBack: () => showPhase(0),
+        snap: {
+          snapTo: 1 / (frames.length - 1),
+          duration: { min: 0.15, max: 0.3 },
+          delay: 0.05,
+          ease: "power1.out",
         },
       });
 
-      for (let i = 0; i < frames.length - 1; i++) {
-        const slot = (i + 1) / (frames.length - 1);
-
-        // Frame roll-out: old frame rolls UP and away
-        tl.to(
-          frames[i],
-          {
-            yPercent: -110,
-            rotateX: 18,
-            transformOrigin: "center top",
-            opacity: 0,
-            filter: "brightness(0.5) contrast(1.1)",
-            duration: 0.15,
-            ease: "power2.in",
-          },
-          slot - 0.07
-        );
-
-        // Frame roll-in: new frame rolls UP from below
-        tl.fromTo(
-          frames[i + 1],
-          {
-            yPercent: 110,
-            rotateX: -18,
-            transformOrigin: "center bottom",
-            opacity: 0,
-            filter: "brightness(0.5) contrast(1.1)",
-          },
-          {
-            yPercent: 0,
-            rotateX: 0,
-            transformOrigin: "center center",
-            opacity: 1,
-            filter: "brightness(1) contrast(1)",
-            duration: 0.17,
-            ease: "power2.out",
-          },
-          slot - 0.04
-        );
-
-        // Text transition
-        tl.to(
-          texts[i],
-          { opacity: 0, y: -20, duration: 0.1, ease: "power1.in" },
-          slot - 0.05
-        );
-        tl.set(texts[i], { zIndex: 1 }, slot - 0.04);
-        tl.fromTo(
-          texts[i + 1],
-          { opacity: 0, y: 20 },
-          { opacity: 1, y: 0, duration: 0.12, ease: "power1.out" },
-          slot - 0.03
-        );
-        tl.set(texts[i + 1], { zIndex: 2 }, slot - 0.03);
-      }
+      return () => trigger.kill();
     },
-    { scope: sectionRef }
+    { scope: sectionRef, dependencies: [reduce] }
   );
 
   return (
@@ -368,14 +291,11 @@ export function BuildTimeline() {
                 className="absolute inset-0 pointer-events-none z-[5]"
                 style={{
                   background: `
-                    radial-gradient(ellipse at center, transparent 50%, rgba(0,0,0,0.5) 100%)
+                    radial-gradient(ellipse at center, transparent 62%, rgba(0,0,0,0.28) 100%)
                   `,
                 }}
                 aria-hidden="true"
               />
-
-              {/* Film grain */}
-              <FilmGrainOverlay />
 
               {/* Left sprocket strip */}
               <div className="absolute left-0 z-[6]">
@@ -412,7 +332,7 @@ export function BuildTimeline() {
                       className="absolute inset-0 w-full h-full object-cover"
                       style={{
                         opacity: 1,
-                        filter: "brightness(1.25) saturate(1.35) contrast(1.15)",
+                        filter: "brightness(1.16) saturate(1.28) contrast(1.15)",
                         borderRadius: "16px",
                       }}
                       loading="eager"
@@ -425,18 +345,6 @@ export function BuildTimeline() {
                         borderRadius: "16px",
                         background: `
                           radial-gradient(ellipse 70% 65% at 50% 50%, transparent 50%, rgba(0,0,0,0.15) 80%, rgba(0,0,0,0.55) 100%)
-                        `,
-                      }}
-                      aria-hidden="true"
-                    />
-
-                    {/* Light center haze */}
-                    <div
-                      className="absolute inset-0 pointer-events-none z-[3]"
-                      style={{
-                        borderRadius: "16px",
-                        background: `
-                          radial-gradient(ellipse 45% 40% at 50% 50%, rgba(0,0,0,0.15) 0%, transparent 65%)
                         `,
                       }}
                       aria-hidden="true"
