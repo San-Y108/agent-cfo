@@ -33,7 +33,10 @@ import { useConsoleFlowHighlight } from "@/lib/console/use-console-flow-highligh
 
 const CORAL = "#FB7185";
 const LIME = "#B5FF4D";
-const POLICY_AUDIT_SCENE_SRC = "/console/mascots/policy-audit-scene.png";
+// Use the clean isolated guardian robot (shield + check) instead of the busy
+// multi-element "audit scene" asset, which read as a broken/detached image at
+// this small size.
+const POLICY_AUDIT_SCENE_SRC = "/console/mascots/treasury-audit-robot.png";
 
 /** Compact audit scene — right column beside integrity status rows. */
 function PolicyAuditSceneAccent() {
@@ -377,7 +380,7 @@ export function PolicyStage() {
                   className="h-full w-full min-h-0"
                 />
               </div>
-              <div className="grid shrink-0 grid-cols-2 gap-2 md:grid-cols-4">
+              <div className="mt-2.5 grid shrink-0 grid-cols-2 gap-2 border-t border-border-token/50 pt-2.5 md:grid-cols-4">
                 {[
                   { id: "max-single", label: _("单笔上限", "Single limit"), value: `${maxSingle} USDC` },
                   { id: "daily-cum", label: _("日累计", "Daily cap"), value: `${dailyCum} USDC` },
@@ -390,12 +393,12 @@ export function PolicyStage() {
                     onMouseEnter={() => setActiveRuleId(chip.id)}
                     onMouseLeave={() => setActiveRuleId(null)}
                     className={cn(
-                      "rounded-lg border border-border-token bg-surface-2/40 px-3 py-2 text-left transition-colors hover:border-coral-400/40",
+                      "flex items-center justify-between gap-1 rounded-lg border border-border-token bg-surface-2/40 px-2.5 py-1.5 text-left transition-colors hover:border-coral-400/40",
                       activeRuleId === chip.id && "border-coral-400/50 bg-coral-400/10"
                     )}
                   >
-                    <p className="text-[9px] font-mono uppercase text-fg-subtle">{chip.label}</p>
-                    <p className="text-xs font-bold text-fg">{chip.value}</p>
+                    <span className="truncate font-mono text-[9px] uppercase text-fg-subtle">{chip.label}</span>
+                    <span className="shrink-0 text-[11px] font-bold text-fg">{chip.value}</span>
                   </button>
                 ))}
               </div>
