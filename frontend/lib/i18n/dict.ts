@@ -9,12 +9,12 @@ export type Lang = "en" | "zh";
 export const dict = {
   en: {
     // ---- nav ----
-    "nav.platform": "Platform",
-    "nav.workflow": "Workflow",
-    "nav.guardrails": "Guardrails",
-    "nav.faq": "FAQ",
+    "nav.platform": "Overview",
+    "nav.workflow": "Payout Flow",
+    "nav.guardrails": "Demo & Audit",
+    "nav.faq": "FAQ & Security",
     "nav.team": "Team",
-    "nav.timeline": "Timeline",
+    "nav.timeline": "Build Timeline",
     "nav.openDemo": "Open Console",
 
     // ---- hero ----
@@ -449,12 +449,12 @@ export const dict = {
 
   zh: {
     // ---- nav ----
-    "nav.platform": "平台",
-    "nav.workflow": "工作流",
-    "nav.guardrails": "风险护栏",
-    "nav.faq": "常见问题",
+    "nav.platform": "概览",
+    "nav.workflow": "付款流程",
+    "nav.guardrails": "演示与审计",
+    "nav.faq": "常见问题与安全",
     "nav.team": "团队",
-    "nav.timeline": "时间线",
+    "nav.timeline": "构建时间线",
     "nav.openDemo": "进入 Console",
 
     // ---- hero ----

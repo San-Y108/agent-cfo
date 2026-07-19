@@ -181,7 +181,6 @@ export function BuildTimeline() {
   return (
     <section
       ref={sectionRef}
-      id="timeline"
       className="relative w-full"
       style={{ height: `${PHASES.length * 100}vh`, fontFamily: "Inter, sans-serif" }}
     >

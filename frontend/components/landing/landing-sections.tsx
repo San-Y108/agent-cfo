@@ -11,6 +11,7 @@ import { BuildTimeline } from "./build-timeline";
 import { FAQSection } from "./faq-section";
 import { HSMMonitor } from "./hsm-monitor";
 import { LandingFooter } from "./landing-footer";
+import { LANDING_SECTION_IDS } from "@/lib/constants/landing-navigation";
 
 /**
  * LandingSections — modules rendered below the Ramp-style hero.
@@ -33,7 +34,7 @@ export function LandingSections() {
       style={{ backgroundColor: "#0D0D0D", fontFamily: "Inter, sans-serif" }}
     >
       {/* Hero-adjacent showcase row: left = AI Agent + Web3 Map, right = Budget Cards */}
-      <section id="platform" className="w-full">
+      <section id={LANDING_SECTION_IDS.overview} className="w-full scroll-mt-24">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 w-full max-w-7xl mx-auto px-6 pt-16 items-start">
           <div className="flex flex-col gap-8">
             <HolographicCard />
@@ -44,9 +45,11 @@ export function LandingSections() {
       </section>
 
       {/* The 5-stage pipeline */}
-      <PipelineEditorial />
+      <section id={LANDING_SECTION_IDS.payoutFlow} className="w-full scroll-mt-24">
+        <PipelineEditorial />
+      </section>
 
-      <section id="guardrails" className="w-full">
+      <section id={LANDING_SECTION_IDS.demoAudit} className="w-full scroll-mt-24">
         <GuardrailsCTA />
       </section>
 
@@ -61,17 +64,17 @@ export function LandingSections() {
       />
 
       {/* Built-by team */}
-      <section id="team" className="w-full">
+      <section id={LANDING_SECTION_IDS.team} className="w-full scroll-mt-24">
         <TeamShowcase />
       </section>
 
       {/* Build timeline */}
-      <section id="timeline" className="w-full">
+      <section id={LANDING_SECTION_IDS.buildTimeline} className="w-full scroll-mt-24">
         <BuildTimeline />
       </section>
 
       {/* FAQ + HSM 2-column layout — flush against timeline, no gap */}
-      <section id="faq" className="w-full">
+      <section id={LANDING_SECTION_IDS.faqSecurity} className="w-full scroll-mt-24">
         <div className="max-w-6xl mx-auto border-t pt-16 grid grid-cols-1 md:grid-cols-5 gap-12 text-left border-white/18 px-6">
           <FAQSection />
           <HSMMonitor />

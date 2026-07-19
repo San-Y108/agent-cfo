@@ -8,26 +8,17 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { ScrollToPlugin } from "gsap/ScrollToPlugin";
 import { useGSAP } from "@gsap/react";
 import { useT, useApp } from "@/lib/i18n/context";
-import type { DictKey } from "@/lib/i18n/dict";
 import { ThemeLanguageToggle } from "@/components/ui/theme-language-toggle";
 import { motion } from "framer-motion";
 import { ParticleHeroTitle } from "@/components/landing/particle-hero-title";
 import { DecodeHeadline } from "@/components/landing/decode-headline";
+import { LANDING_NAV_ITEMS } from "@/lib/constants/landing-navigation";
 
 gsap.registerPlugin(ScrollTrigger, ScrollToPlugin);
 
 // Background "robot + hand" cinematic visual — remote video, verbatim from Velorix IIC demo.
 const BG_VIDEO =
   "https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260508_155101_f2540600-6fe9-433e-8e48-b3f4b72f0727.mp4";
-
-const NAV_ITEMS: { key: DictKey; href: string }[] = [
-  { key: "nav.platform", href: "#platform" },
-  { key: "nav.workflow", href: "#workflow" },
-  { key: "nav.guardrails", href: "#guardrails" },
-  { key: "nav.team", href: "#team" },
-  { key: "nav.timeline", href: "#timeline" },
-  { key: "nav.faq", href: "#faq" },
-];
 
 function HamburgerButton({ open, onClick }: { open: boolean; onClick: () => void }) {
   return (
@@ -79,7 +70,7 @@ function MobileMenu({ open, onClose }: { open: boolean; onClose: () => void }) {
           style={{ backgroundColor: "rgba(13,13,13,0.97)", borderBottom: "1px solid rgba(255,255,255,0.15)" }}
         >
           <div className="flex flex-col gap-1">
-            {NAV_ITEMS.map((item, i) => (
+            {LANDING_NAV_ITEMS.map((item, i) => (
               <a
                 key={item.key}
                 href={item.href}
@@ -196,13 +187,14 @@ function Navbar() {
     const OFFSET = 80; // navbar + buffer
     const getActiveIdx = () => {
       if (Date.now() < clickCooldown.current) return; // respect click cooldown
-      const y = window.scrollY + OFFSET;
+      const navHeight = navWrapRef.current?.getBoundingClientRect().height ?? 64;
+      const y = window.scrollY + navHeight + OFFSET;
       let bestIdx = 0;
       let bestTop = -Infinity;
-      NAV_ITEMS.forEach((item, i) => {
+      LANDING_NAV_ITEMS.forEach((item, i) => {
         const el = document.querySelector(item.href) as HTMLElement | null;
         if (!el) return;
-        const top = el.offsetTop;
+        const top = el.getBoundingClientRect().top + window.scrollY;
         if (top <= y && top > bestTop) {
           bestTop = top;
           bestIdx = i;
@@ -337,7 +329,7 @@ function Navbar() {
           className="hidden lg:flex items-center gap-1 rounded-full px-2 py-1.5 relative"
           style={{ backgroundColor: "rgba(255,255,255,0.12)" }}
         >
-          {NAV_ITEMS.map((item, i) => (
+          {LANDING_NAV_ITEMS.map((item, i) => (
             <a
               key={item.key}
               ref={(el) => { linkRefs.current[i] = el; }}
@@ -360,7 +352,11 @@ function Navbar() {
                 // (the "need to click twice" bug). A GSAP tween writes the
                 // scroll position every frame, so snap never sees a stop,
                 // and autoKill:false makes the jump uninterruptible.
-                const targetY = el.getBoundingClientRect().top + window.scrollY;
+                const navHeight = navWrapRef.current?.getBoundingClientRect().height ?? 64;
+                const targetY = Math.max(
+                  0,
+                  el.getBoundingClientRect().top + window.scrollY - navHeight - 16,
+                );
                 const dist = Math.abs(targetY - window.scrollY);
                 const dur = Math.min(1.4, 0.45 + dist / 5000);
                 clickCooldown.current = Date.now() + dur * 1000 + 500;

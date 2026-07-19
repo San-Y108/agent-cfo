@@ -656,10 +656,7 @@ export function PipelineEditorial() {
   );
 
   return (
-    <div id="workflow">
-      {/* Non-pinned marker for nav IntersectionObserver */}
-      <div id="workflow-marker" className="h-px w-full" aria-hidden="true" />
-
+    <div>
       {/* Side nav — fixed left/right, toggles visibility */}
       <StageSideNav
         stages={stages}

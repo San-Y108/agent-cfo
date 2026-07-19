@@ -12,6 +12,9 @@ const files = {
   holographic: join(FRONTEND, "components/landing/holographic-card.tsx"),
   particles: join(FRONTEND, "components/landing/global-particle-background.tsx"),
   pipeline: join(FRONTEND, "components/landing/pipeline-editorial.tsx"),
+  sections: join(FRONTEND, "components/landing/landing-sections.tsx"),
+  team: join(FRONTEND, "components/landing/team-showcase.tsx"),
+  navigation: join(FRONTEND, "components/landing/velorix-hero.tsx"),
   guardrails: join(FRONTEND, "components/landing/guardrails-cta.tsx"),
   timeline: join(FRONTEND, "components/landing/build-timeline.tsx"),
 };
@@ -36,6 +39,10 @@ const forbidden = [
   ["holographic", /backdrop-blur|from-white\/\[0\.08\]/, "lifted gray card surface"],
   ["particles", /rgba\(13,\s*13,\s*13,\s*0\.9\)/, "global dark hydration overlay"],
   ["pipeline", /scrollTriggerRef=\{sectionRef\}[\s\S]{0,180}\brepel\b/, "body-copy repulsion"],
+  ["pipeline", /id="workflow"/, "duplicate workflow section id"],
+  ["team", /id="team"/, "duplicate team section id"],
+  ["timeline", /id="timeline"/, "duplicate timeline section id"],
+  ["navigation", /\.offsetTop\b/, "relative section offset tracking"],
   ["guardrails", /variants=\{reveal\}/, "whole-card opacity reveal"],
   ["guardrails", /rgba\(255,\s*255,\s*255,\s*0\.88\)/, "dimmed headline white"],
 ];
@@ -56,6 +63,14 @@ if (!source.repel.includes('addEventListener("pointermove"')) {
 }
 if (!source.particles.includes('mixBlendMode: "screen"')) {
   failures.push("particles: canvas must brighten, never darken, page content");
+}
+if (
+  (source.sections.match(/LANDING_SECTION_IDS\./g)?.length ?? 0) !== 6
+) {
+  failures.push("sections: expected six canonical navigation targets");
+}
+if (!source.navigation.includes("- navHeight - 16")) {
+  failures.push("navigation: click target must account for fixed navbar height");
 }
 
 if (failures.length) {
