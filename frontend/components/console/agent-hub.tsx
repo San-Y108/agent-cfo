@@ -229,6 +229,11 @@ function TelemetryBentoCard({
   index: number;
   compact?: boolean;
 }) {
+  const { theme } = useApp();
+  // Darken the pastel accent for the numeric value on the light theme so it
+  // stays legible; keep the original hue for the card glow.
+  const valueColor =
+    theme === "dark" ? color : `color-mix(in srgb, ${color} 60%, #0b0f0a)`;
   return (
     <BentoCard
       glowColor={color}
@@ -249,7 +254,7 @@ function TelemetryBentoCard({
           "flex items-baseline gap-1",
           compact ? "justify-center" : "mt-1.5"
         )}
-        style={{ color }}
+        style={{ color: valueColor }}
       >
         <AnimatedNumber
           value={value}
