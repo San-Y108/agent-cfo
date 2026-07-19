@@ -89,9 +89,9 @@ npx gitnexus analyze   # 索引过期时
 | 资产 | 路径 |
 |---|---|
 | 待归类投递 | `inbox/`（见 `inbox/README.md`） |
-| 路演 PPT（ppt-master） | `assets/ppt/agentcfo-pitch.pptx` |
-| 路演 PPT（物料同学 PDF） | `assets/ppt/material/agentcfo-pitch-material-team-v1.pdf` |
-| PPT 源工程 | `assets/ppt/agentcfo-pitch/` |
+| 路演 PPT（ppt-master） | `assets/theme/ppt/agentcfo-pitch.pptx` |
+| 路演 PPT（物料同学 PDF） | `assets/theme/ppt/material/agentcfo-pitch-material-team-v1.pdf` |
+| PPT 源工程 | `assets/theme/ppt/agentcfo-pitch/` |
 | 答辩视频 | `assets/video/`（链接写入 `README.md` § Demo Video） |
 | 提交清单 | `docs/pm/SUBMISSION_CHECKLIST.md` |
 | README 合并规划 | `docs/plans/README-merge-plan.md` |
@@ -100,7 +100,7 @@ npx gitnexus analyze   # 索引过期时
 
 收到 `inbox/` 新文件时：按 `inbox/README.md` 归类重命名 → 迁入 `assets/` 或 `docs/` → 删除 `inbox/` 原文件 → 同步本表与入口文档（`AGENTS.md`、`CLAUDE.md`、`docs/README.md`、`assets/README.md`）。
 
-改 ppt-master 版 PPT：`.claude/skills/ppt-master/SKILL.md`；导出后更新 `assets/ppt/agentcfo-pitch.pptx`。
+改 ppt-master 版 PPT：`.claude/skills/ppt-master/SKILL.md`；导出后更新 `assets/theme/ppt/agentcfo-pitch.pptx`。
 
 执行 README 合并时：先读 `docs/plans/README-merge-plan.md`；合并后同步 `README.md` 与 `docs/backend/`。
 

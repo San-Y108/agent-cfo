@@ -120,9 +120,9 @@ Agent Hub 聊天经后端代理 [MiniMax OpenAI 兼容 API](https://platform.min
 | 资产 | 路径 |
 |---|---|
 | 待归类投递 | `inbox/` |
-| 路演 PPT（ppt-master） | `assets/ppt/agentcfo-pitch.pptx` |
-| 路演 PPT（物料同学 PDF） | `assets/ppt/material/agentcfo-pitch-material-team-v1.pdf` |
-| PPT 源工程 | `assets/ppt/agentcfo-pitch/` |
+| 路演 PPT（ppt-master） | `assets/theme/ppt/agentcfo-pitch.pptx` |
+| 路演 PPT（物料同学 PDF） | `assets/theme/ppt/material/agentcfo-pitch-material-team-v1.pdf` |
+| PPT 源工程 | `assets/theme/ppt/agentcfo-pitch/` |
 | 答辩视频 | `assets/video/`（公开链接写入 `README.md` § Demo Video） |
 | 提交清单 | `docs/pm/SUBMISSION_CHECKLIST.md` |
 | README 合并规划 | `docs/plans/README-merge-plan.md` |

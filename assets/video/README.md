@@ -1,6 +1,6 @@
 # assets/video/ — 团队 Demo 视频（全队投放点）
 
-答辩 / Demo 视频是**全队共同交付资产**，与 `assets/ppt/`、`assets/images/` 同级。
+答辩 / Demo 视频是**全队共同交付资产**，与 `assets/theme/ppt/`、`assets/images/` 同级。
 
 ## 你怎么做（录完只需一步）
 
@@ -24,7 +24,7 @@ Next.js 不能直接读 `assets/`。构建时会自动执行：
 
 ```text
 assets/video/agentcfo-demo.mp4
-    → scripts/sync-demo-video.mjs
+    → frontend/scripts/sync-demo-video.mjs
     → frontend/public/video/agentcfo-demo.mp4（镜像，自动生成）
     → Landing #guardrails 播放器
 ```
@@ -33,7 +33,7 @@ assets/video/agentcfo-demo.mp4
 
 ## 完整 Agent 规划
 
-[`docs/plans/demo-video-landing-integration-plan.md`](../plans/demo-video-landing-integration-plan.md)
+[`docs/plans/demo-video-landing-integration-plan.md`](../../docs/plans/demo-video-landing-integration-plan.md)
 
 ## 状态
 
