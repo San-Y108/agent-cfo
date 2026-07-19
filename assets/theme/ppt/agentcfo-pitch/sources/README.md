@@ -652,13 +652,13 @@ curl.exe https://agentcfo-backend.onrender.com/health
 
 ## Project Management
 
-- [任务看板](docs/pm/TASK_BOARD.md)
-- [每日站会模板](docs/pm/DAILY_STANDUP.md)
-- [风险日志](docs/pm/RISK_LOG.md)
-- [提交材料清单](docs/pm/SUBMISSION_CHECKLIST.md)
-- [Demo 彩排检查清单](docs/pm/DEMO_REHEARSAL_CHECKLIST.md)
-- [群消息模板库](docs/pm/TEAM_SYNC_MESSAGES.md)
-- [交付总控报告](docs/pm/DELIVERY_MASTER_REPORT_2026-06-08.md)
+- [任务看板](../../../../../docs/pm/TASK_BOARD.md)
+- [每日站会模板](../../../../../docs/pm/DAILY_STANDUP.md)
+- [风险日志](../../../../../docs/pm/RISK_LOG.md)
+- [提交材料清单](../../../../../docs/pm/SUBMISSION_CHECKLIST.md)
+- [Demo 彩排检查清单](../../../../../docs/pm/DEMO_REHEARSAL_CHECKLIST.md)
+- [群消息模板库](../../../../../docs/pm/TEAM_SYNC_MESSAGES.md)
+- [交付总控报告](../../../../../docs/pm/DELIVERY_MASTER_REPORT_2026-06-08.md)
 
 ## Team
 
@@ -701,7 +701,7 @@ P2:
 
 P2 live integrations are not enabled by default. Do not claim Request Finance invoice creation evidence, Sablier, Safe, multichain execution, or multi-agent authorization is live without explicit approval, credentials, and new tests.
 
-Frontend/PM handoff for the demo-safe P2 surface is in [`docs/pm/P2_DEMO_HANDOFF.md`](docs/pm/P2_DEMO_HANDOFF.md). Backend owns machine-readable contracts and simulation endpoints; PM/frontend own scenario prose, presenter notes, storyboard UI, and forbidden-claims copy packaging.
+Frontend/PM handoff for the demo-safe P2 surface is in [`docs/pm/P2_DEMO_HANDOFF.md`](../../../../../docs/pm/P2_DEMO_HANDOFF.md). Backend owns machine-readable contracts and simulation endpoints; PM/frontend own scenario prose, presenter notes, storyboard UI, and forbidden-claims copy packaging.
 
 ## P2F Request Finance Live Spike
 

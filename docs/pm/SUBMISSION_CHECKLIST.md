@@ -39,7 +39,7 @@
 
 | # | 材料 | 负责人 | 说明 | 状态 |
 |---|------|--------|------|------|
-| 15 | PPT | 物料 | ppt-master：`assets/ppt/agentcfo-pitch.pptx`；物料同学 PDF：`assets/ppt/material/agentcfo-pitch-material-team-v1.pdf` | ☑ |
+| 15 | PPT | 物料 | ppt-master：`assets/theme/ppt/agentcfo-pitch.pptx`；物料同学 PDF：`assets/theme/ppt/material/agentcfo-pitch-material-team-v1.pdf` | ☑ |
 | 16 | 5 分钟路演稿 | 总控 | 逐段逐句稿，含时间标注 | ☐ |
 | 17 | 路演彩排 ×2 | 总控 | 至少彩排两次，录像回看，记录问题 | ☐ |
 | 18 | 备用方案 | 总控 + 物料 | 本地录屏版本 + 全流程截图包 + 备用浏览器 + 离线 PPT | ☐ |

@@ -51,8 +51,8 @@
 - `frontend/` — Next.js Landing + Console
 - `docs/pm/` — 任务看板、提交清单、彩排清单
 - `docs/backend/` — CAW、部署、env、P2、测试深文档
-- `docs/speak/` — 路演 / Demo 陈述稿、团队分工口述、录制大纲
-- `assets/ppt/` — 路演 PPT 源工程与导出
+- `assets/theme/script/` — 路演 / Demo 陈述稿、团队分工口述、录制大纲
+- `assets/theme/ppt/` — 路演 PPT 源工程与导出
 - `assets/images/readme/` — README Showcase 与团队头像
 
 ---
@@ -94,7 +94,7 @@ Navbar 显示 **Mock 模式** 徽章；支持中英文。Demo 记忆点：**Bob 
 
 ## 六、PPT 路演内容（14 页）
 
-**文件：** `assets/ppt/agentcfo-pitch.pptx` · 备注：`assets/ppt/agentcfo-pitch/notes/`
+**文件：** `assets/theme/ppt/agentcfo-pitch.pptx` · 备注：`assets/theme/ppt/agentcfo-pitch/notes/`
 
 | 页 | 主题 | 内容要点 |
 |---|---|---|
@@ -113,7 +113,7 @@ Navbar 显示 **Mock 模式** 徽章；支持中英文。Demo 记忆点：**Bob 
 | 13 | Team | 六人分工 |
 | 14 | Ending | CTA + 链接 |
 
-物料 PDF：`assets/ppt/material/agentcfo-pitch-material-team-v1.pdf`
+物料 PDF：`assets/theme/ppt/material/agentcfo-pitch-material-team-v1.pdf`
 
 ---
 

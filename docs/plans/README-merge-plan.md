@@ -2,14 +2,14 @@
 
 > **状态**：✅ 已执行（2026-06-13）  
 > **归档草案**：[`docs/backup/README.preview-archived.md`](../backup/README.preview-archived.md)  
-> **规范**：按全局 [`readme-polish`](../../.claude/skills/readme-polish/SKILL.md) 技能 13 段结构打磨  
+> **规范**：按全局 `readme-polish` skill 的 13 段结构打磨
 > **最后更新**：2026-06-13
 
 ---
 
 ## 1. 目标
 
-将 [`README.preview.md`](../../README.preview.md)（polish 后的项目首页）合并进根目录 [`README.md`](../../README.md)，同时：
+将现已归档的 [`README.preview-archived.md`](../backup/README.preview-archived.md) 合并进根目录 [`README.md`](../../README.md)，同时：
 
 - **不丢失**原 README 中的技术事实、安全边界与联调细节
 - **不整页覆盖**——原完整版备份到 `docs/backup/`，超长技术块下沉到 `docs/backend/`
@@ -22,7 +22,7 @@
 ```text
 agent-cfo/
 ├── README.md                      ← 合并后的正式首页（GitHub 入口）
-├── README.preview.md              ← 合并草案；确认后可删或归档到 docs/backup/
+├── docs/backup/README.preview-archived.md ← 已归档的合并草案
 ├── docs/
 │   ├── backup/                    ← 仅放备份，不放业务文档
 │   │   ├── README.md              ← 本目录说明
@@ -37,11 +37,11 @@ agent-cfo/
 │   │   └── TESTING.md
 │   └── plans/
 │       └── README-merge-plan.md   ← 本文件
-└── assets/images/readme/          ← README 用图（banner、showcase、团队头像）
+├── assets/images/readme/          ← README 用图（banner、showcase）
     ├── banner.png
     ├── landing-*.png
-    ├── console-*.png
-    └── team/*-role.jpg
+│   └── console-*.png
+└── assets/images/avatar/          ← 团队头像与 3D 吉祥物
 ```
 
 | 规则 | 说明 |

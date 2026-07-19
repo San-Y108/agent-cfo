@@ -43,9 +43,9 @@
 
 → **6 月 10 日** CAW Phase 4C 联调，Sepolia tx 写入 README；demo-sample 修到四人场景对齐
 
-→ **6 月 13 日** README 首页 polish：技术细节下沉 `docs/backend/`，备份在 `docs/backup/`，路演陈述在 `docs/speak/`
+→ **6 月 13 日** README 首页 polish：技术细节下沉 `docs/backend/`，备份在 `docs/backup/`，路演陈述在 `assets/theme/script/`
 
-→ 评委若要深挖：PPT 在 `assets/ppt/`，深文档在 `docs/backend/CAW_ADAPTER.md`，彩排清单在 `docs/pm/DEMO_REHEARSAL_CHECKLIST.md`
+→ 评委若要深挖：PPT 在 `assets/theme/ppt/`，深文档在 `docs/backend/CAW_ADAPTER.md`，彩排清单在 `docs/pm/DEMO_REHEARSAL_CHECKLIST.md`
 
 ---
 
@@ -79,7 +79,7 @@
 
 ## PPT · 路演幻灯片与仓库叙事对齐（约 30–45 秒）
 
-→ 文件：**assets/ppt/agentcfo-pitch.pptx**，共 14 页
+→ 文件：**assets/theme/ppt/agentcfo-pitch.pptx**，共 14 页
 
 → **封面 + 痛点**：30 秒建立共鸣
 

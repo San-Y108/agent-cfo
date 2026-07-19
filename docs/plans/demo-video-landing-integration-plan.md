@@ -13,7 +13,7 @@
 | 原则 | 说明 |
 |---|---|
 | **唯一投放点（人）** | 仓库根目录 **`assets/video/agentcfo-demo.mp4`** |
-| **与 PPT / 海报同级** | 和 `assets/ppt/`、`assets/images/` 一样，归团队交付资产 |
+| **与 PPT / 海报同级** | 和 `assets/theme/ppt/`、`assets/images/` 一样，归团队交付资产 |
 | **禁止要求队友拖进 `frontend/`** | 前端目录只放**构建时自动同步的镜像**，不由人手动维护 |
 | **Agent 适配时** | 只认 `assets/video/` 为源；运行 `scripts/sync-demo-video.mjs` 同步到 `frontend/public/video/` |
 

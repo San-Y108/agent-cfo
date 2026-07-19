@@ -15,14 +15,15 @@ assets/images/readme/
 ├── landing-built-by-teams.png
 ├── landing-faq.png
 ├── landing-footer.png
-├── console-agent-hub.png # Console Showcase（可继续补 treasury / policy）
-└── team/
-    ├── zanyk-role.jpg      # 微信头像（非 3D 吉祥物）
-    ├── huan-role.jpg
-    └── ...
+└── console-*.png          # Console 五模块 Showcase
 ```
 
 归类来源：队友投递 [`inbox/`](../../inbox/) → 复制/重命名到本目录 → 更新 README → 删除 `inbox/` 原文件。
+
+## 团队头像与品牌图标
+
+- 团队角色头像与 3D 吉祥物：[`avatar/`](avatar/)
+- Logo 与品牌图标源文件：[`icon/`](icon/)
 
 ## Console 设计资产
 

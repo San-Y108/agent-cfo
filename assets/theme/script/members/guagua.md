@@ -11,11 +11,11 @@ AgentCFO 技术栈很深，但路演不能只有代码。我的工作是把「DA
 **我负责和已经交付的视觉资产：**
 
 - README Banner（3:1，`assets/images/readme/banner.png`）和 Landing 八张 Showcase 截图的整理归类（从 `inbox/` 迁入 `assets/images/readme/`）
-- 六位队友微信头像 → `assets/images/readme/team/*-role.jpg`，用于 README 团队表
-- 物料版路演 PDF：`assets/ppt/material/agentcfo-pitch-material-team-v1.pdf`
+- 六位队友微信头像 → `assets/images/avatar/*-role.jpg`，用于 README 团队表
+- 物料版路演 PDF：`assets/theme/ppt/material/agentcfo-pitch-material-team-v1.pdf`
 - 与总控对齐 ppt-master 产出的 14 页 PPT 视觉方向（Ramp 风格、深色金融科技感）
 
-**PPT 内容我配合的结构（`assets/ppt/agentcfo-pitch.pptx`）：**
+**PPT 内容我配合的结构（`assets/theme/ppt/agentcfo-pitch.pptx`）：**
 
 | 页码 | 主题 | 我要传达的感觉 |
 |---|---|---|

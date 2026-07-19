@@ -3,7 +3,7 @@
 > 用途：2026-06-14 Demo Day 现场 / 预录视频  
 > 目标时长：**110–120 秒**（留 5 秒缓冲）  
 > 演示入口：https://agentcfo-frontend.vercel.app  
-> 配套材料：PPT `assets/ppt/agentcfo-pitch.pptx` · 完整版脚本见 `docs/speak/`
+> 配套材料：PPT `assets/theme/ppt/agentcfo-pitch.pptx` · 完整版脚本见 `assets/theme/script/`
 
 ---
 

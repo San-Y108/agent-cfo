@@ -157,7 +157,7 @@
 | T-092 | README 终版 | 总控 + 前端 | 14 张 Console/Landing 截图已放入 assets/images/readme/，README 章节齐全 | 6月11日 | ✅ DONE |
 | T-093 | PPT 终版 | 前端兜底 | agentcfo-pitch.pptx（14 页含 svg_final）+ material PDF | 6月11日 | ✅ DONE |
 | T-094 | 录制 Demo 视频 | 前端兜底 | agentcfo-demo.mp4（1 分 50 秒精简版，11.2MB）已入库 + Landing 播放器已适配 | 6月11日 | ✅ DONE |
-| T-095 | 路演讲稿终版 | 总控 + 前端 | docs/speak/ 下有 demo-script-2min-20260614.md + master-narrative.md + outline-flow.md + 6 人分稿 | 6月11日 | ✅ DONE |
+| T-095 | 路演讲稿终版 | 总控 + 前端 | assets/theme/script/ 下有 demo-script-2min-20260614.md + master-narrative.md + outline-flow.md + 6 人分稿 | 6月11日 | ✅ DONE |
 | T-096 | 第一次完整彩排 | 总控 | 录屏 + 问题清单 | 6月11日 | 🔴 BLOCKED（已过截止，无彩排记录） |
 
 ---

@@ -63,7 +63,7 @@
 1. 视频放入 **`assets/video/agentcfo-demo.mp4`**（团队共同资产，不要拖进 frontend）
 2. 对 Agent：**「按 demo-video-landing-integration-plan 适配」**
 
-详见 [`docs/plans/demo-video-landing-integration-plan.md`](../plans/demo-video-landing-integration-plan.md)
+详见 [`docs/plans/demo-video-landing-integration-plan.md`](../../../docs/plans/demo-video-landing-integration-plan.md)
 
 ## 相关陈述稿
 

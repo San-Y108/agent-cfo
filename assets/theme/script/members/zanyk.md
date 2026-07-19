@@ -23,6 +23,6 @@
 - 协调 demo-sample 与白名单修复，让 Bob blocked、Data API 5 USDC 与 Demo 脚本一致
 - 维护 `AGENTS.md`、`CLAUDE.md`，让多 Agent 协作时不越界改代码
 
-**PPT 这边：** 我用 ppt-master 流程产出了 14 页路演稿 `assets/ppt/agentcfo-pitch.pptx`，从 Problem → Flow → CAW Evidence → Team 全覆盖；每页演讲备注在 `assets/ppt/agentcfo-pitch/notes/`。物料同学也提供了 PDF 同稿 `assets/ppt/material/agentcfo-pitch-material-team-v1.pdf`。
+**PPT 这边：** 我用 ppt-master 流程产出了 14 页路演稿 `assets/theme/ppt/agentcfo-pitch.pptx`，从 Problem → Flow → CAW Evidence → Team 全覆盖；每页演讲备注在 `assets/theme/ppt/agentcfo-pitch/notes/`。物料同学也提供了 PDF 同稿 `assets/theme/ppt/material/agentcfo-pitch-material-team-v1.pdf`。
 
 如果评委只问一句「你们怎么在六天里交付的」——我的回答是：**先钉 P0 闭环，再补 CAW 真证据，最后把故事讲清楚**；代码可以 mock，但边界不能糊。

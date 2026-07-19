@@ -15,7 +15,7 @@
 
 README 我从技术手册打磨成赛方可读的首页：Hero、Landing Showcase、Console Showcase、赛事信息、两笔 CAW testnet 证据。技术细节下沉到 `docs/backend/`，合并前完整版备份在 `docs/backup/`。
 
-PPT 方面，我推动 ppt-master 产出 14 页 `assets/ppt/agentcfo-pitch.pptx`，每页演讲备注在 `assets/ppt/agentcfo-pitch/notes/`；物料同学也有 PDF 同稿。
+PPT 方面，我推动 ppt-master 产出 14 页 `assets/theme/ppt/agentcfo-pitch.pptx`，每页演讲备注在 `assets/theme/ppt/agentcfo-pitch/notes/`；物料同学也有 PDF 同稿。
 
 ---
 
@@ -35,7 +35,7 @@ PPT 方面，我推动 ppt-master 产出 14 页 `assets/ppt/agentcfo-pitch.pptx`
 
 我是呱呱，负责物料、设计和内容——让评委愿意继续看下去。
 
-我整理 README Banner、Landing 八张 Showcase、团队微信头像（`assets/images/readme/`），归类 `inbox/` 投递物，维护物料版 PDF `assets/ppt/material/agentcfo-pitch-material-team-v1.pdf`。
+我整理 README Banner、Landing 八张 Showcase、团队微信头像（`assets/images/readme/`），归类 `inbox/` 投递物，维护物料版 PDF `assets/theme/ppt/material/agentcfo-pitch-material-team-v1.pdf`。
 
 PPT 14 页结构：封面定位 → 痛点 → 方案与五步流程 → 能力与架构 → Demo 四人场景 → CAW 证据 → 技术/API/路线图 → 赛道匹配 → 团队 → 收尾 CTA。第 7 页 Bob 红字 blocked 是记忆点；第 8 页 tx hash 只陈述事实，不夸大。
 
