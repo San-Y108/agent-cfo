@@ -4,6 +4,7 @@ import React from "react";
 import { motion } from "framer-motion";
 import type { LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useApp } from "@/lib/i18n/context";
 
 interface QuickActionButtonProps {
   label: string;
@@ -25,6 +26,13 @@ export function QuickActionButton({
   disabled = false,
   onClick,
 }: QuickActionButtonProps) {
+  const { theme } = useApp();
+  // The brand accents (cyan/violet/lime) are light pastels tuned for dark mode;
+  // on the light theme they wash out, so darken the text/icon for readable
+  // contrast while keeping the tinted border/background as-is.
+  const inkColor =
+    theme === "dark" ? color : `color-mix(in srgb, ${color} 58%, #0b0f0a)`;
+
   return (
     <div className="group relative overflow-hidden rounded-full p-[1px]">
       <span
@@ -65,7 +73,7 @@ export function QuickActionButton({
             : {
                 borderColor: `${color}45`,
                 backgroundColor: `${color}0c`,
-                color,
+                color: inkColor,
                 boxShadow: `0 0 16px -8px ${color}40`,
               }
         }
@@ -111,7 +119,7 @@ export function QuickActionButton({
             size={11}
             strokeWidth={primary ? 2.25 : 2}
             className={primary ? "text-[#0D0D0D]" : undefined}
-            style={primary ? undefined : { color }}
+            style={primary ? undefined : { color: inkColor }}
           />
         </span>
         <span className="relative z-10 tracking-tight">{label}</span>
