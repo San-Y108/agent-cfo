@@ -197,7 +197,7 @@ export function ConsoleNavbar() {
           </div>
 
           {/* Right: status + controls */}
-          <div className="flex min-w-0 items-center justify-end gap-1.5 lg:gap-2">
+          <div className="flex min-w-0 items-center justify-end gap-2 lg:gap-2.5">
             <div className="hidden 2xl:flex items-center gap-1.5 rounded-full border border-border-token bg-surface-2/50 px-2.5 py-1">
               <Activity size={10} className="text-emerald-500 dark:text-emerald-400" />
               <span className="text-[10px] font-mono uppercase tracking-wider text-fg-muted">
@@ -216,8 +216,10 @@ export function ConsoleNavbar() {
 
             <span
               className={cn(
-                "hidden xl:inline 2xl:hidden rounded-full border border-border-token bg-surface-2/50 px-2 py-1 text-[10px] font-mono font-semibold uppercase tracking-wider",
-                mockMode ? "text-hud-lime" : "text-hud-cyan"
+                "hidden xl:inline 2xl:hidden rounded-full border px-2 py-1 text-[10px] font-mono font-semibold uppercase tracking-wider",
+                mockMode
+                  ? "border-hud-lime/35 bg-hud-lime/10 text-hud-lime"
+                  : "border-hud-cyan/35 bg-hud-cyan/10 text-hud-cyan"
               )}
             >
               {mockMode ? _('演示', 'Mock') : _('实盘', 'Real')}
