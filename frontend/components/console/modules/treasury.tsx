@@ -35,10 +35,8 @@ import { AnimatedNumber } from "@/components/ui/aceternity/animated-number";
 import { ColourfulText } from "@/components/ui/aceternity/colourful-text";
 import { Sparkles as SparklesFX } from "@/components/ui/aceternity/sparkles";
 import { GridBackground } from "@/components/ui/aceternity/background";
-import { BentoCard } from "@/components/ui/aceternity/bento-grid";
 import { HolographicButton } from "@/components/ui/holographic-button";
 import { FlowTimeline } from "@/components/console/flow-timeline";
-import { RiskGateAnimation } from "@/components/console/risk-gate-anim";
 import { ModuleStageLayout } from "@/components/console/module-stage-layout";
 import {
   HudLabel,
@@ -255,8 +253,8 @@ export function TreasuryModule() {
               )}
             </AnimatePresence>
 
-            <div className="relative z-10 flex min-h-0 flex-1 flex-col p-4 md:p-5">
-              <div className="mb-3 shrink-0">
+            <div className="relative z-10 flex min-h-0 flex-1 flex-col p-3 md:p-4">
+              <div className="mb-2 shrink-0">
                 <FlowTimeline
                   currentStep={step}
                   steps={[
@@ -300,7 +298,6 @@ export function TreasuryModule() {
             budgetRule={budgetRule}
             activityLog={activityLog}
             totalBlocked={totalBlocked}
-            blockedItems={blockedItems}
             totalReady={totalReady}
             cawStatuses={cawStatuses}
             cawRefreshing={cawRefreshing}
@@ -430,7 +427,6 @@ function TreasuryDetailDeck({
   budgetRule,
   activityLog,
   totalBlocked,
-  blockedItems,
   totalReady,
   cawStatuses,
   cawRefreshing,
@@ -444,7 +440,6 @@ function TreasuryDetailDeck({
   budgetRule: BudgetRules;
   activityLog: ActivityEntry[];
   totalBlocked: number;
-  blockedItems: PaymentPlanItem[];
   totalReady: number;
   cawStatuses: CawStatus[];
   cawRefreshing: boolean;
@@ -459,8 +454,11 @@ function TreasuryDetailDeck({
 
   return (
     <div className="space-y-2">
+      {/* Single honeycomb HUD — the blocked state is embedded into the gauge
+          (coral "Bob Block" cell + inline reason) instead of a separate stacked
+          rectangular banner, so nothing gets pushed below the fold. */}
       {step !== FlowStep.Done && (
-        <DetailDeckShell glowColor="cyan" className="!p-3">
+        <DetailDeckShell glowColor={totalBlocked > 0 ? "coral" : "cyan"} className="!p-3">
           <RiskHudPanel
             step={step}
             records={records}
@@ -473,111 +471,78 @@ function TreasuryDetailDeck({
         </DetailDeckShell>
       )}
 
-      {totalBlocked > 0 && step !== FlowStep.Idle && step !== FlowStep.Scanning && (
-        <FrostedPanel glowColor="coral" scanline className="p-3">
-          <RiskGateAnimation
-            isBlocked
-            reason={_(
-              `${blockedItems.length} 笔被拦截（${totalBlocked} USDC）：${blockedItems[0]?.riskReason}`,
-              `${blockedItems.length} blocked (${totalBlocked} USDC): ${blockedItems[0]?.riskReason}`
-            )}
-          />
-        </FrostedPanel>
-      )}
-
       {step === FlowStep.Done && (
         <>
-          {/* Compact audit list */}
-          <div className="rounded-xl border border-border-token bg-surface-2/50 p-3">
-            <div className="mb-2 flex items-center gap-2">
-              <ShieldAlert className="h-3.5 w-3.5 text-hud-violet" />
-              <span className="text-xs font-bold text-fg">{_("审计快照", "Audit Snapshot")}</span>
-              <span className="rounded-full bg-hud-violet/10 px-1.5 py-0.5 font-mono text-[8px] text-fg-subtle">
-                IMMUTABLE
+          {/* Header — Audit & CAW merged into one dense strip */}
+          <div className="flex items-center gap-2">
+            <ShieldAlert className="h-3.5 w-3.5 text-hud-violet" />
+            <span className="text-xs font-bold text-fg">{_("审计与 CAW", "Audit & CAW")}</span>
+            <span className="rounded-full bg-hud-violet/10 px-1.5 py-0.5 font-mono text-[8px] text-fg-subtle">
+              IMMUTABLE
+            </span>
+            {auditReportId && !isMockMode() && (
+              <span className="truncate font-mono text-[8px] text-fg-muted">
+                {auditReportId.slice(0, 10)}…
               </span>
-              {auditReportId && !isMockMode() && (
-                <span className="ml-auto truncate font-mono text-[8px] text-fg-muted">
-                  {auditReportId.slice(0, 10)}…
-                </span>
-              )}
-            </div>
-            <div className="space-y-1">
-              {plan.map((item) => (
-                <div
-                  key={item.record.id}
-                  className="flex items-center justify-between rounded-lg border border-border-token/50 bg-surface-2/40 px-2 py-1.5"
-                >
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate text-[11px] font-medium text-fg">{item.record.name}</p>
-                    <p className="truncate font-mono text-[9px] text-fg-subtle">
-                      {item.txHash ? item.txHash.slice(0, 16) + "…" : "—"}
-                    </p>
-                  </div>
-                  <div className="ml-2 shrink-0 text-right">
-                    {item.status === "Executed" ? (
-                      <span className="flex items-center gap-1 text-[10px] font-bold text-success">
-                        <CheckCircle className="h-3 w-3" /> EXEC
-                      </span>
-                    ) : (
-                      <span className="flex items-center gap-1 text-[10px] font-bold text-hud-coral">
-                        <XCircle className="h-3 w-3" /> BLOCK
-                      </span>
-                    )}
-                    <p className="text-[9px] text-fg-subtle">{item.record.amount} USDC</p>
-                  </div>
-                </div>
-              ))}
-            </div>
+            )}
+            <button
+              type="button"
+              onClick={onRefreshCaw}
+              disabled={cawRefreshing}
+              className="ml-auto flex items-center gap-1 rounded-md border border-border-token bg-surface-2/60 px-2 py-1 text-[10px] text-fg transition-colors hover:bg-surface-hover disabled:opacity-50"
+            >
+              <RefreshCw className={cn("h-3 w-3 text-hud-blue", cawRefreshing && "animate-spin")} />
+              {cawRefreshing ? _("刷新中", "Syncing") : _("刷新 CAW", "Refresh")}
+            </button>
           </div>
 
-          {/* Compact CAW status */}
-          <div className="rounded-xl border border-border-token bg-surface-2/50 p-3">
-            <div className="mb-2 flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <RefreshCw className={cn("h-3.5 w-3.5 text-hud-blue", cawRefreshing && "animate-spin")} />
-                <span className="text-xs font-bold text-fg">{_("CAW 状态", "CAW Status")}</span>
-              </div>
-              <button
-                type="button"
-                onClick={onRefreshCaw}
-                disabled={cawRefreshing}
-                className="flex items-center gap-1 rounded-md border border-border-token bg-surface-2/60 px-2 py-1 text-[10px] text-fg transition-colors hover:bg-surface-hover disabled:opacity-50"
-              >
-                <RefreshCw className={cn("h-3 w-3", cawRefreshing && "animate-spin")} />
-                {cawRefreshing ? _("…", "…") : _("刷新", "Refresh")}
-              </button>
-            </div>
-            {cawStatuses.length === 0 ? (
-              <p className="text-[10px] text-fg-subtle">{_("暂无 CAW 状态", "No CAW status")}</p>
-            ) : (
-              <div className="space-y-1">
-                {cawStatuses.map((status) => (
-                  <div
-                    key={status.cawRequestId}
-                    className="flex items-center justify-between rounded-lg border border-border-token/50 bg-surface-2/40 px-2 py-1.5"
-                  >
-                    <div className="min-w-0">
-                      <p className="text-[11px] font-medium text-fg">{status.paymentItemId}</p>
-                      <p className="truncate font-mono text-[9px] text-fg-subtle">
-                        {status.txHash ? status.txHash.slice(0, 18) + "…" : _("等待刷新…", "Pending refresh…")}
-                      </p>
-                    </div>
-                    <span
-                      className={cn(
-                        "ml-2 shrink-0 rounded-full px-2 py-0.5 text-[9px] font-bold uppercase",
-                        status.normalizedStatus === "Executed"
-                          ? "bg-success/10 text-success"
-                          : status.normalizedStatus === "Failed"
-                          ? "bg-hud-coral/10 text-hud-coral"
-                          : "bg-amber-500/10 text-amber-500"
+          {/* One dense chip per contributor — merges audit result + CAW tx hash;
+              status is carried by color, so no stacked rectangular list. */}
+          <div className="grid grid-cols-2 gap-2 lg:grid-cols-4">
+            {plan.map((item) => {
+              const exec = item.status === "Executed";
+              const caw = cawStatuses.find((s) => s.paymentItemId === item.record.id);
+              const hash = item.txHash ?? caw?.txHash ?? null;
+              return (
+                <div
+                  key={item.record.id}
+                  title={exec ? hash ?? undefined : item.riskReason}
+                  className={cn(
+                    "rounded-lg border px-2 py-1.5",
+                    exec ? "border-success/20 bg-success/5" : "border-hud-coral/25 bg-hud-coral/5"
+                  )}
+                >
+                  <div className="flex items-center justify-between gap-1">
+                    <span className="flex min-w-0 items-center gap-1.5">
+                      {exec ? (
+                        <CheckCircle className="h-3.5 w-3.5 shrink-0 text-success" />
+                      ) : (
+                        <XCircle className="h-3.5 w-3.5 shrink-0 text-hud-coral" />
                       )}
-                    >
-                      {status.normalizedStatus}
+                      <span className="truncate text-[12px] font-semibold text-fg">
+                        {item.record.name}
+                      </span>
+                    </span>
+                    <span className="shrink-0 font-mono text-[11px] font-semibold text-fg">
+                      {item.record.amount}
+                      <span className="ml-0.5 text-[8px] text-fg-subtle">USDC</span>
                     </span>
                   </div>
-                ))}
-              </div>
-            )}
+                  <p
+                    className={cn(
+                      "mt-0.5 truncate font-mono text-[8px]",
+                      exec ? "text-fg-subtle" : "text-hud-coral/80"
+                    )}
+                  >
+                    {exec
+                      ? hash
+                        ? hash.slice(0, 18) + "…"
+                        : _("等待刷新…", "Pending refresh…")
+                      : item.riskReason}
+                  </p>
+                </div>
+              );
+            })}
           </div>
 
           {/* Inline summary stats */}
@@ -810,7 +775,9 @@ function RiskHudPanel({
 }) {
   const { lang } = useApp();
   const readyCount = plan.filter((i) => i.status === "Ready" || i.status === "Executed").length;
-  const blockedCount = plan.filter((i) => i.status === "Blocked").length;
+  const blockedItems = plan.filter((i) => i.status === "Blocked");
+  const blockedCount = blockedItems.length;
+  const firstBlocked = blockedItems[0];
   const checks = records.length;
   const score = checks === 0 ? 0 : Math.round((readyCount / checks) * 100);
   const hasPlan = plan.length > 0;
@@ -836,30 +803,30 @@ function RiskHudPanel({
       angle: 90,
     },
     {
-      label: _("Bob", "Bob"),
-      value: _("拦截", "Block"),
-      status: "warn" as const,
+      label: firstBlocked ? firstBlocked.record.name : _("护栏", "Guard"),
+      value: blockedCount > 0 ? _("拦截", "Block") : _("放行", "Clear"),
+      status: blockedCount > 0 ? ("warn" as const) : ("ok" as const),
       angle: 180,
     },
   ] as const;
 
-  const radius = 66;
+  const radius = 58;
 
   return (
     <div className="flex flex-col gap-3 md:flex-row md:items-stretch">
       {/* Honeycomb HUD — left side */}
-      <div className="relative mx-auto h-[210px] w-full max-w-[280px] shrink-0 md:mx-0">
+      <div className="relative mx-auto h-[188px] w-full max-w-[280px] shrink-0 md:mx-0">
         {/* Dashed connectors */}
-        <svg viewBox="0 0 280 210" className="absolute inset-0 h-full w-full pointer-events-none">
+        <svg viewBox="0 0 280 188" className="absolute inset-0 h-full w-full pointer-events-none">
           {indicators.map((item) => {
             const p = polar(item.angle, radius);
             return (
               <line
                 key={item.label}
                 x1="140"
-                y1="105"
+                y1="94"
                 x2={140 + p.x}
-                y2={105 + p.y}
+                y2={94 + p.y}
                 stroke="var(--border-token)"
                 strokeOpacity="0.45"
                 strokeWidth="1"
@@ -898,8 +865,22 @@ function RiskHudPanel({
         })}
       </div>
 
-      {/* Latest activity — right side, no scroll */}
+      {/* Right side — embedded blocked reason (no separate banner) + latest log */}
       <div className="flex flex-1 flex-col justify-center rounded-lg border border-border-token/50 bg-surface-2/30 p-2">
+        {blockedCount > 0 && firstBlocked && (
+          <div className="mb-1.5 flex items-center gap-2 border-b border-hud-coral/25 pb-1.5">
+            <ShieldAlert className="h-4 w-4 shrink-0 text-hud-coral" />
+            <span className="min-w-0 flex-1 truncate text-[12px] font-semibold text-hud-coral">
+              {_(
+                `${firstBlocked.record.name} 拦截 · ${firstBlocked.riskReason}`,
+                `${firstBlocked.record.name} blocked · ${firstBlocked.riskReason}`
+              )}
+            </span>
+            <span className="shrink-0 font-mono text-[10px] text-hud-coral/70">
+              {firstBlocked.record.amount} USDC
+            </span>
+          </div>
+        )}
         <p className="mb-1 text-[8px] font-bold uppercase tracking-wider text-fg-muted">
           {_("最新活动", "Latest")}
         </p>
@@ -1098,7 +1079,6 @@ function ActionPanel({
   _: (zh: string, en: string) => string;
 }) {
   const readyCount = plan.filter((i) => i.status === "Ready").length;
-  const blockedCount = plan.filter((i) => i.status === "Blocked").length;
 
   return (
     <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
@@ -1116,24 +1096,8 @@ function ActionPanel({
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto"
+          className="flex min-h-0 flex-1 flex-col justify-center gap-2.5 overflow-y-auto"
         >
-          <div className="p-4 rounded-lg border border-dashed border-border-token bg-surface-2/40">
-            <div className="flex items-center gap-3 mb-2">
-              <div className="w-8 h-8 rounded-full bg-hud-cyan/10 border border-hud-cyan/20 flex items-center justify-center text-hud-cyan text-xs font-bold">
-                1
-              </div>
-              <div>
-                <div className="text-sm font-medium text-fg">
-                  {_("生成付款计划", "Generate Payment Plan")}
-                </div>
-                <div className="text-[11px] text-fg-subtle">
-                  {_("AI 将扫描所有记录并运行风险检查", "AI will scan all records and run risk checks")}
-                </div>
-              </div>
-            </div>
-          </div>
-
           <div className="relative">
             <SparklesFX
               count={6}
@@ -1151,19 +1115,24 @@ function ActionPanel({
             </HolographicButton>
           </div>
 
-          <div className="text-[11px] text-fg-subtle space-y-1">
-            <div className="flex justify-between">
-              <span>{_("当前记录数", "Records")}</span>
-              <span className="font-mono">{records.length}</span>
-            </div>
-            <div className="flex justify-between">
-              <span>{_("月度预算", "Budget")}</span>
-              <span className="font-mono">{budgetRule.monthlyBudget} USDC</span>
-            </div>
-            <div className="flex justify-between">
-              <span>{_("单笔限额", "Limit")}</span>
-              <span className="font-mono">{budgetRule.singlePaymentLimit} USDC</span>
-            </div>
+          {/* Compact stat row — keeps budget context visible without an inner scrollbar */}
+          <div className="grid grid-cols-3 gap-2">
+            {[
+              { label: _("记录", "Records"), value: `${records.length}`, unit: "" },
+              { label: _("月度预算", "Budget"), value: `${budgetRule.monthlyBudget}`, unit: "USDC" },
+              { label: _("单笔限额", "Limit"), value: `${budgetRule.singlePaymentLimit}`, unit: "USDC" },
+            ].map((m) => (
+              <div
+                key={m.label}
+                className="rounded-lg border border-border-token/60 bg-surface-2/40 px-2 py-1 text-center"
+              >
+                <div className="text-[10px] text-fg-subtle">{m.label}</div>
+                <div className="font-mono text-[13px] font-semibold text-fg">
+                  {m.value}
+                  {m.unit && <span className="ml-0.5 text-[9px] text-fg-subtle">{m.unit}</span>}
+                </div>
+              </div>
+            ))}
           </div>
         </motion.div>
       )}
@@ -1208,20 +1177,12 @@ function ActionPanel({
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto"
+          className="flex min-h-0 flex-1 flex-col gap-3 overflow-hidden"
         >
-          <div className="grid shrink-0 grid-cols-2 gap-2">
-            <BentoCard index={0} padding="sm" glowColor="#34d399" className="text-center">
-              <div className="text-lg font-bold text-success">{readyCount}</div>
-              <div className="text-[10px] text-fg-subtle uppercase">{_("通过", "Passed")}</div>
-            </BentoCard>
-            <BentoCard index={1} padding="sm" glowColor="#FB7185" className="text-center">
-              <div className="text-lg font-bold" style={{ color: "#FB7185" }}>{blockedCount}</div>
-              <div className="text-[10px] text-fg-subtle uppercase">{_("拦截", "Blocked")}</div>
-            </BentoCard>
-          </div>
-
-          <motion.div className="min-h-0 flex-1 space-y-2 overflow-y-auto pr-1">
+          {/* Compact chip grid — every contributor fits at a glance without an
+              inner scrollbar (counts + reasons live in the right Risk rail and
+              the RISK & AUDIT deck). */}
+          <div className="grid min-h-0 flex-1 auto-rows-min grid-cols-2 gap-2 overflow-y-auto pr-1 sm:grid-cols-4">
             {[...plan]
               .sort((a, b) => (a.status === "Blocked" ? 0 : 1) - (b.status === "Blocked" ? 0 : 1))
               .map((item, i) => {
@@ -1230,84 +1191,62 @@ function ActionPanel({
                   <motion.div
                     layout
                     key={item.record.id}
-                    initial={{ opacity: 0, x: -8 }}
-                    animate={
+                    title={
                       isBlocked
-                        ? { opacity: 1, x: [-8, 0, -3, 3, -3, 0] }
-                        : { opacity: 1, x: 0 }
+                        ? item.riskReason
+                        : _("通过所有检查", "All checks passed")
                     }
+                    initial={{ opacity: 0, y: 6 }}
+                    animate={{ opacity: 1, y: 0 }}
                     transition={{
                       delay: i * 0.05,
-                      x: isBlocked
-                        ? { delay: i * 0.05 + 0.15, duration: 0.4 }
-                        : { delay: i * 0.05 },
                       layout: { type: "spring", stiffness: 420, damping: 32 },
                     }}
                     className={cn(
-                      "p-3 rounded-field border flex items-center justify-between",
+                      "flex items-center gap-2 rounded-lg border px-2 py-1.5",
                       isBlocked
-                        ? "bg-hud-coral/5 border-hud-coral/15"
+                        ? "bg-hud-coral/5 border-hud-coral/20"
                         : "bg-success/5 border-success/15"
                     )}
                   >
-                    <div className="flex items-center gap-2.5 min-w-0">
-                      {isBlocked ? (
-                        <ShieldAlert className="w-4 h-4 text-hud-coral shrink-0" />
-                      ) : (
-                        <CheckCircle className="w-4 h-4 text-success shrink-0" />
-                      )}
-                      <div className="min-w-0">
-                        <div className="text-[13px] font-medium text-fg truncate">{item.record.name}</div>
-                        <div className="text-[10px] text-fg-subtle truncate">
-                          {isBlocked
-                            ? item.riskReason
-                            : _("通过所有检查", "All checks passed")}
-                        </div>
-                      </div>
-                    </div>
-                    <div className="text-right shrink-0 pl-2">
-                      <div className="text-[13px] font-mono font-semibold text-fg">
-                        {item.record.amount} USDC
-                      </div>
-                    </div>
+                    {isBlocked ? (
+                      <ShieldAlert className="h-3.5 w-3.5 shrink-0 text-hud-coral" />
+                    ) : (
+                      <CheckCircle className="h-3.5 w-3.5 shrink-0 text-success" />
+                    )}
+                    <span className="min-w-0 flex-1 truncate text-[12px] font-medium text-fg">
+                      {item.record.name}
+                    </span>
+                    <span className="shrink-0 font-mono text-[11px] font-semibold text-fg">
+                      {item.record.amount}
+                      <span className="ml-0.5 text-[9px] text-fg-subtle">USDC</span>
+                    </span>
                   </motion.div>
                 );
               })}
-          </motion.div>
+          </div>
 
-          <div className="mt-auto flex shrink-0 flex-col gap-3">
-            {blockedCount > 0 && (
-              <div className="flex shrink-0 items-start gap-2 rounded-lg border border-amber-500/20 bg-amber-500/5 p-3">
-                <AlertTriangle className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
-                <span className="text-[11px] text-amber-700 dark:text-amber-300">
-                  {_(
-                    "存在规则排除项：至少一笔付款未通过安全检查。这些地址将被排除在批处理付款之外。",
-                    "Rule exclusions present: at least one payload failed safety checks. These will be excluded from batch payouts."
-                  )}
-                </span>
-              </div>
-            )}
-
-            <div className="flex shrink-0 gap-2">
-              <HolographicButton
-                onClick={onReset}
-                variant="cyan"
-                size="sm"
-                className="flex-1"
-              >
-                {_("返回", "Back")}
-              </HolographicButton>
-              <HolographicButton
-                onClick={onExecute}
-                disabled={readyCount === 0}
-                variant="cyan"
-                size="sm"
-                icon={<Send className="w-3.5 h-3.5" />}
-                className="flex-[2]"
-              >
-                {_("批准并执行", "Approve & Execute")} ({totalReady} USDC)
-              </HolographicButton>
-            </div>
+          {/* Blocked-exclusion context lives in the RISK & AUDIT deck banner
+              below, so keep the review actions pinned and always visible. */}
+          <div className="mt-auto flex shrink-0 gap-2">
+            <HolographicButton
+              onClick={onReset}
+              variant="cyan"
+              size="sm"
+              className="flex-1"
+            >
+              {_("返回", "Back")}
+            </HolographicButton>
+            <HolographicButton
+              onClick={onExecute}
+              disabled={readyCount === 0}
+              variant="cyan"
+              size="sm"
+              icon={<Send className="w-3.5 h-3.5" />}
+              className="flex-[2]"
+            >
+              {_("批准并执行", "Approve & Execute")} ({totalReady} USDC)
+            </HolographicButton>
           </div>
         </motion.div>
       )}
